@@ -585,8 +585,7 @@ void garbage_collect_id(agent* thisAgent, Symbol* id)
 
     for (s = id->id->slots; s != NIL; s = s->next)
     {
-        /* MToDo | Remove. Attribute impasses were previously removed here if type wasn't none.  */
-        assert(s->impasse_type == NONE_IMPASSE_TYPE);
+        /* Attribute impasses were previously removed here if type wasn't none.  */
 
         /* --- remove all wme's from the slot --- */
         remove_wme_list_from_wm(thisAgent, s->wmes);
@@ -1129,10 +1128,6 @@ preference* run_non_context_preference_semantics(agent* thisAgent, slot* s)
 {
     preference* p, *candidates = NULL;
 
-    assert(!s->isa_context_slot);
-    assert(!s->preferences[REQUIRE_PREFERENCE_TYPE]);
-    assert(!s->preferences[PROHIBIT_PREFERENCE_TYPE]);
-
     /* If the slot has no preferences at all, things are trivial --- */
     if (!s->all_preferences)
     {
@@ -1175,8 +1170,6 @@ byte run_preference_semantics(agent* thisAgent,
     bool match_found, not_all_indifferent, some_numeric, add_OSK, some_not_worst = false;
     preference* candidates;
     Symbol* value;
-
-    assert(s->isa_context_slot);
 
     /* Set a flag to determine if a context-dependent preference set makes sense in this context.
      * We can ignore OSK prefs when:
@@ -2201,8 +2194,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
     dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y _?_)\n", s->id, s->attr);
     candidates = run_non_context_preference_semantics(thisAgent, s);
 
-    /* MToDo | Remove. Attribute impasses were previously removed here if type wasn't none.  */
-    assert(s->impasse_type == NONE_IMPASSE_TYPE);
+    /* Attribute impasses were previously removed here if type wasn't none.  */
 
     /* --- reset marks on existing wme values to "NOTHING" --- */
     for (w = s->wmes; w != NIL; w = w->next)
@@ -2253,9 +2245,9 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
         }
         else
         {
-            dprint(DT_WME_CHANGES, "Adding non-context %s WME at %y (lvl %d) from instantiation i%u (%y) and pref %p to slot.\n",
-                cand->o_supported ? "o-supported" : "i-supported",
-                    cand->inst->match_goal, static_cast<int64_t>(cand->id->id->level), cand->inst->i_id, cand->inst->prod_name, cand);
+            //dprint(DT_WME_CHANGES, "Adding non-context %s WME at %y (lvl %d) from instantiation i%u (%y) and pref %p to slot.\n",
+            //    cand->o_supported ? "o-supported" : "i-supported",
+            //        cand->inst->match_goal, static_cast<int64_t>(cand->id->id->level), cand->inst->i_id, cand->inst->prod_name, cand);
 
             w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
             insert_at_head_of_dll(s->wmes, w, next, prev);
@@ -2309,9 +2301,9 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                     (w->preference->inst->match_goal->id->gds == NIL) &&
                     (w->preference->inst->match_goal_level < current_highest_level))
                 {
-                    dprint(DT_GDS, "GDS creation detected o-supported WME being added for subgoal %y (l%d). %s.  %w\n",
-                        w->preference->inst->match_goal, static_cast<int64_t>(w->preference->id->id->level),
-                        (w->preference->inst->match_goal->id->gds == NIL) ? "GDS exists" : "GDS does not exist", w);
+                    //dprint(DT_GDS, "GDS creation detected o-supported WME being added for subgoal %y (l%d). %s.  %w\n",
+                    //    w->preference->inst->match_goal, static_cast<int64_t>(w->preference->id->id->level),
+                    //    (w->preference->inst->match_goal->id->gds == NIL) ? "GDS exists" : "GDS does not exist", w);
                     //                    dprint(DT_GDS, "- created as a result of instantiation i%u preference: %p\n", w->preference->inst->i_id, w->preference);
                     current_highest_level = w->preference->inst->match_goal_level;
                     current_highest_goal = w->preference->inst->match_goal;
@@ -2320,7 +2312,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
             /* Create a GDS for that level */
             if (current_highest_goal)
             {
-                dprint(DT_GDS, "...creating new GDS for match goal %y\n", w->preference->inst->match_goal);
+                //dprint(DT_GDS, "...creating new GDS for match goal %y\n", w->preference->inst->match_goal);
                 create_gds_for_goal(thisAgent, w->preference->inst->match_goal);
             }
             /* Loop over all the preferences for this WME:
@@ -2335,28 +2327,28 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 
             for (pref = w->preference; pref != NIL; pref = pref->next)
             {
-                dprint(DT_GDS_HIGH, "   %p   Goal level of preference: %d\n", pref, static_cast<int64_t>(pref->id->id->level));
+                //dprint(DT_GDS_HIGH, "   %p   Goal level of preference: %d\n", pref, static_cast<int64_t>(pref->id->id->level));
 
                 if ((pref->inst->GDS_evaluated_already == false) && (pref->inst->match_goal_level == current_highest_level))
                 {
-                    dprint(DT_GDS_HIGH, "   Match goal lev of instantiation %y is %d\n", pref->inst->prod_name , static_cast<int64_t>(pref->level));
-                    dprint(DT_GDS_HIGH, "   Adding %y to list of parent instantiations\n", pref->inst->prod_name);
+                    //dprint(DT_GDS_HIGH, "   Match goal lev of instantiation %y is %d\n", pref->inst->prod_name , static_cast<int64_t>(pref->level));
+                    //dprint(DT_GDS_HIGH, "   Adding %y to list of parent instantiations\n", pref->inst->prod_name);
                     uniquely_add_to_head_of_dll(thisAgent, pref->inst);
                     pref->inst->GDS_evaluated_already = true;
                 }
                 else
                 {
-                    dprint(DT_GDS_HIGH, "    Instantiation %y was already explored; skipping it\n", pref->inst->prod_name);
+                    //dprint(DT_GDS_HIGH, "    Instantiation %y was already explored; skipping it\n", pref->inst->prod_name);
                 }
             }
 
             if (thisAgent->parent_list_head)
             {
-                dprint(DT_GDS_HIGH, "    CALLING ELABORATE GDS....\n");
+                //dprint(DT_GDS_HIGH, "    CALLING ELABORATE GDS....\n");
                 elaborate_gds(thisAgent);
             }
 
-            dprint(DT_GDS_HIGH, "    FINISHED ELABORATING GDS.\n\n");
+            //dprint(DT_GDS_HIGH, "    FINISHED ELABORATING GDS.\n\n");
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -2381,19 +2373,19 @@ void decide_non_context_slots(agent* thisAgent)
     dl_cons* dc;
     slot* s;
 
-    dprint(DT_WME_CHANGES, "Deciding non-context slots.\n");
+    //dprint(DT_WME_CHANGES, "Deciding non-context slots.\n");
     while (thisAgent->changed_slots)
     {
         dc = thisAgent->changed_slots;
         thisAgent->changed_slots = thisAgent->changed_slots->next;
         s = static_cast<slot_struct*>(dc->item);
-        dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
+        //dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
         decide_non_context_slot(thisAgent, s);
         s->changed = NIL;
-        dprint(DT_WME_CHANGES, "Done deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
+        //dprint(DT_WME_CHANGES, "Done deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
     }
-    dprint(DT_WME_CHANGES, "Done deciding non-context slots.\n");
+    //dprint(DT_WME_CHANGES, "Done deciding non-context slots.\n");
 }
 
 /* ------------------------------------------------------------------
@@ -3632,10 +3624,10 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
     {
         if (curr_pi->inst == inst)
         {
-//            dprint(DT_GDS, "UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod_name);
+            //dprint(DT_GDS, "UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod_name);
             return;
         }
-//        dprint(DT_GDS,  "UNIQUE DLL:            %y\n", curr_pi->inst->prod_name);
+        //dprint(DT_GDS,  "UNIQUE DLL:            %y\n", curr_pi->inst->prod_name);
     } /* end for loop */
 
     new_pi = static_cast<parent_inst*>(malloc(sizeof(parent_inst)));
@@ -3651,7 +3643,7 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
     }
 
     thisAgent->parent_list_head = new_pi;
-//    dprint(DT_GDS, "UNIQUE DLL:         added: %y\n", inst->prod_name);
+    //dprint(DT_GDS, "UNIQUE DLL:         added: %y\n", inst->prod_name);
 }
 
 void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
@@ -3696,7 +3688,7 @@ void elaborate_gds(agent* thisAgent)
 
         inst = curr_pi->inst;
 
-        dprint(DT_GDS, "      EXPLORING INSTANTIATION: %y\n%7", curr_pi->inst->prod_name, curr_pi->inst);
+        //dprint(DT_GDS, "      EXPLORING INSTANTIATION: %y\n%7", curr_pi->inst->prod_name, curr_pi->inst);
 
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         {
@@ -3735,11 +3727,11 @@ void elaborate_gds(agent* thisAgent)
                     pref_for_this_wme = clone_for_this_level;
             }
 
-            dprint(DT_GDS, "       wme_matching_this_cond (level %d)   : %w\n", static_cast<int64_t>(wme_goal_level), wme_matching_this_cond);
-            dprint(DT_GDS, "       - pref_for_this_wme  (level %d (%d)): %p\n",  pref_for_this_wme ? static_cast<int64_t>(pref_for_this_wme->level) : 0,
-                wme_matching_this_cond->preference ? static_cast<int64_t>(wme_matching_this_cond->preference->level) : 0,
-                    pref_for_this_wme);
-            dprint(DT_GDS, "       - inst->match_goal                  : %y (level %d), p\n" , inst->match_goal, static_cast<int64_t>(inst->match_goal_level));
+            //dprint(DT_GDS, "       wme_matching_this_cond (level %d)   : %w\n", static_cast<int64_t>(wme_goal_level), wme_matching_this_cond);
+            //dprint(DT_GDS, "       - pref_for_this_wme  (level %d (%d)): %p\n",  pref_for_this_wme ? static_cast<int64_t>(pref_for_this_wme->level) : 0,
+            //    wme_matching_this_cond->preference ? static_cast<int64_t>(wme_matching_this_cond->preference->level) : 0,
+            //       pref_for_this_wme);
+            //dprint(DT_GDS, "       - inst->match_goal                  : %y (level %d), p\n" , inst->match_goal, static_cast<int64_t>(inst->match_goal_level));
 
 
             /* WME is in a supergoal or is architecturally created
@@ -3750,15 +3742,15 @@ void elaborate_gds(agent* thisAgent)
             if ((pref_for_this_wme == NIL) || (wme_goal_level < inst->match_goal_level))
             {
 
-                dprint(DT_GDS, "%s%s", (!pref_for_this_wme) ? "         WME has no preferences (arch-created)" : "         ",
-                    (wme_goal_level < inst->match_goal_level) ? "WME is in a supergoal\n" : "\n");
+                //dprint(DT_GDS, "%s%s", (!pref_for_this_wme) ? "         WME has no preferences (arch-created)" : "         ",
+                //    (wme_goal_level < inst->match_goal_level) ? "WME is in a supergoal\n" : "\n");
 
                 if (wme_matching_this_cond->gds != NIL)
                 {
                     /* Then we want to check and see if the old GDS value should be changed */
                     if (wme_matching_this_cond->gds->goal == NIL)
                     {
-                        dprint(DT_GDS, "  GDS' goal is NIL --> CLEARING GDS FOR REMOVED GOAL FROM WME %w\n", wme_matching_this_cond);
+                        //dprint(DT_GDS, "  GDS' goal is NIL --> CLEARING GDS FOR REMOVED GOAL FROM WME %w\n", wme_matching_this_cond);
                         /* The goal is NIL: meaning that the goal for the GDS is no longer around */
 
                         fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds,  wme_matching_this_cond, wme, gds_next, gds_prev);
@@ -3778,7 +3770,7 @@ void elaborate_gds(agent* thisAgent)
 
                         add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
 
-                        dprint(DT_GDS, "       ..... added WME to GDS list of %y....\n", inst->match_goal);
+                        //dprint(DT_GDS, "       ..... added WME to GDS list of %y....\n", inst->match_goal);
                     }
                     else if (wme_matching_this_cond->gds->goal->id->level > inst->match_goal_level)
                     {
@@ -3788,11 +3780,11 @@ void elaborate_gds(agent* thisAgent)
                          * 3. Add WME to new GDS list
                          * 4. Update WME pointer to new GDS list
                          */
-                        dprint(DT_GDS, "  WME ALREADY IN LOWER LEVEL GDS of %y.  MOVING UP.\n", wme_matching_this_cond->gds->goal);
+                        //dprint(DT_GDS, "  WME ALREADY IN LOWER LEVEL GDS of %y.  MOVING UP.\n", wme_matching_this_cond->gds->goal);
                         fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds,  wme_matching_this_cond, wme, gds_next, gds_prev);
                         if (!wme_matching_this_cond->gds->wmes_in_gds)
                         {
-                            dprint(DT_GDS, "       ....removing now empty GDS from %y", wme_matching_this_cond->gds->goal);
+                            //dprint(DT_GDS, "       ....removing now empty GDS from %y", wme_matching_this_cond->gds->goal);
                             if (wme_matching_this_cond->gds->goal)
                             {
                                 wme_matching_this_cond->gds->goal->id->gds = NIL;
@@ -3804,7 +3796,7 @@ void elaborate_gds(agent* thisAgent)
                         }
                         add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
 
-                        dprint(DT_GDS, "       ....moved to GDS list of %y\n", inst->match_goal);
+                        //dprint(DT_GDS, "       ....moved to GDS list of %y\n", inst->match_goal);
                         wme_matching_this_cond->gds = inst->match_goal->id->gds;
                     }
                 }
@@ -3818,16 +3810,16 @@ void elaborate_gds(agent* thisAgent)
                     {
                         thisAgent->outputManager->printa_sf(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
                     }
-                    dprint(DT_GDS, "       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal);
+                    //dprint(DT_GDS, "       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal);
                 } /* end else clause for "if wme_matching_this_cond->gds != NIL" */
-                dprint(DT_GDS, "            Added WME to GDS for goal level %d (%y)\n", static_cast<int64_t>(wme_matching_this_cond->gds->goal->id->level), wme_matching_this_cond->gds->goal);
+                //dprint(DT_GDS, "            Added WME to GDS for goal level %d (%y)\n", static_cast<int64_t>(wme_matching_this_cond->gds->goal->id->level), wme_matching_this_cond->gds->goal);
             } /* end "wme in supergoal or arch-supported" */
             else
             {
                 /* WME must be local. If wme's pref is o-supported, then just ignore it and move to next condition */
                 if (pref_for_this_wme->o_supported == true)
                 {
-                    dprint(DT_GDS, "         this wme is local and o-supported\n");
+                    //dprint(DT_GDS, "         this wme is local and o-supported\n");
                     continue;
                 }
 
@@ -3839,18 +3831,18 @@ void elaborate_gds(agent* thisAgent)
                     /* this test avoids "backtracing" through the top state */
                     if (inst->match_goal_level == 1)
                     {
-                        dprint(DT_GDS, "         don't back up through top state for instantiation %y\n", inst->prod_name);
+                        //dprint(DT_GDS, "         don't back up through top state for instantiation %y\n", inst->prod_name);
                         continue;
                     }
 
                     else   /* (inst->match_goal_level != 1) */
                     {
-                        dprint(DT_GDS,  "         this wme is local and i-supported\n");
+                        //dprint(DT_GDS,  "         this wme is local and i-supported\n");
                         s = find_slot(pref_for_this_wme->id, pref_for_this_wme->attr);
                         if (s == NIL)
                         {
                             /* this must be an arch-wme from a fake instantiation */
-                            dprint(DT_GDS, "here's the wme with no slot: %w", pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme_);
+                            //dprint(DT_GDS, "here's the wme with no slot: %w", pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme_);
 
                             /* this is the same code as above, just using the differently-named pointer.  it probably should be a subroutine */
                             {
@@ -3877,12 +3869,12 @@ void elaborate_gds(agent* thisAgent)
                                             GDI_remove(thisAgent, fake_inst_wme_cond->gds);
                                             thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
 
-                                            dprint(DT_GDS, "  REMOVING GDS FROM MEMORY.");
+                                            //dprint(DT_GDS, "  REMOVING GDS FROM MEMORY.");
                                         }
 
                                         add_wme_to_gds(thisAgent, inst->match_goal->id->gds, fake_inst_wme_cond);
 
-                                        dprint(DT_GDS, "       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+                                        //dprint(DT_GDS, "       .....GDS' goal is NIL so switching from old to new GDS list....\n");
                                     }
                                     else if (fake_inst_wme_cond->gds->goal->id->level > inst->match_goal_level)
                                     {
@@ -3901,12 +3893,12 @@ void elaborate_gds(agent* thisAgent)
                                             GDI_remove(thisAgent, fake_inst_wme_cond->gds);
 
                                             thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
-                                            dprint(DT_GDS, "  REMOVING GDS FROM MEMORY.");
+                                            //dprint(DT_GDS, "  REMOVING GDS FROM MEMORY.");
                                         }
 
                                         add_wme_to_gds(thisAgent, inst->match_goal->id->gds, fake_inst_wme_cond);
 
-                                        dprint(DT_GDS, "       .....switching from old to new GDS list....\n");
+                                        //dprint(DT_GDS, "       .....switching from old to new GDS list....\n");
                                         fake_inst_wme_cond->gds = inst->match_goal->id->gds;
                                     }
                                 }
@@ -3920,9 +3912,9 @@ void elaborate_gds(agent* thisAgent)
                                     {
                                         thisAgent->outputManager->printa_sf(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
                                     }
-                                    dprint(DT_GDS, "       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal);
+                                    //dprint(DT_GDS, "       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal);
                                 }
-                                dprint(DT_GDS, "            Added WME to GDS for goal level %d (%y)\n", static_cast<int64_t>(fake_inst_wme_cond->gds->goal->id->level), fake_inst_wme_cond->gds->goal);
+                                //dprint(DT_GDS, "            Added WME to GDS for goal level %d (%y)\n", static_cast<int64_t>(fake_inst_wme_cond->gds->goal->id->level), fake_inst_wme_cond->gds->goal);
                             }  /* matches { wme *fake_inst_wme_cond  */
                         }
                         else
@@ -3930,7 +3922,7 @@ void elaborate_gds(agent* thisAgent)
                             /* this was the original "local & i-supported" action */
                             for (pref = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; pref; pref = pref->next)
                             {
-                                dprint(DT_GDS, "           looking at pref for the wme: %p", pref);
+                                //dprint(DT_GDS, "           looking at pref for the wme: %p", pref);
 
                                 /* Check that the value with acceptable pref for the slot is the same as the value for the wme in the condition, since
                                        operators can have acceptable preferences for values other than the WME value.  We dont want to backtrack thru acceptable
@@ -3942,7 +3934,7 @@ void elaborate_gds(agent* thisAgent)
 
                                     if (pref->inst->GDS_evaluated_already == false)
                                     {
-                                        dprint(DT_GDS, "           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
+                                        //dprint(DT_GDS, "           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
                                         /* If the preference comes from a lower level inst, then  ignore it.
                                          *   - Preferences from lower levels must come from result  instantiations
                                          *   - We just want to use the justification/chunk instantiations at the  match goal level */
@@ -3961,20 +3953,20 @@ void elaborate_gds(agent* thisAgent)
                                             {
                                                 uniquely_add_to_head_of_dll(thisAgent, pref->inst);
                                             } else {
-                                                dprint(DT_GDS, "           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod_name);
+                                                //dprint(DT_GDS, "           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod_name);
                                             }
                                         }
                                         pref->inst->GDS_evaluated_already = true;
                                     }
                                     else
                                     {
-                                        dprint(DT_GDS, "           the inst producing this pref was already explored; skipping it\n");
+                                        //dprint(DT_GDS, "           the inst producing this pref was already explored; skipping it\n");
                                     }
 
                                 }
                                 else
                                 {
-                                    dprint(DT_GDS, "        this inst is for a pref with a differnt value than the condition WME; skipping it\n");
+                                    //dprint(DT_GDS, "        this inst is for a pref with a differnt value than the condition WME; skipping it\n");
                                 }
                             }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/
                         }
@@ -3985,7 +3977,7 @@ void elaborate_gds(agent* thisAgent)
 
         /* remove just used instantiation from list */
 
-        dprint(DT_GDS, "      removing instantiation: %y\n", curr_pi->inst->prod_name);
+        //dprint(DT_GDS, "      removing instantiation: %y\n", curr_pi->inst->prod_name);
 
         if (curr_pi->next != NIL)
         {
@@ -4011,7 +4003,7 @@ void elaborate_gds(agent* thisAgent)
     if (thisAgent->parent_list_head != NIL)
     {
 
-        dprint(DT_GDS, "    RECURSING using these parents:\n");
+        //dprint(DT_GDS, "    RECURSING using these parents:\n");
 #ifdef DEBUG_GDS
         for (curr_pi = thisAgent->parent_list_head; curr_pi; curr_pi = curr_pi->next)
         {
@@ -4153,5 +4145,5 @@ void create_gds_for_goal(agent* thisAgent, Symbol* goal)
 
     GDI_add(thisAgent, gds);
 
-    dprint(DT_GDS, "Created GDS for goal [%y].\n", gds->goal);
+    //dprint(DT_GDS, "Created GDS for goal [%y].\n", gds->goal);
 }

@@ -1166,7 +1166,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     thisAgent->firer_highest_rhs_unboundvar_index = index - 1;
 
     /* Print rule firing trace info's arrow*/
-    if (trace_it)
+    if (trace_it && (thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] != NONE_WME_TRACE))
     {
         thisAgent->outputManager->printa(thisAgent,  " -->\n");
         xml_object(thisAgent, kTagActionSideMarker);
@@ -1219,7 +1219,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     finalize_instantiation(thisAgent, inst, false, NIL, true);
 
     /* Print rule firing trace info RHS (must be after fill_in_new_instantiation) */
-    if (trace_it)
+    if (trace_it && (thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] != NONE_WME_TRACE))
     {
         for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
         {
@@ -1542,11 +1542,14 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
                     thisAgent->outputManager->start_fresh_line(thisAgent);
                     thisAgent->outputManager->printa(thisAgent,  "Retracting ");
                     print_instantiation_with_wmes(thisAgent, inst, static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 1);
-                    thisAgent->outputManager->printa(thisAgent,  " -->\n");
+                    if (thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] != NONE_WME_TRACE)
+                    {
+                        thisAgent->outputManager->printa(thisAgent,  " -->\n");
+                    }
                     xml_object(thisAgent, kTagActionSideMarker);
                 }
             }
-            if (trace_it)
+            if (trace_it && (thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] != NONE_WME_TRACE))
             {
                     thisAgent->outputManager->printa_sf(thisAgent,  "%e ");
                     print_preference(thisAgent, pref, true);

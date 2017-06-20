@@ -122,7 +122,7 @@ void decider_param_container::print_settings(agent* thisAgent)
     outputManager->printa(thisAgent, "====== Soar General Commands and Settings =====\n");
     outputManager->printa_sf(thisAgent, "soar ? %-%-%s\n", "Print this help listing");
     outputManager->printa_sf(thisAgent, "soar init%-%-%s\n", "Re-initializes current state of Soar");
-    outputManager->printa_sf(thisAgent, "soar reset%-%-%s\n", "Resets Soar completely");
+//     outputManager->printa_sf(thisAgent, "soar reset%-%-%s\n", "Resets Soar completely");
     outputManager->printa_sf(thisAgent, "soar stop [--self]%-%s\n", "Stop Soar execution");
 //    outputManager->printa_sf(thisAgent, "soar run%-%-%s\n", "Run Soar");
     outputManager->printa_sf(thisAgent, "soar version%-%-%s\n", "Print version number of Soar");

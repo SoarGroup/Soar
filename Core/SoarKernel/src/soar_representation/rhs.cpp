@@ -43,9 +43,6 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 
     if (!rv || rhs_value_is_reteloc(rv) || rhs_value_is_unboundvar(rv)) return;
 
-    /* MToDo | Remove */
-    assert(!rhs_value_is_null(rv));
-
     dprint(DT_DEALLOCATE_RHS_VALUE, "Deallocating rhs value %r\n", rv);
     if (rhs_value_is_funcall(rv))
     {

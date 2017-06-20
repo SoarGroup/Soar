@@ -190,7 +190,10 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
             directory.insert(0, "source ");
             std::string lResult = pAgentSML->ExecuteCommandLine(directory.c_str());
         } else {
-            pConnection->AddErrorToSMLResponse(pResponse, "Could not find settings.soar file.", -1);
+            /* This doesn't seem to actually print the error.  Soar simply prints
+             * an unknown error occurred. Commenting out for now. */
+            //pConnection->AddErrorToSMLResponse(pResponse, "Could not find settings.soar file.", 1);
+
             /* Returning true.  Otherwise, Soar will exit if the file could not be found. */
             return true;
         }

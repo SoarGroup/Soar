@@ -958,7 +958,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("link-stm-to-ltm"), set_lti_id_rhs_function_code, 2, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trace"), trace_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("log"), trace_rhs_function_code, -1, false, true, 0, false);
 
     /* RHS functions that return a simple value */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), get_lti_id_rhs_function_code, 1, true, false, 0, false);
@@ -990,7 +990,7 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("wait"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trace"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("log"));
 
     remove_rhs_function(thisAgent,thisAgent->symbolManager->soarSymbols.at_symbol);
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("capitalize-symbol"));

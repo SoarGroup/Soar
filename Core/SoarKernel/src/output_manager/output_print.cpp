@@ -267,7 +267,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
     size_t m;
     std::string sf = format;
 
-    /* MToDo | Possible efficiency improvement */
+    /* Possible efficiency improvement */
     destString.reserve(sf.size());
 
     va_list args;

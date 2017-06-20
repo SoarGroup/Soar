@@ -259,24 +259,23 @@ class Explanation_Memory
         void                    delete_instantiation(uint64_t pInstID);
 
         /* ID Counters */
-        uint64_t            condition_id_count;
-        uint64_t            chunk_id_count;
-        uint64_t            action_id_count;
+        uint64_t                    condition_id_count;
+        uint64_t                    chunk_id_count;
+        uint64_t                    action_id_count;
 
         /* Statistics on learning performed so far */
-        chunking_stats      stats;
+        chunking_stats              stats;
 
         /* These maps store all of the records the logger keeps */
-        /* MToDo | Why aren't these using the ones stl_typedefs? */
-        std::unordered_map< Symbol*, chunk_record* >*           chunks;
-        std::unordered_map< uint64_t, chunk_record* >*          chunks_by_ID;
-        std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
-        std::unordered_map< uint64_t, condition_record* >*      all_conditions;
-        std::unordered_map< uint64_t, action_record* >*         all_actions;
-        sym_to_identity_set_map*                                all_identities_in_goal;
+        chunk_record_symbol_map*    chunks;
+        chunk_record_id_map*        chunks_by_ID;
+        instantiation_record_map*   instantiations;
+        condition_record_map*       all_conditions;
+        action_record_map*          all_actions;
+        sym_to_identity_set_map*    all_identities_in_goal;
 
-        production_record_set*                                  cached_production;
-        std::unordered_map< uint64_t, production* >*            production_id_map;
+        production_record_set*      cached_production;
+        production_map*             production_id_map;
 };
 
 #endif /* EBC_EXPLAIN_H_ */
