@@ -264,6 +264,17 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //
 
+    web_attr_all_no_spread = new soar_module::sqlite_statement(new_db, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id WHERE h.lti_id IS NULL AND w.attribute_s_id=? ORDER BY w.activation_value DESC");
+    add(web_attr_all_no_spread);
+
+    web_const_all_no_spread = new soar_module::sqlite_statement(new_db, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id WHERE h.lti_id IS NULL AND w.attribute_s_id=? AND w.value_constant_s_id=? AND w.value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY w.activation_value DESC");
+    add(web_const_all_no_spread);
+
+    web_lti_all_no_spread = new soar_module::sqlite_statement(new_db, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id  WHERE h.lti_id IS NULL AND w.attribute_s_id=? AND w.value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND w.value_lti_id=? ORDER BY w.activation_value DESC");
+    add(web_lti_all_no_spread);
+
+    //
+
     web_attr_all_spread = new soar_module::sqlite_statement(new_db, "SELECT smem_augmentations.lti_id, smem_current_spread_activations.activation_value FROM smem_augmentations INNER JOIN smem_current_spread_activations ON smem_augmentations.lti_id = smem_current_spread_activations.lti_id WHERE attribute_s_id=?");
     add(web_attr_all_spread);
 

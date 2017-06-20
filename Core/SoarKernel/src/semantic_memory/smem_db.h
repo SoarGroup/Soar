@@ -55,6 +55,10 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* web_const_all;
         soar_module::sqlite_statement* web_lti_all;
 
+        soar_module::sqlite_statement* web_attr_all_no_spread;
+        soar_module::sqlite_statement* web_const_all_no_spread;
+        soar_module::sqlite_statement* web_lti_all_no_spread;
+
         soar_module::sqlite_statement* web_attr_all_spread;
         soar_module::sqlite_statement* web_const_all_spread;
         soar_module::sqlite_statement* web_lti_all_spread;

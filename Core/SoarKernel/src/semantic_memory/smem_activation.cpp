@@ -321,7 +321,8 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     {
         double offset = settings->spreading_baseline->get_value()/baseline_denom;
         modified_spread = (spread == 0 || spread < offset) ? 0.0 : (log(spread) - log(offset));
-        spread = ((spread < offset) ? 0.0 : spread);
+        //modified_spread = log(spread) - log(offset);
+        //spread = ((spread < offset) ? 0.0 : spread);
         //if (new_activation == SMEM_ACT_LOW)
         //    bool test = true;
         SQL->act_lti_fake_set->bind_double(1, new_activation);
@@ -329,9 +330,9 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         SQL->act_lti_fake_set->bind_double(3, new_base + modified_spread);
         SQL->act_lti_fake_set->bind_int(4,pLTI_ID);
         SQL->act_lti_fake_set->execute(soar_module::op_reinit);
-        SQL->act_set->bind_double(1, SMEM_ACT_LOW);
-        SQL->act_set->bind_int(2, pLTI_ID);
-        SQL->act_set->execute(soar_module::op_reinit);
+        //SQL->act_set->bind_double(1, SMEM_ACT_LOW);
+        //SQL->act_set->bind_int(2, pLTI_ID);
+        //SQL->act_set->execute(soar_module::op_reinit);
     }
     else
     {
@@ -349,9 +350,9 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     }
     else if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()) && already_in_spread_table)
     {
-        SQL->act_set->bind_double(1, SMEM_ACT_LOW);
-        SQL->act_set->bind_int(2, pLTI_ID);
-        SQL->act_set->execute(soar_module::op_reinit);
+        //SQL->act_set->bind_double(1, SMEM_ACT_LOW);
+        //SQL->act_set->bind_int(2, pLTI_ID);
+        //SQL->act_set->execute(soar_module::op_reinit);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -382,6 +383,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             std::list<smem_edge_update*>::iterator edge_begin_it = edge_updates->begin();
             std::list<smem_edge_update*>::iterator edge_it;
             bool prohibited = false;
+            double edge_update_decay = thisAgent->SMem->settings->spreading_edge_update_factor->get_value();//.99;
             for (edge_it = edge_begin_it; edge_it != edge_updates->end(); ++edge_it)
             {
                 time = (*edge_it)->update_time;
@@ -394,7 +396,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                     {//We are looping through the update map and inserting those updates into the old edge weight map.
                         if (edge_weight_update_map_for_children.find(updates_it->first) == edge_weight_update_map_for_children.end())
                         {//If we don't have an update for that edge, we just decrease it.
-                            old_edge_weight_map_for_children[updates_it->first] = pow(0.9,total_touches)*old_edge_weight_map_for_children[updates_it->first];
+                            old_edge_weight_map_for_children[updates_it->first] = pow(edge_update_decay,total_touches)*old_edge_weight_map_for_children[updates_it->first];
                             normalizing_sum += old_edge_weight_map_for_children[updates_it->first];
                         }
                         else
@@ -442,11 +444,11 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                 {
                     if (edge_weight_update_map_for_children.find(child) != edge_weight_update_map_for_children.end())
                     {
-                        edge_weight_update_map_for_children[child] = edge_weight_update_map_for_children[child] + (1.0-old_edge_weight_map_for_children[child])*0.1*pow(.9,touch_ct-1.0);
+                        edge_weight_update_map_for_children[child] = edge_weight_update_map_for_children[child] + (1.0-old_edge_weight_map_for_children[child])*(1.0-edge_update_decay)*pow(edge_update_decay,touch_ct-1.0);
                     }
                     else
                     {
-                        edge_weight_update_map_for_children[child] = 0.0 + (1.0 - old_edge_weight_map_for_children[child])*0.1;
+                        edge_weight_update_map_for_children[child] = 0.0 + (1.0 - old_edge_weight_map_for_children[child])*(1.0-edge_update_decay);
                     }
                 }
                 previous_time = time;
@@ -458,7 +460,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             {//We are looping through the update map and inserting those updates into the old edge weight map.
                 if (edge_weight_update_map_for_children.find(final_updates_it->first) == edge_weight_update_map_for_children.end())
                 {//If we don't have an update for that edge, we just decrease it.
-                    old_edge_weight_map_for_children[final_updates_it->first] = pow(0.9,total_touches)*old_edge_weight_map_for_children[final_updates_it->first];
+                    old_edge_weight_map_for_children[final_updates_it->first] = pow(edge_update_decay,total_touches)*old_edge_weight_map_for_children[final_updates_it->first];
                     normalizing_sum += old_edge_weight_map_for_children[final_updates_it->first];
                 }
                 else
@@ -1143,25 +1145,30 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 unsigned int counter;
                 auto wmas = smem_wmas->equal_range(calc_current_spread->column_int(4));
                 double pre_logd_wma = 0;
-                for (auto wma = wmas.first; wma != wmas.second; ++wma)
+                bool used_wma = false;
+                if (thisAgent->SMem->settings->spreading_wma_source->get_value() == true)
                 {
-                    // Now that we have a wma decay element, we loop over its history and increment all of the fields for our fake decay element.
-                    total_element.num_references += wma->second->touches.total_references;
-                    counter = wma->second->touches.history_ct;
-                    while(counter)
+                    for (auto wma = wmas.first; wma != wmas.second; ++wma)
                     {
-                        int cycle_diff = thisAgent->WM->wma_d_cycle_count - wma->second->touches.access_history[counter-1].d_cycle;
-                        assert(cycle_diff > 0);
-                        //cycles.push_back(wma->second->touches.access_history[counter]);
-                        if (cycle_diff < thisAgent->WM->wma_power_size)
+                        used_wma = true;
+                        // Now that we have a wma decay element, we loop over its history and increment all of the fields for our fake decay element.
+                        total_element.num_references += wma->second->touches.total_references;
+                        counter = wma->second->touches.history_ct;
+                        while(counter)
                         {
-                            pre_logd_wma += wma->second->touches.access_history[counter-1].num_references * thisAgent->WM->wma_power_array[ cycle_diff ];
+                            int cycle_diff = thisAgent->WM->wma_d_cycle_count - wma->second->touches.access_history[counter-1].d_cycle;
+                            assert(cycle_diff > 0);
+                            //cycles.push_back(wma->second->touches.access_history[counter]);
+                            if (cycle_diff < thisAgent->WM->wma_power_size)
+                            {
+                                pre_logd_wma += wma->second->touches.access_history[counter-1].num_references * thisAgent->WM->wma_power_array[ cycle_diff ];
+                            }
+                            else
+                            {
+                                pre_logd_wma += wma->second->touches.access_history[counter-1].num_references * pow(cycle_diff,thisAgent->WM->wma_params->decay_rate->get_value());
+                            }
+                            counter--;
                         }
-                        else
-                        {
-                            pre_logd_wma += wma->second->touches.access_history[counter-1].num_references * pow(cycle_diff,thisAgent->WM->wma_params->decay_rate->get_value());
-                        }
-                        counter--;
                     }
                 }
                 ////////////////////////////////////////////////////////////////////////////
@@ -1174,13 +1181,17 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 timers->spreading_7_2_5->start();
                 ////////////////////////////////////////////////////////////////////////////
                 double wma_multiplicative_factor = pre_logd_wma/(1.0+pre_logd_wma);//1;//pre_logd_wma/(1.0+pre_logd_wma);
+                if (!used_wma || pre_logd_wma == 0)
+                {
+                    wma_multiplicative_factor = 1;
+                }
                 {
                     raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));
                 }
                 //offset = (settings->spreading_baseline->get_value())/(calc_spread->column_double(1));
                 offset = (settings->spreading_baseline->get_value())/baseline_denom;//(settings->spreading_limit->get_value());
-                additional = (raw_prob > offset ? raw_prob : offset+offset*.1);//(log(raw_prob)-log(offset));//This is a hack to prevent bad values for low wma spread.
-                spread+=additional;//Now, we've adjusted the activation according to this new addition.
+                additional = (raw_prob > offset ? raw_prob : offset);//(log(raw_prob)-log(offset));//This is a hack to prevent bad values for low wma spread.//additional = (raw_prob > offset ? raw_prob : offset+offset*.1);//(log(raw_prob)-log(offset));//This is a hack to prevent bad values for low wma spread.
+                spread = (spread == 0 ? additional : additional+spread);//Now, we've adjusted the activation according to this new addition.
                 ////////////////////////////////////////////////////////////////////////////
                 timers->spreading_7_2_5->stop();
                 ////////////////////////////////////////////////////////////////////////////
@@ -1238,9 +1249,11 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     SQL->act_lti_fake_insert->execute(soar_module::op_reinit);
 
                     //In order to prevent the activation from the augmentations table from coming into play after this has been given spread, we set the augmentations bla to be smemactlow
-                    SQL->act_set->bind_double(1, SMEM_ACT_LOW);
+                    /*SQL->act_set->bind_double(1, SMEM_ACT_LOW);
                     SQL->act_set->bind_int(2, *candidate);
-                    SQL->act_set->execute(soar_module::op_reinit);
+                    SQL->act_set->execute(soar_module::op_reinit);*/
+                    // The above fix was abhorrently slow. Instead of changing the activation value and forcing a reindexing for like 3 indexes on the largest table,
+                    // I fix the issue by using more clever queries that involve not pulling lti activations from the default table when it has spread.
 
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_8->stop();

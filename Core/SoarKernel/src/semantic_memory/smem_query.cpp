@@ -45,6 +45,36 @@ soar_module::sqlite_statement* SMem_Manager::setup_web_crawl(smem_weighted_cue_e
     return q;
 }
 
+soar_module::sqlite_statement* SMem_Manager::setup_web_crawl_without_spread(smem_weighted_cue_element* el)
+{
+    soar_module::sqlite_statement* q = NULL;
+
+    // first, point to correct query and setup
+    // query-specific parameters
+    if (el->element_type == attr_t)
+    {
+        // attribute_s_id=?
+        q = (thisAgent->SMem->settings->spreading->get_value() == off ? SQL->web_attr_all : SQL->web_attr_all_no_spread);
+    }
+    else if (el->element_type == value_const_t)
+    {
+        // attribute_s_id=? AND value_constant_s_id=?
+        q = (thisAgent->SMem->settings->spreading->get_value() == off ? SQL->web_const_all : SQL->web_const_all_no_spread);
+        q->bind_int(2, el->value_hash);
+    }
+    else if (el->element_type == value_lti_t)
+    {
+        // attribute_s_id=? AND value_lti_id=?
+        q = (thisAgent->SMem->settings->spreading->get_value() == off ? SQL->web_lti_all : SQL->web_lti_all_no_spread);
+        q->bind_int(2, el->value_lti);
+    }
+
+    // all require hash as first parameter
+    q->bind_int(1, el->attr_hash);
+
+    return q;
+}
+
 soar_module::sqlite_statement* SMem_Manager::setup_web_crawl_spread(smem_weighted_cue_element* el)
 {
     soar_module::sqlite_statement* q = NULL;
@@ -562,14 +592,15 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
             }
 
             // setup first query, which is sorted on activation already
-            q =setup_web_crawl((*cand_set));
+            q =setup_web_crawl_without_spread((*cand_set));
             thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
 
             // this becomes the minimal set to walk (till match or fail)
-            if (q->execute() == soar_module::row)
+            bool rows = q->execute() == soar_module::row;
+            if (rows || settings->spreading->get_value() == on)
             {
                 smem_prioritized_activated_lti_queue plentiful_parents;
-                bool more_rows = true;
+                bool more_rows = rows;//true;
                 bool use_db = false;
                 bool has_feature = false;
 

@@ -188,6 +188,7 @@ class SMem_Manager
         uint64_t                        process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
         soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);
+        soar_module::sqlite_statement*  setup_web_crawl_without_spread(smem_weighted_cue_element* el);
         soar_module::sqlite_statement*  setup_cheap_web_crawl(smem_weighted_cue_element* el);
         soar_module::sqlite_statement*  setup_web_crawl_spread(smem_weighted_cue_element* el);
 
