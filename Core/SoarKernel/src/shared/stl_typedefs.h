@@ -101,6 +101,7 @@ struct IDSetLessThan;
 
 #endif
 
+
 #if (!defined USE_MEM_POOL_ALLOCATORS) || (defined USE_UNORDERED_STL)
     typedef std::unordered_set< augmentation* >                     augmentation_set;
     typedef std::unordered_set< uint64_t >                          id_set;
@@ -131,8 +132,10 @@ struct IDSetLessThan;
     typedef std::vector<ltm_value*>                         ltm_slot;
     typedef std::unordered_map<Symbol*, ltm_slot*>          ltm_slot_map;
     typedef std::vector<smem_weighted_cue_element*>         smem_weighted_cue_list;
+    typedef std::pair< double, uint64_t >                   smem_activated_lti;
     typedef std::unordered_map<std::string, ltm_object*>    str_to_ltm_map;
     typedef std::unordered_map<Symbol*, ltm_object*>        sym_to_ltm_map;
+
 #else
     /* The following were unordered STL containers, but in certain cases it seems allocation costs more than we gain.  Still
      * not sure whether to switch or whether we should just switch some.  Might try new allocator that can be used with STL
@@ -215,5 +218,7 @@ struct IDSetLessThan;
     #endif
 
 typedef std::pair< double, uint64_t >                   smem_activated_lti;
+typedef std::unordered_multimap<uint64_t,wma_decay_element*>    smem_wma_map;
+
 
 #endif /* STL_TYPEDEFS_H_ */

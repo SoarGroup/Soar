@@ -25,6 +25,8 @@
 #include "slot.h"
 #include "working_memory.h"
 #include "xml.h"
+#include "semantic_memory.h"
+#include "smem_timers.h"
 
 #include <set>
 #include <cmath>
@@ -509,6 +511,10 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
             temp_el->forget_cycle = static_cast< wma_d_cycle >(-1);
 
             w->wma_decay_el = temp_el;
+            if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
+            {
+                thisAgent->SMem->smem_wmas->emplace(w->id->id->LTI_ID,temp_el);
+            }
 
             if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
             {
@@ -584,6 +590,36 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
             temp_el->num_references += num_references;
             thisAgent->WM->wma_touched_elements->insert(w);
         }
+#ifdef SPREADING_ACTIVATION_ENABLED
+        thisAgent->SMem->timers->spreading_wma_1->start();
+        if (thisAgent->SMem->edge_updating_on() && w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
+        {
+            if (w->value->id && w->value->id->LTI_ID)
+            {
+                //thisAgent->SMem->invalidate_from_lti(w->id->id->LTI_ID);//This is a HUGE time sink.
+                thisAgent->SMem->add_to_invalidate_from_lti_table(w->id->id->LTI_ID);
+                /*for (int i = 1; i < 11; i++)
+                {//A changing edge weight is treated as an invalidation of cases that could have used that edge.
+                    thisAgent->SMem->SQL->trajectory_invalidate_from_lti->bind_int(i,w->id->id->LTI_ID);
+                }
+                thisAgent->SMem->SQL->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);*/
+                //Now, we keep track of the wma update that invalidated this spread so that we can change edge weights later.
+
+                smem_edge_update* new_update = new smem_edge_update();
+                new_update->lti_edge_id = w->value->id->LTI_ID;
+                new_update->num_touches = num_references;
+                new_update->update_time = thisAgent->WM->wma_d_cycle_count;
+                //We may not already have updates for that edge.
+                if (thisAgent->SMem->smem_edges_to_update->find(w->id->id->LTI_ID) == thisAgent->SMem->smem_edges_to_update->end())
+                {//We create an entry for that parent.
+                    thisAgent->SMem->smem_edges_to_update->emplace(std::pair<uint64_t,std::list<smem_edge_update*>>(w->id->id->LTI_ID,std::initializer_list<smem_edge_update*>{}));
+                }
+                std::list<smem_edge_update*>* list_ptr_for_parent = &(thisAgent->SMem->smem_edges_to_update->find(w->id->id->LTI_ID)->second);
+                list_ptr_for_parent->push_back(new_update);
+            }
+        }
+        thisAgent->SMem->timers->spreading_wma_1->stop();
+#endif
     }
     // i-supported, non-architectural WME
     else if (!o_only && (w->preference) && (w->preference->reference_count))
@@ -663,6 +699,20 @@ void wma_deactivate_element(agent* thisAgent, wme* w)
             }
 
             temp_el->just_removed = true;
+            if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
+            {
+                thisAgent->SMem->timers->spreading_wma_2->start();
+                auto wmas = thisAgent->SMem->smem_wmas->equal_range(w->id->id->LTI_ID);
+                for (auto wma = wmas.first; wma != wmas.second; ++wma)
+                {
+                    if (wma->second == w->wma_decay_el)
+                    {
+                        thisAgent->SMem->smem_wmas->erase(wma);
+                        break;
+                    }
+                }
+                thisAgent->SMem->timers->spreading_wma_2->stop();
+            }
         }
     }
 }

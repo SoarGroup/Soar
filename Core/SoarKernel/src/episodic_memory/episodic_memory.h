@@ -418,6 +418,7 @@ typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >
 
 // types/structures to facilitate incremental storage
 typedef std::map< epmem_node_id, bool, std::less< epmem_node_id >, soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > > > epmem_id_removal_map;
+typedef std::map< std::pair<epmem_node_id,int64_t>, bool, std::less< std::pair<epmem_node_id,int64_t> >, soar_module::soar_memory_pool_allocator< std::pair< std::pair<epmem_node_id,int64_t>, bool > > > epmem_edge_removal_map;
 typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_set;
 
 #else
@@ -648,7 +649,7 @@ class EpMem_Manager
         std::vector<epmem_time_id>* epmem_node_mins;
         std::vector<bool>* epmem_node_maxes;
 
-        epmem_id_removal_map* epmem_edge_removals;
+        epmem_edge_removal_map* epmem_edge_removals;
         std::vector<epmem_time_id>* epmem_edge_mins;
         std::vector<bool>* epmem_edge_maxes;
 

@@ -19,6 +19,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     learning = new soar_module::boolean_param("learning", off, new soar_module::f_predicate<boolean>());
     add(learning);
 
+    // spreading
+    spreading = new soar_module::boolean_param("spreading", off, new soar_module::f_predicate<boolean>());
+    add(spreading);
+
     // database
     database = new soar_module::constant_param<db_choices>("database", memory, new soar_module::f_predicate<db_choices>());
     database->add_mapping(memory, "memory");
@@ -74,6 +78,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     activate_on_query = new soar_module::boolean_param("activate-on-query", on, new soar_module::f_predicate<boolean>());
     add(activate_on_query);
 
+    // activate on add
+    activate_on_add = new soar_module::boolean_param("activate-on-add", off, new soar_module::f_predicate<boolean>());
+    add(activate_on_add);
+
     // activation_mode
     activation_mode = new soar_module::constant_param<act_choices>("activation-mode", act_recency, new soar_module::f_predicate<act_choices>());
     activation_mode->add_mapping(act_recency, "recency");
@@ -103,6 +111,42 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     /* Moved from init_agent */
     base_incremental_threshes->set_string("10");
 
+    /* The following are spreading activation settings */
+
+    // spreading baseline - This sets the value at which we consider spread too small.
+    spreading_baseline = new soar_module::decimal_param("spreading-baseline", 0.0001, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_baseline);
+
+    // spreading continue probability - determines the decay over edge distances when edge weights are not present.
+    spreading_continue_probability = new soar_module::decimal_param("spreading-continue-probability", 0.9, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_continue_probability);
+
+    // spreading limit - a limit to how many nodes a single source can impact
+    spreading_limit = new soar_module::integer_param("spreading-limit", 300, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
+    add(spreading_limit);
+
+    // spreading depth limit - a limit to how many levels deep a source can spread
+    spreading_depth_limit = new soar_module::integer_param("spreading-depth-limit", 10, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
+    add(spreading_depth_limit);
+
+    // spreading loop avoidance - whether or not loopy propagation is avoided
+    spreading_loop_avoidance = new soar_module::boolean_param("spreading-loop-avoidance", off, new soar_module::f_predicate<boolean>());
+    add(spreading_loop_avoidance);
+
+    // inhibition for use with base-level activation. defaults to off.
+    base_inhibition = new soar_module::boolean_param("base-inhibition", off, new soar_module::f_predicate<boolean>());
+    add(base_inhibition);
+
+    // using working memory activation for wmes that are LTI-to-LTI edges instanced in working memory to increase edge weight in SMEM
+    spreading_edge_updating = new soar_module::boolean_param("spreading-edge-updating", off, new soar_module::f_predicate<boolean>());
+    add(spreading_edge_updating);
+
+    spreading_edge_update_factor = new soar_module::decimal_param("spreading-edge-update-factor", 0.99, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_edge_update_factor);
+
+    // using wma to supply the starting magnitude for a source of spread
+    spreading_wma_source = new soar_module::boolean_param("spreading-wma-source", off, new soar_module::f_predicate<boolean>());
+    add(spreading_wma_source);
 }
 
 //
@@ -226,6 +270,10 @@ smem_stat_container::smem_stat_container(agent* new_agent): soar_module::stat_co
 
     edges = new soar_module::integer_stat("edges", 0, new smem_db_predicate< int64_t >(thisAgent));
     add(edges);
+
+    // A count of spread trajectories
+    trajectories_total = new soar_module::integer_stat("trajectories_total", 0, new soar_module::f_predicate<int64_t>());
+    add(trajectories_total);
 }
 
 //
@@ -297,6 +345,17 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-update-policy", base_update->get_string(), 55).c_str(), "stable, naive, incremental");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-incremental-threshes", base_incremental_threshes->get_string(), 55).c_str(), "integer > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("thresh", thresh->get_string(), 55).c_str(), "integer >= 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-inhibition", base_inhibition->get_string(), 55).c_str(), "on, off");
+    outputManager->printa(thisAgent, "------------ Experimental Spreading Activation --------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading", spreading->get_string(), 55).c_str(), "on, off");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-limit", spreading_limit->get_string(), 55).c_str(), "integer > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-depth-limit", spreading_depth_limit->get_string(), 55).c_str(), "integer > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-baseline", spreading_baseline->get_string(), 55).c_str(), "1 > decimal > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-continue-probability", spreading_continue_probability->get_string(), 55).c_str(), "1 > decimal > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-loop-avoidance", spreading_loop_avoidance->get_string(), 55).c_str(), "on, off");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-edge-updating", spreading_edge_updating->get_string(), 55).c_str(), "on, off");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-wma-source", spreading_wma_source->get_string(), 55).c_str(), "on, off");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-edge-update-factor", spreading_edge_update_factor->get_string(), 55).c_str(), "1 > decimal > 0");
     outputManager->printa(thisAgent, "------------- Database Optimization Settings ----------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("lazy-commit", lazy_commit->get_string(), 55).c_str(), "Delay writing semantic store until exit");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("optimization", opt->get_string(), 55).c_str(), "safety, performance");

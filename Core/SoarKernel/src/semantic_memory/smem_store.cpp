@@ -92,7 +92,33 @@ ltm_slot* SMem_Manager::make_ltm_slot(ltm_slot_map* slots, Symbol* attr)
     return (*s);
 }
 
-void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
+inline void SMem_Manager::count_child_connection(std::map<uint64_t,int64_t>* children, uint64_t child_lti_id)
+{
+    std::map<uint64_t, int64_t>::iterator child_location = children->find(child_lti_id);
+    if (child_location != children->end())
+    {
+        (*children)[child_lti_id] = child_location->second + 1;
+    }
+    else
+    {
+        (*children)[child_lti_id] = 1;
+    }
+}
+
+inline void SMem_Manager::count_child_connection(std::map<uint64_t,uint64_t>* children, uint64_t child_lti_id)
+{
+    std::map<uint64_t, uint64_t>::iterator child_location = children->find(child_lti_id);
+    if (child_location != children->end())
+    {
+        (*children)[child_lti_id] = child_location->second + 1;
+    }
+    else
+    {
+        (*children)[child_lti_id] = 1;
+    }
+}
+
+void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>* old_children = NULL)
 {
     // adjust attr, attr/value counts
     {
@@ -121,6 +147,10 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
             }
             else
             {
+                if (old_children != NULL)
+                {
+                    count_child_connection(old_children, SQL->web_all->column_int(2));
+                }
                 // adjust in opposite direction ( adjust, attribute, lti )
                 SQL->wmes_lti_frequency_update->bind_int(1, -1);
                 SQL->wmes_lti_frequency_update->bind_int(2, child_attr);
@@ -152,14 +182,25 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
 
 /* This function now requires that all LTI IDs are set up beforehand */
 
-void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, bool activate)
+void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, bool activate, smem_storage_type store_type)
 {
     assert(pLTI_ID);
+    std::map<uint64_t, uint64_t>* old_children = NULL;
+    std::map<uint64_t, int64_t>* new_children = NULL;
+    if (settings->spreading->get_value() == on)
+    {
+        new_children = new std::map<uint64_t, int64_t>();
+    }
     // if remove children, disconnect ltm -> no existing edges
     // else, need to query number of existing edges
     uint64_t existing_edges = 0;
+    uint64_t existing_lti_edges = 0;
     if (remove_old_children)
     {
+        if (settings->spreading->get_value() == on)
+        {
+            old_children = new std::map<uint64_t, uint64_t>();
+        }
         disconnect_ltm(pLTI_ID);
 
         // provide trace output
@@ -180,6 +221,15 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
         existing_edges = static_cast<uint64_t>(SQL->act_lti_child_ct_get->column_int(0));
 
         SQL->act_lti_child_ct_get->reinitialize();
+
+        //
+
+        SQL->act_lti_child_lti_ct_get->bind_int(1,pLTI_ID);
+        SQL->act_lti_child_lti_ct_get->execute();
+
+        existing_lti_edges = static_cast<uint64_t>(SQL->act_lti_child_lti_ct_get->column_int(0));
+
+        SQL->act_lti_child_lti_ct_get->reinitialize();
     }
 
     // get new edges
@@ -187,6 +237,9 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     std::set<smem_hash_id> attr_new;
     std::set< std::pair<smem_hash_id, smem_hash_id> > const_new;
     std::set< std::pair<smem_hash_id, uint64_t> > lti_new;
+    bool ever_updated_edge_weight = false;
+    bool added_edges = false;
+    std::unordered_map<uint64_t, double> edge_weights;
     {
         ltm_slot_map::iterator s;
         ltm_slot::iterator v;
@@ -250,12 +303,18 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                 }
                 else
                 {
+                    added_edges = true;
                     value_lti = (*v)->val_lti.val_value->lti_id;
                     assert(value_lti);
+                    double edge_weight = (*v)->val_lti.edge_weight;
 
                     if (remove_old_children)
                     {
                         lti_new.insert(std::make_pair(attr_hash, value_lti));
+                        if (new_children != NULL)
+                        {
+                            count_child_connection(new_children, value_lti);
+                        }
                     }
                     else
                     {
@@ -267,9 +326,23 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                         if (SQL->web_lti_child->execute(soar_module::op_reinit) != soar_module::row)
                         {
                             lti_new.insert(std::make_pair(attr_hash, value_lti));
+                            if (new_children != NULL)
+                            {
+                                count_child_connection(new_children, value_lti);
+                            }
                         }
                     }
 
+                    //We have an edge_weight and a parent and a child. This is where we set the edge_weight to the nonfan value.
+                    if (edge_weight != 0.0)
+                    {
+                        /*SQL->web_update_child_edge->bind_double(1,edge_weight);
+                        SQL->web_update_child_edge->bind_int(2,pLTI_ID);
+                        SQL->web_update_child_edge->bind_int(3,value_lti);
+                        SQL->web_update_child_edge->execute(soar_module::op_reinit);*/
+                        edge_weights[value_lti] = edge_weight;
+                        ever_updated_edge_weight = true;
+                    }
                     // provide trace output
                     if (thisAgent->trace_settings[ TRACE_SMEM_SYSPARAM ])
                     {
@@ -284,6 +357,44 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
         }
     }
 
+    /*
+     * Here, the delta between what the children of the lti used to be and
+     * what they are now is calculated and used to determine what spreading
+     * likelihoods need to be recalculated (since the network structure that
+     * generated them is no longer valid).
+     * */
+    if (new_children != NULL)
+    {
+        if (remove_old_children)
+        {//This is when the delta needs to be calculated.
+            /*
+             * Delta: Loop over the new children.
+             * Check if they are also old children.
+             * If so, calculate the delta and store that into ne children as the new value.
+             * At the same time, erase the old children if it showed up (after calculating the delta)
+             * then, loop through the remaining old children and just add those values as negative.
+             */
+            assert(old_children != NULL);
+
+            std::map<uint64_t, int64_t>::iterator new_child;
+            for (new_child = new_children->begin(); new_child != new_children->end(); ++new_child)
+            {
+                if (old_children->find(new_child->first) != old_children->end())
+                {
+                    (*new_children)[new_child->first] = (*new_children)[new_child->first] - (*old_children)[new_child->first];
+                    old_children->erase(new_child->first);
+                }
+            }
+            std::map<uint64_t, uint64_t>::iterator old_child;
+            for (old_child = old_children->begin(); old_child != old_children->end(); ++old_child)
+            {
+                (*new_children)[old_child->first] = old_child->second;
+            }
+        }
+        // new_children contains the set of changes to memory. We use those to invalidate spreading trajectories.
+        invalidate_trajectories(pLTI_ID, new_children);
+    }
+
     // activation function assumes proper thresholding state
     // thus, consider four cases of augmentation counts (w.r.t. thresh)
     // 1. before=below, after=below: good (activation will update smem_augmentations)
@@ -293,6 +404,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     //
     // hence, we detect + handle case #2 here
     uint64_t new_edges = (existing_edges + const_new.size() + lti_new.size());
+    uint64_t new_lti_edges = existing_lti_edges + lti_new.size();
     bool after_above;
     double web_act = static_cast<double>(SMEM_ACT_LOW);
     {
@@ -318,11 +430,26 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
         SQL->act_lti_child_ct_set->bind_int(2, pLTI_ID);
         SQL->act_lti_child_ct_set->execute(soar_module::op_reinit);
     }
+    {
+        SQL->act_lti_child_lti_ct_set->bind_int(1, new_lti_edges);
+        SQL->act_lti_child_lti_ct_set->bind_int(2, pLTI_ID);
+        SQL->act_lti_child_lti_ct_set->execute(soar_module::op_reinit);
+    }
+
+
+
+    //Put the initialization of the entry in the prohibit table here.
+    //This doesn't create a prohibt. It creates an entry in the prohibit tracking table.
+    {
+        SQL->prohibit_add->bind_int(1,pLTI_ID);
+        SQL->prohibit_add->execute(soar_module::op_reinit);
+    }
 
     // now we can safely activate the lti
     if (activate)
     {
-        double lti_act = lti_activate(pLTI_ID, true, new_edges);
+        bool activate_on_add = (settings->activate_on_add->get_value() == on);
+        double lti_act = lti_activate(pLTI_ID, activate_on_add, new_edges);
 
         if (!after_above)
         {
@@ -344,6 +471,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     SQL->web_add->bind_int(3, p->second);
                     SQL->web_add->bind_int(4, SMEM_AUGMENTATIONS_NULL);
                     SQL->web_add->bind_double(5, web_act);
+                    SQL->web_add->bind_double(6, 0.0);
                     SQL->web_add->execute(soar_module::op_reinit);
                 }
 
@@ -382,6 +510,20 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     SQL->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
                     SQL->web_add->bind_int(4, p->second);
                     SQL->web_add->bind_double(5, web_act);
+                    if (ever_updated_edge_weight && edge_weights.find(p->second) != edge_weights.end())
+                    {
+                        /*
+                         * This will currently silently fail if the user doesn't supply all of the edge weights
+                         *  that they should. Some will be initialized to fan and others will not.
+                         *  The first round of normalization will "fix" this, in that things won't "break",
+                         *  but the values will be different than what the user presumably intended.
+                         */
+                        SQL->web_add->bind_double(6, edge_weights[p->second]);
+                    }
+                    else
+                    {
+                        SQL->web_add->bind_double(6, 1.0/((double)new_lti_edges));
+                    }
                     SQL->web_add->execute(soar_module::op_reinit);
                 }
 
@@ -433,6 +575,22 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
         {
             statistics->edges->set_value(statistics->edges->get_value() + (const_new.size() + lti_new.size()));
         }
+    }
+    //For now, on a change to the network for an lti, I reset the edge weights.
+    if (added_edges && !ever_updated_edge_weight)
+    {
+        double fan = 1.0/((double)new_lti_edges);
+        SQL->web_update_all_lti_child_edges->bind_double(1,fan);
+        SQL->web_update_all_lti_child_edges->bind_int(2,pLTI_ID);
+        SQL->web_update_all_lti_child_edges->execute(soar_module::op_reinit);
+    }
+    if (old_children != NULL)
+    {
+        delete old_children;
+    }
+    if (new_children != NULL)
+    {
+        delete new_children;
     }
 }
 

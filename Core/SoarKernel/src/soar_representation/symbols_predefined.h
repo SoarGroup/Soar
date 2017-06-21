@@ -104,6 +104,7 @@ typedef struct predefined_sym_struct {
         Symbol*             smem_sym_depth_retrieved;
         Symbol*             smem_sym_status;
         Symbol*             smem_sym_success;
+        Symbol*             smem_sym_act;
         Symbol*             smem_sym_failure;
         Symbol*             smem_sym_bad_cmd;
 
