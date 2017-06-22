@@ -454,15 +454,18 @@ void print_action_list(agent* thisAgent, action* actions,
                 {
                     ch++;
                 }
-                *(ch++) = ' ';
-                *(ch++) = preference_to_char(a->preference_type);
-                if (preference_is_binary(a->preference_type))
+                if ((a->preference_type == REJECT_PREFERENCE_TYPE) || (rhs_value_is_symbol(a->attr) && (rhs_value_to_symbol(a->attr) == thisAgent->symbolManager->soarSymbols.operator_symbol)))
                 {
                     *(ch++) = ' ';
-                    thisAgent->outputManager->rhs_value_to_cstring(a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
-                    while (*ch)
+                    *(ch++) = preference_to_char(a->preference_type);
+                    if (preference_is_binary(a->preference_type))
                     {
-                        ch++;
+                        *(ch++) = ' ';
+                        thisAgent->outputManager->rhs_value_to_cstring(a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+                        while (*ch)
+                        {
+                            ch++;
+                        }
                     }
                 }
                 *ch = 0;
