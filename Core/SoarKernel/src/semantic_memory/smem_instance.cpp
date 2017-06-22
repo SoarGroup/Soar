@@ -353,7 +353,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             if (visited->find((*iterator)->id->LTI_ID) == visited->end())
             {
                 visited->insert((*iterator)->id->LTI_ID);
-                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
+                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);//choosing not to bla children of retrived node
             }
         }
         dprint(DT_SMEM_INSTANCE, "Done installing memory called for %y %u %y.\n", state, pLTI_ID, sti);

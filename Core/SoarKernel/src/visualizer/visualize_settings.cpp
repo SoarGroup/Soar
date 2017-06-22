@@ -106,8 +106,8 @@ void Viz_Parameters::print_visualization_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("line-style", line_style->get_value(), 51).c_str(), "GraphViz line style that will be used");
     outputManager->printa_sf(thisAgent, "separate-states                   %-%s%-%s\n", capitalizeOnOff(separate_states->get_value()), "Create links between different goal states");
     outputManager->printa_sf(thisAgent, "architectural-wmes                %-%s%-%s\n", capitalizeOnOff(architectural_wmes->get_value()), "Include WMEs created by the Soar architecture");
-    outputManager->printa_sf(thisAgent, "color-identities                  %-%s%-%s\n", capitalizeOnOff(color_identities->get_value()), "Color identities differently in visualization");
-    outputManager->printa_sf(thisAgent, "use-joined-identities             %-%s%-%s\n", capitalizeOnOff(use_joined_identities->get_value()), "Color using final joined identity sets");
+    outputManager->printa_sf(thisAgent, "color-identities                  %-%s%-%s\n", capitalizeOnOff(color_identities->get_value()), "Color identities differently");
+    outputManager->printa_sf(thisAgent, "use-joined-identities             %-%s%-%s\n", capitalizeOnOff(use_joined_identities->get_value()), "Color using final joined identities");
     outputManager->printa_sf(thisAgent, "------------------ File Handling ------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("file-name", file_name->get_value(), 51).c_str(), "");
     outputManager->printa_sf(thisAgent, "use-same-file                   %-%s%-%s\n", capitalizeOnOff(use_same_file->get_value()), "Whether to create new files each time");

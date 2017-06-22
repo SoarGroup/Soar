@@ -376,11 +376,13 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         wme_set cue_wmes;
         symbol_triple_list meta_wmes;
         symbol_triple_list retrieval_wmes;
+        std::list<Symbol*> root_cue_id_list;
+        root_cue_id_list.push_back(root_cue_id);
         (*result_message) = new std::string();
 
         std::list<uint64_t> match_ids;
 
-        process_query(NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
+        process_query(NIL, root_cue_id_list, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
 
         if (!match_ids.empty())
         {
@@ -945,6 +947,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
                             do
                             {
+                                bool dont_consume = false;
                                 // value by type
                                 l_ltm_value = NIL;
                                 if ((lexer->current_lexeme.type == STR_CONSTANT_LEXEME)  || (lexer->current_lexeme.type == IDENTIFIER_LEXEME))
@@ -1040,11 +1043,13 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
                                                 // add to ltms
                                                 (*str_to_LTMs)[temp_key2] = l_ltm_temp;
+                                                //lexer->get_lexeme();
 
                                                 // possibly a newbie (could be a self-loop)
                                                 newbies->insert(l_ltm_temp);
                                             }
                                         }
+
                                     } else {
                                         /* Bad clause.  Print it out */
                                         thisAgent->outputManager->printa_sf(thisAgent, "Value of smem -add clause for @%u is invalid: %s\n", l_ltm->lti_id, lexer->current_lexeme.string());
@@ -1054,7 +1059,47 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                 if (l_ltm_value != NIL)
                                 {
                                     // consume
+                                    /*if (!dont_consume)
+                                    {
+                                        lexer->get_lexeme();
+                                    }*/
                                     lexer->get_lexeme();
+                                    if (lexer->current_lexeme.type == L_PAREN_LEXEME)
+                                    {
+                                        lexer->get_lexeme();
+                                        if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
+                                        {
+                                            l_ltm_value->val_lti.edge_weight = lexer->current_lexeme.float_val;
+                                        }
+                                        else if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
+                                        {
+                                            l_ltm_value->val_lti.edge_weight = static_cast<double>(lexer->current_lexeme.int_val);
+                                        }
+                                        else
+                                        {
+                                            thisAgent->outputManager->printa_sf(thisAgent, "Edge weight input for smem -add clause for @%u is not float or integer: %s\n", l_ltm->lti_id, lexer->current_lexeme.string());
+                                            //error: The syntax suggested that an edge-weight value was going to be provided
+                                            //but this was not encountered
+                                        }
+                                        lexer->get_lexeme();
+                                        if (lexer->current_lexeme.type == R_PAREN_LEXEME)
+                                        {
+                                            lexer->get_lexeme();
+                                        }
+                                        else
+                                        {
+                                            //horrible syntax error. missing right paren. fix.
+                                            thisAgent->outputManager->printa_sf(thisAgent, "Edge weight input for smem -add clause for @%u is missing right paren.\n", l_ltm->lti_id);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /*if (lexer->current_lexeme.type == R_PAREN_LEXEME)
+                                        {
+                                            dont_consume = true;
+                                        }*/
+                                        l_ltm_value->val_lti.edge_weight = 0;
+                                    }
 
                                     // add to appropriate slot
                                     l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);
@@ -1170,4 +1215,12 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
     }
 
     return return_val;
+}
+
+uint64_t SMem_Manager::spread_size()
+{
+    SQL->calc_spread_size_debug_cmd->execute();
+    uint64_t number_spread_elements = SQL->calc_spread_size_debug_cmd->column_int(0);
+    SQL->calc_spread_size_debug_cmd->reinitialize();
+    return number_spread_elements;
 }

@@ -1,24 +1,29 @@
 =====================
 TclSoarLib
 Author: Mazin Assanie
-9/30/16
+5/30/17
 =====================
 
 - Seamlessly turns Soar prompt into a Tcl prompt with a single command.
-  -	Uses a combination of C++ and Tcl code.
-  -	Processes commands in embedded Tcl interpreters, which calls Soar commands
-    as needed.
-  -	Productions can make Tcl calls by writing “(exec tcl  | <Tcl code> |)”
-    clauses
-  on the RHS of rules.  Soar symbols and variables can be include in RHS item.
+- Productions can make Tcl calls by writing “(exec tcl  | <Tcl code> |)” clauses on the RHS of rules.  Soar symbols and variables can be include in RHS item.
+- Provides Tcl capabilities to both local and remote clients, including the java-based debugger.
+- Processes Tcl commands from both the Soar command line and any files sourced.
+- Each agent has its own Tcl interpreter.
+- Tested on OSX Yosemite, Windows 7, and Ubuntu 12.04.
 - Very simple installation process.
   - The user must simply have ActiveTcl 8.6 installed and the TclSoarlib files
     in the same directory as the latest Soar dll.
-- Provides Tcl capabilities to both local and remote clients, including the
-  java-based C-Soar debugger.
--	Processes Tcl commands from both the Soar command line and any files sourced.
-- Each agent has its own Tcl interpreter.
--	Tested on OSX Yosemite, Windows 7, and Ubuntu 12.04.
+
+===================
+Binary Installation
+===================
+
+1.  Install ActiveTcl 8.6+ (http://www.activestate.com/activetcl/downloads)
+    - We recommend that you use the default install location.
+
+2.  Download the SoarSuite binary for your platform from the Soar wiki
+    - http://soar.eecs.umich.edu/articles/downloads/soar-suite
+    - TclSoarLib is automatically included in the SoarSuite download.
 
 =====
 Usage
@@ -28,11 +33,7 @@ To enable:
 
 From any soar prompt enter the command:
 
-% tcl on
-
-To disable:
-
-% tcl off
+% soar tcl on
 
 IMPORTANT NOTE:
 
@@ -42,17 +43,6 @@ plan to source files that contain tcl commands, you must turn on tcl through the
 settings file or in a separate command issued prior to your source command.  Due
 to some technical limitation, Soar cannot currently source a file that both turns 
 on Tcl and uses it immediately.
-
-===================
-Binary Installation
-===================
-
-1.	Install ActiveTcl 8.6+ (http://www.activestate.com/activetcl/downloads)
-    - We recommend that you use the default install location.
-
-2.	Download the SoarSuite binary for your platform from the Soar wiki
-    - http://soar.eecs.umich.edu/articles/downloads/soar-suite
-    - TclSoarLib is automatically included in the SoarSuite download.
 
 =========================
 Building from Source Code
@@ -87,12 +77,7 @@ scons build script.  But if you do need to...
 Known Bugs
 ==========
 
-1.  Using soar aliases will prevent the command from being interpreted by Tcl
-    (workaround is not to use alias in commands that need tcl support, for example,
-    use 'print $tcl_var' instead of 'p $tcl_var'
-2.  If run from the Soar java debugger, the system will crash on exit when cleaning
-    up Tcl.  (This is an unresolved issue with the wrong thread deleting Tcl.)
-3.  Turning off tcl mode is currently disabled as it causes a crash on some systems.
+1.  Turning off tcl mode is currently disabled as it causes a crash on some systems.
 
 =======
 Caveats

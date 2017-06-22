@@ -26,7 +26,7 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
     add(warnings);
     agent_writes = new soar_module::boolean_param("agent-writes", pOutput_sysparams[OM_AGENT_WRITES] ? on : off, new soar_module::f_predicate<boolean>());
     add(agent_writes);
-    agent_traces = new soar_module::boolean_param("agent-trace",on, new soar_module::f_predicate<boolean>());
+    agent_traces = new soar_module::boolean_param("agent-logs",on, new soar_module::f_predicate<boolean>());
     add(agent_traces);
 
     /* Actual values initialized before printing because agent might not be created yet, and it is agent-specific */
@@ -145,9 +145,9 @@ const std::string OM_Parameters::get_agent_channel_string(agent* thisAgent)
     }
     if (allEnabled)
     {
-        tempStringStream << "All agent trace channels enabled.";
+        tempStringStream << "All agent log channels enabled.";
     } else {
-        tempStringStream << "All agent trace channels enabled except ";
+        tempStringStream << "All agent log channels enabled except ";
         bool isFirst = true;
         for (int i=0; i < maxAgentTraces; ++i)
         {
@@ -193,7 +193,7 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("console", stdout_enabled->get_string(), 55).c_str(), "Send output to std::out for debugging");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("callbacks", callback_enabled->get_string(), 55).c_str(), "Send output to standard agent print callback");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "%s   %-Controls whether agent trace channel prints\n", concatJustified("agent-trace", "<channel-number> [on | off]", 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-Controls whether agent trace channel prints\n", concatJustified("agent-logs", "<channel-number> [on | off]", 55).c_str());
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("agent-writes", agent_writes->get_string(), 55).c_str(), "Print output from RHS (write) function");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output log", "[--append | -A] <filename>", 55).c_str(), "Log all output to file");

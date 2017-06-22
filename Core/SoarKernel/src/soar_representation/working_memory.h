@@ -35,7 +35,9 @@
 
 #include "debug_inventories.h"
 #include "stl_typedefs.h"
+#include "semantic_memory.h"
 #include "symbol.h"
+
 
 void reset_wme_timetags(agent* thisAgent);
 wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
