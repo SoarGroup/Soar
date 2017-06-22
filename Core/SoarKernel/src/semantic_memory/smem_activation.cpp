@@ -1412,8 +1412,12 @@ void SMem_Manager::invalidate_from_lti(uint64_t invalid_parent)
 
 void SMem_Manager::add_to_invalidate_from_lti_table(uint64_t invalid_parent)
 {
-    SQL->trajectory_invalidate_from_lti_add->bind_int(1, invalid_parent);
-    SQL->trajectory_invalidate_from_lti_add->execute(soar_module::op_reinit);
+    if (SQL->trajectory_invalidation_check_for_rows->execute() == soar_module::row)
+    {
+        SQL->trajectory_invalidate_from_lti_add->bind_int(1, invalid_parent);
+        SQL->trajectory_invalidate_from_lti_add->execute(soar_module::op_reinit);
+    }
+    SQL->trajectory_invalidation_check_for_rows->reinitialize();
 }
 
 void SMem_Manager::batch_invalidate_from_lti()

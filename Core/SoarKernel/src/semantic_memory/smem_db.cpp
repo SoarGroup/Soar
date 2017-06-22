@@ -499,6 +499,9 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     trajectory_invalidate_from_lti_add = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_invalid_parents (lti_id) VALUES (?)");
     add(trajectory_invalidate_from_lti_add);
 
+    trajectory_invalidation_check_for_rows = new soar_module::sqlite_statement(new_db,"SELECT lti_id FROM smem_invalid_parents");
+    add(trajectory_invalidation_check_for_rows);
+
     trajectory_invalidate_from_lti_clear = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_invalid_parents");
     add(trajectory_invalidate_from_lti_clear);
 
