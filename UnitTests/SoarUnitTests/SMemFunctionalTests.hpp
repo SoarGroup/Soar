@@ -120,7 +120,10 @@ public:
 	
 	TEST(testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental();
-	
+
+	TEST(testSpreadingActivation_AlphabetAgentAllOn, -1)
+    void testSpreadingActivation_AlphabetAgentAllOn();
+
 	TEST(testDbBackupAndLoadTests, -1)
 	void testDbBackupAndLoadTests();
 	
