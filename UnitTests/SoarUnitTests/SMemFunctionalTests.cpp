@@ -12,6 +12,9 @@
 #include "symbol_manager.h"
 #include "working_memory.h"
 #include "SoarHelper.hpp"
+#include "sml_Utils.h"
+#include "sml_Client.h"
+#include "sml_Names.h"
 
 void SMemFunctionalTests::setUp()
 {
@@ -315,6 +318,21 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
     result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
+}
+
+void SMemFunctionalTests::testSpreadingActivation_AlphabetAgentAllOn()
+{
+    SoarHelper::start_log(agent, "testSpreadingActivation_AlphabetAgentAllOn");
+    runTestSetup("testSpreadingActivation_AlphabetAgentAllOn");
+    agent->ExecuteCommandLine("srand 480");
+    agent->RunSelf(1650);
+    sml::ClientAnalyzedXML stats;
+    agent->ExecuteCommandLineXML("stats", &stats);
+    std::string dc_count(std::to_string(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1)));
+    std::string msg;
+    SoarHelper::close_log(agent);
+    assertTrue_msg(msg.append("testSpreadingActivation_AlphabetAgentAllOn halted too early. Letters were likely skipped. DC = ").append(dc_count).c_str(),stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1649);
+    assertTrue_msg(msg.append("testSpreadingActivation_AlphabetAgentAllOn functional test did not halt. DC = ").append(dc_count).c_str(), halted);
 }
 
 void SMemFunctionalTests::testDbBackupAndLoadTests()

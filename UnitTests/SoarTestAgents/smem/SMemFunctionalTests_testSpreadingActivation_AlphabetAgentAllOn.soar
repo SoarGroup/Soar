@@ -1,0 +1,1205 @@
+wma --set forget-wme lti
+wma --set forgetting on
+wma --set activation on
+
+smem --set activation-mode base-level
+smem --set base-update-policy naive
+smem --set spreading-depth-limit 2
+smem --set spreading-loop-avoidance on
+
+smem --set spreading-limit 1000
+
+smem --set learning on
+smem --set spreading-edge-updating on
+smem --set base-inhibition on
+smem --set spreading-wma-source on
+smem --set spreading-edge-update-factor .9
+smem --set spreading on
+
+chunk never
+
+smem -a {(<lti> ^fake-letter <something>)}
+
+sp {success
+    (state <s> ^mode recall
+               ^current-letter-lti.letter z)
+-->
+  (succeeded)
+  (halt)
+}
+
+smem -a {
+(@20 ^letter t)
+(@20 ^next @11)
+(@20 ^next @9)
+(@20 ^next @14)
+(@20 ^next @10)
+(@20 ^next @8)
+(@20 ^next @26)
+(@20 ^next @2)
+(@20 ^next @16)
+(@20 ^next @6)
+(@20 ^next @21)
+(@20 ^next @24)
+(@20 ^next @5)
+(@20 ^next @18)
+(@20 ^next @3)
+(@20 ^next @23)
+(@20 ^next @20)
+(@20 ^next @4)
+(@20 ^next @1)
+(@20 ^next @22)
+(@20 ^next @19)
+(@20 ^next @17)
+(@20 ^next @13)
+(@20 ^next @15)
+(@20 ^next @25)
+(@20 ^next @7)
+(@20 ^next @12)
+(@7 ^letter g)
+(@7 ^next @21)
+(@7 ^next @1)
+(@7 ^next @5)
+(@7 ^next @2)
+(@7 ^next @10)
+(@7 ^next @20)
+(@7 ^next @7)
+(@7 ^next @14)
+(@7 ^next @22)
+(@7 ^next @15)
+(@7 ^next @25)
+(@7 ^next @8)
+(@7 ^next @6)
+(@7 ^next @17)
+(@7 ^next @11)
+(@7 ^next @9)
+(@7 ^next @24)
+(@7 ^next @4)
+(@7 ^next @3)
+(@7 ^next @13)
+(@7 ^next @18)
+(@7 ^next @23)
+(@7 ^next @12)
+(@7 ^next @19)
+(@7 ^next @16)
+(@7 ^next @26)
+(@23 ^letter w)
+(@23 ^next @6)
+(@23 ^next @20)
+(@23 ^next @3)
+(@23 ^next @2)
+(@23 ^next @12)
+(@23 ^next @25)
+(@23 ^next @5)
+(@23 ^next @11)
+(@23 ^next @9)
+(@23 ^next @4)
+(@23 ^next @10)
+(@23 ^next @15)
+(@23 ^next @23)
+(@23 ^next @19)
+(@23 ^next @16)
+(@23 ^next @13)
+(@23 ^next @18)
+(@23 ^next @22)
+(@23 ^next @17)
+(@23 ^next @1)
+(@23 ^next @21)
+(@23 ^next @14)
+(@23 ^next @26)
+(@23 ^next @7)
+(@23 ^next @24)
+(@23 ^next @8)
+(@13 ^letter m)
+(@13 ^next @1)
+(@13 ^next @5)
+(@13 ^next @25)
+(@13 ^next @9)
+(@13 ^next @10)
+(@13 ^next @2)
+(@13 ^next @26)
+(@13 ^next @14)
+(@13 ^next @6)
+(@13 ^next @23)
+(@13 ^next @3)
+(@13 ^next @19)
+(@13 ^next @24)
+(@13 ^next @21)
+(@13 ^next @15)
+(@13 ^next @7)
+(@13 ^next @11)
+(@13 ^next @8)
+(@13 ^next @17)
+(@13 ^next @4)
+(@13 ^next @12)
+(@13 ^next @18)
+(@13 ^next @16)
+(@13 ^next @22)
+(@13 ^next @20)
+(@13 ^next @13)
+(@4 ^letter d)
+(@4 ^next @2)
+(@4 ^next @26)
+(@4 ^next @4)
+(@4 ^next @25)
+(@4 ^next @14)
+(@4 ^next @15)
+(@4 ^next @6)
+(@4 ^next @1)
+(@4 ^next @8)
+(@4 ^next @9)
+(@4 ^next @7)
+(@4 ^next @10)
+(@4 ^next @20)
+(@4 ^next @16)
+(@4 ^next @17)
+(@4 ^next @11)
+(@4 ^next @22)
+(@4 ^next @13)
+(@4 ^next @23)
+(@4 ^next @18)
+(@4 ^next @5)
+(@4 ^next @12)
+(@4 ^next @19)
+(@4 ^next @24)
+(@4 ^next @21)
+(@4 ^next @3)
+(@22 ^letter v)
+(@22 ^next @20)
+(@22 ^next @25)
+(@22 ^next @11)
+(@22 ^next @17)
+(@22 ^next @14)
+(@22 ^next @3)
+(@22 ^next @1)
+(@22 ^next @24)
+(@22 ^next @26)
+(@22 ^next @4)
+(@22 ^next @13)
+(@22 ^next @2)
+(@22 ^next @5)
+(@22 ^next @18)
+(@22 ^next @9)
+(@22 ^next @15)
+(@22 ^next @19)
+(@22 ^next @12)
+(@22 ^next @21)
+(@22 ^next @23)
+(@22 ^next @16)
+(@22 ^next @7)
+(@22 ^next @8)
+(@22 ^next @6)
+(@22 ^next @22)
+(@22 ^next @10)
+(@2 ^letter b)
+(@2 ^next @23)
+(@2 ^next @24)
+(@2 ^next @14)
+(@2 ^next @26)
+(@2 ^next @5)
+(@2 ^next @20)
+(@2 ^next @25)
+(@2 ^next @13)
+(@2 ^next @19)
+(@2 ^next @16)
+(@2 ^next @10)
+(@2 ^next @15)
+(@2 ^next @11)
+(@2 ^next @6)
+(@2 ^next @12)
+(@2 ^next @8)
+(@2 ^next @1)
+(@2 ^next @7)
+(@2 ^next @3)
+(@2 ^next @2)
+(@2 ^next @21)
+(@2 ^next @17)
+(@2 ^next @4)
+(@2 ^next @9)
+(@2 ^next @18)
+(@2 ^next @22)
+(@16 ^letter p)
+(@16 ^next @5)
+(@16 ^next @24)
+(@16 ^next @25)
+(@16 ^next @3)
+(@16 ^next @8)
+(@16 ^next @26)
+(@16 ^next @18)
+(@16 ^next @13)
+(@16 ^next @4)
+(@16 ^next @21)
+(@16 ^next @16)
+(@16 ^next @1)
+(@16 ^next @15)
+(@16 ^next @20)
+(@16 ^next @23)
+(@16 ^next @19)
+(@16 ^next @14)
+(@16 ^next @17)
+(@16 ^next @10)
+(@16 ^next @2)
+(@16 ^next @7)
+(@16 ^next @22)
+(@16 ^next @6)
+(@16 ^next @9)
+(@16 ^next @11)
+(@16 ^next @12)
+(@17 ^letter q)
+(@17 ^next @24)
+(@17 ^next @12)
+(@17 ^next @4)
+(@17 ^next @9)
+(@17 ^next @19)
+(@17 ^next @16)
+(@17 ^next @15)
+(@17 ^next @14)
+(@17 ^next @7)
+(@17 ^next @17)
+(@17 ^next @11)
+(@17 ^next @1)
+(@17 ^next @10)
+(@17 ^next @13)
+(@17 ^next @3)
+(@17 ^next @8)
+(@17 ^next @6)
+(@17 ^next @2)
+(@17 ^next @26)
+(@17 ^next @22)
+(@17 ^next @18)
+(@17 ^next @5)
+(@17 ^next @20)
+(@17 ^next @23)
+(@17 ^next @21)
+(@17 ^next @25)
+(@24 ^letter x)
+(@24 ^next @8)
+(@24 ^next @25)
+(@24 ^next @24)
+(@24 ^next @2)
+(@24 ^next @9)
+(@24 ^next @13)
+(@24 ^next @6)
+(@24 ^next @23)
+(@24 ^next @5)
+(@24 ^next @17)
+(@24 ^next @4)
+(@24 ^next @14)
+(@24 ^next @16)
+(@24 ^next @18)
+(@24 ^next @26)
+(@24 ^next @3)
+(@24 ^next @22)
+(@24 ^next @11)
+(@24 ^next @21)
+(@24 ^next @12)
+(@24 ^next @20)
+(@24 ^next @7)
+(@24 ^next @10)
+(@24 ^next @15)
+(@24 ^next @1)
+(@24 ^next @19)
+(@18 ^letter r)
+(@18 ^next @21)
+(@18 ^next @1)
+(@18 ^next @13)
+(@18 ^next @4)
+(@18 ^next @22)
+(@18 ^next @26)
+(@18 ^next @9)
+(@18 ^next @11)
+(@18 ^next @16)
+(@18 ^next @25)
+(@18 ^next @2)
+(@18 ^next @20)
+(@18 ^next @5)
+(@18 ^next @12)
+(@18 ^next @18)
+(@18 ^next @23)
+(@18 ^next @15)
+(@18 ^next @7)
+(@18 ^next @19)
+(@18 ^next @24)
+(@18 ^next @17)
+(@18 ^next @3)
+(@18 ^next @14)
+(@18 ^next @8)
+(@18 ^next @10)
+(@18 ^next @6)
+(@3 ^letter c)
+(@3 ^next @18)
+(@3 ^next @16)
+(@3 ^next @17)
+(@3 ^next @9)
+(@3 ^next @23)
+(@3 ^next @13)
+(@3 ^next @12)
+(@3 ^next @26)
+(@3 ^next @10)
+(@3 ^next @3)
+(@3 ^next @14)
+(@3 ^next @22)
+(@3 ^next @21)
+(@3 ^next @15)
+(@3 ^next @8)
+(@3 ^next @20)
+(@3 ^next @7)
+(@3 ^next @11)
+(@3 ^next @2)
+(@3 ^next @19)
+(@3 ^next @24)
+(@3 ^next @25)
+(@3 ^next @5)
+(@3 ^next @4)
+(@3 ^next @6)
+(@3 ^next @1)
+(@1 ^letter a)
+(@1 ^next @5)
+(@1 ^next @4)
+(@1 ^next @11)
+(@1 ^next @23)
+(@1 ^next @20)
+(@1 ^next @9)
+(@1 ^next @22)
+(@1 ^next @16)
+(@1 ^next @10)
+(@1 ^next @26)
+(@1 ^next @8)
+(@1 ^next @19)
+(@1 ^next @25)
+(@1 ^next @18)
+(@1 ^next @6)
+(@1 ^next @14)
+(@1 ^next @7)
+(@1 ^next @13)
+(@1 ^next @12)
+(@1 ^next @2)
+(@1 ^next @24)
+(@1 ^next @17)
+(@1 ^next @3)
+(@1 ^next @1)
+(@1 ^next @21)
+(@1 ^next @15)
+(@14 ^letter n)
+(@14 ^next @3)
+(@14 ^next @19)
+(@14 ^next @8)
+(@14 ^next @4)
+(@14 ^next @26)
+(@14 ^next @7)
+(@14 ^next @12)
+(@14 ^next @5)
+(@14 ^next @13)
+(@14 ^next @14)
+(@14 ^next @24)
+(@14 ^next @2)
+(@14 ^next @25)
+(@14 ^next @11)
+(@14 ^next @1)
+(@14 ^next @22)
+(@14 ^next @21)
+(@14 ^next @10)
+(@14 ^next @20)
+(@14 ^next @15)
+(@14 ^next @23)
+(@14 ^next @9)
+(@14 ^next @6)
+(@14 ^next @17)
+(@14 ^next @18)
+(@14 ^next @16)
+(@9 ^letter i)
+(@9 ^next @15)
+(@9 ^next @9)
+(@9 ^next @26)
+(@9 ^next @3)
+(@9 ^next @24)
+(@9 ^next @6)
+(@9 ^next @4)
+(@9 ^next @18)
+(@9 ^next @13)
+(@9 ^next @17)
+(@9 ^next @5)
+(@9 ^next @11)
+(@9 ^next @22)
+(@9 ^next @7)
+(@9 ^next @21)
+(@9 ^next @10)
+(@9 ^next @19)
+(@9 ^next @12)
+(@9 ^next @1)
+(@9 ^next @23)
+(@9 ^next @8)
+(@9 ^next @25)
+(@9 ^next @2)
+(@9 ^next @16)
+(@9 ^next @14)
+(@9 ^next @20)
+(@11 ^letter k)
+(@11 ^next @9)
+(@11 ^next @5)
+(@11 ^next @13)
+(@11 ^next @3)
+(@11 ^next @25)
+(@11 ^next @1)
+(@11 ^next @19)
+(@11 ^next @2)
+(@11 ^next @11)
+(@11 ^next @7)
+(@11 ^next @18)
+(@11 ^next @21)
+(@11 ^next @14)
+(@11 ^next @8)
+(@11 ^next @20)
+(@11 ^next @6)
+(@11 ^next @16)
+(@11 ^next @26)
+(@11 ^next @4)
+(@11 ^next @10)
+(@11 ^next @22)
+(@11 ^next @24)
+(@11 ^next @23)
+(@11 ^next @15)
+(@11 ^next @17)
+(@11 ^next @12)
+(@10 ^letter j)
+(@10 ^next @15)
+(@10 ^next @17)
+(@10 ^next @21)
+(@10 ^next @12)
+(@10 ^next @10)
+(@10 ^next @20)
+(@10 ^next @26)
+(@10 ^next @3)
+(@10 ^next @14)
+(@10 ^next @24)
+(@10 ^next @25)
+(@10 ^next @1)
+(@10 ^next @4)
+(@10 ^next @5)
+(@10 ^next @19)
+(@10 ^next @2)
+(@10 ^next @22)
+(@10 ^next @16)
+(@10 ^next @9)
+(@10 ^next @13)
+(@10 ^next @8)
+(@10 ^next @11)
+(@10 ^next @18)
+(@10 ^next @7)
+(@10 ^next @6)
+(@10 ^next @23)
+(@25 ^letter y)
+(@25 ^next @12)
+(@25 ^next @26)
+(@25 ^next @20)
+(@25 ^next @16)
+(@25 ^next @22)
+(@25 ^next @25)
+(@25 ^next @10)
+(@25 ^next @19)
+(@25 ^next @1)
+(@25 ^next @14)
+(@25 ^next @21)
+(@25 ^next @5)
+(@25 ^next @6)
+(@25 ^next @3)
+(@25 ^next @11)
+(@25 ^next @8)
+(@25 ^next @9)
+(@25 ^next @4)
+(@25 ^next @13)
+(@25 ^next @7)
+(@25 ^next @18)
+(@25 ^next @15)
+(@25 ^next @23)
+(@25 ^next @17)
+(@25 ^next @24)
+(@25 ^next @2)
+(@8 ^letter h)
+(@8 ^next @15)
+(@8 ^next @23)
+(@8 ^next @9)
+(@8 ^next @13)
+(@8 ^next @21)
+(@8 ^next @14)
+(@8 ^next @8)
+(@8 ^next @3)
+(@8 ^next @6)
+(@8 ^next @26)
+(@8 ^next @5)
+(@8 ^next @24)
+(@8 ^next @2)
+(@8 ^next @7)
+(@8 ^next @12)
+(@8 ^next @10)
+(@8 ^next @18)
+(@8 ^next @17)
+(@8 ^next @22)
+(@8 ^next @20)
+(@8 ^next @1)
+(@8 ^next @16)
+(@8 ^next @25)
+(@8 ^next @19)
+(@8 ^next @11)
+(@8 ^next @4)
+(@6 ^letter f)
+(@6 ^next @16)
+(@6 ^next @8)
+(@6 ^next @17)
+(@6 ^next @21)
+(@6 ^next @5)
+(@6 ^next @12)
+(@6 ^next @7)
+(@6 ^next @2)
+(@6 ^next @19)
+(@6 ^next @25)
+(@6 ^next @11)
+(@6 ^next @10)
+(@6 ^next @3)
+(@6 ^next @9)
+(@6 ^next @23)
+(@6 ^next @26)
+(@6 ^next @20)
+(@6 ^next @18)
+(@6 ^next @14)
+(@6 ^next @6)
+(@6 ^next @4)
+(@6 ^next @24)
+(@6 ^next @13)
+(@6 ^next @15)
+(@6 ^next @1)
+(@6 ^next @22)
+(@15 ^letter o)
+(@15 ^next @19)
+(@15 ^next @7)
+(@15 ^next @15)
+(@15 ^next @8)
+(@15 ^next @24)
+(@15 ^next @23)
+(@15 ^next @2)
+(@15 ^next @9)
+(@15 ^next @10)
+(@15 ^next @18)
+(@15 ^next @16)
+(@15 ^next @21)
+(@15 ^next @1)
+(@15 ^next @20)
+(@15 ^next @3)
+(@15 ^next @11)
+(@15 ^next @13)
+(@15 ^next @4)
+(@15 ^next @5)
+(@15 ^next @25)
+(@15 ^next @22)
+(@15 ^next @26)
+(@15 ^next @6)
+(@15 ^next @12)
+(@15 ^next @14)
+(@15 ^next @17)
+(@19 ^letter s)
+(@19 ^next @23)
+(@19 ^next @22)
+(@19 ^next @7)
+(@19 ^next @5)
+(@19 ^next @12)
+(@19 ^next @4)
+(@19 ^next @15)
+(@19 ^next @10)
+(@19 ^next @6)
+(@19 ^next @3)
+(@19 ^next @13)
+(@19 ^next @1)
+(@19 ^next @25)
+(@19 ^next @9)
+(@19 ^next @11)
+(@19 ^next @17)
+(@19 ^next @24)
+(@19 ^next @19)
+(@19 ^next @2)
+(@19 ^next @16)
+(@19 ^next @18)
+(@19 ^next @14)
+(@19 ^next @26)
+(@19 ^next @20)
+(@19 ^next @21)
+(@19 ^next @8)
+(@21 ^letter u)
+(@21 ^next @16)
+(@21 ^next @4)
+(@21 ^next @11)
+(@21 ^next @13)
+(@21 ^next @10)
+(@21 ^next @26)
+(@21 ^next @8)
+(@21 ^next @22)
+(@21 ^next @24)
+(@21 ^next @1)
+(@21 ^next @6)
+(@21 ^next @7)
+(@21 ^next @2)
+(@21 ^next @5)
+(@21 ^next @9)
+(@21 ^next @3)
+(@21 ^next @20)
+(@21 ^next @18)
+(@21 ^next @21)
+(@21 ^next @17)
+(@21 ^next @19)
+(@21 ^next @25)
+(@21 ^next @14)
+(@21 ^next @15)
+(@21 ^next @12)
+(@21 ^next @23)
+(@5 ^letter e)
+(@5 ^next @16)
+(@5 ^next @18)
+(@5 ^next @26)
+(@5 ^next @13)
+(@5 ^next @1)
+(@5 ^next @24)
+(@5 ^next @15)
+(@5 ^next @25)
+(@5 ^next @6)
+(@5 ^next @7)
+(@5 ^next @4)
+(@5 ^next @5)
+(@5 ^next @9)
+(@5 ^next @23)
+(@5 ^next @2)
+(@5 ^next @8)
+(@5 ^next @22)
+(@5 ^next @20)
+(@5 ^next @17)
+(@5 ^next @12)
+(@5 ^next @11)
+(@5 ^next @3)
+(@5 ^next @19)
+(@5 ^next @14)
+(@5 ^next @10)
+(@5 ^next @21)
+(@12 ^letter l)
+(@12 ^next @5)
+(@12 ^next @7)
+(@12 ^next @9)
+(@12 ^next @22)
+(@12 ^next @17)
+(@12 ^next @1)
+(@12 ^next @10)
+(@12 ^next @6)
+(@12 ^next @11)
+(@12 ^next @13)
+(@12 ^next @23)
+(@12 ^next @4)
+(@12 ^next @24)
+(@12 ^next @25)
+(@12 ^next @21)
+(@12 ^next @3)
+(@12 ^next @12)
+(@12 ^next @19)
+(@12 ^next @16)
+(@12 ^next @2)
+(@12 ^next @8)
+(@12 ^next @26)
+(@12 ^next @18)
+(@12 ^next @20)
+(@12 ^next @14)
+(@12 ^next @15)
+(@26 ^letter z)
+(@26 ^next @17)
+(@26 ^next @23)
+(@26 ^next @8)
+(@26 ^next @25)
+(@26 ^next @10)
+(@26 ^next @5)
+(@26 ^next @18)
+(@26 ^next @11)
+(@26 ^next @12)
+(@26 ^next @7)
+(@26 ^next @1)
+(@26 ^next @26)
+(@26 ^next @24)
+(@26 ^next @21)
+(@26 ^next @6)
+(@26 ^next @14)
+(@26 ^next @2)
+(@26 ^next @20)
+(@26 ^next @15)
+(@26 ^next @19)
+(@26 ^next @9)
+(@26 ^next @16)
+(@26 ^next @4)
+(@26 ^next @22)
+(@26 ^next @13)
+(@26 ^next @3)
+}
+
+
+sp {propose*transition-to-rehearse-again
+(state <s> ^current-letter z
+           ^current-letter-lti <whatever>
+           ^mode rehearse
+          -^rehearsed 8)
+-->
+(<s> ^operator <o> + <)
+(<o> ^name transition-to-rehearse-again)
+}
+
+sp {apply*transition-to-rehearse-again
+(state <s> ^mode rehearse
+           ^previous-letter-lti <previous-lti>
+           ^current-letter-lti <current-lti>
+           ^operator.name transition-to-rehearse-again
+           ^rehearsed <some-num>)
+-->
+(<s>       ^mode rehearse
+           ^rehearsed (+ <some-num> 1)
+           ^rehearsed <some-num> -
+           ^current-letter a)
+(<s>       ^previous-letter-lti <previous-lti> -
+           ^current-letter-lti <current-lti> -
+           ^current-letter z -
+           ^mode rehearse -)
+}
+
+sp {apply*transition-to-rehearse-again-first
+(state <s> ^mode rehearse
+           ^previous-letter-lti <previous-lti>
+           ^current-letter-lti <current-lti>
+           ^operator.name transition-to-rehearse-again
+          -^rehearsed <some-num>)
+-->
+(<s>       ^mode rehearse
+           ^rehearsed 1
+           ^current-letter a)
+(<s>       ^previous-letter-lti <previous-lti> -
+           ^current-letter-lti <current-lti> -
+           ^current-letter z -
+           ^mode rehearse -)
+}
+
+#sp {propose*transition-to-rehearse-again-2
+#(state <s> ^current-letter z
+#           ^current-letter-lti <whatever>
+#           ^mode rehearse
+#           ^rehearsed two
+#          -^rehearsed three
+#          -^rehearsed four)
+#-->
+#(<s> ^operator <o> +)
+#(<o> ^name transition-to-rehearse-again-2)
+#}
+#
+#sp {apply*transition-to-rehearse-again-2
+#(state <s> ^mode rehearse
+#           ^previous-letter-lti <previous-lti>
+#           ^current-letter-lti <current-lti>
+#           ^operator.name transition-to-rehearse-again-2)
+#-->
+#(<s>       ^mode rehearse
+#           ^rehearsed three
+#           ^current-letter a)
+#(<s>       ^previous-letter-lti <previous-lti> -
+#           ^current-letter-lti <current-lti> -
+#           ^current-letter z -
+#           ^mode rehearse -)
+#}
+#
+#sp {propose*transition-to-rehearse-again-3
+#(state <s> ^current-letter z
+#           ^current-letter-lti <whatever>
+#           ^mode rehearse
+#           ^rehearsed two
+#           ^rehearsed three
+#          -^rehearsed four)
+#-->
+#(<s> ^operator <o> +)
+#(<o> ^name transition-to-rehearse-again-3)
+#}
+#
+#sp {apply*transition-to-rehearse-again-3
+#(state <s> ^mode rehearse
+#           ^previous-letter-lti <previous-lti>
+#           ^current-letter-lti <current-lti>
+#           ^operator.name transition-to-rehearse-again-3)
+#-->
+#(<s>       ^mode rehearse
+#           ^rehearsed four
+#           ^current-letter a)
+#(<s>       ^previous-letter-lti <previous-lti> -
+#           ^current-letter-lti <current-lti> -
+#           ^current-letter z -
+#           ^mode rehearse -)
+#}
+
+
+sp {propose*start-distractor-task-first
+(state <s> ^mode recall
+          -^current-letter-lti <lti>
+          -^previous-letter-lti <something>
+          -^distractor-timer <any>
+           ^smem.command <cmd>)
+-->
+(<s>       ^operator <o> + >)
+(<o>       ^name distract-retrieve)
+(<cmd>     ^query.fake-letter <something>)
+}
+
+sp {apply*start-distractor-task-first
+(state <s> ^mode recall
+           ^operator.name distract-retrieve
+          -^distractor-timer <any>)
+-->
+(<s>       ^distractor-timer 1)
+}
+
+sp {propose*continue-distractor-task
+(state <s> ^mode recall
+          -^current-letter-lti <lti>
+          -^previous-letter-lti <something>
+           ^distractor-timer <any>
+          -^distractor-timer 100
+           ^smem.command <cmd>)
+-->
+(<s>       ^operator <o> + >)
+(<o>       ^name distract-retrieve)
+(<cmd>     ^query.fake-letter <something>)
+}
+
+sp {apply*continue-distractor-task
+(state <s> ^mode recall
+           ^operator.name distract-retrieve
+           ^distractor-timer <any>)
+-->
+(<s>       ^distractor-timer (+ <any> 1))
+(<s>       ^distractor-timer <any> -)
+}
+
+sp {propose*start-recall
+(state <s> ^mode recall
+          -^current-letter-lti <lti>
+          -^previous-letter-lti <something>
+           ^distractor-timer 100)
+-->
+(<s>       ^operator <o> +)
+(<o>       ^name retrieve-current-letter
+           ^current-letter a)
+(write | Recalling by current letter a.|)
+}
+
+sp {apply*make-current-into-previous-after-recall
+(state <s> ^operator.name make-current-into-previous
+           ^current-letter-lti <current-lti>
+           ^mode recall)
+-->
+(<s>       ^previous-letter-lti <current-lti>
+           ^current-letter-lti <current-lti> -)
+}
+
+sp {propose*retrieve-by-letter-after-recall
+(state <s> ^superstate nil
+           ^mode recall
+          -^current-letter-lti <lti>
+          -^current-letter <any>
+           ^previous-letter-lti <something>)
+-(<something> ^used <anything>)
+-->
+(<s> ^operator <o> +)
+(<o> ^name retrieve-current-letter
+     ^current-letter <alpha>)
+(write | Recalling by current letter | <alpha> |.|)
+}
+
+
+sp {propose*initialize-alphabet
+(state <s> ^superstate nil
+          -^name alphabet)
+-->
+(<s> ^operator <o> + <)
+(<o> ^name alphabet)
+(write |Initialized|)
+}
+
+sp {apply*initialize-alphabet
+(state <s> ^operator.name alphabet)
+-->
+(<s> ^name alphabet ^mode rehearse)
+(<s> ^current-letter a)
+(write | The current letter is a.|)
+}
+
+
+sp {propose*retrieve-by-letter
+(state <s> ^superstate nil
+          -^current-letter-lti <lti>
+           ^current-letter <alpha>)
+-->
+(<s> ^operator <o> +)
+(<o> ^name retrieve-current-letter
+     ^current-letter <alpha>)
+(write | Retrieving by current letter | <alpha> |.|)
+}
+
+sp {propose*do-retrieve
+(state <s> ^superstate.operator.name retrieve-current-letter
+           ^smem.command <cmd>
+           ^superstate.operator.current-letter <alpha>)
+(<cmd>    -^query <cue>)
+-->
+(<s>       ^operator <o> +)
+(<o>       ^name do-retrieve)
+}
+
+sp {apply*do-retrieve
+(state <s> ^operator.name do-retrieve
+           ^smem.command <cmd>
+           ^superstate.operator.current-letter <alpha>)
+-->
+(<cmd> ^query.letter <alpha>)
+(write | Applying the cue to the smem link.|)
+}
+
+sp {propose*copy-retrieved-letter-lti
+(state <s> ^smem.result.retrieved <lti>
+           ^superstate.operator.name retrieve-current-letter
+          -^superstate.current-letter-lti <lti>)
+-->
+(<s>       ^operator <o> +)
+(<o>       ^name copy-retrieved-letter-lti
+           ^lti-to-copy <lti>)
+}
+
+sp {apply*copy-retrieved-letter-lti
+(state <s> ^operator.name copy-retrieved-letter-lti
+           ^operator.lti-to-copy <lti>
+           ^smem.command <cmd>
+           ^superstate <ss>)
+(<cmd> ^query <whatever>)
+(<lti> ^letter <a-letter>)
+-->
+(<ss>      ^current-letter-lti <lti>)
+(<cmd>     ^query <whatever> -)
+(write | Copying the retrieved lti for letter | <a-letter> | up to the superstate.|)
+}
+
+
+sp {propose*transition-to-recall
+(state <s> ^current-letter z
+           ^current-letter-lti <whatever>
+           ^mode rehearse
+           ^rehearsed 8)
+-->
+(<s> ^operator <o>)
+(<o> ^name transition-to-recall)
+}
+
+sp {apply*transition-to-recall
+(state <s> ^mode rehearse
+           ^previous-letter-lti <previous-lti>
+           ^current-letter-lti <current-lti>
+           ^operator.name transition-to-recall)
+-->
+(<s>       ^mode recall)
+(<s>       ^previous-letter-lti <previous-lti> -
+           ^current-letter-lti <current-lti> -
+           ^current-letter z -
+           ^mode rehearse -)
+}
+
+
+sp {propose*make-current-into-previous
+(state <s> ^superstate nil
+           ^current-letter-lti <current-lti>
+          -^current-letter z)
+-->
+(<s>       ^operator <o> +)
+(<o>       ^name make-current-into-previous)
+}
+
+sp {apply*make-current-into-previous
+(state <s> ^operator.name make-current-into-previous
+           ^current-letter <alpha>
+           ^current-letter-lti <current-lti>
+           ^next-letter <beta>
+           ^mode rehearse)
+-->
+(<s>       ^previous-letter-lti <current-lti>
+           ^current-letter <beta>
+           ^current-letter <alpha> -
+           ^current-letter-lti <current-lti> -)
+}
+
+sp {propose*link-previous-to-current
+(state <s> ^previous-letter-lti <previous>
+           ^current-letter-lti <current>)
+(<previous>     ^next {@ <current> <child>})
+(<child> -^letter <some-letter>)
+(<previous>     ^letter <another-letter>)
+-(<previous> ^next.letter <> <another-letter>)
+-->
+(<s>       ^operator <o> + >)
+(<o>       ^name link-previous-to-current)
+}
+
+sp {apply*link-previous-to-current
+(state <s> ^operator.name link-previous-to-current
+           ^previous-letter-lti <previous-lti>
+           ^current-letter-lti <current-lti>)
+(<previous-lti>     ^next {@ <current-lti> <prev-child>})
+(<previous-lti>     ^letter <some-letter>)
+-(<previous-lti> ^next.letter <> <some-letter>)
+-->
+(<previous-lti> ^next <current-lti>
+                ^used <blah>)
+(<previous-lti> ^next <prev-child> -)
+}
+
+sp {elaborate*next-letter-b
+(state <s> ^current-letter a)
+-->
+(<s>       ^next-letter b)
+}
+
+sp {elaborate*next-letter-c
+(state <s> ^current-letter b)
+-->
+(<s>       ^next-letter c)
+}
+
+sp {elaborate*next-letter-d
+(state <s> ^current-letter c)
+-->
+(<s>       ^next-letter d)
+}
+
+sp {elaborate*next-letter-e
+(state <s> ^current-letter d)
+-->
+(<s>       ^next-letter e)
+}
+
+sp {elaborate*next-letter-f
+(state <s> ^current-letter e)
+-->
+(<s>       ^next-letter f)
+}
+
+sp {elaborate*next-letter-g
+(state <s> ^current-letter f)
+-->
+(<s>       ^next-letter g)
+}
+
+sp {elaborate*next-letter-h
+(state <s> ^current-letter g)
+-->
+(<s>       ^next-letter h)
+}
+
+sp {elaborate*next-letter-i
+(state <s> ^current-letter h)
+-->
+(<s>       ^next-letter i)
+}
+
+sp {elaborate*next-letter-j
+(state <s> ^current-letter i)
+-->
+(<s>       ^next-letter j)
+}
+
+sp {elaborate*next-letter-k
+(state <s> ^current-letter j)
+-->
+(<s>       ^next-letter k)
+}
+
+sp {elaborate*next-letter-l
+(state <s> ^current-letter k)
+-->
+(<s>       ^next-letter l)
+}
+
+sp {elaborate*next-letter-m
+(state <s> ^current-letter l)
+-->
+(<s>       ^next-letter m)
+}
+
+sp {elaborate*next-letter-n
+(state <s> ^current-letter m)
+-->
+(<s>       ^next-letter n)
+}
+
+sp {elaborate*next-letter-o
+(state <s> ^current-letter n)
+-->
+(<s>       ^next-letter o)
+}
+
+sp {elaborate*next-letter-p
+(state <s> ^current-letter o)
+-->
+(<s>       ^next-letter p)
+}
+
+sp {elaborate*next-letter-q
+(state <s> ^current-letter p)
+-->
+(<s>       ^next-letter q)
+}
+
+sp {elaborate*next-letter-r
+(state <s> ^current-letter q)
+-->
+(<s>       ^next-letter r)
+}
+
+sp {elaborate*next-letter-s
+(state <s> ^current-letter r)
+-->
+(<s>       ^next-letter s)
+}
+
+sp {elaborate*next-letter-t
+(state <s> ^current-letter s)
+-->
+(<s>       ^next-letter t)
+}
+
+sp {elaborate*next-letter-u
+(state <s> ^current-letter t)
+-->
+(<s>       ^next-letter u)
+}
+
+sp {elaborate*next-letter-v
+(state <s> ^current-letter u)
+-->
+(<s>       ^next-letter v)
+}
+
+sp {elaborate*next-letter-w
+(state <s> ^current-letter v)
+-->
+(<s>       ^next-letter w)
+}
+
+sp {elaborate*next-letter-x
+(state <s> ^current-letter w)
+-->
+(<s>       ^next-letter x)
+}
+
+sp {elaborate*next-letter-y
+(state <s> ^current-letter x)
+-->
+(<s>       ^next-letter y)
+}
+
+sp {elaborate*next-letter-z
+(state <s> ^current-letter y)
+-->
+(<s>       ^next-letter z)
+}
+
