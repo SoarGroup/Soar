@@ -310,7 +310,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     if (static_cast<double>(new_activation)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(new_activation)==0)
     {//When we have nothing to go on, we pretend the base-level of the memory is equivalent to having been accessed once at the time the agent was created.
         double decay = settings->base_decay->get_value();
-        new_base = pow(static_cast<double>(smem_max_cycle+500),static_cast<double>(-decay));
+        new_base = pow(static_cast<double>(smem_max_cycle+settings->base_unused_age_offset->get_value()),static_cast<double>(-decay));
         new_base = log(new_base/(1.0+new_base));
     }
     else
@@ -1208,7 +1208,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 if (static_cast<double>(prev_base)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(prev_base) == 0)
                 {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
                     double decay = settings->base_decay->get_value();
-                    new_base = pow(static_cast<double>(smem_max_cycle+500),static_cast<double>(-decay));
+                    new_base = pow(static_cast<double>(smem_max_cycle+settings->base_unused_age_offset->get_value()),static_cast<double>(-decay));
                     new_base = log(new_base/(1+new_base));
                 }
                 else

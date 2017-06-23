@@ -44,6 +44,7 @@ class smem_param_container: public soar_module::param_container
 
         enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
         soar_module::constant_param<base_update_choices>* base_update;
+        soar_module::integer_param* base_unused_age_offset;
 
         soar_module::int_set_param* base_incremental_threshes;
 

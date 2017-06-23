@@ -260,13 +260,13 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 
     std::string result, expected;
 	result = agent->ExecuteCommandLine("print @1 -d 1");
-    expected = "(@1 ^location @2 ^name foo [+0.535])\n";
+    expected = "(@1 ^location @2 ^name foo [-0.461])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @3 -d 1");
-    expected = "(@3 ^location @4 ^name bar [+0.535])\n";
+    expected = "(@3 ^location @4 ^name bar [-0.461])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
@@ -283,13 +283,13 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Nai
 
     std::string result, expected;
     result = agent->ExecuteCommandLine("print @1 -d 1");
-    expected = "(@1 ^location @2 ^name foo [+0.792])\n";
+    expected = "(@1 ^location @2 ^name foo [-0.374])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @3 -d 1");
-    expected = "(@3 ^location @4 ^name bar [-0.347])\n";
+    expected = "(@3 ^location @4 ^name bar [-0.881])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
@@ -307,13 +307,13 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental functional test did not halt", halted);
 
     result = agent->ExecuteCommandLine("print @1 -d 1");
-    expected = "(@1 ^location @2 ^name foo [+0.792])\n";
+    expected = "(@1 ^location @2 ^name foo [-0.374])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @3 -d 1");
-    expected = "(@3 ^location @4 ^name bar [-0.549])\n";
+    expected = "(@3 ^location @4 ^name bar [-1.005])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";

@@ -100,6 +100,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     base_update->add_mapping(bupt_incremental, "incremental");
     add(base_update);
 
+
+    base_unused_age_offset = new soar_module::integer_param("base-unused-age-offset", 0, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
+    add(base_unused_age_offset);
+
     // incremental update thresholds
     base_incremental_threshes = new soar_module::int_set_param("base-incremental-threshes", new soar_module::f_predicate< int64_t >());
     add(base_incremental_threshes);

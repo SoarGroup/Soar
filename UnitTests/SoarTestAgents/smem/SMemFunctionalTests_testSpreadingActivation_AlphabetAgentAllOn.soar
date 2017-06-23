@@ -1,7 +1,7 @@
 wma --set forget-wme lti
-wma --set forgetting on
-wma --set activation on
 
+wma --set activation on
+smem --set base-unused-age-offset 500
 smem --set activation-mode base-level
 smem --set base-update-policy naive
 smem --set spreading-depth-limit 2
