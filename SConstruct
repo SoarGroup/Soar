@@ -35,9 +35,10 @@ print "   Testing:           performance_tests tests"
 print "   SWIG:              sml_python sml_tcl sml_java*"
 print "   Extras:            debugger* headers* tclsoarlib"
 print "Custom Settings available:                                              *default"
-print "   Common:            --dbg, --opt*, --out, --build, --verbose, --static"
+print "   Build Type:        --dbg, --opt*, --static"
+print "   Custom Paths:      --out, --build, --tcl"
 print "   Compilation time:  --no-svs, --scu*, --no-scu, --no-scu-kernel, --no-scu-cli"
-print "   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags"
+print "   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags, --verbose,"
 print "================================================================================"
 
 def execute(cmd):
