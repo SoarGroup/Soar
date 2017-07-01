@@ -5,9 +5,8 @@
 #include "decision_manipulation.h"
 #include "exploration.h"
 #include "output_manager.h"
-
-//#include "sml_KernelSML.h"
-//#include "sml_Events.h"
+#include "working_memory.h"
+#include "working_memory_activation.h"
 
 decide_param_container::decide_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
@@ -309,7 +308,8 @@ void wm_param_container::print_settings(agent* thisAgent)
 
     outputManager->reset_column_indents();
     outputManager->set_column_indent(1, 17);
-    outputManager->set_column_indent(2, 58);
+    outputManager->set_column_indent(2, 51);
+    outputManager->set_column_indent(3, 61);
     outputManager->printa(thisAgent,    "=========================================================\n");
     outputManager->printa(thisAgent,    "-               WM Sub-Commands and Options             -\n");
     outputManager->printa(thisAgent,    "=========================================================\n");
@@ -319,22 +319,26 @@ void wm_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "wm remove %-<timetag>\n");
     outputManager->printa(thisAgent,    "---------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "wm activation %---get <parameter>         \n");
-    outputManager->printa_sf(thisAgent, "wm activation %---set <parameter> <value> \n");
-    outputManager->printa_sf(thisAgent, "              %-<parameter> = activation  | decay-rate\n");
-    outputManager->printa_sf(thisAgent, "              %-            decay-thresh  | forgetting\n");
-    outputManager->printa_sf(thisAgent, "              %-            forget-wme    | max-pow-cache\n");
-    outputManager->printa_sf(thisAgent, "              %-            petrov-approx | timers\n");
-    outputManager->printa_sf(thisAgent, "wm activation %---stats [<statistic>]     \n");
-    outputManager->printa_sf(thisAgent, "              %-<statistic> = forgotten-wmes\n");
-    outputManager->printa_sf(thisAgent, "wm activation %---timers [<timer>]        \n");
-    outputManager->printa_sf(thisAgent, "              %-<timer> = wma_forgetting | wma_history\n");
-    outputManager->printa_sf(thisAgent, "wm activation %---history <timetag>\n");
+    outputManager->printa_sf(thisAgent, "              %---set <parameter>     %-<value> \n");
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("                      activation", capitalizeOnOff(thisAgent->WM->wma_params->activation->get_value()), 57).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("                      petrov-approx", capitalizeOnOff(thisAgent->WM->wma_params->petrov_approx->get_value()), 57).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("                      forgetting", capitalizeOnOff(!strcmp(thisAgent->WM->wma_params->forgetting->get_cstring(), "off")), 57).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("                      fake-forgetting", capitalizeOnOff(thisAgent->WM->wma_params->fake_forgetting->get_value()), 57).c_str());
+    outputManager->printa_sf(thisAgent, "%s%-%s\n", concatJustified("                      forget-wme",  thisAgent->WM->wma_params->forget_wme->get_cstring(), 57).c_str(), "[all, lti]");
+    outputManager->printa_sf(thisAgent, "%s%-%s\n", concatJustified("                      decay-rate",  thisAgent->WM->wma_params->decay_rate->get_cstring(), 57).c_str(), "[0 to 1]");
+    outputManager->printa_sf(thisAgent, "%s%-%s\n", concatJustified("                      decay-thresh",  thisAgent->WM->wma_params->decay_thresh->get_cstring(), 57).c_str(), "[0 to infinity]");
+    outputManager->printa_sf(thisAgent, "%s%-%s\n", concatJustified("                      max-pow-cache",  thisAgent->WM->wma_params->max_pow_cache->get_cstring(), 57).c_str(), "MB");
+    outputManager->printa_sf(thisAgent, "%s%-%s\n", concatJustified("                      timers",  thisAgent->WM->wma_params->timers->get_cstring(), 57).c_str(), "[off, one]");
+    outputManager->printa_sf(thisAgent, "              %---history <timetag>\n");
+    outputManager->printa_sf(thisAgent, "              %---stats             %-%-Prints forgetting stats\n");
+    outputManager->printa_sf(thisAgent, "              %---timers [<timer>]  %-%-Prints timing results\n");
+    outputManager->printa_sf(thisAgent, "                  <timer> = wma_forgetting or wma_history\n");
     outputManager->printa(thisAgent,    "---------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "wm watch %-[--add-filter   ] --type <t>  pattern\n");
-    outputManager->printa_sf(thisAgent, "         %-[--remove-filter]\n");
-    outputManager->printa_sf(thisAgent, "wm watch %-[--list-filter ] [--type <t>]\n");
-    outputManager->printa_sf(thisAgent, "         %-[--reset-filter]\n");
-    outputManager->printa_sf(thisAgent, "              %-<t> = [adds | removes | both]\n");
+    outputManager->printa_sf(thisAgent, "wm watch %---add-filter    --type <t>  pattern\n");
+    outputManager->printa_sf(thisAgent, "         %---remove-filter --type <t>  pattern\n");
+    outputManager->printa_sf(thisAgent, "         %---list-filter  [--type <t>]\n");
+    outputManager->printa_sf(thisAgent, "         %---reset-filter [--type <t>]\n");
+    outputManager->printa_sf(thisAgent, "                              <t> = adds, removes or both\n");
     outputManager->printa(thisAgent,    "---------------------------------------------------------\n\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:       help wm\n");
 }
