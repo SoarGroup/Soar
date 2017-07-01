@@ -542,7 +542,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
         {
             if (float_found)
             {
-                if (first || arg->ic->value < min_f)
+                if (first || arg->fc->value < min_f)
                 {
                     min_f = arg->fc->value;
                 }
@@ -551,7 +551,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
             {
                 float_found = true;
                 min_f = min_i;
-                if (first || arg->ic->value < min_f)
+                if (first || arg->fc->value < min_f)
                 {
                     min_f = arg->fc->value;
                 }
@@ -620,7 +620,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
         {
             if (float_found)
             {
-                if (first || arg->ic->value > max_f)
+                if (first || arg->fc->value > max_f)
                 {
                     max_f = arg->fc->value;
                 }
@@ -629,7 +629,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
             {
                 float_found = true;
                 max_f = max_i;
-                if (first || arg->ic->value > max_f)
+                if (first || arg->fc->value > max_f)
                 {
                     max_f = arg->fc->value;
                 }
