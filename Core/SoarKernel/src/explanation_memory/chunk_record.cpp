@@ -97,9 +97,11 @@ void chunk_record::clean_up()
     dprint(DT_EXPLAIN, "Done deleting chunk record c%u\n", chunkID);
 }
 
-void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
+void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation, ProductionType prodType)
 {
     name = pProduction->name;
+    type = (prodType == CHUNK_PRODUCTION_TYPE) ? ebc_chunk : ebc_justification;
+
     thisAgent->symbolManager->symbol_add_ref(name);
     original_productionID = thisAgent->explanationMemory->add_production_id_if_necessary(pProduction);
     pProduction->save_for_justification_explanation = true;
