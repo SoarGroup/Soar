@@ -291,7 +291,7 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
     {
         tempString = "";
         outputManager->rhs_value_to_string(pAction->value, tempString, true, NULL, NULL, true);
-        outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
+        outputManager->printa_sf(thisAgent, "%d:%-%s", lActionCount,  tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
         print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), true);
@@ -316,8 +316,9 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
             print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_func_inst_identities.referent, instantiated_pref->inst_identities.referent, instantiated_pref->chunk_inst_identities.referent, false);
         }
 
-        outputManager->printa(thisAgent, ")\n");
+        outputManager->printa(thisAgent, ")");
     }
+    outputManager->printa(thisAgent, "\n");
     tempString.clear();
 }
 
@@ -330,7 +331,7 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
     {
         tempString = "";
         outputManager->rhs_value_to_string(pAction->value, tempString, true, NULL, NULL, true);
-        outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
+        outputManager->printa_sf(thisAgent, "%d:%-%s", lActionCount,  tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
         print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->inst_identities.id, instantiated_pref->chunk_inst_identities.id, true);
@@ -354,8 +355,9 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
         {
             print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_func_inst_identities.referent, instantiated_pref->inst_identities.referent, instantiated_pref->chunk_inst_identities.referent, false);
         }
-        outputManager->printa(thisAgent, ")\n");
+        outputManager->printa(thisAgent, ")");
     }
+    outputManager->printa(thisAgent, "\n");
     tempString.clear();
 }
 
@@ -457,8 +459,18 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
             } else {
                 if (rhs)
                 {
+                    while (rhs && (rhs->type == FUNCALL_ACTION))
+                    {
+                        lAction->viz_action(rhs);
+                        rhs = rhs->next;
+                    }
                     lAction->viz_action(rhs);
                     rhs = rhs->next;
+                    while (rhs && (rhs->type == FUNCALL_ACTION))
+                    {
+                        lAction->viz_action(rhs);
+                        rhs = rhs->next;
+                    }
                 } else {
                     /* For deep copy */
                     lAction->viz_preference();
@@ -508,7 +520,7 @@ void action_record::viz_action(action* pAction)
     if (pAction->type == FUNCALL_ACTION)
     {
         thisAgent->visualizationManager->viz_record_start();
-        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', ID_ELEMENT, false, "COLSPAN=\"3\" ");
         tempString = "";
         thisAgent->outputManager->rhs_value_to_string(pAction->value, tempString);
         thisAgent->visualizationManager->graphviz_output += tempString;

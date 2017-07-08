@@ -161,8 +161,20 @@ void Explanation_Memory::print_chunk_actions(action_record_list* pActionRecords,
             {
                 outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
             } else {
+                while (rhs && (rhs->type == FUNCALL_ACTION))
+                {
+                    lAction->print_chunk_action(rhs, lActionCount);
+                    ++lActionCount;
+                    rhs = rhs->next;
+                }
                 lAction->print_chunk_action(rhs, lActionCount);
                 rhs = rhs->next;
+                while (rhs && (rhs->type == FUNCALL_ACTION))
+                {
+                    lAction->print_chunk_action(rhs, lActionCount);
+                    ++lActionCount;
+                    rhs = rhs->next;
+                }
             }
         }
         if (print_explanation_trace)
@@ -185,7 +197,7 @@ void Explanation_Memory::print_instantiation_actions(action_record_list* pAction
     else
     {
         action_record* lAction;
-        action* rhs;
+        action* rhs, *lThisAction;
         int lActionCount = 0;
         thisAgent->outputManager->set_print_indents("");
         thisAgent->outputManager->set_print_test_format(true, false);
@@ -202,8 +214,20 @@ void Explanation_Memory::print_instantiation_actions(action_record_list* pAction
             {
                 outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
             } else {
+                while (rhs && (rhs->type == FUNCALL_ACTION))
+                {
+                    lAction->print_instantiation_action(rhs, lActionCount);
+                    ++lActionCount;
+                    rhs = rhs->next;
+                }
                 lAction->print_instantiation_action(rhs, lActionCount);
                 rhs = rhs->next;
+                while (rhs && (rhs->type == FUNCALL_ACTION))
+                {
+                    lAction->print_instantiation_action(rhs, lActionCount);
+                    ++lActionCount;
+                    rhs = rhs->next;
+                }
             }
         }
         if (print_explanation_trace)
@@ -212,7 +236,6 @@ void Explanation_Memory::print_instantiation_actions(action_record_list* pAction
         }
         thisAgent->outputManager->clear_print_test_format();
     }
-
 }
 
 void Explanation_Memory::print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter)
