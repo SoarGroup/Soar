@@ -184,8 +184,8 @@ class Explanation_Memory
         void print_explain_summary();
         void print_EBC_stats();
         void print_chunk_stats(chunk_record* pChunkRecord, bool pPrintHeader = true);
-        void print_all_watched_rules();
-        void print_all_chunks(bool pChunks);
+        void list_watched_rules();
+        void list_rules_of_type(bool pChunks);
         void print_formation_explanation();
         void print_identity_set_explanation();
         void print_constraints_enforced();
@@ -237,7 +237,7 @@ class Explanation_Memory
         void                    clear_chunk_from_instantiations();
         void                    clear_identities_in_set(identity_set* lIdenty_set);
 
-        void                    print_chunk_list(short pNumToPrint = 0, bool pChunks = true);
+        void                    list_explained_rules(short pNumToPrint = 0, bool pChunks = true, bool pNewLine = false);
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
         void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL, production_record* pExcisedRule = NULL);

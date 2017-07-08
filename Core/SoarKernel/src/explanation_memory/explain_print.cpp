@@ -243,7 +243,6 @@ void Explanation_Memory::print_chunk_explanation()
 void Explanation_Memory::print_explain_summary()
 {
     outputManager->set_column_indent(0, 55);
-    outputManager->set_column_indent(1, 54);
     outputManager->printa_sf(thisAgent, "%e=======================================================\n");
     outputManager->printa(thisAgent,      "                   Explainer Summary\n");
     outputManager->printa(thisAgent,      "=======================================================\n");
@@ -258,48 +257,39 @@ void Explanation_Memory::print_explain_summary()
         outputManager->printa_sf(thisAgent, "Rules watched:");
         print_rules_watched(10);
     }
-
-    outputManager->printa(thisAgent, "\n");
-    outputManager->printa_sf(thisAgent, "Chunks available for discussion:");
-    print_chunk_list(10, true);
-
-    outputManager->printa(thisAgent, "\n");
-    outputManager->printa_sf(thisAgent, "Justifications available for discussion:");
-    print_chunk_list(10, false);
-
     outputManager->printa(thisAgent, "\n");
 
     /* Print current chunk and last 10 chunks formed */
-    outputManager->printa_sf(thisAgent, "Current chunk being discussed: %-%s",
-        (current_discussed_chunk ? current_discussed_chunk->name->sc->name : "None" ));
     if (current_discussed_chunk)
     {
-        outputManager->printa_sf(thisAgent, "(c %u)\n", current_discussed_chunk->chunkID);
+        outputManager->printa_sf(thisAgent, "Current rule being explained: %-%s (c %u)\n\n", current_discussed_chunk->name->sc->name, current_discussed_chunk->chunkID);
     } else {
-        outputManager->printa(thisAgent, "\n");
+        outputManager->printa(thisAgent, "No rule is currently being explained.\n");
     }
-    outputManager->printa(thisAgent,    "=======================================================\n\n");
-    outputManager->printa(thisAgent, "Use 'explain chunk [ <chunk-name> | id ]' to discuss the formation of that chunk.\n");
+    list_explained_rules(10, true, false);
+    outputManager->printa(thisAgent, "\n");
+    list_explained_rules(10, false, false);
+    outputManager->printa(thisAgent, "\n");
+
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n\n");
+    outputManager->printa(thisAgent, "Use 'explain chunk [ <chunk-name> | id ]' to explore the formation of that chunk.\n");
     outputManager->printa_sf(thisAgent, "Use 'explain ?' to learn more about explain's sub-command and settings.\n");
 }
 
-void Explanation_Memory::print_all_watched_rules()
+void Explanation_Memory::list_watched_rules()
 {
     outputManager->reset_column_indents();
-    outputManager->set_column_indent(0, 0);
-    outputManager->set_column_indent(1, 4);
+    outputManager->set_column_indent(0, 4);
     outputManager->printa(thisAgent, "Rules watched:\n");
     print_rules_watched(0);
 }
 
 
-void Explanation_Memory::print_all_chunks(bool pChunks)
+void Explanation_Memory::list_rules_of_type(bool pChunks)
 {
     outputManager->reset_column_indents();
-    outputManager->set_column_indent(0, 0);
-    outputManager->set_column_indent(1, 4);
-    outputManager->printa_sf (thisAgent, pChunks ? "Chunks available for discussion:\n" : "Justifications available for discussion:\n");
-    print_chunk_list(0, pChunks);
+    outputManager->set_column_indent(0, 4);
+    list_explained_rules(0, pChunks, true);
 }
 
 void Explanation_Memory::print_EBC_stats()
@@ -483,15 +473,20 @@ void Explanation_Memory::print_chunk_stats(chunk_record* pChunkRecord, bool pPri
 
 }
 
-void Explanation_Memory::print_chunk_list(short pNumToPrint, bool pChunks)
+void Explanation_Memory::list_explained_rules(short pNumToPrint, bool pChunks, bool pNewLine)
 {
-    short lNumPrinted = 0;
-    ebc_rule_type desired_type;
+    bool            lHeaderPrinted = false;
+    short           lNumPrinted = 0;
+    ebc_rule_type   lRuleType;
+    std::string     lRuleTypeString;
+
     if (pChunks)
     {
-        desired_type = ebc_chunk;
+        lRuleType = ebc_chunk;
+        lRuleTypeString = "chunks";
     } else {
-        desired_type = ebc_justification;
+        lRuleType = ebc_justification;
+        lRuleTypeString = "justifications";
     }
 
     for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
@@ -499,16 +494,25 @@ void Explanation_Memory::print_chunk_list(short pNumToPrint, bool pChunks)
         Symbol* d1 = it->first;
         chunk_record* d2 = it->second;
 
-        if (d2->type != desired_type) continue;
-        if (pNumToPrint && (++lNumPrinted >= pNumToPrint)) continue;
-
-        outputManager->printa_sf(thisAgent, "%-%-%y (c %u)\n", it->first, it->second->chunkID);
+        if (d2->type != lRuleType) continue;
+        if (!lHeaderPrinted)
+        {
+            outputManager->printa_sf (thisAgent, pChunks ? "Chunks available for explanation:%s" : "Justifications available for explanation:%s", pNewLine ? "\n" : " ");
+            lHeaderPrinted = true;
+        }
+        outputManager->printa_sf(thisAgent, "%-%y (c %u)\n", it->first, it->second->chunkID);
+        if (pNumToPrint && (++lNumPrinted == pNumToPrint)) break;
     }
-
-    if (pNumToPrint && (lNumPrinted > pNumToPrint))
+    if (!lHeaderPrinted)
     {
-        std::string typeString = pChunks ? "chunks" : "justifications";
-        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d %s recorded.  Type 'explain list-%s' to see the other %d %s.\n", pNumToPrint, typeString.c_str(), typeString.c_str(), ( lNumPrinted - pNumToPrint), typeString.c_str());
+        outputManager->printa_sf (thisAgent, "No %s have been recorded.", lRuleTypeString.c_str());
+    }
+    else
+    {
+        if (pNumToPrint && (lNumPrinted < chunks->size()))
+        {
+            outputManager->printa_sf(thisAgent, "\n* Note:  Only listed the first %d %s recorded.  Type 'explain list-%s' to see the other %d %s.\n", pNumToPrint, lRuleTypeString.c_str(), lRuleTypeString.c_str(), (chunks->size() - lNumPrinted), lRuleTypeString.c_str());
+        }
     }
 }
 
@@ -537,7 +541,6 @@ bool Explanation_Memory::print_watched_rules_of_type(agent* thisAgent, unsigned 
     {
         pNumToPrint -= lNumPrinted;
     }
-    assert (pNumToPrint >= 0);
     return lThereWasMore;
 }
 
