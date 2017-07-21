@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <assert.h>
+#include "assert.hpp"
 #include "viewer.h"
 #include "trackball.h"
 

@@ -22,7 +22,7 @@
 #include <set>
 #include <list>
 #include <functional>
-#include <assert.h>
+#include "assert.hpp"
 #include <cmath>
 #include <iostream>
 

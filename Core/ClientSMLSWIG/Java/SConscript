@@ -40,6 +40,7 @@ def ConfigureJNI(env):
             # JDK 7+
             headers = [os.path.join(base, 'include')]
             headers.append(os.path.join(base, 'include/darwin'))
+            print headers
             libs = [os.path.join(base, 'lib')]
         else:
             # JDK 6

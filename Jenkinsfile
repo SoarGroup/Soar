@@ -1,3 +1,6 @@
+def unitTestArguments = "-s -c SMemFunctionalTests -e PRIMS_Sanity1 -f testSmemArithmetic"
+def unitTestArgumentsWindows = "-s -c SMemFunctionalTests -e testCommandToFile -e testHamilton -e testSmemArithmetic -e PRIMS_Sanity1"
+
 def names = nodeNames()
 def builders = [:]
 
@@ -58,10 +61,11 @@ for (int i=0; i<names.size(); ++i) {
       stage('Test')
       {
           if (isUnix()) {
-            sh 'pushd out; ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic; popd'
+            sh 'pushd out; ./UnitTests '  + unitTestArguments + '; popd'
             junit 'out/TestResults.xml'
           } else {
-            bat 'out\\UnitTests.exe -e testCommandToFile -e testHamilton -e testSmemArithmetic -e PRIMS_Sanity1'
+            bat 'out\\UnitTests.exe ' + unitTestArguments
+            //bat 'pushd out & UnitTests ' + unitTestArguments + ' & popd'
             junit 'TestResults.xml'
           }
       }

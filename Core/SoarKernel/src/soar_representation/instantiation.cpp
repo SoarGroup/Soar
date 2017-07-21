@@ -57,7 +57,7 @@
 #include "working_memory.h"
 #include "xml.h"
 
-#include <assert.h>
+#include "assert.hpp"
 #include <list>
 #include <stdlib.h>
 #include <string> // SBW 8/4/08

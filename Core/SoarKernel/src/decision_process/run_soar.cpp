@@ -48,7 +48,7 @@
 #include "svs_interface.h"
 #endif
 
-#include <assert.h>
+#include "assert.hpp"
 #include <time.h>
 
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);

@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_Events.h"
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 

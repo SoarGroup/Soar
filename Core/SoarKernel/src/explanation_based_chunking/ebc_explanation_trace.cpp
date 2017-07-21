@@ -17,7 +17,7 @@
 #include "test.h"
 //#include "working_memory.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 /* Methods for generating variable identities during instantiation creation */
 

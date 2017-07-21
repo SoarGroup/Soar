@@ -14,7 +14,7 @@
 #include "sqlite3.h"
 
 #include <list>
-#include <assert.h>
+#include "assert.hpp"
 
 /* -- Tracing functions that print SQL processing and errors -- */
 //    #define DEBUG_SQL_ERRORS

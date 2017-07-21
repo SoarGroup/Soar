@@ -13,7 +13,7 @@
 #include "sml_Names.h"
 #include "soarversion.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 

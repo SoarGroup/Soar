@@ -30,7 +30,7 @@
 #include "sml_Utils.h"
 #include "sock_NamedPipe.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 #ifdef PIPE_NON_BLOCKING
 #include "sml_Utils.h"  // For sml::Sleep

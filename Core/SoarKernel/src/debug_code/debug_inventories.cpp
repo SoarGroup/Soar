@@ -20,7 +20,7 @@
 #include "output_manager.h"
 #include "working_memory.h"
 
-#include <assert.h>
+#include "assert.hpp"
 #include <string>
 
 void clean_up_debug_inventories(agent* thisAgent)

@@ -36,7 +36,7 @@
 #include "ElementXML.h"
 #include "soar_TraceNames.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 namespace soarxml
 {

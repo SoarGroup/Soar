@@ -37,7 +37,7 @@
 
 
 #include <algorithm>
-#include <assert.h>
+#include "assert.hpp"
 #include <fstream>
 
 using namespace cli;

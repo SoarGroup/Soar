@@ -278,6 +278,7 @@ env.Replace(
         '#Core/SoarKernel/src/reinforcement_learning',
         '#Core/SoarKernel/src/semantic_memory',
         '#Core/SoarKernel/src/shared',
+        '#Core/SoarKernel/src/SQLiteCpp',
         '#Core/SoarKernel/src/soar_representation',
         '#Core/SoarKernel/src/visualizer',
         '#Core/ElementXML/src',
@@ -301,7 +302,7 @@ else:
     sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
 
 if sys.platform != 'win32':
-    env.Append(CXXFLAGS='-std=c++11')
+    env.Append(CXXFLAGS='-std=c++14')
 
 env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
 

@@ -16,7 +16,7 @@
 #include "agent.h"
 #include "print.h"
 
-#include <assert.h>
+#include "assert.hpp"
 #include "run_soar.h"
 #include <stdlib.h>
 

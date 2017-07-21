@@ -22,10 +22,11 @@
 #include "explanation_memory.h"
 #include "lexer.h"
 #include "misc.h"
-#include "semantic_memory.h"
 #include "output_manager.h"
+#include "semantic_memory.h"
+#include "visualize.h"
+
 #include <string>
-#include "../../SoarKernel/src/visualizer/visualize.h"
 
 using namespace cli;
 using namespace sml;

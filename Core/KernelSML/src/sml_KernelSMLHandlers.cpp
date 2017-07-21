@@ -44,7 +44,7 @@
 #include <fstream>
 #include <map>
 #include <stdlib.h>
-#include <assert.h>
+#include "assert.hpp"
 #include <algorithm>
 #include <sstream>
 

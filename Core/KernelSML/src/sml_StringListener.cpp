@@ -18,7 +18,7 @@
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 
