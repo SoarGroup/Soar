@@ -69,7 +69,6 @@ if env['NO_SCU_CLI']:
 	srcs.append([Glob('CLI/src/*.cpp'),				Glob('CLI/src/*.cpp')])
 else:
 	srcs.append(['CLI/CommandLineInterface.cxx',	Glob('CLI/src/*.cpp')])
-	
 
 # print 'Soar compiler settings'
 # print 'CXXFlags ', kernel_env.Dump('CXXFLAGS')
@@ -83,6 +82,12 @@ svs_objs = []
 if not GetOption('nosvs'):
     svs_objs, svs_inc = SConscript('SVS/SConscript')
     kernel_env.Prepend(CPPPATH = svs_inc)
+
+if compiler == 'msvc':
+    kernel_env.Append(CPPFLAGS = ['/D', 'EXPORT_INTERNALS'])
+else:
+    kernel_env.Append(CPPFLAGS = ['-D', 'EXPORT_INTERNALS'])
+
 
 if GetOption('static'):
 	soarlib = kernel_env.Library('Soar', [s[scu] for s in srcs] + svs_objs)
