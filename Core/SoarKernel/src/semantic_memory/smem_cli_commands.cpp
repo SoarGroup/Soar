@@ -382,7 +382,7 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
 
         std::list<uint64_t> match_ids;
 
-        process_query(NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, &match_ids, number_to_retrieve, 1, fake_install);
+        process_query(NIL, root_cue_id_list, minus_ever ? negative_cues : NIL, NIL, &prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
 
         if (!match_ids.empty())
         {

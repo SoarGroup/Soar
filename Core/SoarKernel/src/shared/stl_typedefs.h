@@ -144,7 +144,7 @@ struct IDSetLessThan;
     typedef std::set< augmentation*, std::less< augmentation* >, soar_module::soar_memory_pool_allocator< augmentation* > >     augmentation_set;
     typedef std::set< uint64_t, std::less< uint64_t >, soar_module::soar_memory_pool_allocator< uint64_t > >                    id_set;
     typedef std::set< ltm_object*, std::less< ltm_object* >, soar_module::soar_memory_pool_allocator< ltm_object* > >           ltm_set;
-
+    typedef std::list<ltm_object*>                                                                                              ltm_list;
     typedef std::list< ltm_value*, soar_module::soar_memory_pool_allocator< ltm_value* > >                                      ltm_slot;
     typedef std::list< smem_weighted_cue_element*, soar_module::soar_memory_pool_allocator< smem_weighted_cue_element* > >      smem_weighted_cue_list;
 

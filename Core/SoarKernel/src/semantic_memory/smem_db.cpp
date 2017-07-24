@@ -344,6 +344,7 @@ trajectory_invalidate_from_lti_table(*DB,"UPDATE smem_likelihood_trajectories SE
 trajectory_invalidate_edge(*DB,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=? AND lti1!=0) OR (lti1=? AND lti2=? AND lti2!=0) OR (lti2=? AND lti3=? AND lti3!=0) OR (lti3=? AND lti4=? AND lti4!=0) OR (lti4=? AND lti5=? AND lti5!=0) OR (lti5=? AND lti6=? AND lti6!=0) OR (lti6=? AND lti7=? AND lti7!=0) OR (lti7=? AND lti8=? AND lti8!=0) OR (lti8=? AND lti9=? AND lti9!=0) OR (lti9=? AND lti10=? AND lti10!=0)"),
 //gets the size of the current fingerprint table.
 trajectory_size_debug_cmd(*DB,"SELECT COUNT(*) FROM smem_likelihood_trajectories WHERE lti1!=0"),
+trajectory_invalidation_check_for_rows(*DB,"SELECT lti_id FROM smem_invalid_parents"),
 //
 //take away spread precalculated values for some lti
 likelihood_cond_count_remove(*DB,"DELETE FROM smem_likelihoods WHERE lti_j=?"),
@@ -356,15 +357,10 @@ likelihood_cond_count_insert(*DB,"INSERT INTO smem_likelihoods (lti_j,lti_i,num_
 //add other spread precalculated values for some lti
 lti_count_num_appearances_insert(*DB,"INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods WHERE lti_j=? GROUP BY lti_j"),
 //gets the relevant info from currently relevant ltis
-//calc_spread(*DB,"SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?"),
-//add(calc_spread),
-
-    web_attr_all_no_spread(*DB, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id WHERE h.lti_id IS NULL AND w.attribute_s_id=? ORDER BY w.activation_value DESC"),
-    web_const_all_no_spread(*DB, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id WHERE h.lti_id IS NULL AND w.attribute_s_id=? AND w.value_constant_s_id=? AND w.value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY w.activation_value DESC"),
-    web_lti_all_no_spread(*DB, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id  WHERE h.lti_id IS NULL AND w.attribute_s_id=? AND w.value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND w.value_lti_id=? ORDER BY w.activation_value DESC"),
-    //
-
-
+calc_spread(*DB,"SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?"),
+web_attr_all_no_spread(*DB, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id WHERE h.lti_id IS NULL AND w.attribute_s_id=? ORDER BY w.activation_value DESC"),
+web_const_all_no_spread(*DB, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id WHERE h.lti_id IS NULL AND w.attribute_s_id=? AND w.value_constant_s_id=? AND w.value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY w.activation_value DESC"),
+web_lti_all_no_spread(*DB, "SELECT w.lti_id, w.activation_value FROM smem_augmentations w LEFT OUTER JOIN smem_current_spread_activations h ON w.lti_id = h.lti_id  WHERE h.lti_id IS NULL AND w.attribute_s_id=? AND w.value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND w.value_lti_id=? ORDER BY w.activation_value DESC"),
 //gets the relevant info from currently relevant ltis
 calc_uncommitted_spread(*DB,"SELECT lti_id,num_appearances,num_appearances_i_j,sign,lti_source FROM smem_uncommitted_spread WHERE lti_id = ?"),
 calc_current_spread(*DB,"SELECT lti_id,num_appearances,num_appearances_i_j,sign,lti_source FROM smem_current_spread WHERE lti_id = ?"),
@@ -372,8 +368,7 @@ list_uncommitted_spread(*DB, "SELECT lti_id FROM smem_uncommitted_spread"),
 //gets the size of the current spread table.
 calc_spread_size_debug_cmd(*DB,"SELECT COUNT(*) FROM smem_committed_spread"),
 //delete lti from context table
-//delete_old_context(*DB,"DELETE FROM smem_current_context WHERE lti_id=?"),
-//add(delete_old_context),
+delete_old_context(*DB,"DELETE FROM smem_current_context WHERE lti_id=?"),
 
 //delete lti's info from current spread table
 delete_old_spread(*DB,"DELETE FROM smem_current_spread WHERE lti_source=?"),
@@ -385,8 +380,7 @@ delete_old_uncommitted_spread(*DB,"DELETE FROM smem_uncommitted_spread WHERE lti
 //This needs to be called before delete_old_spread and for the same value as delete_old_spread's delete.
 reverse_old_committed_spread(*DB,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_committed_spread WHERE lti_source=?"),//
 //add lti to the context table
-//add_new_context(*DB,"INSERT INTO smem_current_context (lti_id) VALUES (?)"),
-//add(add_new_context),
+add_new_context(*DB,"INSERT INTO smem_current_context (lti_id) VALUES (?)"),
 
 //add a fingerprint's information to the current spread table.
 select_fingerprint(*DB,"SELECT lti_i,num_appearances_i_j,num_appearances,1,lti_j FROM smem_likelihoods INNER JOIN smem_trajectory_num ON lti_id=lti_j WHERE lti_j=?"),
@@ -523,16 +517,17 @@ trajectory_invalidate_from_lti_clear(std::move(other.trajectory_invalidate_from_
 trajectory_invalidate_from_lti_table(std::move(other.trajectory_invalidate_from_lti_table)),
 trajectory_invalidate_edge(std::move(other.trajectory_invalidate_edge)),
 trajectory_size_debug_cmd(std::move(other.trajectory_size_debug_cmd)),
+trajectory_invalidation_check_for_rows(std::move(other.trajectory_invalidation_check_for_rows)),
 likelihood_cond_count_remove(std::move(other.likelihood_cond_count_remove)),
 lti_count_num_appearances_remove(std::move(other.lti_count_num_appearances_remove)),
 likelihood_cond_count_find(std::move(other.likelihood_cond_count_find)),
 likelihood_cond_count_insert(std::move(other.likelihood_cond_count_insert)),
 lti_count_num_appearances_insert(std::move(other.lti_count_num_appearances_insert)),
-//calc_spread(std::move(other.calc_spread)),
+calc_spread(std::move(other.calc_spread)),
 calc_spread_size_debug_cmd(std::move(other.calc_spread_size_debug_cmd)),
-//delete_old_context(std::move(other.delete_old_context)),
+delete_old_context(std::move(other.delete_old_context)),
 delete_old_spread(std::move(other.delete_old_spread)),
-//add_new_context(std::move(other.add_new_context)),
+add_new_context(std::move(other.add_new_context)),
 select_fingerprint(std::move(other.select_fingerprint)),
 add_fingerprint(std::move(other.add_fingerprint)),
 delete_old_uncommitted_spread(std::move(other.delete_old_uncommitted_spread)),
@@ -679,11 +674,11 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
     likelihood_cond_count_find = std::move(other.likelihood_cond_count_find);
     likelihood_cond_count_insert = std::move(other.likelihood_cond_count_insert);
     lti_count_num_appearances_insert = std::move(other.lti_count_num_appearances_insert);
-    //calc_spread = std::move(other.calc_spread);
+    calc_spread = std::move(other.calc_spread);
     calc_spread_size_debug_cmd = std::move(other.calc_spread_size_debug_cmd);
-    //delete_old_context = std::move(other.delete_old_context);
+    delete_old_context = std::move(other.delete_old_context);
     delete_old_spread = std::move(other.delete_old_spread);
-    //add_new_context = std::move(other.add_new_context);
+    add_new_context = std::move(other.add_new_context);
     select_fingerprint = std::move(other.select_fingerprint);
     add_fingerprint = std::move(other.add_fingerprint);
     delete_old_uncommitted_spread = std::move(other.delete_old_uncommitted_spread);
@@ -1064,24 +1059,25 @@ void SMem_Manager::init_db()
                 // for the sake of backup. TODO: Make the state-dependent parts of spreading in-memory.
                 // In the meantime, the solution is simply to clear out those tables which contain state
                 // when restoring from a backup.
-                soar_module::sqlite_statement* temp_spread = new soar_module::sqlite_statement(DB, "SELECT name FROM sqlite_master WHERE type='table' AND name='smem_current_spread';");
-                temp_spread->prepare();
-                if (temp_spread->get_status() == soar_module::ready)
-                {
-                    if (temp_spread->execute() == soar_module::row)
-                    {
-                        soar_module::sqlite_statement* temp_spread_q_1 = new soar_module::sqlite_statement(DB, "DELETE FROM smem_current_spread");
-                        temp_spread_q_1->prepare();
-                        temp_spread_q_1->execute(soar_module::op_reinit);
-                        soar_module::sqlite_statement* temp_spread_q_2 = new soar_module::sqlite_statement(DB, "DELETE FROM smem_current_spread_activations");
-                        temp_spread_q_2->prepare();
-                        temp_spread_q_2->execute(soar_module::op_reinit);
-                        delete temp_spread_q_1;
-                        delete temp_spread_q_2;
-                    }
-        }
-                temp_spread->reinitialize();
-                delete temp_spread;
+                /* MMerge | This needs new code to delete some spreading databases */
+//                soar_module::sqlite_statement* temp_spread = new soar_module::sqlite_statement(DB, "SELECT name FROM sqlite_master WHERE type='table' AND name='smem_current_spread';");
+//                temp_spread->prepare();
+//                if (temp_spread->get_status() == soar_module::ready)
+//                {
+//                    if (temp_spread->execute() == soar_module::row)
+//                    {
+//                        soar_module::sqlite_statement* temp_spread_q_1 = new soar_module::sqlite_statement(DB, "DELETE FROM smem_current_spread");
+//                        temp_spread_q_1->prepare();
+//                        temp_spread_q_1->execute(soar_module::op_reinit);
+//                        soar_module::sqlite_statement* temp_spread_q_2 = new soar_module::sqlite_statement(DB, "DELETE FROM smem_current_spread_activations");
+//                        temp_spread_q_2->prepare();
+//                        temp_spread_q_2->execute(soar_module::op_reinit);
+//                        delete temp_spread_q_1;
+//                        delete temp_spread_q_2;
+//                    }
+//                }
+//                temp_spread->reinitialize();
+//                delete temp_spread;
             }
         }
 

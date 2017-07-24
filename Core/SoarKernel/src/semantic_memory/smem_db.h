@@ -54,15 +54,13 @@ class smem_statement_container : public SMemExperimental::statement_container
 {
     public:
 
-        smem_statement_container(SMem_Manager* SMem);
-
         SQLite::Statement begin;
         SQLite::Statement commit;
         SQLite::Statement rollback;
 
-        SQLite::Statement var_create;
         SQLite::Statement var_get;
         SQLite::Statement var_set;
+        SQLite::Statement var_create;
 
         SQLite::Statement hash_add_float;
         SQLite::Statement hash_add_int;
@@ -207,6 +205,11 @@ class smem_statement_container : public SMemExperimental::statement_container
         SQLite::Statement web_update_all_lti_child_edges;
         SQLite::Statement web_update_child_edge;
         SQLite::Statement web_val_child;
+
+        smem_statement_container(SMem_Manager* SMem);
+
+        smem_statement_container(smem_statement_container&& other);
+        smem_statement_container& operator=(smem_statement_container&& other);
 
     private:
 

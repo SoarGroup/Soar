@@ -474,6 +474,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
 
     JobQueue->post(updateLTIEdgeCounter).wait();
 
+    double fan = 1.0/((double)new_lti_edges);
     std::packaged_task<void()> updateLTIChildEdges([this,fan,pLTI_ID] {
         auto sql = sqlite_thread_guard(SQL->web_update_all_lti_child_edges);
         sql->bind(1, fan);
@@ -593,7 +594,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
 
         // update counter
         // check if counter exists (and add if does not): attribute_s_id, val
-        std::packaged_task<void()> check_and_add([this,p, web_act, new_lti_edges, pLTI_ID] {
+        std::packaged_task<void()> check_and_add([this,p, web_act, new_lti_edges, pLTI_ID, ever_updated_edge_weight, edge_weights] {
             bool result;
 
             {
@@ -621,7 +622,14 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                      *  The first round of normalization will "fix" this, in that things won't "break",
                      *  but the values will be different than what the user presumably intended.
                      */
-                    sql->bind(6, edge_weights[p->second]);
+                    auto ew_iter = edge_weights.find(p->second);
+                    if (ew_iter != edge_weights.end())
+                    {
+                        sql->bind(6, ew_iter->second);
+                    } else {
+                        /*MMerge | I think this sets it to fan according to the comments above */
+                        sql->bind(6, 1.0/((double)new_lti_edges));
+                    }
                 }
                 else
                 {
@@ -629,7 +637,6 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                 }
                 sql->exec();
                     }
-                }
 
 
             if (!result)
@@ -695,7 +702,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             sql->bind(1, fan);
             sql->bind(2,pLTI_ID);
             sql->exec();
-        }
+        });
         JobQueue->post(ptUpdateAllLTIChildEdges).wait();
     }
     if (old_children != NULL)

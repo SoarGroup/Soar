@@ -186,7 +186,7 @@ class SMem_Manager
         smem_hash_id    hash(Symbol* sym, bool add_on_fail = true);
         int64_t         rhash__int(smem_hash_id hash_value);
         double          rhash__float(smem_hash_id hash_value);
-        void            rhash__str(smem_hash_id hash_value, std::string& dest);
+        std::string     rhash__str(smem_hash_id hash_value);
         Symbol*         rhash_(byte symbol_type, smem_hash_id hash_value);
 
         /* Methods for LTIs */

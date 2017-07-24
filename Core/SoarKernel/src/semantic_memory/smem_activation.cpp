@@ -481,17 +481,27 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         //spread = ((spread < offset) ? 0.0 : spread);
         //if (new_activation == SMEM_ACT_LOW)
         //    bool test = true;
-        SQL->act_lti_fake_set->bind_double(1, new_activation);
-        SQL->act_lti_fake_set->bind_double(2, spread);
-        SQL->act_lti_fake_set->bind_double(3, new_base + modified_spread);
-        SQL->act_lti_fake_set->bind_int(4,pLTI_ID);
-        SQL->act_lti_fake_set->execute(soar_module::op_reinit);
-        //SQL->act_set->bind_double(1, SMEM_ACT_LOW);
-        //SQL->act_set->bind_int(2, pLTI_ID);
-        //SQL->act_set->execute(soar_module::op_reinit);
-    }
+
+        std::packaged_task<void()> pt_fake([this, pLTI_ID, new_activation, spread, new_base, modified_spread] {
+            auto sql = sqlite_thread_guard(SQL->act_lti_fake_set);
+
+            sql->bind(1, new_activation);
+            sql->bind(2, spread);
+            sql->bind(3, new_base + modified_spread);
+            sql->bind(4, pLTI_ID);
+
+            sql->exec();
+        });
+
+        JobQueue->post(pt_fake).wait();    }
+
+    //SQL->act_set->bind_double(1, SMEM_ACT_LOW);
+    //SQL->act_set->bind_int(2, pLTI_ID);
+    //SQL->act_set->execute(soar_module::op_reinit);
+
     else
     {
+        /* MMerge | The equivalent version of this code is commented out in async */
         std::packaged_task<void()> pt_ltiSet([this, pLTI_ID, new_activation, new_base] {
             auto sql = sqlite_thread_guard(SQL->act_lti_set);
 
@@ -696,10 +706,10 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
         lti_trajectories[lti_id] = new std::list<std::pair<uint64_t, double>>;
         while (children_q->execute() == soar_module::row)
         {
-            /*if (children_q->column_int(0) == lti_id)
-            {
-                continue;
-            }*/
+            //if (children_q->column_int(0) == lti_id)
+            //{
+            //    continue;
+            //}
             (lti_trajectories[lti_id])->push_back(std::make_pair((uint64_t)(children_q->column_int(0)),children_q->column_double(1)));
             children.push_back(children_q->column_int(0));
         }
@@ -755,9 +765,9 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     std::list<std::pair<uint64_t, double>>* current_lti_list = new std::list<std::pair<uint64_t, double>>();
     //We initialize this with the given lti and a total initial activation weight of 1. Changing of the total weight from this source
     //can be done at time of application with a scalar.
-    current_lti_list->emplace_back(lti_id, 1.0);
+    current_lti_list->push_back(std::make_pair(lti_id, 1.0));
     double initial_activation = 1.0;
-    lti_traversal_queue.emplace(initial_activation,current_lti_list);
+    lti_traversal_queue.push(std::make_pair(initial_activation,current_lti_list));
     //The prioritized traversal has now been initialized with a single path consisting of only the source of activation.
     //There is a limit to the size of the stored info.
     double decay_prob = settings->spreading_continue_probability->get_value();
@@ -776,6 +786,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     std::list<std::pair<uint64_t, double>>::iterator new_list_iterator;
     std::list<std::pair<uint64_t, double>>::iterator new_list_iterator_begin;
     std::list<std::pair<uint64_t, double>>::iterator new_list_iterator_end;
+
     bool good_lti = true;
     depth = 0;
     //uint64_t fan_out;
@@ -805,10 +816,10 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             std::list<std::pair<uint64_t,double>>* new_list = new std::list<std::pair<uint64_t,double>>();
             for (old_list_iterator = old_list_iterator_begin; old_list_iterator != old_list_iterator_end; ++old_list_iterator)
             {//looping over the contents of the old list and copying.
-                new_list->emplace_back(old_list_iterator->first,old_list_iterator->second);
+                new_list->push_back((*old_list_iterator));
                 if (settings->spreading_loop_avoidance->get_value() == on)
                 {
-                    visited.insert(std::make_pair(old_list_iterator->first,old_list_iterator->second));//We we have loop avoidance on, we need to keep track of the old path elements.
+                    visited.insert((*old_list_iterator));//We we have loop avoidance on, we need to keep track of the old path elements.
                 }
             }
             good_lti = true;
@@ -832,7 +843,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
                 continue;//We don't need to do processing because we're skipping this already visited child.
             }
             //Add the new good lti to the list
-            new_list->emplace_back(lti_iterator->first,lti_iterator->second);
+            new_list->push_back((*lti_iterator));
             if (spread_map.find(lti_iterator->first) == spread_map.end())
             {//If we haven't already given some spread to this recipient from this source, we have to start with an initial contribution
                 spread_map[lti_iterator->first] = initial_activation*lti_iterator->second;
@@ -865,7 +876,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             //If we still have room for more, we add the new path to the p-queue for additional traversal.
             if (new_list->size() < depth_limit + 1 && count < limit &&  decay_prob*initial_activation*lti_iterator->second > baseline_prob)
             {//if we aren't at the depth limit, the total traversal size limit, and the activation is big enough
-                lti_traversal_queue.emplace(initial_activation*lti_iterator->second,new_list);
+                lti_traversal_queue.push(std::make_pair(initial_activation,new_list));
             }
             else
             {
@@ -873,7 +884,8 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
                 new_list = NULL;
             }
         }
-        //lti_traversal_queue.pop();//Get rid of the old list.
+        /* MMerge | Was commented out in development, but not in async */
+        lti_traversal_queue.pop();//Get rid of the old list.
         delete current_lti_list;//no longer need it.
     }
     //Once we've generated the full spread map of accumulated spread for recipients from this source, we record it.
@@ -914,28 +926,28 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
 void SMem_Manager::calc_spread_trajectories()
 {
     std::packaged_task<void()> pt_calcTrajectories([this] {
-    attach();
+        attach();
         auto lti_all = sqlite_thread_guard(SQL->lti_all);
-    uint64_t lti_id;
-    int j = 0;
-    //smem_delete_trajectory_indices();//This is for efficiency.
-    //It's super inefficient to maintain the database indexing during this batch processing
-    //It's way better to delete and rebuild. However, for testing and small DBs, it's fine. I'm testing... so... it's commented for now.
-    // - scijones (Yell at me if you see this.)
-    double p1 = settings->spreading_continue_probability->get_value();
-    std::map<uint64_t, std::list<std::pair<uint64_t, double>>*> lti_trajectories;
+        uint64_t lti_id;
+        int j = 0;
+        //smem_delete_trajectory_indices();//This is for efficiency.
+        //It's super inefficient to maintain the database indexing during this batch processing
+        //It's way better to delete and rebuild. However, for testing and small DBs, it's fine. I'm testing... so... it's commented for now.
+        // - scijones (Yell at me if you see this.)
+        double p1 = settings->spreading_continue_probability->get_value();
+        std::map<uint64_t, std::list<std::pair<uint64_t, double>>*> lti_trajectories;
         while (lti_all->executeStep())
-    {//loop over all ltis.
+        {//loop over all ltis.
             lti_id = lti_all->getColumn(0).getUInt64();
-        trajectory_construction(lti_id,lti_trajectories,0,true);
-    }
+            trajectory_construction(lti_id,lti_trajectories,0,true);
+        }
 
-    //smem_create_trajectory_indices();//TODO: Fix this and the above commend about it. YELL AT ME.
-    //Cleanup the map.
-    for (std::map<uint64_t,std::list<std::pair<uint64_t, double>>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
-    {
-        delete to_delete->second;
-    }
+        //smem_create_trajectory_indices();//TODO: Fix this and the above commend about it. YELL AT ME.
+        //Cleanup the map.
+        for (std::map<uint64_t,std::list<std::pair<uint64_t, double>>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
+        {
+            delete to_delete->second;
+        }
 
         auto sql = sqlite_thread_guard(SQL->lti_count_num_appearances_init);
         sql->exec();
@@ -1035,13 +1047,13 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         ////////////////////////////////////////////////////////////////////////////
         for(std::set<uint64_t>::iterator it = smem_context_additions->begin(); it != smem_context_additions->end(); ++it)
         {//We keep track of old walks. If we haven't changed smem, no need to recalculate.
-            /*SQL->trajectory_check_invalid->bind_int(1,*it);
-            SQL->trajectory_get->bind_int(1,*it);
-            bool was_invalid = (SQL->trajectory_check_invalid->execute() == soar_module::row);
+            //SQL->trajectory_check_invalid->bind_int(1,*it);
+            //SQL->trajectory_get->bind_int(1,*it);
+            //bool was_invalid = (SQL->trajectory_check_invalid->execute() == soar_module::row);
             //If the previous trajectory is no longer valid because of a change to memory or we don't have a trajectory, we might need to remove
             //the old one.
-            bool no_trajectory = SQL->trajectory_get->execute() != soar_module::row;
-            SQL->trajectory_check_invalid->reinitialize();*/
+            //bool no_trajectory = SQL->trajectory_get->execute() != soar_module::row;
+            //SQL->trajectory_check_invalid->reinitialize();
 
             std::packaged_task<bool()> pt_trajectoryCheck([this, it] {
                 auto sql = sqlite_thread_guard(SQL->trajectory_check_invalid);
@@ -1579,28 +1591,28 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 bool used_wma = false;
                 if (thisAgent->SMem->settings->spreading_wma_source->get_value() == true)
                 {
-                for (auto wma = wmas.first; wma != wmas.second; ++wma)
-                {
-                        used_wma = true;
-                    // Now that we have a wma decay element, we loop over its history and increment all of the fields for our fake decay element.
-                    total_element.num_references += wma->second->touches.total_references;
-                    counter = wma->second->touches.history_ct;
-                    while(counter)
+                    for (auto wma = wmas.first; wma != wmas.second; ++wma)
                     {
-                        int cycle_diff = thisAgent->WM->wma_d_cycle_count - wma->second->touches.access_history[counter-1].d_cycle;
-                        assert(cycle_diff > 0);
-                        //cycles.push_back(wma->second->touches.access_history[counter]);
-                        if (cycle_diff < thisAgent->WM->wma_power_size)
+                        used_wma = true;
+                        // Now that we have a wma decay element, we loop over its history and increment all of the fields for our fake decay element.
+                        total_element.num_references += wma->second->touches.total_references;
+                        counter = wma->second->touches.history_ct;
+                        while(counter)
                         {
-                            pre_logd_wma += wma->second->touches.access_history[counter-1].num_references * thisAgent->WM->wma_power_array[ cycle_diff ];
+                            int cycle_diff = thisAgent->WM->wma_d_cycle_count - wma->second->touches.access_history[counter-1].d_cycle;
+                            assert(cycle_diff > 0);
+                            //cycles.push_back(wma->second->touches.access_history[counter]);
+                            if (cycle_diff < thisAgent->WM->wma_power_size)
+                            {
+                                pre_logd_wma += wma->second->touches.access_history[counter-1].num_references * thisAgent->WM->wma_power_array[ cycle_diff ];
+                            }
+                            else
+                            {
+                                pre_logd_wma += wma->second->touches.access_history[counter-1].num_references * pow(cycle_diff,thisAgent->WM->wma_params->decay_rate->get_value());
+                            }
+                            counter--;
                         }
-                        else
-                        {
-                            pre_logd_wma += wma->second->touches.access_history[counter-1].num_references * pow(cycle_diff,thisAgent->WM->wma_params->decay_rate->get_value());
-                        }
-                        counter--;
                     }
-                }
                 }
                 ////////////////////////////////////////////////////////////////////////////
                 timers->spreading_7_2_4->stop();
@@ -1619,7 +1631,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     wma_multiplicative_factor = pre_logd_wma/(1.0+pre_logd_wma);
                 }
                 {
-                    raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));
+                    raw_prob = wma_multiplicative_factor*((calc_current_spread->getColumn(2).getDouble())/(calc_current_spread->getColumn(1).getDouble()));
                 }
                 //offset = (settings->spreading_baseline->get_value())/(calc_spread->column_double(1));
                 offset = (settings->spreading_baseline->get_value())/baseline_denom;//(settings->spreading_limit->get_value());
@@ -1917,22 +1929,31 @@ void SMem_Manager::add_to_invalidate_from_lti_table(uint64_t invalid_parent)
 
 void SMem_Manager::batch_invalidate_from_lti()
 {
-    /* Not sure if this line will work by newer version of smem had this check first */
-    if (SQL->trajectory_invalidation_check_for_rows->execute() == soar_module::row)
+    /* MMerge | Not sure if this line will work by newer version of smem had this check first
+     *     if (SQL->trajectory_invalidation_check_for_rows->execute() == soar_module::row)
+     * */
+    std::packaged_task<uint64_t()> pt_invalid_check_for_rows([this]{
+        auto sql = sqlite_thread_guard(SQL->trajectory_invalidation_check_for_rows);
+        sql->exec();
+        return sql->getColumn(0).getUInt64();
+    });
+
+    if (JobQueue->post(pt_invalid_check_for_rows).get())
+
     {
 
-    std::packaged_task<void()> pt_invalidFromTable([this]{
-        auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti_table);
-        sql->exec();
-    });
-    JobQueue->post(pt_invalidFromTable).wait();
+        std::packaged_task<void()> pt_invalidFromTable([this]{
+            auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti_table);
+            sql->exec();
+        });
+        JobQueue->post(pt_invalidFromTable).wait();
 
-    std::packaged_task<void()> pt_invalidClear([this]{
-        auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti_clear);
-        sql->exec();
-    });
-    JobQueue->post(pt_invalidClear).wait();
-    /*SQL->trajectory_invalidate_from_lti_table->execute(soar_module::op_reinit);
-    SQL->trajectory_invalidate_from_lti_clear->execute(soar_module::op_reinit);*/
-}
+        std::packaged_task<void()> pt_invalidClear([this]{
+            auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti_clear);
+            sql->exec();
+        });
+        JobQueue->post(pt_invalidClear).wait();
+        /*SQL->trajectory_invalidate_from_lti_table->execute(soar_module::op_reinit);
+          SQL->trajectory_invalidate_from_lti_clear->execute(soar_module::op_reinit);*/
+    }
 }
