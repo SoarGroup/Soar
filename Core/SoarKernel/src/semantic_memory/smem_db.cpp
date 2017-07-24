@@ -149,7 +149,7 @@ void smem_statement_container::drop_tables()
     DB->exec("DROP TABLE IF EXISTS smem_likelihoods");
     DB->exec("DROP TABLE IF EXISTS smem_current_spread");
     DB->exec("DROP TABLE IF EXISTS smem_trajectory_num");
-    DB->exec("DROP TABLE IF EXISTS smem_current_context");
+    //DB->exec("DROP TABLE IF EXISTS smem_current_context");
     DB->exec("DROP TABLE IF EXISTS smem_committed_spread");
     DB->exec("DROP TABLE IF EXISTS smem_uncommitted_spread");
     DB->exec("DROP TABLE IF EXISTS smem_current_spread_activations");
@@ -368,7 +368,7 @@ list_uncommitted_spread(*DB, "SELECT lti_id FROM smem_uncommitted_spread"),
 //gets the size of the current spread table.
 calc_spread_size_debug_cmd(*DB,"SELECT COUNT(*) FROM smem_committed_spread"),
 //delete lti from context table
-delete_old_context(*DB,"DELETE FROM smem_current_context WHERE lti_id=?"),
+//delete_old_context(*DB,"DELETE FROM smem_current_context WHERE lti_id=?"),
 
 //delete lti's info from current spread table
 delete_old_spread(*DB,"DELETE FROM smem_current_spread WHERE lti_source=?"),
@@ -380,7 +380,7 @@ delete_old_uncommitted_spread(*DB,"DELETE FROM smem_uncommitted_spread WHERE lti
 //This needs to be called before delete_old_spread and for the same value as delete_old_spread's delete.
 reverse_old_committed_spread(*DB,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_committed_spread WHERE lti_source=?"),//
 //add lti to the context table
-add_new_context(*DB,"INSERT INTO smem_current_context (lti_id) VALUES (?)"),
+//add_new_context(*DB,"INSERT INTO smem_current_context (lti_id) VALUES (?)"),
 
 //add a fingerprint's information to the current spread table.
 select_fingerprint(*DB,"SELECT lti_i,num_appearances_i_j,num_appearances,1,lti_j FROM smem_likelihoods INNER JOIN smem_trajectory_num ON lti_id=lti_j WHERE lti_j=?"),
@@ -525,9 +525,9 @@ likelihood_cond_count_insert(std::move(other.likelihood_cond_count_insert)),
 lti_count_num_appearances_insert(std::move(other.lti_count_num_appearances_insert)),
 calc_spread(std::move(other.calc_spread)),
 calc_spread_size_debug_cmd(std::move(other.calc_spread_size_debug_cmd)),
-delete_old_context(std::move(other.delete_old_context)),
+//delete_old_context(std::move(other.delete_old_context)),
 delete_old_spread(std::move(other.delete_old_spread)),
-add_new_context(std::move(other.add_new_context)),
+//add_new_context(std::move(other.add_new_context)),
 select_fingerprint(std::move(other.select_fingerprint)),
 add_fingerprint(std::move(other.add_fingerprint)),
 delete_old_uncommitted_spread(std::move(other.delete_old_uncommitted_spread)),
@@ -676,9 +676,9 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
     lti_count_num_appearances_insert = std::move(other.lti_count_num_appearances_insert);
     calc_spread = std::move(other.calc_spread);
     calc_spread_size_debug_cmd = std::move(other.calc_spread_size_debug_cmd);
-    delete_old_context = std::move(other.delete_old_context);
+//    delete_old_context = std::move(other.delete_old_context);
     delete_old_spread = std::move(other.delete_old_spread);
-    add_new_context = std::move(other.add_new_context);
+//    add_new_context = std::move(other.add_new_context);
     select_fingerprint = std::move(other.select_fingerprint);
     add_fingerprint = std::move(other.add_fingerprint);
     delete_old_uncommitted_spread = std::move(other.delete_old_uncommitted_spread);

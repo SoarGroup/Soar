@@ -162,7 +162,7 @@ class smem_statement_container : public SMemExperimental::statement_container
 
         SQLite::Statement add_committed_fingerprint;
         SQLite::Statement add_fingerprint;
-        SQLite::Statement add_new_context;
+//        SQLite::Statement add_new_context;
         SQLite::Statement add_uncommitted_fingerprint;
         SQLite::Statement calc_current_spread;
         SQLite::Statement calc_spread_size_debug_cmd;
@@ -171,7 +171,7 @@ class smem_statement_container : public SMemExperimental::statement_container
         SQLite::Statement delete_commit_of_negative_fingerprint;
         SQLite::Statement delete_committed_fingerprint_2;
         SQLite::Statement delete_committed_fingerprint;
-        SQLite::Statement delete_old_context;
+//        SQLite::Statement delete_old_context;
         SQLite::Statement delete_old_spread;
         SQLite::Statement delete_old_uncommitted_spread;
         SQLite::Statement likelihood_cond_count_find;
