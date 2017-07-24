@@ -51,6 +51,23 @@
 
 #include "smem_math_query.h"
 
+const std::string SMem_Manager::memoryDatabasePath = "file:smem_soar?mode=memory&cache=shared";
+const int SMem_Manager::sqlite3Flags =
+    SQLite::OPEN_READWRITE      |
+    SQLite::OPEN_URI            |
+    SQLite::OPEN_NOMUTEX        |
+    SQLite::OPEN_CREATE;
+const int SMem_Manager::sqlite3Timeout = 1000;
+
+void SMem_Manager::recreateDB(std::string db_path)
+{
+    if (db_path != memoryDatabasePath)
+        db_path = "file:" + db_path + "?cache=shared";
+
+    DB = std::make_shared<SQLite::Database>(db_path, SMem_Manager::sqlite3Flags, SMem_Manager::sqlite3Timeout);
+    JobQueue = std::make_shared<sqlite_job_queue>(db_path);
+}
+
 wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
 {
     slot* s;
@@ -120,7 +137,6 @@ void SMem_Manager::go(bool store_only)
 
 void SMem_Manager::respond_to_cmd(bool store_only)
 {
-
     attach();
 
     // start at the bottom and work our way up
@@ -489,7 +505,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
-                    process_query(state, orquery, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
+                    process_query(state, orquery, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install, settings->synchronous_db->get_value());
 
                     // add one to the cbr stat
                     thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);
@@ -506,7 +522,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // start transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL->begin->execute(soar_module::op_reinit);
+//                        thisAgent->SMem->SQL->begin.exec();
+//                        thisAgent->SMem->SQL->begin.reset();
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -523,7 +540,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // commit transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL->commit->execute(soar_module::op_reinit);
+//                        thisAgent->SMem->SQL->commit.exec();
+//                        thisAgent->SMem->SQL->commit.reset();
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -542,7 +560,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // start transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL->begin->execute(soar_module::op_reinit);
+//                        thisAgent->SMem->SQL->begin.exec();
+//                        thisAgent->SMem->SQL->begin.reset();
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -559,7 +578,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // commit transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL->commit->execute(soar_module::op_reinit);
+//                        thisAgent->SMem->SQL->commit.exec();
+//                        thisAgent->SMem->SQL->commit.reset();
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -583,13 +603,27 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                     for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
                     {
-                        SQL->prohibit_check->bind_int(1, (*sym_p)->id->LTI_ID);
-                        if (SQL->prohibit_check->execute() != soar_module::row)
+                        std::packaged_task<bool()> pt_ProhibitCheck([&] {
+                            auto sql = sqlite_thread_guard(thisAgent->SMem->SQL->prohibit_check);
+
+                            sql->bind(1, (*sym_p)->id->LTI_ID);
+
+                            return sql->executeStep();
+                        });
+                        bool prohibited = JobQueue->post(pt_ProhibitCheck).get();
+
+                        if (!prohibited)
                         {
-                            SQL->prohibit_set->bind_int(1, (*sym_p)->id->LTI_ID);
-                            SQL->prohibit_set->execute(soar_module::op_reinit);
+                            std::packaged_task<void()> pt_ProhibitSet([&]{
+                                auto sql = sqlite_thread_guard(thisAgent->SMem->SQL->prohibit_set);
+
+                                sql->bind(1, (*sym_p)->id->LTI_ID);
+
+                                sql->exec();
+                            });
+
+                            JobQueue->post(pt_ProhibitSet).wait();
                         }
-                        SQL->prohibit_check->reinitialize();
                     }
                     /*
                      * This allows prohibits to modify BLA without a query present.
@@ -603,7 +637,6 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
             {
-
                 dprint(DT_SMEM_INSTANCE, "SMem Manager installing recall buffer.\n");
                 // process preference assertion en masse
                 install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes, !link_to_ltm);
@@ -649,6 +682,83 @@ void SMem_Manager::respond_to_cmd(bool store_only)
         delete cmds;
 
         state = state->id->higher_goal;
+    }
+
+//    auto lockCheckQueryResults = [=]() -> bool {
+//        std::lock_guard<std::mutex> lock(agent_jobqueue_boundary_mutex);
+//        return query_results.size() > 0;
+//    };
+
+    if (query_results.size() > 0)
+    {
+        meta_wmes.clear();
+
+        std::lock_guard<std::mutex> lock(agent_jobqueue_boundary_mutex);
+
+        while (query_results.size() > 0)
+        {
+            auto result = query_results.back();
+            query_results.pop_back();
+
+            uint64_t king_id = result.king_id;
+            uint64_t depth = result.depth;
+            Symbol* state = result.state;
+            Symbol* query = result.query;
+            Symbol* negquery = result.negquery;
+
+            // produce results
+            if (king_id != NIL)
+            {
+                // success!
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
+                if (negquery)
+                {
+                    add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, negquery);
+                }
+
+                ////////////////////////////////////////////////////////////////////////////
+                timers->query->stop();
+                ////////////////////////////////////////////////////////////////////////////
+                install_memory(state, king_id, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, smem_install_type::wm_install, depth);
+            }
+            else
+            {
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_failure, query);
+                if (negquery)
+                {
+                    add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_failure, negquery);
+                }
+
+                ////////////////////////////////////////////////////////////////////////////
+                timers->query->stop();
+                ////////////////////////////////////////////////////////////////////////////
+            }
+
+            if (!meta_wmes.empty())
+            {
+                dprint(DT_SMEM_INSTANCE, "SMem Manager installing recall buffer.\n");
+                // process preference assertion en masse
+                install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes, !link_to_ltm);
+
+                // clear cache
+                {
+                    symbol_triple_list::iterator mw_it;
+
+                    for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
+                    {
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->id);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
+
+                        thisAgent->memoryManager->free_with_pool(MP_sym_triple, (*mw_it));
+                    }
+                    meta_wmes.clear();
+                }
+                
+                // process wm changes on this state
+                do_wm_phase = true;
+            }
+        }
     }
 
     if (do_wm_phase)
@@ -717,9 +827,9 @@ void SMem_Manager::reinit()
 {
     if (thisAgent->SMem->connected() && (thisAgent->SMem->settings->database->get_value() == smem_param_container::file))
     {
-        close();
-        init_db();
-    }
+            close();
+            init_db();
+        }
 }
 
 bool SMem_Manager::edge_updating_on()
@@ -732,27 +842,24 @@ bool SMem_Manager::edge_updating_on()
 }
 
 SMem_Manager::SMem_Manager(agent* myAgent)
+: thisAgent(myAgent),
+settings(new smem_param_container(myAgent)),
+statistics(new smem_stat_container(myAgent))
 {
-    thisAgent = myAgent;
     thisAgent->SMem = this;
 
-    settings = new smem_param_container(thisAgent);
-    statistics = new smem_stat_container(thisAgent);
     timers = new smem_timer_container(thisAgent);
-
-    DB = new soar_module::sqlite_database();
 
     smem_validation = 0;
 
     smem_in_wmem = new std::map<uint64_t, uint64_t>();
     smem_wmas = new smem_wma_map();
-    smem_spreaded_to = new std::unordered_map<uint64_t, int64_t>();
-    smem_recipient = new std::unordered_map<uint64_t, int64_t>();
+    smem_spreaded_to = new std::unordered_map<uint64_t, uint64_t>();
+    smem_recipient = new std::unordered_map<uint64_t, uint64_t>();
     smem_recipients_of_source = new std::unordered_map<uint64_t,std::set<uint64_t>*>();
     smem_context_additions = new std::set<uint64_t>();
     smem_context_removals = new std::set<uint64_t>();
     smem_edges_to_update = new smem_update_map();
-
 };
 
 void SMem_Manager::clean_up_for_agent_deletion()
@@ -761,11 +868,24 @@ void SMem_Manager::clean_up_for_agent_deletion()
      * deletion code that may need params, stats or timers to exist */
     // cleanup exploration
 
+    try {
     close();
+    } catch (...) {
+        std::exception_ptr e = std::current_exception();
+
+        try
+        {
+            if (e)
+                std::rethrow_exception(e);
+        } catch (std::exception& e)
+        {
+            std::cerr << "Exception thrown while cleaning up for agent deletion.  Database might be in inconsistent state:" << e.what() << std::endl;
+        }
+    }
     delete settings;
     delete statistics;
     delete timers;
-    delete DB;
+    //delete DB;
     delete smem_in_wmem;
     delete smem_wmas;
     delete smem_spreaded_to;

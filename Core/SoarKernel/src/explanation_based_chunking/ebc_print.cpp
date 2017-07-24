@@ -9,6 +9,7 @@
 #include "ebc_identity.h"
 
 #include "agent.h"
+#include "assert.hpp"
 #include "dprint.h"
 #include "ebc_settings.h"
 #include "instantiation.h"
@@ -203,7 +204,7 @@ void Explanation_Based_Chunker::print_singleton_summary()
     if (singletons->empty())
     {
         thisAgent->outputManager->printa(thisAgent, "   None.\n");
-    }
+            }
     else
     {
         Symbol* lSym;
@@ -211,8 +212,8 @@ void Explanation_Based_Chunker::print_singleton_summary()
         {
             lSym = static_cast<Symbol*>(*it);
             thisAgent->outputManager->printa_sf(thisAgent, "   (%s ^%y %s)\n", singletonTypeToString(lSym->sc->singleton.id_type), lSym, singletonTypeToString(lSym->sc->singleton.value_type));
+            }
         }
-    }
     outputManager->printa(thisAgent, "\n\n"
         "To add a new pattern:    chunk singleton    <type> attribute <type>\n"
         "To remove a pattern:     chunk singleton -r <type> attribute <type>\n\n"

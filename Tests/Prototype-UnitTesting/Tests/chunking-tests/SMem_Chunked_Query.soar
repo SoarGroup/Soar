@@ -1,0 +1,141 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+smem --set learning on
+
+smem --add {
+    (<goal> ^handle goal ^procedural <proc> ^predicate <pred>)
+    (<proc> ^arg1 <parg>)
+    (<pred> ^1 <pred-arg1>)
+    (<pred-arg1> ^default <def>)
+    (<def> ^name pantry)
+}
+
+sp {anystate*elaborate*name*superoperator
+    (state <s> ^superstate.operator.name <name>)
+-->
+    (<s> ^name <name>)
+}
+
+###########################################################################
+# Operator: smem query
+# If you add wme ^smem-query-cue <cue> to any state, it will cue the semantic memory for the substructure
+
+
+############################################################################
+# Operator: smem lti retrieval operator which can be fired on any state
+# If you add the wme ^query-lti <lti> to ANY state, it will do the retrieval
+#   of the substructure for epmem
+# Will add a ^queryd-lti <lti> to the state when done
+
+
+sp {anystate*propose*smem-query
+    (state <s> ^smem-query <query>)
+    (<query> ^cue <cue>
+            -^result)
+-->
+    (<s> ^operator <o> + > =)
+    (<o> ^name smem-query
+         ^query-info <query>)
+}
+
+sp {anystate*apply*smem-query*create*query*command
+    (state <s> ^operator <o>
+               ^smem.command <cmd>)
+    (<o> ^name smem-query
+         ^query-info.cue <cue>)
+-->
+    (<cmd> ^query <cue>)
+}
+
+sp {anystate*apply*smem-query*copy*params
+    (state <s> ^operator <o>
+               ^smem.command <cmd>)
+    (<o> ^name smem-query
+         ^query-info <info>)
+    (<info> ^{ <att> <> cue <> result } <val>)
+-->
+    (<cmd> ^<att> <val>)
+}
+#
+#sp {new*anystate*apply*smem-query*clear*command
+#   (state <s> ^smem.command <cmd>
+#         ^operator <op>)
+#   (<op> ^name smem-query-new
+#        ^identifier <lti>)
+#   (<cmd> ^{<command> << query store query >>} {<olti> <> <lti>})
+#-->
+#   (<cmd> ^<command> <olti> -)
+#}
+
+sp {anystate*apply*smem-query*create*result*success
+    (state <s> ^operator <o>
+               ^smem.result <res>
+               ^smem.result.success <cue>)
+    (<o> ^name smem-query
+         ^query-info <info>)
+    (<info> ^cue <cue>)
+    (<res> ^success <cue>
+           ^retrieved <top-lti>
+          -^retrieved.<att> <top-lti>)
+-->
+    (<info> ^result <top-lti>)
+}
+
+sp {anystate*apply*smem-query*create*result*failure
+    (state <s> ^operator <o>
+               ^smem.result.failure <cue>)
+    (<o> ^name smem-query
+         ^query-info <info>)
+    (<info> ^cue <cue>)
+-->
+    (<info> ^result failure)
+}
+
+sp {anystate*apply*smem-query*clear*smem*command
+    (state <s> ^operator <o>
+               ^smem.result.{ << success failure >> } <cue>
+               ^smem.command <cmd>)
+    (<o> ^name smem-query
+         ^query-info.cue <cue>)
+    (<cmd> ^<att> <val>)
+-->
+    (<cmd> ^<att> <val> -)
+}
+
+# Step 1: retrieve the goal in a substate and copy to superstate
+sp {init
+    (state <s> ^superstate nil)
+-->
+    (<s> ^cue1 handle ^cue2 goal)
+    }
+
+sp {top-state*propose*retrieve-goal
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+         -^goal
+         -^deleted)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name retrieve-goal)
+}
+
+sp {retrieve-goal*elaborate*smem-query
+    (state <s> ^operator.name retrieve-goal
+               ^superstate <ss>)
+    (<ss> ^cue1 <handle> ^cue2 <goal>)
+-->
+    (<s> ^smem-query <q>)
+    (<q> ^cue.<handle> <goal>
+         ^depth 5)
+}
+
+sp {retrieve-goal*copy-goal
+    (state <s> ^operator.name retrieve-goal
+               ^smem-query.result <goal>
+               ^superstate <ss>)
+-->
+    (<ss> ^goal <goal>)
+}

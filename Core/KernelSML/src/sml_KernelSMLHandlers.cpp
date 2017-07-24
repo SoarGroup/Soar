@@ -29,6 +29,7 @@
 #include "sml_RunScheduler.h"
 
 #include "agent.h"
+#include "assert.hpp"
 #include "debug.h"
 #include "io_link.h"
 #include "output_manager.h"
@@ -44,7 +45,6 @@
 #include <fstream>
 #include <map>
 #include <stdlib.h>
-#include "assert.hpp"
 #include <algorithm>
 #include <sstream>
 

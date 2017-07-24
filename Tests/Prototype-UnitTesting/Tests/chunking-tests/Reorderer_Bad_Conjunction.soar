@@ -1,0 +1,36 @@
+# Tests:
+# This agent used to produce a conjunctive test with a single element 
+# in an intermediate condition list during chunking.  The reordering
+# code was the culprit.
+
+srand 23
+chunk always
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^item1 23 ^item2 23)
+}
+
+sp {propose
+   (state <s> ^superstate <ss>)
+   (<ss> ^superstate nil
+         ^item2 <value>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name make-chunk)}
+
+sp {apply
+   (state <s> ^operator <o>
+              ^superstate <ss>)
+   (<ss> ^item1 <value>)
+   (<o> ^name make-chunk)
+-->
+   (<ss> ^result <value>)}
+
+sp {apply*test-done
+   (state <s> ^result <r>)
+-->
+   (write (crlf) |Chunk created. Result found | <r> |.  Stopping.| (crlf))
+   (interrupt)
+}

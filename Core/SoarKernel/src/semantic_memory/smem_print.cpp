@@ -12,6 +12,8 @@
 #include "output_manager.h"
 #include "lexer.h"
 
+#include "VariadicBind.h"
+
 #include <algorithm>
 
 bool SMem_Manager::export_smem(uint64_t lti_id, std::string& result_text, std::string** err_msg)
@@ -71,7 +73,6 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
      * This populates the input argument store_set (a ltm set) with a given lti_id's contents.
      * scijones Sept 9, 2016.
      */
-    soar_module::sqlite_statement* expand_q = thisAgent->SMem->SQL->web_expand;
     std::string attr_str;
     int64_t attr_int;
     double attr_double;
@@ -100,10 +101,36 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
         new_ltm->lti_id = parent_lti->lti_id;
         new_ltm->slots = new ltm_slot_map();
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_lti
-        expand_q->bind_int(1, parent_lti->lti_id);
-        while (expand_q->execute() == soar_module::row)
+        struct result_t {
+            byte attr_type;
+            smem_hash_id attr_hash;
+            byte value_type;
+            smem_hash_id value_hash;
+            uint64_t value_lti;
+        };
+
+        std::packaged_task<std::vector<result_t>()> expand([this, parent_lti, depth] {
+            std::vector<result_t> results;
+            auto sql = sqlite_thread_guard(SQL->web_expand);
+
+            sql->bind(1, parent_lti->lti_id);
+
+            while (sql->executeStep())
+                results.push_back   ({
+                    static_cast<byte>(sql->getColumn(0).getInt()),
+                    sql->getColumn(1).getUInt64(),
+                    static_cast<byte>(sql->getColumn(2).getInt()),
+                    sql->getColumn(3).getUInt64(),
+                    sql->getColumn(4).getUInt64()
+                });
+
+            return results;
+        });
+        
+        auto results = JobQueue->post(expand).get();
+        for (const auto& r : results)
         {
-            Symbol* attr = rhash_(static_cast<byte>(expand_q->column_int(0)), static_cast<smem_hash_id>(expand_q->column_int(1)));
+            Symbol* attr = rhash_(r.attr_type, r.attr_hash);
             //thisAgent->symbolManager->symbol_remove_ref(&attr);
             if (new_ltm->slots->find(attr) == new_ltm->slots->end())
             {
@@ -111,10 +138,10 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
             }
             ltm_value* new_value = new ltm_value();
 
-            if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
+            if (r.value_lti != SMEM_AUGMENTATIONS_NULL)
             {
                 new_lti = new smem_vis_lti;
-                new_lti->lti_id = expand_q->column_int(4);
+                new_lti->lti_id = r.value_lti;
                 new_lti->level = (parent_lti->level + 1);
                 thisAgent->SMem->get_lti_name(new_lti->lti_id, new_lti->lti_name);
                 new_value->val_lti.val_type = value_lti_t;
@@ -144,26 +171,31 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
             {
                 new_value->val_const.val_type = value_const_t;
                 new_value->val_lti.val_type = value_const_t;
-                new_value->val_const.val_value  = rhash_(expand_q->column_int(2),expand_q->column_int(3));
+                new_value->val_const.val_value  = rhash_(r.value_type, r.value_hash);
                 //thisAgent->symbolManager->symbol_remove_ref(&(new_value->val_const.val_value));
             }
             new_ltm->slots->at(attr)->push_back(new_value);
         }
         store_set->insert(new_ltm);
-        expand_q->reinitialize();
     }
 }
 
 void SMem_Manager::create_full_store_set(ltm_set* store_set)
 {
     //This makes a set that contains the entire contents of smem.
-    soar_module::sqlite_statement* q;
-    q = thisAgent->SMem->SQL->vis_lti;
-    while (q->execute() == soar_module::row)
-    {
-        create_store_set(store_set, q->column_int(0), 1);
-    }
-    q->reinitialize();
+    std::packaged_task<std::vector<uint64_t>()> create([this] {
+        std::vector<uint64_t> ltis;
+        auto sql = sqlite_thread_guard(SQL->vis_lti);
+
+        while (sql->executeStep())
+            ltis.push_back(sql->getColumn(0).getUInt64());
+
+        return ltis;
+    });
+
+    auto ltis = JobQueue->post(create).get();
+    for (const uint64_t& lti : ltis)
+        create_store_set(store_set, lti, 1);
 }
 
 void SMem_Manager::clear_store_set(ltm_set* store_set)
@@ -216,33 +248,35 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
 
     attach();
 
-    soar_module::sqlite_statement* expand_q = thisAgent->SMem->SQL->web_expand;
-
     return_val->append("(");
     get_lti_name(pLTI_ID, *return_val);
 
     bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
 
     // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
-    expand_q->bind_int(1, pLTI_ID);
-    while (expand_q->execute() == soar_module::row)
+    std::packaged_task<void()> direct([&] () mutable -> void {
+        auto sql = sqlite_thread_guard(SQL->web_expand);
+
+        sql->bind(1, pLTI_ID);
+
+        while (sql->executeStep())
     {
         // get attribute
-        switch (expand_q->column_int(0))
+            switch (sql->getColumn(0).getInt64())
         {
             case STR_CONSTANT_SYMBOL_TYPE:
             {
-                rhash__str(expand_q->column_int(1), temp_str);
+                    temp_str = rhash__str(sql->getColumn(1).getUInt64());
                 make_string_rereadable(temp_str);
                 break;
             }
             case INT_CONSTANT_SYMBOL_TYPE:
-                temp_int = rhash__int(expand_q->column_int(1));
+                    temp_int = rhash__int(sql->getColumn(1).getInt64());
                 to_string(temp_int, temp_str);
                 break;
 
             case FLOAT_CONSTANT_SYMBOL_TYPE:
-                temp_double = rhash__float(expand_q->column_int(1));
+                    temp_double = rhash__float(sql->getColumn(1).getInt64());
                 to_string(temp_double, temp_str);
                 break;
 
@@ -252,9 +286,9 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
         }
 
         // identifier vs. constant
-        if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
+            if (sql->getColumn(4).getInt64() != SMEM_AUGMENTATIONS_NULL)
         {
-            temp_lti_id = static_cast<uint64_t>(expand_q->column_int(4));
+                temp_lti_id = static_cast<uint64_t>(sql->getColumn(4).getInt64());
             temp_str2.clear();
             get_lti_name(temp_lti_id, temp_str2);
 
@@ -264,21 +298,21 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
         }
         else
         {
-            switch (expand_q->column_int(2))
+                switch (sql->getColumn(2).getInt64())
             {
                 case STR_CONSTANT_SYMBOL_TYPE:
                 {
-                    rhash__str(expand_q->column_int(3), temp_str2);
+                        temp_str2 = rhash__str(sql->getColumn(3).getUInt64());
                     make_string_rereadable(temp_str2);
                     break;
                 }
                 case INT_CONSTANT_SYMBOL_TYPE:
-                    temp_int = rhash__int(expand_q->column_int(3));
+                        temp_int = rhash__int(sql->getColumn(3).getInt64());
                     to_string(temp_int, temp_str2);
                     break;
 
                 case FLOAT_CONSTANT_SYMBOL_TYPE:
-                    temp_double = rhash__float(expand_q->column_int(3));
+                        temp_double = rhash__float(sql->getColumn(3).getInt64());
                     to_string(temp_double, temp_str2);
                     break;
 
@@ -290,7 +324,9 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
 
         augmentations[ temp_str ].push_back(temp_str2);
     }
-    expand_q->reinitialize();
+    });
+
+    JobQueue->post(direct).wait();
 
     // output augmentations nicely
     {
@@ -341,12 +377,20 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
 
 void SMem_Manager::print_store(std::string* return_val)
 {
-    soar_module::sqlite_statement* q = thisAgent->SMem->SQL->vis_lti;
-    while (q->execute() == soar_module::row)
-    {
-        print_smem_object(q->column_int(0), 1, return_val);
-    }
-    q->reinitialize();
+    std::packaged_task<std::vector<uint64_t>()> fetchLTIs([this] {
+        std::vector<uint64_t> ltis;
+
+        auto sql = sqlite_thread_guard(SQL->vis_lti);
+
+        while (sql->executeStep())
+            ltis.push_back(sql->getColumn(0).getUInt64());
+
+        return ltis;
+    });
+
+    auto ltis = JobQueue->post(fetchLTIs).get();
+    for (const uint64_t& lti : ltis)
+        print_smem_object(lti, 1, return_val);
 }
 
 void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::string* return_val, bool history)
@@ -360,9 +404,9 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
     id_set next;
     id_set::iterator next_it;
 
-    soar_module::sqlite_statement* act_q = thisAgent->SMem->SQL->vis_lti_act;
-    soar_module::sqlite_statement* hist_q = thisAgent->SMem->SQL->history_get;
-    soar_module::sqlite_statement* lti_access_q = thisAgent->SMem->SQL->lti_access_get;
+    auto act_q = sqlite_thread_guard(SQL->vis_lti_act);
+    auto hist_q = sqlite_thread_guard(SQL->history_get);
+    auto lti_access_q = sqlite_thread_guard(SQL->lti_access_get);
     unsigned int i;
 
 
@@ -383,40 +427,49 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
 
         // get lti info
         {
-            act_q->bind_int(1, c.first);
-            act_q->execute();
+            act_q->bind(1, c.first);
+
+            if (!act_q->executeStep())
+                throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
 
             //Look up activation history.
             std::list<uint64_t> access_history;
             if (history)
             {
-                lti_access_q->bind_int(1, c.first);
-                lti_access_q->execute();
-                uint64_t n = lti_access_q->column_int(0);
-                lti_access_q->reinitialize();
-                hist_q->bind_int(1, c.first);
-                hist_q->execute();
+                lti_access_q->bind(1, c.first);
+
+                if (!lti_access_q->executeStep())
+                    throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
+
+                uint64_t n = lti_access_q->getColumn(0).getInt64();
+                lti_access_q->reset();
+
+                hist_q->bind(1, c.first);
+
+                if (!hist_q->executeStep())
+                    throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
+
                 for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
                 {
-                    if (thisAgent->SMem->SQL->history_get->column_int(i) != 0)
+                    if (hist_q->getColumn(i).getInt64() != 0)
                     {
-                        access_history.push_back(hist_q->column_int(i));
+                        access_history.push_back(hist_q->getColumn(i).getInt64());
                     }
                 }
-                hist_q->reinitialize();
+                hist_q->reset();
             }
 
             if (history && !access_history.empty())
             {
-                next = print_LTM(c.first, act_q->column_double(0), return_val, &(access_history));
+                next = print_LTM(c.first, act_q->getColumn(0).getDouble(), return_val, &(access_history));
             }
             else
             {
-                next = print_LTM(c.first, act_q->column_double(0), return_val);
+                next = print_LTM(c.first, act_q->getColumn(0).getDouble(), return_val);
             }
 
             // done with lookup
-            act_q->reinitialize();
+            act_q->reset();
 
             // consider further depth
             if (c.second < depth)

@@ -1,0 +1,60 @@
+# Constraint propagation from base conditions
+
+chunk always
+watch --learn 2
+
+sp {init-superstate
+   (state <s> ^superstate nil)
+-->
+   (<s> ^data 1 3)
+}
+
+sp {propose
+   (state <s> ^superstate.superstate nil)
+-->
+   (<s> ^operator <o> +)
+}
+
+sp {elab-copy-ts-ts
+   (state <s> ^superstate nil
+              ^data <t> { > 1 })
+-->
+   (<s> ^data2 <t>) ; # = 3
+}
+
+sp {apply-copy-ts-ts-ss
+   (state <s> ^superstate <ss>
+              ^operator)
+   (<ss> ^data2  { >= 2 <t> })
+-->
+   (<s> ^subdata2 <t>) ; # = 3
+}
+
+sp {apply-copy-ts-ss
+   (state <s> ^superstate <ss>
+              ^operator)
+   (<ss> ^data <t>)
+-->
+   (<s> ^subdata <t>)
+}
+
+sp {apply-create-chunk
+   (state <s> ^superstate <ss>
+              ^operator <o>
+              ^subdata { <> <t2> <t1> }
+              ^subdata { < <t1> <t2> }
+              ^subdata2 <t1>)
+   (<ss> ^data <t3> 
+         ^data2 <t4>)
+-->
+   (<ss> ^big <t1> ^small <t2>)
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+

@@ -1,0 +1,54 @@
+# Literalization_with_Constraints
+# - Basically a literalization test with some extra tricky stuff
+# - Literalized equality test in conjunction, so test should be thrown out
+# - Ungrounded equality test with constraints on it that use both literalized 
+#   and variablized symbols.  One constraint should propagate and literalized 
+#   one should be thrown out.
+                                
+
+chunk always
+watch --learn 2
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^word object ^word2 not-object)
+
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^word <w>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^word <w>)
+}
+
+sp {apply*literalization
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^word object)
+    -->
+    (<s> ^sub-result ungrounded +)
+}
+
+sp {start-chunking2
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result {<> <not-object> <> <object> <ungrounded>})
+    (<o> ^word { <> <ungrounded> <object> })
+    (<ss> ^word2 {<> <object> <not-object> }
+          ^word { <> <ungrounded> <object2> })
+    -->
+    (<ss> ^result <object> +
+          ^result2 <not-object> +
+          ^result3 <ungrounded> +)
+}

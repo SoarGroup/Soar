@@ -1,0 +1,15 @@
+sp {answer*apply14b*onc*t3-1
+    (state <s1> ^superstate nil)
+    (<s1> ^test-param <p1>)
+    (<s1> ^test-item { > 3 <c1> })
+    -->
+    (<s1> ^result14-ungrounded-num 3 +)
+    (<s1> ^result14-ungrounded-id <u1> +)
+    (<u1> ^sub-item <s2> +)
+    (<u1> ^number 5 +)
+    (<s1> ^result14-grounded-id <p1> +)
+    (<s1> ^result14-grounded-num <c1> +)
+    (<s1> ^test-done 1 +)}
+
+
+

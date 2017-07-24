@@ -17,7 +17,7 @@
 #include <string>
 bool is_DT_mode_enabled(TraceMode mode);
 
-class EXPORT Symbol_Manager {
+class EXPORT_INTERNAL Symbol_Manager {
 
         friend Output_Manager;
 

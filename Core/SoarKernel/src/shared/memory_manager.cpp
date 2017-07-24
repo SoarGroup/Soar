@@ -1,6 +1,7 @@
 #include "memory_manager.h"
 
 #include "agent.h"
+#include "assert.hpp"
 #include "dprint.h"
 #include "mem.h"
 #include "print.h"

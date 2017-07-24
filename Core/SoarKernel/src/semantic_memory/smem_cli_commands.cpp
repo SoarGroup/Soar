@@ -37,8 +37,8 @@ bool SMem_Manager::CLI_add(const char* ltms_str, std::string** err_msg)
     str_to_ltm_map ltms;
     str_to_ltm_map::iterator c_old;
 
-    ltm_set newbies;
-    ltm_set::iterator c_new;
+    ltm_list newbies;
+    ltm_list::iterator c_new;
 
     // consume next token
     lexer.get_lexeme();
@@ -372,7 +372,7 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
     }
     else
     {
-        id_set* prohibit = new id_set;
+        id_set prohibit;
         wme_set cue_wmes;
         symbol_triple_list meta_wmes;
         symbol_triple_list retrieval_wmes;
@@ -382,7 +382,7 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
 
         std::list<uint64_t> match_ids;
 
-        process_query(NIL, root_cue_id_list, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
+        process_query(NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, &match_ids, number_to_retrieve, 1, fake_install);
 
         if (!match_ids.empty())
         {
@@ -395,6 +395,7 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         {
             (*result_message)->append("SMem| No results for query.");
         }
+
         // clear cache
         {
             symbol_triple_list::iterator mw_it;
@@ -417,8 +418,6 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
             }
             meta_wmes.clear();
         }
-
-        delete prohibit;
 
     }
 
@@ -823,7 +822,7 @@ Symbol* SMem_Manager::parse_constant_attr(soar::Lexeme* lexeme)
     return return_val;
 }
 
-bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_LTMs, ltm_set* newbies)
+bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_LTMs, ltm_list* newbies)
 {
     bool return_val = false;
 
@@ -927,7 +926,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                             (*str_to_LTMs)[ temp_key ] = l_ltm_temp;
 
                             // definitely a new ltm
-                            newbies->insert(l_ltm_temp);
+                            newbies->push_back(l_ltm_temp);
 
                             // the new ltm is our parent for this set of values (or further dots)
                             l_ltm_intermediate_parent = l_ltm_temp;
@@ -1046,7 +1045,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                                 //lexer->get_lexeme();
 
                                                 // possibly a newbie (could be a self-loop)
-                                                newbies->insert(l_ltm_temp);
+                                                newbies->push_back(l_ltm_temp);
                                             }
                                         }
 
@@ -1159,7 +1158,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
         if (!(*p))
         {
             (*p) = l_ltm;
-            newbies->insert(l_ltm);
+            newbies->push_back(l_ltm);
         }
         else
         {
@@ -1203,7 +1202,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
             }
 
             // contents are new
-            newbies->insert((*p));
+            newbies->push_back((*p));
 
             // deallocate
             deallocate_ltm(l_ltm);
@@ -1219,8 +1218,9 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
 uint64_t SMem_Manager::spread_size()
 {
-    SQL->calc_spread_size_debug_cmd->execute();
-    uint64_t number_spread_elements = SQL->calc_spread_size_debug_cmd->column_int(0);
-    SQL->calc_spread_size_debug_cmd->reinitialize();
-    return number_spread_elements;
+    std::packaged_task<uint64_t()> size([this]() {
+        auto sql = sqlite_thread_guard(SQL->calc_spread_size_debug_cmd);
+        return sql->getColumn(0).getUInt64();
+    });
+    return JobQueue->post(size).get();
 }

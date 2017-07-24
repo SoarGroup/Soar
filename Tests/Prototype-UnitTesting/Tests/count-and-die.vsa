@@ -1,0 +1,16 @@
+VERSION 4
+\count-and-die\count-and-die.dm
+0	ROOT count-and-die count-and-die 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	OPERATOR initialize-count-and-die initialize-count-and-die.soar 7
+7	0	HLOPERATOR one one.soar one 13 8
+8	7	FOPERATOR elaborations elaborations.soar 9
+9	7	OPERATOR done done.soar 10
+10	7	OPERATOR inc inc.soar 11
+11	7	OPERATOR init init.soar 12
+12	0	OPERATOR two two.soar 13
+END

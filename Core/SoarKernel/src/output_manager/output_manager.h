@@ -15,6 +15,7 @@
 
 #include "kernel.h"
 
+#include "assert.hpp"
 #include <string>
 #include <list>
 #include <stdlib.h>
@@ -81,8 +82,8 @@ class Output_Manager
         Output_Manager(Output_Manager const&) {};
         void operator=(Output_Manager const&) {};
 
-        agent*          m_defaultAgent;
-        OM_Parameters*  m_params;
+        agent*                                    m_defaultAgent;
+        OM_Parameters*                            m_params;
 
         /* -- Global toggles for database, standard out -- */
         bool stdout_mode;

@@ -1,0 +1,64 @@
+epmem --set learning on
+
+#epmem --set lazy-commit off
+#epmem --set optimization safety
+
+epmem --set trigger dc
+
+#epmem --set database file
+#epmem --set path /Users/justinnhli/Desktop/hamilton.sqlite
+
+epmem --set graph-match-ordering mcv
+
+#We aren't porting this yet. -ACN
+#watch --epmem
+
+sp {propose*init
+    (state <s> ^superstate nil
+               -^name)
+-->
+    (<s> ^operator.name init)
+}
+
+sp {apply*init
+    (state <s> ^operator.name init)
+-->
+    (<s> ^name graph-match-unit
+         ^hamilton <hamilton>)
+
+    # taken from http://www.math.sunysb.edu/~tony/whatsnew/column/dna-0200/dna-abc2.html
+    # solution: Fresno, Albany, Dallas, Seattle, Omaha, Atlanta, Boston
+
+    # sql for city->node mapping:
+    # SELECT nu.parent_id, tsh.sym_const FROM edge_unique eu JOIN node_unique nu ON eu.q1=nu.parent_id JOIN temporal_symbol_hash tsh ON nu.value=tsh.id WHERE w=13;
+
+
+    (<hamilton> ^city <fresno>
+                ^city <seattle>
+                ^city <omaha> 
+                ^city <dallas>
+                ^city <albany>
+                ^city <atlanta>
+                ^city <boston>)
+    (<fresno> ^name Fresno ^to <seattle> <albany> <boston>)
+    (<seattle> ^name Seattle ^to <omaha> <dallas>)
+    (<omaha> ^name Omaha ^to <albany> <atlanta>)
+    (<albany> ^name Albany ^to <seattle> <dallas>)
+    (<dallas> ^name Dallas ^to <seattle> <albany>)
+    (<atlanta> ^name Atlanta ^to <dallas> <boston>)
+    (<boston> ^name Boston)
+}
+
+sp {propose*halt
+   (state <s> ^superstate nil)
+-->
+   (<s> ^operator <o> + <)
+   (<o> ^name halt)
+}
+
+sp {apply*halt
+   (state <s> ^operator <o>)
+   (<o> ^name halt)
+-->
+   (halt)
+}

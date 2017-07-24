@@ -8,6 +8,7 @@
 #include "test.h"
 
 #include "agent.h"
+#include "assert.hpp"
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -99,7 +100,7 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                         new_ct->inst_identity = t->eq_test->inst_identity;
                         set_test_identity(thisAgent, new_ct, t->eq_test->identity);
                         new_ct->chunk_inst_identity = t->eq_test->chunk_inst_identity;
-                    }
+                }
                 } else {
                     new_ct->inst_identity = t->eq_test->inst_identity;
                     set_test_identity(thisAgent, new_ct, t->eq_test->identity);
@@ -144,7 +145,7 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                 set_test_identity(thisAgent, new_ct, get_joined_identity(new_ct->identity));
             } else {
                 set_test_identity(thisAgent, new_ct, t->identity);
-            }
+                }
 
             break;
     }
@@ -259,7 +260,7 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
         thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
         thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
         thisAgent->explanationMemory->increment_stat_merged_disjunctions();
-    #endif
+            #endif
 }
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
@@ -272,7 +273,7 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
     if (destination->type != CONJUNCTIVE_TEST)
     {
         if (destination->type == DISJUNCTION_TEST)
-        {
+            {
             merge_disjunction_tests(thisAgent, destination, new_test);
             return true;
         }
@@ -284,7 +285,7 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
         c->first = *dest_test_address;
         c->rest = NIL;
         *dest_test_address = destination;
-    }
+            }
 
     for (c = destination->data.conjunct_list; c != NIL; c = c->rest)
     {
@@ -312,8 +313,8 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
 bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool merge_disjunctions)
 {
 
-    test destination = 0;//, original = 0;
-    cons* c;//, *c_orig;
+	test destination = 0;//, original = 0;
+	cons* c;//, *c_orig;
 
     if (!new_test)
     {

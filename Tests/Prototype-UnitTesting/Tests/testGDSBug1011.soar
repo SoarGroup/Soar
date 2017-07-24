@@ -1,0 +1,114 @@
+#w 5
+#verbose -e
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^evaluated-something false)
+}
+
+sp {propose*operator*a
+  (state <s> ^superstate nil)
+-->
+  (<s> ^operator <o> +) 
+  (<o> ^name a)
+}
+
+sp {propose*operator*b
+  (state <s> ^superstate nil)
+-->
+  (<s> ^operator <o> +) 
+  (<o> ^name b)
+}
+
+sp {tie*propose*make-local-state
+   (state <s> ^impasse tie
+             -^dummy-local-state true)
+   (state <s2> ^superstate nil
+               ^evaluated-something false)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name make-local-state)
+}
+
+sp {tie*apply*make-local-state
+   (state <s> ^impasse tie
+              ^operator.name make-local-state)
+-->
+   (<s> ^dummy-local-state true)
+}
+
+sp {tie*propose*evaluate-operator
+   (state <s> ^impasse tie
+             ^item <i>)
+    (<i> -^prefer <any>)
+-->
+   (<s> ^operator <o> + < =)
+   (<o> ^name evaluate
+        ^superoperator <i>)
+}
+
+sp {evaluate*mark-ts
+   (state <s> ^operator.name evaluate)
+   (state <s2> ^superstate nil
+               ^evaluated-something false)
+-->
+   (<s2> ^evaluated-something false -)
+}
+
+sp {evaluate*a-best
+   (state <s> ^operator <o>)
+   (<o> ^name evaluate
+        ^superoperator <so>)
+   (<so> ^name a)
+-->
+   (<so> ^prefer true)
+}
+
+sp {evaluate*b-worst
+   (state <s> ^operator <o>)
+   (<o> ^name evaluate
+        ^superoperator <so>)
+   (<so> ^name b)
+-->
+   (<so> ^prefer false)
+}
+
+sp {tie*propose*save-result
+   (state <s> ^impasse tie
+              ^item <i1>
+              ^item <i2>)
+   (<i1> ^prefer true)
+   (<i2> ^prefer false)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name change-preferences)
+}
+
+sp {tie*apply*save-result*prefer
+   (state <s> ^impasse tie
+              ^item <i>
+              ^superstate <ss>
+              ^operator.name change-preferences)
+   (<ss> ^operator <i> +)
+   (<i> ^prefer true)
+-->
+   (<ss> ^operator <i> >)
+}
+
+sp {tie*apply*save-result*reject
+   (state <s> ^impasse tie
+              ^item <i>
+              ^superstate <ss>
+              ^operator.name change-preferences)
+   (<ss> ^operator <i> +)
+   (<i> ^prefer false)
+-->
+   (<ss> ^operator <i> -)
+}
+
+sp {apply*a
+   (state <s> ^operator.name a)
+-->
+   (halt)
+}

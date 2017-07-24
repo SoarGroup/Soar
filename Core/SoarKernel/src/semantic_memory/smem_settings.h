@@ -28,6 +28,7 @@ class smem_param_container: public soar_module::param_container
         smem_path_param* path;
         soar_module::boolean_param* lazy_commit;
         soar_module::boolean_param* append_db;
+        soar_module::boolean_param* synchronous_db;
 
         soar_module::constant_param<soar_module::timer::timer_level>* timers;
 

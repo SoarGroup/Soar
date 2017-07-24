@@ -28,12 +28,12 @@
 #include "thread_Thread.h"  // To get to sleep
 #include "EmbeddedSMLInterface.h" // for static reference
 
+#include "assert.hpp"
 #include "memory_manager.h"
 #include "misc.h"
 #include "output_manager.h"
 #include "soar_instance.h"
 
-#include "assert.hpp"
 #include <iostream>
 #include <sstream>
 #include <iomanip>

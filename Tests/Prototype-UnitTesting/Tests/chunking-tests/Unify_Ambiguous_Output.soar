@@ -1,0 +1,37 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {init*substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^foo <x>
+         ^marco <y>)
+}
+
+sp {propose
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^operator <o> + =)
+    }
+
+sp {attach-to-foo
+    (state <s> ^marco <x>
+               ^foo <y>)
+    -->
+    (<y> ^bastard-child of-foo)
+    }
+
+sp {make-chunk
+    (state <s> ^superstate {<> nil <ss>}
+               ^operator <o>
+               ^marco <polo>
+               ^foo <bar>)
+-->
+    (<ss> ^result-marco <polo>
+          ^result-foo <bar>
+          ^result-marco2 <polo>
+    )
+}

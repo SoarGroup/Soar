@@ -19,15 +19,25 @@
 #include "smem_structs.h"
 #include "smem_settings.h"
 #include "smem_stats.h"
+#include "smem_db.h"
 
+#include "sqlite_job_queue.hpp"
+#include "Database.h"
+
+#include <atomic>
+#include <thread>
+#include <mutex>
 #include <string>
+#include <vector>
+#include <tuple>
+#include <memory>
 
 //#define SMEM_EXPERIMENT  // hijack the main SMem function for tight-loop experimentation/timing
 
 class SMem_Manager
 {
         friend cli::CommandLineInterface;
-        friend smem_statement_container;
+        friend SMemExperimental::smem_statement_container;
         friend smem_path_param;
         friend class smem_param_container;
         friend smem_db_lib_version_stat;
@@ -38,6 +48,7 @@ class SMem_Manager
         friend smem_db_predicate<smem_param_container::page_choices>;
         friend smem_db_predicate<smem_param_container::opt_choices>;
         friend smem_db_predicate<boolean>;
+        friend sqlite_job_queue;
 
 
     public:
@@ -102,14 +113,35 @@ class SMem_Manager
         smem_timer_container*           timers; /* The following remains public because used in run_soar.cpp */
         std::map<uint64_t, uint64_t>* smem_in_wmem;
         smem_wma_map* smem_wmas;
-        std::unordered_map<uint64_t, int64_t>* smem_spreaded_to;
-        std::unordered_map<uint64_t, int64_t>* smem_recipient;
+        std::unordered_map<uint64_t, uint64_t>* smem_spreaded_to;
+        std::unordered_map<uint64_t, uint64_t>* smem_recipient;
         std::unordered_map<uint64_t,std::set<uint64_t>*>* smem_recipients_of_source;
         std::set<uint64_t>* smem_context_additions;
         std::set<uint64_t>* smem_context_removals;
         smem_update_map* smem_edges_to_update;
 
     private:
+        class Job
+        {
+            std::function<void()> execution;
+
+            std::atomic<bool> completed;
+        };
+
+        // Multi-Threading
+        void recreateDB(std::string path);
+
+        std::mutex agent_jobqueue_boundary_mutex;
+        struct query_result
+        {
+            uint64_t king_id;
+            uint64_t depth;
+            Symbol* state;
+            Symbol* query;
+            Symbol* negquery;
+        };
+
+        std::vector<query_result> query_results;
 
         agent*                          thisAgent;
 
@@ -117,10 +149,15 @@ class SMem_Manager
         uint64_t                        smem_validation;
         int64_t                         smem_max_cycle;
 
-        smem_statement_container*       SQL;
         smem_param_container*           settings;
         smem_stat_container*            statistics;
-        soar_module::sqlite_database*   DB;
+        std::shared_ptr<SQLite::Database>                               DB;
+        std::unique_ptr<SMemExperimental::smem_statement_container>     SQL;
+        std::shared_ptr<sqlite_job_queue>                               JobQueue;
+
+        static const std::string            memoryDatabasePath;
+        static const int                    sqlite3Flags;
+        static const int                    sqlite3Timeout;
 
         /* Temporary maps used when creating an instance of an LTM */
         id_to_sym_map                   lti_to_sti_map;
@@ -173,7 +210,7 @@ class SMem_Manager
         inline void     count_child_connection(std::map<uint64_t, uint64_t>* children, uint64_t child_lti_id);
         void            disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>* old_children);
         ltm_slot*       make_ltm_slot(ltm_slot_map* slots, Symbol* attr);
-        bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
+        bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_list* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
         void            store_new(Symbol* pSTI, smem_storage_type store_type, bool pOverwriteOldLinkToLTM, tc_number tc = NIL);
         void            update(Symbol* pSTI, smem_storage_type store_type, tc_number tc = NIL);
@@ -184,19 +221,20 @@ class SMem_Manager
         uint64_t        get_current_LTI_for_iSTI(Symbol* pSTI, bool useLookupTable, bool pOverwriteOldLinkToLTM);
 
         /* Methods for queries */
+        void                            process_query_SQL(smem_weighted_cue_list weighted_cue, bool needFullSearch, const id_set& prohibit, Symbol* state, Symbol* query, Symbol* negquery, std::list<uint64_t>* match_ids, uint64_t number_to_retrieve, uint64_t depth);
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
-        uint64_t                        process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install);
+        uint64_t                        process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install, bool synchronous = false);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
-        soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);
-        soar_module::sqlite_statement*  setup_web_crawl_without_spread(smem_weighted_cue_element* el);
-        soar_module::sqlite_statement*  setup_cheap_web_crawl(smem_weighted_cue_element* el);
-        soar_module::sqlite_statement*  setup_web_crawl_spread(smem_weighted_cue_element* el);
+        std::shared_ptr<sqlite_thread_guard>  setup_web_crawl(smem_weighted_cue_element* el);
+        std::shared_ptr<sqlite_thread_guard>  setup_web_crawl_without_spread(smem_weighted_cue_element* el);
+        std::shared_ptr<sqlite_thread_guard>  setup_cheap_web_crawl(smem_weighted_cue_element* el);
+        std::shared_ptr<sqlite_thread_guard>  setup_web_crawl_spread(smem_weighted_cue_element* el);
 
         /* Methods for supporting spreading activation */
         void child_spread(uint64_t lti_id, std::map<uint64_t, std::list<std::pair<uint64_t,double>>*>& lti_trajectories, int depth);
         void trajectory_construction(uint64_t lti_id, std::map<uint64_t, std::list<std::pair<uint64_t, double>>*>& lti_trajectories, int depth, bool initial);
         //void calc_likelihoods_for_trajectories(uint64_t lti_id);
-        inline soar_module::sqlite_statement* setup_manual_web_crawl(smem_weighted_cue_element* el, uint64_t lti_id);
+        inline std::shared_ptr<sqlite_thread_guard> setup_manual_web_crawl(smem_weighted_cue_element* el, uint64_t lti_id);
         //void calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set=NULL);
 };
 

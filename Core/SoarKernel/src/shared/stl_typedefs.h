@@ -217,8 +217,7 @@ struct IDSetLessThan;
 
     #endif
 
-typedef std::pair< double, uint64_t >                   smem_activated_lti;
+typedef std::pair< double, uint64_t >                           smem_activated_lti;
 typedef std::unordered_multimap<uint64_t,wma_decay_element*>    smem_wma_map;
-
 
 #endif /* STL_TYPEDEFS_H_ */

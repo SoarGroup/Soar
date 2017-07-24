@@ -8,9 +8,10 @@
 
 #include "TestRunner.hpp"
 
+#include "TestCategory.hpp"
+
 #include <exception>
 #include <stdexcept>
-#include "TestCategory.hpp"
 
 TestRunner::TestRunner(TestCategory* c, std::function<void ()> f, std::condition_variable_any* v)
 : category(c), function(f), variable(v), kill(false), ready(false), done(false), failed(false)

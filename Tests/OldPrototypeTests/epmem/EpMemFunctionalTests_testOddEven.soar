@@ -1,0 +1,119 @@
+epmem --set trigger dc
+epmem --set learning on
+watch --epmem
+
+### initialize
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator.name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init)
+-->
+   (<s> ^counter 1
+        ^max 10
+        ^first true
+        ^name count)
+}
+
+### indicate even vs. odd
+sp {elab*mod2
+   (state <s> ^counter <c>)
+-->
+   (<s> ^mod2 (mod <c> 2))
+}
+
+sp {elab*even
+   (state <s> ^mod2 0)
+-->
+   (<s> ^even t)
+}
+
+sp {elab*odd
+   (state <s> ^mod2 1)
+-->
+   (<s> ^odd t)
+}
+
+### count up to max (clear first if still around)
+sp {propose*next
+   (state <s> ^name count
+              ^counter <c>
+              ^max {<> <c>})
+-->
+   (<s> ^operator.name next)
+}
+
+sp {apply*next
+   (state <s> ^operator.name next
+              ^counter <c>)
+-->
+   (<s> ^counter <c> -) 
+   (<s> ^counter (+ <c> 1))
+}
+
+sp {apply*next*first
+   (state <s> ^operator.name next
+              ^first <f>)
+-->
+   (<s> ^first <f> -)
+}
+
+### query when done counting
+sp {propose*query
+   (state <s> ^name count
+              ^counter <m>
+              ^max <m>
+             -^epmem.command.query)
+-->
+   (<s> ^operator.name query)
+}
+
+sp {apply*query
+   (state <s> ^operator.name query
+              ^epmem.command <cmd>
+              ^max <m>)
+-->
+   (<cmd> ^query <q>
+          ^neg-query <nq>)
+   (<q> ^even t)
+   (<nq> ^counter 1 2 4 8 10)
+}
+
+### halt when query returns
+sp {propose*success
+   (state <s> ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.success <q>
+            ^result.retrieved <r>)
+   (<r> ^counter 6 ^even t)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name success)
+}
+
+sp {propose*failed
+   (state <s> ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.<< success failure >> <q>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name failed)
+}
+
+sp {apply*success
+   (state <s> ^operator.name success)
+-->
+   (write |Success!!!!!| (crlf))
+   (succeeded)
+}
+
+sp {apply*failed
+   (state <s> ^operator.name failed)
+-->
+   (write |Failed!!!!!| (crlf)) 
+   (failed)
+}

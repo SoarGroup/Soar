@@ -1,0 +1,12 @@
+sp {answer*justification-1*snc*t5-1
+    (state <s1> ^superstate nil)
+    (<s1> ^topstate <s2>)
+    (<s1> ^condition <c2>)
+    (<c2> ^arg <a1>)
+    (<a1> ^result <n1>)
+    (<c2> ^name <c1>)
+    (<n1> ^type <c1>)
+-->
+    (<s2> ^result <o1> +)
+    (<o1> ^object <n1> +)
+}

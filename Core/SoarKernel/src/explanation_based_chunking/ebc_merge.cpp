@@ -8,6 +8,7 @@
 #include "ebc.h"
 
 #include "agent.h"
+#include "assert.hpp"
 #include "condition.h"
 #include "instantiation.h"
 #include "print.h"

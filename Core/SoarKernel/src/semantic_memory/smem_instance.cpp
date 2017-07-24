@@ -9,6 +9,8 @@
 #include "smem_timers.h"
 #include "smem_db.h"
 
+#include "VariadicBind.h"
+
 #include "agent.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -297,36 +299,64 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             visited = new std::set<uint64_t>;
         }
 
-        soar_module::sqlite_statement* expand_q = SQL->web_expand;
         Symbol* attr_sym;
         Symbol* value_sym;
 
+    std::set<Symbol*> children;
+
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
-        expand_q->bind_int(1, pLTI_ID);
 
-        std::set<Symbol*> children;
+    //attr_type, attr_hash, value_type, value_hash, value_lti"
+    struct result_t {
+        byte attr_type;
+        smem_hash_id attr_hash;
+        byte value_type;
+        smem_hash_id value_hash;
+        uint64_t value_lti;
+    };
 
-        while (expand_q->execute() == soar_module::row)
+    std::packaged_task<std::vector<result_t>()> expand([this, pLTI_ID, depth] {
+        std::vector<result_t> results;
+        auto sql = sqlite_thread_guard(SQL->web_expand);
+
+        sql->bind(1, pLTI_ID);
+
+        while (sql->executeStep())
+            results.push_back   ({
+                static_cast<byte>(sql->getColumn(0).getInt()),
+                sql->getColumn(1).getUInt64(),
+                static_cast<byte>(sql->getColumn(2).getInt()),
+                sql->getColumn(3).getUInt64(),
+                sql->getColumn(4).getUInt64()
+                                });
+
+        return results;
+    });
+
+    auto results = JobQueue->post(expand).get();
+    for (const auto& r : results)
         {
             // make the identifier symbol irrespective of value type
-            attr_sym = rhash_(static_cast<byte>(expand_q->column_int(0)), static_cast<smem_hash_id>(expand_q->column_int(1)));
+        Symbol* attr_sym = rhash_(r.attr_type, r.attr_hash);
+        Symbol* value_sym = nullptr;
 
-            // identifier vs. constant
-            if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
+        if (r.value_lti != SMEM_AUGMENTATIONS_NULL)
             {
-                dprint(DT_SMEM_INSTANCE, "Child LTI augmentation found.  Getting STI for lti_id %u...", static_cast<uint64_t>(expand_q->column_int(4)));
-                value_sym = get_current_iSTI_for_LTI(static_cast<uint64_t>(expand_q->column_int(4)), sti->id->level, 'L');
+            dprint(DT_SMEM_INSTANCE, "Child LTI augmentation found.  Getting STI for lti_id %u...", r.value_lti);
+            value_sym = get_current_iSTI_for_LTI(r.value_lti, sti->id->level, 'L');
                 dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
                 if (depth > 1)
                 {
+                //visited->insert((*iterator)->id->LTI_ID);
+                //install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);//choosing not to bla children of retrived node
                     dprint(DT_SMEM_INSTANCE, "Depth parameter > 1, so adding children of %y to add list.\n", value_sym);
                     children.insert(value_sym);
                 }
             }
             else
             {
-                dprint(DT_SMEM_INSTANCE, "Child constant augmentation found.  Getting constant for value hash %d %u...", static_cast<byte>(expand_q->column_int(2)), static_cast<smem_hash_id>(expand_q->column_int(3)));
-                value_sym = rhash_(static_cast<byte>(expand_q->column_int(2)), static_cast<smem_hash_id>(expand_q->column_int(3)));
+            dprint(DT_SMEM_INSTANCE, "Child constant augmentation found.  Getting constant for value hash %d %u...", r.value_type, r.value_hash);
+            value_sym = rhash_(r.value_type, r.value_hash);
                 dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
             }
 
@@ -342,7 +372,6 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             thisAgent->symbolManager->symbol_remove_ref(&attr_sym);
             thisAgent->symbolManager->symbol_remove_ref(&value_sym);
         }
-        expand_q->reinitialize();
 
         //Attempt to find children for the case of depth.
         std::set<Symbol*>::iterator iterator;
@@ -353,7 +382,8 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             if (visited->find((*iterator)->id->LTI_ID) == visited->end())
             {
                 visited->insert((*iterator)->id->LTI_ID);
-                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);//choosing not to bla children of retrived node
+                // In original async branch, install_memory used (settings->activate_on_query->get_value() == on) instead of false for 4th arg
+                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
             }
         }
         dprint(DT_SMEM_INSTANCE, "Done installing memory called for %y %u %y.\n", state, pLTI_ID, sti);
@@ -367,4 +397,3 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     timers->ncb_retrieval->stop();
     ////////////////////////////////////////////////////////////////////////////
 }
-
