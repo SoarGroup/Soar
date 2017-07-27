@@ -628,8 +628,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                     else if (rhs_value_is_symbol(act->id))
                     {
                         Symbol* lSym = rhs_value_to_symbol(act->id);
-                        /* -- Not sure rhs id can even be a symbol at this point.  Temporary warning here. -- */
-                        thisAgent->outputManager->printa_sf(thisAgent, "ERROR!  Unexpected symbol %y in calculate_support_for_instantiation_preferences().\n", lSym);
                         if (lSym->is_state())
                         {
                             operator_proposal = true;
