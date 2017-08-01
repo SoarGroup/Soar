@@ -348,6 +348,12 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         SQL->act_set->bind_int(2, pLTI_ID);
         SQL->act_set->execute(soar_module::op_reinit);
     }
+    else if (num_edges >= static_cast<uint64_t>(settings->thresh->get_value()) && !already_in_spread_table)
+    {
+        SQL->act_set->bind_double(1, SMEM_ACT_MAX);
+        SQL->act_set->bind_int(2, pLTI_ID);
+        SQL->act_set->execute(soar_module::op_reinit);
+    }
     else if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()) && already_in_spread_table)
     {
         //SQL->act_set->bind_double(1, SMEM_ACT_LOW);
