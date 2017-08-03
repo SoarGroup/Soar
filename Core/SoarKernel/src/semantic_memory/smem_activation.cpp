@@ -425,10 +425,10 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                     //children_q->bind_int(2, lti_id);
                     while (children_q->execute() == soar_module::row)
                     {
-                        if (settings->spreading_loop_avoidance->get_value() == on && children_q->column_int(0) == lti_id)
+                        /*if (settings->spreading_loop_avoidance->get_value() == on && children_q->column_int(0) == lti_id)
                         {
                             continue;
-                        }
+                        }*///We actually do want the edge weight to a self-edge to adjust even if we don't use it.
                         old_edge_weight_map_for_children[(uint64_t)(children_q->column_int(0))] = children_q->column_double(1);
                         edge_weight_update_map_for_children[(uint64_t)(children_q->column_int(0))] = 0;
                     }
