@@ -421,7 +421,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //
 
-    act_lti_child_lti_ct_get = new soar_module::sqlite_statement(new_db, "SELECT lti_augmentations FROM smem_ltI WHERE lti_id = ?");
+    act_lti_child_lti_ct_get = new soar_module::sqlite_statement(new_db, "SELECT lti_augmentations FROM smem_lti WHERE lti_id = ?");
     add(act_lti_child_lti_ct_get);
 
     act_lti_child_lti_ct_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET lti_augmentations = ? WHERE lti_id = ?");
