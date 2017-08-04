@@ -22,11 +22,9 @@
 # Soar Settings #
 #################
 soar max-goal-depth 23
-# output print-depth 2
-# watch 0
-# trace --chunk-warnings
-# trace --learning 2
-# trace --wmes
+# soar stop-phase output
+# soar tcl on
+# soar wait-snc on
 
 ###################
 # Module Settings #
@@ -35,17 +33,27 @@ soar max-goal-depth 23
 # chunk only
 # chunk except
 # chunk never
+# chunk add-osk on
+# chunk allow-local-negations off
 # explain all
 # explain justifications on
-# epmem on
+
+#########################
+# Other Module Settings #
+#########################
+# epmem --on
 # smem --on
 # rl --on
-# wma --on
-# tcl on
+# wm activation --set activation on
 
 ########################
 # Agent Trace Settings #
 ########################
+# output print-depth 2
+# trace 0
+# trace --chunk-warnings
+# trace --learning 2
+# trace --wmes
 # output agent-trace 1 off
 # output agent-trace 2 off
 # output agent-trace 3 off
