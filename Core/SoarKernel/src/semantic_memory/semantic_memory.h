@@ -82,7 +82,7 @@ class SMem_Manager
 
         void        calc_spread_trajectories();
         void        invalidate_trajectories(uint64_t lti_parent_id, std::map<uint64_t, int64_t>* delta_children);
-        void        calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set=NULL);
+        void        calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::const_iterator* cand_set=NULL);
         uint64_t    spread_size();
 
         void        set_id_counter(uint64_t counter_value);
@@ -135,10 +135,10 @@ class SMem_Manager
         struct query_result
         {
             uint64_t king_id;
-            uint64_t depth;
-            Symbol* state;
-            Symbol* query;
-            Symbol* negquery;
+            const uint64_t depth;
+            const Symbol* state;
+            const Symbol* query;
+            const Symbol* negquery;
         };
 
         std::vector<query_result> query_results;
@@ -221,9 +221,9 @@ class SMem_Manager
         uint64_t        get_current_LTI_for_iSTI(Symbol* pSTI, bool useLookupTable, bool pOverwriteOldLinkToLTM);
 
         /* Methods for queries */
-        void                            process_query_SQL(smem_weighted_cue_list weighted_cue, bool needFullSearch, const id_set& prohibit, Symbol* state, Symbol* query, Symbol* negquery, std::list<uint64_t>* match_ids, uint64_t number_to_retrieve, uint64_t depth);
+        void                            process_query_SQL(const smem_weighted_cue_list weighted_cue, const bool needFullSearch, const id_set* prohibit, const Symbol* state, const Symbol* query, const Symbol* negquery, const uint64_t number_to_retrieve, const uint64_t depth);
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
-        uint64_t                        process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install, bool synchronous = false);
+        void                            process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install, bool synchronous = false);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
         std::shared_ptr<sqlite_thread_guard>  setup_web_crawl(smem_weighted_cue_element* el);
         std::shared_ptr<sqlite_thread_guard>  setup_web_crawl_without_spread(smem_weighted_cue_element* el);

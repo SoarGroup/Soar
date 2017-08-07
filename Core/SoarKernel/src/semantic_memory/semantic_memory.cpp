@@ -702,9 +702,10 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
             uint64_t king_id = result.king_id;
             uint64_t depth = result.depth;
-            Symbol* state = result.state;
-            Symbol* query = result.query;
-            Symbol* negquery = result.negquery;
+            Symbol* state = const_cast<Symbol*>(result.state);
+            Symbol* query = const_cast<Symbol*>(result.query);
+            Symbol* negquery = const_cast<Symbol*>(result.negquery);
+            //uint64_t king_id = *(result.match_ids.front());
 
             // produce results
             if (king_id != NIL)

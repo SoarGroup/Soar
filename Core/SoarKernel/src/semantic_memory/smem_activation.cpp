@@ -1007,7 +1007,7 @@ std::shared_ptr<sqlite_thread_guard> SMem_Manager::setup_manual_web_crawl(smem_w
     return sql;
 }
 
-void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set)
+void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::const_iterator* cand_set)
 {
 
     /*
