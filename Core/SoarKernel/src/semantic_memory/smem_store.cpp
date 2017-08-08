@@ -512,7 +512,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     for (std::set< std::pair< smem_hash_id, smem_hash_id > >::iterator p = const_new.begin(); p != const_new.end(); p++)
         {
         // insert
-        std::packaged_task<void()> insert([this,pLTI_ID,p,web_act] {
+        /*std::packaged_task<void()> insert([this,pLTI_ID,p,web_act] {
             // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
             auto sql = sqlite_thread_guard(SQL->web_add);
 
@@ -525,61 +525,61 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             sql->exec();
         });
 
-        JobQueue->post(insert).wait();
+        JobQueue->post(insert).wait();*/
 
         // update counter
         // check if counter exists (and add if does not): attribute_s_id, val
-        std::packaged_task<void()> check_and_add([this,p, pLTI_ID, web_act] {
-            bool result;
+            std::packaged_task<void()> check_and_add([this,p, pLTI_ID, web_act] {
+                bool result;
 
-            {
-
-                auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_check);
-                sql->bind(1, p->first);
-                sql->bind(2, p->second);
-                result = sql->executeStep();
-            }
-
-                // insert
                 {
-                    // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                auto sql = sqlite_thread_guard(SQL->web_add);
-                sql->bind(1, pLTI_ID);
-                sql->bind(2, p->first);
-                sql->bind(3, p->second);
-                sql->bind(4, SMEM_AUGMENTATIONS_NULL);
-                sql->bind(5, web_act);
-                sql->bind(6, 0.0);
-                sql->exec();
+
+                    auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_check);
+                    sql->bind(1, p->first);
+                    sql->bind(2, p->second);
+                    result = sql->executeStep();
                 }
 
-
-            if (!result)
-                {
-                auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_add);
-                sql->bind(1, p->first);
-                sql->bind(2, p->second);
-                sql->exec();
-                    }
-                    else
+                    // insert
                     {
-                        // adjust count (adjustment, attribute_s_id, val)
-                auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_update);
-                sql->bind(1, 1);
-                sql->bind(2, p->first);
-                sql->bind(3, p->second);
-                sql->exec();
+                        // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
+                    auto sql = sqlite_thread_guard(SQL->web_add);
+                    sql->bind(1, pLTI_ID);
+                    sql->bind(2, p->first);
+                    sql->bind(3, p->second);
+                    sql->bind(4, SMEM_AUGMENTATIONS_NULL);
+                    sql->bind(5, web_act);
+                    sql->bind(6, 0.0);
+                    sql->exec();
                     }
-        });
 
-        JobQueue->post(check_and_add).wait();
+
+                if (!result)
+                    {
+                    auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_add);
+                    sql->bind(1, p->first);
+                    sql->bind(2, p->second);
+                    sql->exec();
+                        }
+                        else
+                        {
+                            // adjust count (adjustment, attribute_s_id, val)
+                    auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_update);
+                    sql->bind(1, 1);
+                    sql->bind(2, p->first);
+                    sql->bind(3, p->second);
+                    sql->exec();
+                        }
+            });
+
+            JobQueue->post(check_and_add).wait();
         }
 
         // attr/lti pairs
     for (std::set< std::pair< smem_hash_id, uint64_t > >::iterator p = lti_new.begin(); p != lti_new.end(); p++)
         {
         // insert
-        std::packaged_task<void()> add([this,pLTI_ID,p,web_act] {
+        /*std::packaged_task<void()> add([this,pLTI_ID,p,web_act] {
             // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
             auto sql = sqlite_thread_guard(SQL->web_add);
             sql->bind(1, pLTI_ID);
@@ -590,7 +590,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             sql->exec();
         });
 
-        JobQueue->post(add).wait();
+        JobQueue->post(add).wait();*/
 
         // update counter
         // check if counter exists (and add if does not): attribute_s_id, val
