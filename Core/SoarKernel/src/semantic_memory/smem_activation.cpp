@@ -379,8 +379,8 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                         auto sql = sqlite_thread_guard(SQL->history_add);
 
                         sql->bind(1, pLTI_ID);
-                        sql->bind(2, touches);
-                        sql->bind(3, pLTI_ID);
+                        sql->bind(2, time_now);
+                        sql->bind(3, touches);
 
                         sql->exec();
                     });
@@ -615,16 +615,16 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                         auto sql = sqlite_thread_guard(SQL->web_val_child);
 
                         sql->bind(1, lti_id);
-                        sql->bind(2, lti_id);
+                        //sql->bind(2, lti_id);
                         while(sql->executeStep())
                         {
-                            if (settings->spreading_loop_avoidance->get_value() == on && sql->getColumn(0).getUInt64())
+                            /*if (settings->spreading_loop_avoidance->get_value() == on && sql->getColumn(0).getUInt64() == lti_id)
                             {
                                 continue;
-                            }
+                            }*/
+                            old_edge_weight_map_for_children[sql->getColumn(0).getUInt64()] = sql->getColumn(1).getDouble();
+                            edge_weight_update_map_for_children[sql->getColumn(0).getUInt64()] = 0;
                         }
-                        old_edge_weight_map_for_children[sql->getColumn(0).getUInt64()] = sql->getColumn(1).getDouble();
-                        edge_weight_update_map_for_children[sql->getColumn(0).getUInt64()] = 0;
                     }
 
                     //JobQueue->post(pt_children_query).wait();
@@ -714,21 +714,21 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             children.push_back(children_q->column_int(0));
         }
         children_q->reinitialize();*/
-
+        lti_trajectories[lti_id] = new std::list<std::pair<uint64_t, double>>;
         {
             auto sql = sqlite_thread_guard(SQL->web_val_child);
 
             sql->bind(1, lti_id);
-            sql->bind(2, lti_id);
+            //sql->bind(2, lti_id);
             while(sql->executeStep())
             {
-                if (settings->spreading_loop_avoidance->get_value() == on && sql->getColumn(0).getUInt64())
+                /*if (settings->spreading_loop_avoidance->get_value() == on && sql->getColumn(0).getUInt64())
                 {
                     continue;
-                }
+                }*/
+                (lti_trajectories[lti_id])->push_back(std::make_pair(sql->getColumn(0).getUInt64(),sql->getColumn(1).getDouble()));
+                children.push_back(sql->getColumn(0).getUInt64());
             }
-            (lti_trajectories[lti_id])->push_back(std::make_pair(sql->getColumn(0).getUInt64(),sql->getColumn(1).getDouble()));
-            children.push_back(sql->getColumn(0).getUInt64());
         }
 
         //JobQueue->post(pt_children_query_again).wait();
@@ -1060,7 +1060,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
 
                 sql->bind(1,*it);
 
-                return sql->executeStep();
+                return !sql->executeStep();
             });
 
             std::packaged_task<bool()> pt_trajectoryGet([this, it] {
@@ -1296,7 +1296,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                         std::packaged_task<std::tuple<double,double>()> pt_fakeGet([this,recipient_it]{
                             auto sql = sqlite_thread_guard(SQL->act_lti_fake_get);
                             sql->bind(1, *recipient_it);
-                            sql->exec();
+                            sql->executeStep();
                             return std::make_tuple(sql->getColumn(0).getDouble(),sql->getColumn(1).getDouble());
                         });
                         auto result_t = JobQueue->post(pt_fakeGet).get();
@@ -1433,7 +1433,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
             std::packaged_task<std::tuple<double,double>()> pt_fakeGet([this,candidate]{
                 auto sql = sqlite_thread_guard(SQL->act_lti_fake_get);
                 sql->bind(1, *candidate);
-                sql->exec();
+                sql->executeStep();
                 return std::make_tuple(sql->getColumn(0).getDouble(),sql->getColumn(1).getDouble());
             });
             auto result_t = JobQueue->post(pt_fakeGet).get();
@@ -1462,7 +1462,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 sql->bind(4, *candidate);
                 sql->exec();
             });
-            JobQueue->post(pt_fakeDelete).wait();
+            JobQueue->post(pt_lti_set).wait();
 
             /*SQL->act_lti_fake_get->bind_int(1,*candidate);
             SQL->act_lti_fake_get->execute();
@@ -1505,7 +1505,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     std::packaged_task<std::tuple<double,double>()> pt_ltiGet([this,candidate]{
                         auto sql = sqlite_thread_guard(SQL->act_lti_get);
                         sql->bind(1, *candidate);
-                        sql->exec();
+                        sql->executeStep();
                         return std::make_tuple(sql->getColumn(0).getDouble(),sql->getColumn(1).getDouble());
                     });
                     auto result_t = JobQueue->post(pt_ltiGet).get();
@@ -1534,7 +1534,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     std::packaged_task<std::tuple<double,double>()> pt_fakeGet([this,candidate]{
                         auto sql = sqlite_thread_guard(SQL->act_lti_fake_get);
                         sql->bind(1, *candidate);
-                        sql->exec();
+                        sql->executeStep();
                         return std::make_tuple(sql->getColumn(0).getDouble(),sql->getColumn(1).getDouble());
                     });
                     auto result_t = JobQueue->post(pt_fakeGet).get();
@@ -1651,7 +1651,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 std::packaged_task<uint64_t()> pt_childCtGet([this, candidate]{
                     auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_get);
                     sql->bind(1, *candidate);
-                    sql->exec();
+                    sql->executeStep();
                     return sql->getColumn(0).getUInt64();
                 });
 
@@ -1934,12 +1934,10 @@ void SMem_Manager::batch_invalidate_from_lti()
      * */
     std::packaged_task<uint64_t()> pt_invalid_check_for_rows([this]{
         auto sql = sqlite_thread_guard(SQL->trajectory_invalidation_check_for_rows);
-        sql->exec();
-        return sql->getColumn(0).getUInt64();
+        return sql->executeStep();
     });
 
     if (JobQueue->post(pt_invalid_check_for_rows).get())
-
     {
 
         std::packaged_task<void()> pt_invalidFromTable([this]{

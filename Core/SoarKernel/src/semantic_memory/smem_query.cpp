@@ -60,7 +60,7 @@ std::shared_ptr<sqlite_thread_guard> SMem_Manager::setup_web_crawl_without_sprea
     {
         // attribute_s_id=?
         q = (thisAgent->SMem->settings->spreading->get_value() == off ? std::make_shared<sqlite_thread_guard>(SQL->web_attr_all) : std::make_shared<sqlite_thread_guard>(SQL->web_attr_all_no_spread));
-        q = std::make_shared<sqlite_thread_guard>(SQL->web_attr_all_spread);
+        //q = std::make_shared<sqlite_thread_guard>(SQL->web_attr_all_spread);
     }
     else if (el->element_type == value_const_t)
     {
@@ -463,13 +463,15 @@ void SMem_Manager::process_query_SQL(const smem_weighted_cue_list weighted_cue, 
     if (settings->spreading->get_value() == on)
     {
         timers->spreading->start();
-        auto q = setup_cheap_web_crawl(*cand_set);
         std::set<uint64_t> to_update;
         int num_answers = 0;
-        while ((*q)->executeStep() && num_answers < 400)
-        {//TODO: The 400 there should actually reflect the size of the context's recipients. 400 isn't a bad magic value.
-            num_answers++;
-            to_update.insert((*q)->getColumn(0).getInt64());
+        {
+            auto q = setup_cheap_web_crawl(*cand_set);
+            while ((*q)->executeStep() && num_answers < 400)
+            {//TODO: The 400 there should actually reflect the size of the context's recipients. 400 isn't a bad magic value.
+                num_answers++;
+                to_update.insert((*q)->getColumn(0).getInt64());
+            }
         }
         timers->spreading->stop();
         if (num_answers >= 400)
