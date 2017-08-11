@@ -698,7 +698,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     {
         double fan = 1.0/((double)new_lti_edges);
         std::packaged_task<void()> ptUpdateAllLTIChildEdges([this, fan, pLTI_ID] {
-            auto sql = sqlite_thread_guard(SQL->attribute_frequency_check);
+            auto sql = sqlite_thread_guard(SQL->web_update_all_lti_child_edges);
             sql->bind(1, fan);
             sql->bind(2,pLTI_ID);
             sql->exec();

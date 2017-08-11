@@ -885,7 +885,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             }
         }
         /* MMerge | Was commented out in development, but not in async */
-        lti_traversal_queue.pop();//Get rid of the old list.
+        //lti_traversal_queue.pop();//Get rid of the old list.
         delete current_lti_list;//no longer need it.
     }
     //Once we've generated the full spread map of accumulated spread for recipients from this source, we record it.
