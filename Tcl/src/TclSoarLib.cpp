@@ -342,6 +342,14 @@ bool TclSoarLib::initialize_Master()
         if (!(isDir(libDir.c_str()) && isDir(smlTclDir.c_str()) && isFile(masterFilePath.c_str())))
         {
             libDir = getenv("SOAR_HOME");
+
+            // remove any quotes contain in the env var
+            for ( int i = libDir.length() - 1; i >= 0; i-- )
+            {
+                if (libDir[i] == '\"')
+                    libDir.erase(i,1);
+            }
+
             if (libDir.size() == 0)
             {
                 GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME, which is not currently set.}", result_string);
