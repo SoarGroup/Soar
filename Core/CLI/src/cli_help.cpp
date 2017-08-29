@@ -115,6 +115,7 @@ bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
             else if (argv[1] == std::string("numeric-indifferent-mode")) Print_9_4_Help_Mapping(argv[1], "decide", "decide numeric-indifferent-mode");
             else if (argv[1] == std::string("predict")) Print_9_4_Help_Mapping(argv[1], "decide", "decide predict");
             else if (argv[1] == std::string("select")) Print_9_4_Help_Mapping(argv[1], "decide", "decide select");
+            else if (argv[1] == std::string("srand")) Print_9_4_Help_Mapping(argv[1], "decide", "decide set-random-seed");
 
             else if (argv[1] == std::string("load-library")) Print_9_4_Help_Mapping(argv[1], "load", "load library");
             else if (argv[1] == std::string("source")) Print_9_4_Help_Mapping(argv[1], "load", "load file");
@@ -143,7 +144,6 @@ bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
             else if (argv[1] == std::string("max-goal-depth")) Print_9_4_Help_Mapping(argv[1], "soar", "soar max-goal-depth");
             else if (argv[1] == std::string("max-memory-usage")) Print_9_4_Help_Mapping(argv[1], "soar", "soar max-memory-usage");
             else if (argv[1] == std::string("max-nil-output-cycles")) Print_9_4_Help_Mapping(argv[1], "soar", "soar max-nil-output-cycles");
-            else if (argv[1] == std::string("srand")) Print_9_4_Help_Mapping(argv[1], "soar", "soar srand");
             else if (argv[1] == std::string("stop-soar")) Print_9_4_Help_Mapping(argv[1], "soar", "soar stop-soar");
             else if (argv[1] == std::string("set-stop-phase")) Print_9_4_Help_Mapping(argv[1], "soar", "soar set-stop-phase");
             else if (argv[1] == std::string("timers")) Print_9_4_Help_Mapping(argv[1], "soar", "soar timers");
