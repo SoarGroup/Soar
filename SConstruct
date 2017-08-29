@@ -251,7 +251,7 @@ elif compiler == 'msvc':
         cflags.extend(' /D NO_SVS'.split())
     if GetOption('defflags'):
         if GetOption('dbg'):
-            cflags.extend(' /MDd /Z7 /DEBUG'.split())
+            cflags.extend(' /MDd /Zi /Od /DEBUG'.split())
             lnflags.extend(['/DEBUG'])
         else:
             cflags.extend(' /MD /O2 /D NDEBUG'.split())

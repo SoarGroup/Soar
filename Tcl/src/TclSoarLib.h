@@ -97,6 +97,8 @@ class EXPORT TclSoarLib
         bool initialize_Master();
         bool initialize_Tcl_Interpreter();
 
+				static std::string tclRHS( sml::smlRhsEventId id, void *pData, sml::Agent *pAgent, char const *pFunc, char const *pArg );
+
         // Methods to send commands to the tcl interpreter
         bool evaluateDirCommand(const std::string command);
         std::string& EscapeTclString(const char* in, std::string& out);

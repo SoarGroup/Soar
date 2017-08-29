@@ -31,6 +31,9 @@ bool CommandLineInterface::DoRedirectedOutputCommand(std::vector<std::string>& a
 {
     if (argv.size() < 3) return false;
 
+		if ( m_pAgentSML == NULL || m_pAgentSML->GetSoarAgent() == NULL )
+			return false;
+
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     soar_module::param* my_param = thisAgent->outputManager->m_params->get(argv.at(1).c_str());
 

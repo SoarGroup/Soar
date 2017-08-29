@@ -134,6 +134,8 @@ TclSoarLib::TclSoarLib(Kernel* myKernel) :
     unique_lock<mutex> lock(command_mutex);
     lib_thread = thread(&launch_tcl, (void*)this);
 
+		myKernel->AddRhsFunction( "tcl", tclRHS, this );
+
     // Wait until the new thread has finished initialization
     cv.wait(lock, [this]{ return thread_ready; });
 }
@@ -152,6 +154,18 @@ TclSoarLib::~TclSoarLib()
     m_kernel = 0;
 
     //cout << "TclSoarLib destroyed" << endl;
+}
+
+std::string TclSoarLib::tclRHS( sml::smlRhsEventId, void *pData, sml::Agent *pAgent, char const *pFunc, char const *pArg )
+{
+	TclSoarLib *pLib = (TclSoarLib *)pData;
+
+	std::string comm(pArg);
+	std::string res;
+
+	pLib->GlobalEval( comm, res);
+		
+	return res;
 }
 
 void TclSoarLib::send_thread_command(int type, string info){

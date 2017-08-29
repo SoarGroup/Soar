@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
@@ -26,84 +34,32 @@
     <ClCompile Include="..\..\..\Core\ClientSML\src\sml_DeltaList.cpp" />
     <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ObjectMap.cpp" />
     <ClCompile Include="..\..\..\Core\ClientSML\src\sml_OutputDeltaList.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_addwme.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_alias.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_allocate.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_captureinput.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_cd.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_chunknameformat.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_cli_extension.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_clog.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_chunk.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_CommandLineInterface.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_commandtofile.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_debug.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_defaultwmedepth.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_dirs.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_decide.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_echo.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_echocommands.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_editproduction.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_epmem.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_excise.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_explainbacktraces.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_firingcounts.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_gdsprint.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_explain.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_file_system_cmds.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_gp.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_gpmax.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_help.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_indifferentselection.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_initsoar.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_internalsymbols.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_learn.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_loadLibrary.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_ls.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_matches.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxchunks.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxdctime.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxelaborations.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxgoaldepth.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxmemoryusage.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxniloutputcycles.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_memories.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_multiattributes.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_numericindifferentmode.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_osupportmode.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_pbreak.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_popd.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_port.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_predict.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_load_save.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_output.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_preferences.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_print.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_productionfind.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_pushd.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_pwatch.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_pwd.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_rand.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_removewme.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_replayinput.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_retenet.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_production.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_rl.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_run.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_savebacktraces.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_select.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_setstopphase.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_smem.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_soarnews.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_source.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_soar.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_sp.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_srand.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_stats.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_stopsoar.cpp" />
     <ClCompile Include="..\..\..\Core\CLI\src\cli_svs.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_time.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_timers.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_unalias.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_verbose.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_version.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_waitsnc.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_warnings.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_watch.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_watchwmes.cpp" />
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_wma.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_trace.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_visualize.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_wm.cpp" />
     <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_AnalyzeXML.cpp" />
     <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_ArgMap.cpp" />
     <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_Connection.cpp" />
@@ -168,63 +124,96 @@
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_XMLListener.cpp" />
     <ClCompile Include="..\..\..\Core\shared\assert.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\backtrace.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\callback.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\chunk.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\consistency.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_misc.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_print_speed_test.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_thread.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_trace.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\decide.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_manipulation.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\episodic_memory.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\explain.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\exploration.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\init_soar.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\io_soar.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\lexer.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\mem.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\memory_manager.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\osupport.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_db.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_params.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_print.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_to_string.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\parser.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\prefmem.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\print.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\production.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\recmem.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\reinforcement_learning.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\reorder.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\rete.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs_functions.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs_functions_math.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_db.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_instance.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_module.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_rand.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\stats.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\symtab.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\tempmem.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\test.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\trace.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\variablization_manager.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_constraints.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_explanation.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_map.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_merge.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_print.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_unify.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\wma.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\wmem.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\xml.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_code\debug.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_code\debug_inventories.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_code\debug_stacktrace.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\consistency.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\decide.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\decider.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\decider_settings.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\decision_manipulation.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\rete.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\run_soar.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\episodic_memory\episodic_memory.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_backtrace.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_build.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_constraints.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_explanation_trace.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_identity.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_identity_graph.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_merge.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_osk.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_reinstantiate.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_repair.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_settings.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_unify.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_update_justification.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_variablize.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_variablize_rl.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_variablize_sti.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\action_record.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\after_action_report.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\chunk_record.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\condition_record.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\explain_print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\explanation_memory.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\explanation_settings.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\identity_record.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\instantiation_record.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\production_record.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\interface\callback.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\interface\io_link.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\output_errors.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\output_manager.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\output_print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\output_settings.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\soar_to_string.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\parsing\lexer.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\parsing\parser.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\reinforcement_learning\exploration.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\reinforcement_learning\reinforcement_learning.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\semantic_memory.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_activation.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_cli_commands.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_db.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_instance.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_query.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_settings.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_store.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_timers.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\cmd_settings.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\mem.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\memory_manager.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\soar_db.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\soar_instance.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\soar_module.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\soar_rand.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\stats.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\trace.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\xml.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\agent.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\condition.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\instantiation.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\preference.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\production.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\production_reorder.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs_functions.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs_functions_math.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\slot.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\symbol.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\symbol_manager.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\test.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\working_memory.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\working_memory_activation.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\visualizer\visualize.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_colors.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_settings.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_wm.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\ccd\ccd.c" />
     <ClCompile Include="..\..\..\Core\SVS\ccd\mpr.c" />
     <ClCompile Include="..\..\..\Core\SVS\ccd\polytope.c" />
@@ -234,6 +223,7 @@
     <ClCompile Include="..\..\..\Core\SVS\src\command.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\commands\add_node.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\commands\copy_node.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\copy_transform.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\commands\delete_node.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\commands\delete_tag.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\commands\extract.cpp" />
@@ -244,11 +234,16 @@
     <ClCompile Include="..\..\..\Core\SVS\src\drawer.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filter.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filters\axis_distance.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\axis_relation.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filters\base_node_filters.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\calculate_placement.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filters\contain.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filters\distance.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filters\intersect.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\monitor_object.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filters\node.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\occlusion.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\overlap.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filters\tag_select.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filters\volume.cpp" />
     <ClCompile Include="..\..\..\Core\SVS\src\filter_input.cpp" />
@@ -283,11 +278,21 @@
     <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ObjectMap.h" />
     <ClInclude Include="..\..\..\Core\ClientSML\src\sml_OutputDeltaList.h" />
     <ClInclude Include="..\..\..\Core\CLI\src\cli_Aliases.h" />
-    <ClInclude Include="..\..\..\Core\CLI\src\cli_Cli.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_chunk.h" />
     <ClInclude Include="..\..\..\Core\CLI\src\cli_CommandLineInterface.h" />
     <ClInclude Include="..\..\..\Core\CLI\src\cli_Commands.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_decide.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_enums.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_explain.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_load_save.h" />
     <ClInclude Include="..\..\..\Core\CLI\src\cli_Options.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_output.h" />
     <ClInclude Include="..\..\..\Core\CLI\src\cli_Parser.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_production.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_soar.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_trace.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_visualize.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_wm.h" />
     <ClInclude Include="..\..\..\Core\ConnectionSML\src\EmbeddedSMLInterface.h" />
     <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_AnalyzeXML.h" />
     <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_ArgMap.h" />
@@ -366,60 +371,85 @@
     <ClInclude Include="..\..\..\Core\shared\soarversion.h" />
     <ClInclude Include="..\..\..\Core\shared\soar_TraceNames.h" />
     <ClInclude Include="..\..\..\Core\shared\tokenizer.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\agent.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\backtrace.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\callback.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\chunk.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\consistency.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_defines.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_thread.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_trace.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\decide.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_manipulation.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\enums.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\episodic_memory.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\exploration.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\gsysparam.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\init_soar.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\instantiations.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\io_soar.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\kernel.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\lexer.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\mem.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\memory_manager.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\osupport.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager_db.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager_params.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\parser.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\prefmem.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\print.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\production.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\recmem.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\reinforcement_learning.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\reorder.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\rete.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs_functions.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs_functions_math.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory_math_queries.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_db.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_instance.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_module.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_rand.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\sqlite3.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\stats.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\symtab.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\tempmem.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\test.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\trace.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\variablization_manager.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\wma.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\wmem.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\xml.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_code\debug.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_code\debug_inventories.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_code\debug_stacktrace.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_code\dprint.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\consistency.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\decide.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\decider.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\decider_settings.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\decision_manipulation.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\rete.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\run_soar.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\episodic_memory\episodic_memory.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_identity.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_repair.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_settings.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_structs.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_timers.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\action_record.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\chunk_record.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\condition_record.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\explanation_memory.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\explanation_settings.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\identity_record.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\instantiation_record.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\production_record.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\interface\callback.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\interface\io_link.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager\output_manager.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager\output_settings.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\parsing\lexer.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\parsing\parser.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\reinforcement_learning\exploration.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\reinforcement_learning\reinforcement_learning.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\semantic_memory.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_db.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_math_query.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_settings.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_stats.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_structs.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_timers.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\cmd_settings.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\constants.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\enums.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\forward.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\kernel.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\macros.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\mem.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\memory_manager.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\mempool_allocator.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\print.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\soar_db.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\soar_instance.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\soar_module.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\soar_rand.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\sqlite3.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\stats.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\stl_structs.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\stl_typedefs.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\trace.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\xml.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\agent.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\condition.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\instantiation.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\preference.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\production.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\production_reorder.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs_functions.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\slot.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\symbol.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\symbols_predefined.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\symbol_manager.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\test.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\working_memory.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\working_memory_activation.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\visualizer\visualize.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_settings.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_wm.h" />
     <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\alloc.h" />
     <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\ccd.h" />
     <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\compiler.h" />
@@ -491,6 +521,7 @@
     <RootNamespace>SoarDll</RootNamespace>
     <ProjectName>Soar</ProjectName>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -499,7 +530,20 @@
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
@@ -514,11 +558,22 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
@@ -528,7 +583,31 @@
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <OutDir>$(SolutionDir)../../out/</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDLL;_USRDLL;_CRT_SECURE_NO_WARNINGS;EIGEN_DONT_ALIGN</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Core\CLI\src\;$(ProjectDir)\..\..\..\Core\ClientSML\src\;$(ProjectDir)\..\..\..\Core\ConnectionSML\src\;$(ProjectDir)\..\..\..\Core\ElementXML\src\;$(ProjectDir)\..\..\..\Core\KernelSML\src\;$(ProjectDir)\..\..\..\Core\shared\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\;$(ProjectDir)\..\..\..\Core\SVS\ccd\;$(ProjectDir)\..\..\..\Core\SVS\eigen\;$(ProjectDir)\..\..\..\Core\SVS\src\;$(ProjectDir)\..\..\..\Core\SVS\src\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <EnablePREfast>false</EnablePREfast>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -555,7 +634,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WINDLL;_USRDLL;_CRT_SECURE_NO_WARNINGS;EIGEN_DONT_ALIGN</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Core\CLI\src\;$(ProjectDir)\..\..\..\Core\ClientSML\src\;$(ProjectDir)\..\..\..\Core\ConnectionSML\src\;$(ProjectDir)\..\..\..\Core\ElementXML\src\;$(ProjectDir)\..\..\..\Core\KernelSML\src\;$(ProjectDir)\..\..\..\Core\shared\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\;$(ProjectDir)\..\..\..\Core\SVS\ccd\;$(ProjectDir)\..\..\..\Core\SVS\eigen\;$(ProjectDir)\..\..\..\Core\SVS\src\;$(ProjectDir)\..\..\..\Core\SVS\src\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Core\CLI\src\;$(ProjectDir)\..\..\..\Core\ClientSML\src\;$(ProjectDir)\..\..\..\Core\ConnectionSML\src\;$(ProjectDir)\..\..\..\Core\ElementXML\src\;$(ProjectDir)\..\..\..\Core\KernelSML\src\;$(ProjectDir)\..\..\..\Core\shared\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\soar_representation\;$(ProjectDir)\..\..\..\Core\SVS\ccd\;$(ProjectDir)\..\..\..\Core\SVS\eigen\;$(ProjectDir)\..\..\..\Core\SVS\src\;$(ProjectDir)\..\..\..\Core\SVS\src\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4503</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnablePREfast>false</EnablePREfast>
@@ -565,6 +644,28 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDLL;_USRDLL;_CRT_SECURE_NO_WARNINGS;EIGEN_DONT_ALIGN</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Core\CLI\src\;$(ProjectDir)\..\..\..\Core\ClientSML\src\;$(ProjectDir)\..\..\..\Core\ConnectionSML\src\;$(ProjectDir)\..\..\..\Core\ElementXML\src\;$(ProjectDir)\..\..\..\Core\KernelSML\src\;$(ProjectDir)\..\..\..\Core\shared\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\soar_representation\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\decision_process;$(ProjectDir)\..\..\..\Core\SoarKernel\src\debug_code;$(ProjectDir)\..\..\..\Core\SoarKernel\src\episodic_memory;$(ProjectDir)\..\..\..\Core\SoarKernel\src\shared;$(ProjectDir)\..\..\..\Core\SoarKernel\src\semantic_memory;$(ProjectDir)\..\..\..\Core\SoarKernel\src\output_manager;$(ProjectDir)\..\..\..\Core\SoarKernel\src\interface;$(ProjectDir)\..\..\..\Core\SoarKernel\src\parsing;$(ProjectDir)\..\..\..\Core\SoarKernel\src\explanation_memory;$(ProjectDir)\..\..\..\Core\SoarKernel\src\explanation_based_chunking;$(ProjectDir)\..\..\..\Core\SoarKernel\src\visualizer;$(ProjectDir)\..\..\..\Core\SoarKernel\src\reinforcement_learning;$(ProjectDir)\..\..\..\Core\SVS\ccd\;$(ProjectDir)\..\..\..\Core\SVS\eigen\;$(ProjectDir)\..\..\..\Core\SVS\src\;$(ProjectDir)\..\..\..\Core\SVS\src\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnablePREfast>false</EnablePREfast>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
