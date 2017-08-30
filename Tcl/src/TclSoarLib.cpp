@@ -160,9 +160,14 @@ std::string TclSoarLib::tclRHS( sml::smlRhsEventId, void *pData, sml::Agent *pAg
 {
 	TclSoarLib *pLib = (TclSoarLib *)pData;
 
-	std::string comm(pArg);
+	std::string comm("interp eval ");
 	std::string res;
 
+	comm += pAgent->GetAgentName();
+	comm += " {";
+	comm += pArg;
+	comm += "}";
+	
 	pLib->GlobalEval( comm, res);
 		
 	return res;
