@@ -1482,6 +1482,8 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 					while ( std::string("exec") != lexer->current_lexeme.string() )
 						lexer->get_lexeme();
 
+					thisAgent->outputManager->printa_sf(thisAgent, "Adding exec to RHS function: %s\n", str.c_str() );
+					
 					fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
 				}
     }
