@@ -4,6 +4,9 @@ pause
 xcopy /D /R /U /Y .\out\*.* ..\ngts-speech\CSoar
 xcopy /D /R /U /Y .\build\Tcl\*.* ..\ngts-speech\CSoar
 xcopy /D /R /U /Y .\build\Core\*.* ..\ngts-speech\CSoar
+xcopy /D /R /U /Y .\build\Core\ClientSMLSWIG\CSharp\*.* ..\ngts-speech\CSoar
+xcopy /D /R /U /Y .\build\Core\ClientSMLSWIG\Java\*.* ..\ngts-speech\CSoar
+xcopy /D /R /U /Y .\build\Core\ClientSMLSWIG\Python\*.* ..\ngts-speech\CSoar
 xcopy /D /R /U /Y .\build\Core\ClientSMLSWIG\Tcl\*.* ..\ngts-speech\CSoar
 pause
 

@@ -1437,6 +1437,9 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     cons* c, *prev_c;
     rhs_value arg_rv;
     int num_args;
+		bool bDelete = false;
+
+		std::string str;
 
     /* --- read function name, find the rhs_function structure --- */
     if (lexer->current_lexeme.type == PLUS_LEXEME)
@@ -1454,6 +1457,33 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     else
     {
         fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
+
+				if ( !fun_name )
+				{
+					str  = "( (exec ";
+					str += lexer->current_lexeme.string();
+					str += " |";
+
+					lexer->get_lexeme();
+
+					str += lexer->current_lexeme.string();
+					str += "|))\n";
+					
+					// gonna try to fake this out with an exec
+					// bring the current one to the end;
+					while (lexer->current_lexeme.type != R_PAREN_LEXEME)
+						lexer->get_lexeme();
+
+					lexer->get_lexeme();
+
+					lexer   = new Lexer(thisAgent,str.c_str());
+					bDelete = true;
+
+					while ( std::string("exec") != lexer->current_lexeme.string() )
+						lexer->get_lexeme();
+
+					fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
+				}
     }
 
 	if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
@@ -1465,6 +1495,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     if (!fun_name)
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
+				if ( bDelete ) delete lexer;
 
         return NIL;
     }
@@ -1479,6 +1510,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     if (!rf)
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
+				if ( bDelete ) delete lexer;
 
         return NIL;
     }
@@ -1488,13 +1520,15 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "Function %s cannot be used as a stand-alone action\n",
               lexer->current_lexeme.string());
-        return NIL;
+				if ( bDelete ) delete lexer;
+				return NIL;
     }
     if ((! is_stand_alone_action) && (! rf->can_be_rhs_value))
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "Function %s can only be used as a stand-alone action\n",
               lexer->current_lexeme.string());
-        return NIL;
+				if ( bDelete ) delete lexer;
+				return NIL;
     }
 
     /* --- build list of rhs_function and arguments --- */
@@ -1504,7 +1538,11 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     fl->first = rf;
     prev_c = fl;
     /* consume function name, advance to argument list */
-    if (!lexer->get_lexeme()) return NULL;
+    if (!lexer->get_lexeme()) 
+		{
+			if ( bDelete ) delete lexer;
+			return NULL;
+		}
     num_args = 0;
     while (lexer->current_lexeme.type != R_PAREN_LEXEME)
     {
@@ -1513,7 +1551,8 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         {
             prev_c->rest = NIL;
             deallocate_rhs_value(thisAgent, funcall_list_to_rhs_value(fl));
-            return NIL;
+						if ( bDelete ) delete lexer;
+						return NIL;
         }
         num_args++;
         allocate_cons(thisAgent, &c);
@@ -1529,12 +1568,19 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         thisAgent->outputManager->printa_sf(thisAgent,  "Wrong number of arguments to function %s (expected %d)\n",
               rf->name->sc->name, rf->num_args_expected);
         deallocate_rhs_value(thisAgent, funcall_list_to_rhs_value(fl));
-        return NIL;
+				if ( bDelete ) delete lexer;
+				return NIL;
     }
 
     /* consume the right parenthesis */
-    if (!lexer->get_lexeme()) return NULL;
-    return funcall_list_to_rhs_value(fl);
+    if (!lexer->get_lexeme())
+		{
+			if ( bDelete ) delete lexer;
+			return NULL;
+		}
+		
+		if ( bDelete ) delete lexer;
+		return funcall_list_to_rhs_value(fl);
 }
 
 /* -----------------------------------------------------------------
