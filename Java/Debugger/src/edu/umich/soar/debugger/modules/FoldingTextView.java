@@ -1426,9 +1426,12 @@ public class FoldingTextView extends AbstractComboView implements
         // So until the Linux SWT performance improves, we'll turn on
         // lock-to-soar by
         // default on Linux and do this at the start of each session.
+    	/* Changing back to always be always false, b/c of complaints that this
+    	 * slows things down too much.  - Mazin */
+    	
         boolean lockDefault = false;
-        if (!OSName.isWindows())
-            lockDefault = true;
+//        if (!OSName.isWindows())
+//            lockDefault = true;
 
         m_IndentSize = element.getAttributeIntThrows("indent");
         m_ExpandTracePersistent = element.getAttributeBooleanDefault(
