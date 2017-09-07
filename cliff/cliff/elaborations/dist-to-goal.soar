@@ -1,0 +1,30 @@
+sp {elaborate*dist-to-goal-x*normal
+   (state <s> ^x {<x> < 0.9})
+-->
+   (<s> ^dist-to-goal-x (- 0.9 <x>))
+}
+
+sp {elaborate*dist-to-goal-x*there
+   (state <s> ^x {<x> >= 0.9})
+-->
+   (<s> ^dist-to-goal-x 0)
+}
+
+sp {elaborate*dist-to-goal-y*normal
+   (state <s> ^y {<y> < 0.4})
+-->
+   (<s> ^dist-to-goal-y (- 0.4 <y>))
+}
+
+sp {elaborate*dist-to-goal-y*there
+   (state <s> ^y {<y> >= 0.4})
+-->
+   (<s> ^dist-to-goal-y 0)
+}
+
+sp {elaborate*dist-to-goal
+   (state <s> ^dist-to-goal-x <x>
+              ^dist-to-goal-y <y>)
+-->
+   (<s> ^dist-to-goal (sqrt (+(* <x> <x>) (* <y> <y>))))
+}

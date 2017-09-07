@@ -1,0 +1,8 @@
+source _all.soar
+source dist-to-cliff.soar
+source dist-to-goal.soar
+source halt.soar
+source moves.soar
+source write.soar
+source reward.soar
+source top-state.soar

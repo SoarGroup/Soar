@@ -1,0 +1,3 @@
+pushd cliff
+source cliff_source.soar
+popd

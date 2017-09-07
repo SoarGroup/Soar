@@ -1,0 +1,11 @@
+indifferent-selection --epsilon-greedy
+indifferent-selection --epsilon 0.1
+
+rl --set discount-rate 0.9
+rl --set eligibility-trace-decay-rate 0.3
+rl --set learning on
+rl --set learning-policy on-policy-gq-lambda
+rl --set learning-rate 0.3
+rl --set step-size-parameter 0.1
+
+watch 0

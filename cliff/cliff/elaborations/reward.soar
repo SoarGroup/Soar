@@ -1,0 +1,36 @@
+sp {elaborate*reward*normal
+   (state <s> ^dist-to-goal {<dg> >= 0.001}
+              ^dist-to-cliff {<dc> >= 0.001}
+              ^reward-link <rl>
+              ^io.output-link <ol>)
+-->
+   (<rl> ^reward <r>)
+   (<r> ^value -1)
+   (<ol> ^reward <or>)
+   (<or> ^state non-terminal
+         ^value -1)
+}
+
+sp {elaborate*reward*goal
+   (state <s> ^dist-to-goal {<dg> < 0.001}
+              ^reward-link <rl>
+              ^io.output-link <ol>)
+-->
+   (<rl> ^reward <r>)
+   (<r> ^value -1)
+   (<ol> ^reward <or>)
+   (<or> ^state success
+         ^value -1)
+}
+
+sp {elaborate*reward*over-the-edge
+   (state <s> ^dist-to-cliff {<dc> < 0.001}
+              ^reward-link <rl>
+              ^io.output-link <ol>)
+-->
+   (<rl> ^reward <r>)
+   (<r> ^value -25)
+   (<ol> ^reward <or>)
+   (<or> ^state failure
+         ^value -25)
+}

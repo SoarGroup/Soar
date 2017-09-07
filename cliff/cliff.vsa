@@ -1,0 +1,17 @@
+VERSION 4
+/cliff/cliff.dm
+0	ROOT cliff cliff 1
+1	0	FOPERATOR _firstload _firstload.soar 3
+2	0	FOLDER all all 4
+3	0	FOLDER elaborations elaborations 2
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR dist-to-cliff dist-to-cliff.soar 8
+6	3	FOPERATOR dist-to-goal dist-to-goal.soar 9
+7	3	FOPERATOR halt halt.soar 14
+8	3	FOPERATOR moves moves.soar 13
+9	3	FOPERATOR write write.soar 15
+10	3	FOPERATOR reward reward.soar 10
+11	3	FOPERATOR top-state top-state.soar 6
+12	0	OPERATOR initialize-cliff initialize-cliff.soar 7
+13	0	OPERATOR move move.soar 11
+END

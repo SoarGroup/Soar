@@ -1,0 +1,18 @@
+sp {propose*initialize-cliff
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-cliff)
+}
+
+sp {apply*initialize-cliff
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-cliff)
+-->
+   (<s> ^name cliff
+        ^count 0
+        ^move <m>
+        ^x 0
+        ^y 0.35)
+}

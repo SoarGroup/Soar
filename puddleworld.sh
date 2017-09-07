@@ -1,5 +1,5 @@
 #!/bin/bash
 
-time out/PuddleWorld --episodes 200 --seed $RANDOM --rules PuddleWorld/puddle-world.soar > puddleworld.out
+time out_c/PuddleWorld --episodes 500 --seed $RANDOM --rules PuddleWorld/puddle-world.soar > puddleworld.out
 
 ./puddleworld.py

@@ -1,0 +1,11 @@
+sp {elaborate*dist-to-cliff*normal
+   (state <s> ^y {<y> < 0.5})
+-->
+   (<s> ^dist-to-cliff (- 0.5 <y>))
+}
+
+sp {elaborate*dist-to-cliff*over-the-edge
+   (state <s> ^y {<y> >= 0.5})
+-->
+   (<s> ^dist-to-cliff 0)
+}

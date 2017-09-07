@@ -1,0 +1,55 @@
+sp {elaborate*move*north*normal
+   (state <s> ^move <m>
+              ^y {<y> > 0.11})
+-->
+   (<m> ^north (- <y> 0.11))
+}
+
+sp {elaborate*move*north*wall
+   (state <s> ^move <m>
+              ^y {<y> <= 0.11})
+-->
+   (<m> ^north 0)
+}
+
+sp {elaborate*move*south*normal
+   (state <s> ^move <m>
+              ^y {<y> < 0.89})
+-->
+   (<m> ^south (+ <y> 0.11))
+}
+
+sp {elaborate*move*south*wall
+   (state <s> ^move <m>
+              ^y {<y> >= 0.89})
+-->
+   (<m> ^south 1)
+}
+
+sp {elaborate*move*east*normal
+   (state <s> ^move <m>
+              ^x {<x> < 0.89})
+-->
+   (<m> ^east (+ <x> 0.11))
+}
+
+sp {elaborate*move*east*wall
+   (state <s> ^move <m>
+              ^x {<x> >= 0.89})
+-->
+   (<m> ^east 1)
+}
+
+sp {elaborate*move*west*normal
+   (state <s> ^move <m>
+              ^x {<x> > 0.11})
+-->
+   (<m> ^west (- <x> 0.11))
+}
+
+sp {elaborate*move*west*wall
+   (state <s> ^move <m>
+              ^x {<x> <= 0.11})
+-->
+   (<m> ^west 0)
+}

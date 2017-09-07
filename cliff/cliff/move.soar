@@ -1,0 +1,792 @@
+gp {cliff*propose*move
+   (state <s> ^x <x>
+              ^y <y>
+              ^dist-to-cliff <c>
+              ^dist-to-goal <g>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north south east west]
+        ^x <x>
+        ^y <y>
+        ^dist-to-cliff <c>
+        ^dist-to-goal <g>)
+}
+
+sp {elaborate*move*var-x
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction << east west >>)
+-->
+   (<o> ^var x)
+}
+
+sp {elaborate*move*var-y
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction << north south >>)
+-->
+   (<o> ^var y)
+}
+
+sp {reject*move*wall
+   (state <s> ^move <m>
+              ^operator <o> +)
+   (<o> ^direction <d>
+        ^var <v>
+        ^<v> <old-value>)
+   (<m> ^<d> <old-value>)
+-->
+   (<s> ^operator <o> -)
+}
+
+gp {reward*move*00
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.1}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*01
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.2}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*02
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.1}
+           {<x> < 0.3}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*03
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.2}
+           {<x> < 0.4}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*04
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.3}
+           {<x> < 0.5}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*05
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.4}
+           {<x> < 0.6}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*06
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.5}
+           {<x> < 0.7}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*07
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.6}
+           {<x> < 0.8}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*08
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.7}
+           {<x> < 0.9}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*09
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.8}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*0A
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.9}
+        ^y {<y> < 0.1})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*10
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.1}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*11
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.2}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*12
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.1}
+           {<x> < 0.3}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*13
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.2}
+           {<x> < 0.4}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*14
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.3}
+           {<x> < 0.5}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*15
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.4}
+           {<x> < 0.6}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*16
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.5}
+           {<x> < 0.7}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*17
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.6}
+           {<x> < 0.8}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*18
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.7}
+           {<x> < 0.9}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*19
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.8}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*1A
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.9}
+        ^y {<y> < 0.2})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*20
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.1}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*21
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.2}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*22
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.1}
+           {<x> < 0.3}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*23
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.2}
+           {<x> < 0.4}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*24
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.3}
+           {<x> < 0.5}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*25
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.4}
+           {<x> < 0.6}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*26
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.5}
+           {<x> < 0.7}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*27
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.6}
+           {<x> < 0.8}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*28
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.7}
+           {<x> < 0.9}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*29
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.8}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*2A
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.9}
+        ^y {<y> >= 0.1}
+           {<y> < 0.3})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*30
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.1}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*31
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.2}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*32
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.1}
+           {<x> < 0.3}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*33
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.2}
+           {<x> < 0.4}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*34
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.3}
+           {<x> < 0.5}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*35
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.4}
+           {<x> < 0.6}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*36
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.5}
+           {<x> < 0.7}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*37
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.6}
+           {<x> < 0.8}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*38
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.7}
+           {<x> < 0.9}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*39
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.8}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*3A
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.9}
+        ^y {<y> >= 0.2}
+           {<y> < 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*40
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.1}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*41
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.2}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*42
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.1}
+           {<x> < 0.3}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*43
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.2}
+           {<x> < 0.4}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*44
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.3}
+           {<x> < 0.5}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*45
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.4}
+           {<x> < 0.6}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*46
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.5}
+           {<x> < 0.7}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*47
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.6}
+           {<x> < 0.8}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*48
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.7}
+           {<x> < 0.9}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*49
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.8}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*4A
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.9}
+        ^y {<y> >= 0.3}
+           {<y> < 0.5})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*50
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.1}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*51
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> < 0.2}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*52
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.1}
+           {<x> < 0.3}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*53
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.2}
+           {<x> < 0.4}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*54
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.4}
+           {<x> < 0.5}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*55
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.4}
+           {<x> < 0.6}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*56
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.5}
+           {<x> < 0.7}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*57
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.6}
+           {<x> < 0.8}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*58
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.7}
+           {<x> < 0.9}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*59
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.8}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+gp {reward*move*5A
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north east south west]
+        ^x {<x> >= 0.9}
+        ^y {<y> >= 0.4})
+-->
+   (<s> ^operator <o> = 0)
+}
+
+sp {apply*move
+   (state <s> ^operator <o>
+              ^count <c>
+              ^move <m>)
+   (<o> ^name move
+        ^direction <d>
+        ^var <v>)
+   (<s> ^<v> <old-value>)
+   (<m> ^<d> {<new-value> <> <old-value>})
+-->
+   (<s> ^count <c> -
+        ^count (+ <c> 1) +)
+   (<s> ^<v> <old-value> -
+        ^<v> <new-value> +)
+}

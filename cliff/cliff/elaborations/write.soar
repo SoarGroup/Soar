@@ -1,0 +1,18 @@
+sp {write*goal
+   (state <s> ^dist-to-goal {<d> < 0.001})
+-->
+   (write |Goal reached.| (crlf))
+}
+
+sp {write*over-the-edge
+   (state <s> ^dist-to-cliff {<d> < 0.001})
+-->
+   (write |Over the edge.| (crlf))
+}
+
+sp {write*position
+   (state <s> ^x <x>
+              ^y <y>)
+-->
+   (write |(| <x> |,| <y> |)| (crlf))
+}
