@@ -1458,6 +1458,15 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
 
+				if ( fun_name )
+				{
+					// might still be bad, so lookup the rh
+					rf = lookup_rhs_function(thisAgent, fun_name);
+
+					if ( !rf )
+						fun_name = NULL;
+				}
+
 				if ( !fun_name )
 				{
 					str  = "( (exec ";
