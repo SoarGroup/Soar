@@ -1,0 +1,48 @@
+# Classic 3 block blocks world
+# Formulated for look ahead search
+# John E. Laird
+# University of Michigan
+# 3/1/2012
+# Soar version 9.3.2
+
+# Give information to the rule reording algorithm to make the match more efficient.
+multi-attributes ontop 3
+multi-attributes clear 4
+multi-attributes in-place 3
+multi-attributes objects 4
+multi-attributes operator 9
+
+pushd ../../default
+source simple.soar
+source selection.soar
+popd
+
+# 
+learn --off
+learn --only
+rl --set learning on
+rl --set rl-impasse on
+rl --set credit-assignment rl
+rl --set temporal-extension on
+rl --set discount-rate 0.5
+
+rl --set learning-policy sarsa
+rl --set learning-rate 0.3
+
+#rl --set learning-policy q-learning
+#rl --set learning-rate 1
+#rl --set decay-mode exp
+
+#rl --set refine td-error
+#rl --set refine-require-episodes 5
+#rl --set refine-cycles-between-episodes 30
+
+indifferent-selection --epsilon-greedy
+indifferent-selection --epsilon 0.1
+
+sp {Impasse__Operator_Tie*elaborate*learn*on
+   (state <s> ^impasse tie)
+-->
+   (force-learn <s>)
+}
+
