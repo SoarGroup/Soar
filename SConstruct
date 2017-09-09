@@ -142,14 +142,12 @@ if compiler == 'g++':
 		else:
 			cflags.extend(['-g'])
 		
-		gcc_ver = gcc_version(env['CXX'])
-		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
-		if gcc_ver[0] > 3:
-			env.Append(CPPFLAGS='-fvisibility=hidden')
-			if config.TryCompile('', '.cpp'):
-				cflags.append('-fvisibility=hidden')
-				cflags.append('-DGCC_HASCLASSVISIBILITY')
-				env['VISHIDDEN'] = True
+		env.Append(CPPFLAGS='-std=c++14')
+		env.Append(CPPFLAGS='-fvisibility=hidden')
+		if config.TryCompile('', '.cpp'):
+			cflags.append('-fvisibility=hidden')
+			cflags.append('-DGCC_HASCLASSVISIBILITY')
+			env['VISHIDDEN'] = True
 		
 		if sys.platform == 'linux2':
 			lnflags.append(env.Literal(r'-Wl,-rpath,$ORIGIN'))
