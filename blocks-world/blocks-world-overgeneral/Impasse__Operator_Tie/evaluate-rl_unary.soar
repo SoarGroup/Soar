@@ -1,0 +1,101 @@
+sp {selection*propose*evaluate-rl*unary
+   (state <s> ^name selection
+              ^top-state <ts>
+              ^item <i>
+              ^over-threshold <i>
+              ^selected-item <i>
+              ^selected-feature <f>)
+   (<ts> ^problem-space.features <psf>)
+   (<psf> ^unary <uf>)
+   (<uf> ^name <name>)
+   (<ts> ^object.name <name0>)
+   (<i> ^feature-lists <fl>)
+   (<fl> ^feature <f>)
+   (<f> ^count <c>
+        ^id <id>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^unary <name>
+        ^first <name0>
+        ^count (+ <c> 1)
+        ^id (make-constant-symbol)
+#        ^id (concat |unary(| <name>
+#            |,| <name0>
+#            |)*| <id>)
+        ^previd <id>)
+}
+
+sp {elaborate*evaluate-rl*unary*present
+   (state <s> ^name selection
+              ^operator <o> +
+              ^top-state <ts>)
+   (<o> ^name evaluate-rl
+        ^unary <name>
+        ^first <name0>)
+   (<ts> ^<name>.name <name0>)
+-->
+   (<o> ^value present)
+}
+
+sp {elaborate*evaluate-rl*unary*absent
+   (state <s> ^name selection
+              ^operator <o> +
+              ^top-state <ts>)
+   (<o> ^name evaluate-rl
+        ^unary <name>
+        ^first <name0>)
+   (<ts> ^problem-space.features.unary <uf>)
+   (<uf> ^name <name>
+         ^not <not>)
+   (<ts> ^<not>.name <name0>)
+-->
+   (<o> ^value absent)
+}
+
+sp {reject*evaluate-rl*existing-unary-feature
+   (state <s> ^name selection
+              ^operator <o> +
+              ^item <i>)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^unary <name>
+        ^first <name0>
+        ^value <value>
+        ^id <id>
+        ^previd <pid>)
+   (<i> ^feature-lists <fl>)
+   (<fl> ^feature <fi>)
+   (<fi> ^all <f>
+         ^id <pid>)
+   (<f> ^unary <name>
+        ^first <name0>
+        ^value <value>)
+-->
+   (<s> ^operator <o> -)
+}
+
+gp {apply*evaluate-rl*unary*feature
+   (state <s> ^operator <o>)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^unary <name>
+        ^first <name0>
+        ^value { <value> [ present absent ] }
+        ^count <c>
+        ^id <id>
+        ^previd <pid>)
+   (<i> ^moving-block.name <blockA>
+        ^destination.name <object>
+        ^feature-lists <fl>)
+-->
+   (<fl> ^feature <fnew>)
+   (<fnew> ^unary <name>
+           ^first <name0>
+           ^value <value>
+           ^count <c>
+           ^id <id>
+           ^previd <pid>
+           ^all <fnew>)
+}

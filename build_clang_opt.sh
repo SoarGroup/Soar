@@ -14,7 +14,7 @@ export CCACHE_COMPILERCHECK="$CCACHE_CC -v"
 export BUILD=build_c
 export OUT=out_c
 
-user_args='--opt puddleworld'
+user_args='--opt puddleworld --opt cli'
 lsb_args='--cc="$CCACHE $CCACHE_CC" \
   --cxx="$CCACHE $CCACHE_CXX" \
   --build="$BUILD" \

@@ -1,0 +1,49 @@
+sp {evaluate-operator*propose*evaluate-state
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name evaluate-state)
+}
+#
+sp {apply*evaluate-state*0
+   (state <s> ^operator.name evaluate-state
+              ^inplace-object.name table
+              ^outplace-object.name C
+              ^ontop <o1> <o2> <o3>)
+   (<o1> ^top-block.name B
+         ^bottom-block.name <x>)
+   (<o2> ^top-block.name A
+         ^bottom-block.name <y>)
+   (<o3> ^top-block.name C
+         ^bottom-block.name <z>)
+-->
+   (<s> ^expected-value .0)}
+
+sp {apply*evaluate-state*3
+   (state <s> ^operator.name evaluate-state
+              ^inplace-object.name C
+              ^outplace-object.name B
+              ^ontop <o1>)
+   (<o1> ^top-block.name A
+         ^bottom-block.name <x>)
+-->
+   (<s> ^expected-value .3)}
+
+
+sp {apply*evaluate-state*6
+   (state <s>  ^operator.name evaluate-state
+               ^inplace-object.name C
+               ^inplace-object.name B
+               ^outplace-object.name A)
+-->
+   (<s> ^expected-value .6)}
+
+
+sp {apply*evaluate-state*1
+   (state <s>  ^operator.name evaluate-state
+               ^inplace-object.name C
+               ^inplace-object.name B
+               ^inplace-object.name A)
+-->
+   (<s> ^expected-value 1.0)}

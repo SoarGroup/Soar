@@ -1,0 +1,8 @@
+sp {apply*resolve-tie*extra
+   "This is the bad rule."
+   :o-support
+   (state <s> ^superstate { <ss> <> nil })
+#   (<ss> ^operator <o> +)
+-->
+   (<ss> ^value 42)
+}

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-TERMINAL=500
-OUTPUT=blocks-world
+TERMINAL=2000
+OUTPUT=blocks-world-out
 mkdir -p $OUTPUT
 
 SEED=""
@@ -17,12 +17,12 @@ for seed in ${SEED[@]}; do
   mkfifo tocli
   mkfifo fromcli
 
-  out/cli <tocli >>fromcli 2>/dev/null &
+  out_c/cli <tocli >>fromcli 2>/dev/null &
 
   echo "SEED $seed"
   echo "srand $seed" >>tocli
 
-  echo "source ../blocks-world/blocks-world-overgeneral.soar" >>tocli
+  echo "source blocks-world/blocks-world-overgeneral.soar" >>tocli
   echo "watch 0" >>tocli
 
   echo "init" >>tocli
@@ -70,3 +70,5 @@ for seed in ${SEED[@]}; do
 done
 
 rm -f fromcli tocli
+
+killall cli

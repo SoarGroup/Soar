@@ -1,0 +1,16 @@
+sp {evaluate-operator*elaborate*evaluation*failure*constraint-failure
+   :default
+   (state <rej-state-imp> ^superstate <eval-g>
+                          ^attribute operator
+                          ^impasse constraint-failure
+                          ^quiescence t)
+   (<eval-g> ^superstate <select-g>
+             ^quiescence t)
+   (<select-g> ^operator <o2>
+               ^quiescence t)
+   (<select-g> ^evaluation <e2>
+               ^quiescence t)
+   (<o2> ^name evaluate-operator
+         ^evaluation <e2>)
+-->
+   (<e2> ^symbolic-value exhaustion-failure)}

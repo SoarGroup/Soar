@@ -1,0 +1,68 @@
+learn --on
+
+sp {propose*initialize-bug-samechunks
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-bug-samechunks)
+}
+sp {apply*initialize-bug-samechunks
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-bug-samechunks)
+-->
+   (<s> ^name bug-samechunks
+        ^value 1
+        ^value 2)
+}
+
+sp {bug-samechunks*propose*action
+   (state <s> ^name bug-samechunks
+              ^value <v>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name action
+         ^value <v>)
+}
+
+sp {propose*resolve-tie
+   (state <s> ^superstate { <ss> <> nil })
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name resolve-tie)
+}
+sp {apply*resolve-tie
+   (state <s> ^operator <o>
+              ^superstate <ss>
+              ^item <i>)
+   (<i> ^value <vo>)
+-->
+   (write (crlf) |  RESOLVE-TIE | <vo>)
+   (<ss> ^operator <i> =)
+}
+sp {apply*resolve-tie*extra
+   "Chunking one level of structure off the superoperator is safe."
+   (state <s> ^operator <o>
+              ^superstate <ss>
+              ^item <i>)
+   (<i> ^value <vo>)
+-->
+   (write (crlf) |  RESOLVE-TIE++WILL-NOT-CRASH-THE-SECOND-TIME | <vo> (crlf))
+   (<i> ^feature <vo>)
+}
+
+sp {apply*action*1
+   (state <s> ^operator <o>)
+   (<o> ^name action)
+ -{(<s> ^operator.feature 3)}
+-->
+   (<s> ^value 3)
+}
+sp {apply*action*2
+   (state <s> ^operator <o>)
+   (<o> ^name action)
+   (<s> ^operator <o2> +)
+   (<o2> ^feature 3)
+-->
+   (halt)
+}

@@ -1,0 +1,35 @@
+
+sp {P11*all-blocks-in-desired-position*three-blocks
+   (state <s>  ^name blocks-world
+               ^reward-link <r>
+               ^inplace-object.name A
+               ^inplace-object.name B
+               ^inplace-object.name C)
+-->
+   (<r> ^reward.value 1
+        ^reward.terminal 0)
+   (<s> ^expected-value 1.0)}
+
+sp {P11*all-blocks-not-in-desired-position*three-blocks
+   (state <s>  ^name blocks-world
+               ^reward-link <r>)
+ -{(<s> ^inplace-object.name A
+        ^inplace-object.name B
+        ^inplace-object.name C)}
+-->
+   (<r> ^reward.value -0.1)}
+
+sp {halt
+   (state <s> ^superstate nil
+              ^name blocks-world
+              ^reward-link <rl>
+              ^inplace-object.name A
+              ^inplace-object.name B
+              ^inplace-object.name C
+              ^step <step>)
+-->
+#   (write (crlf) |TASK: Finished Stacking the Blocks.|)
+   (write (crlf) |STEP | <step>)
+   (<rl> ^reward.value 1
+         ^reward.terminal 0)
+   (halt)}

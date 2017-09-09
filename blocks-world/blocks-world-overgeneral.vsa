@@ -1,0 +1,25 @@
+VERSION 4
+/blocks-world-overgeneral/blocks-world-overgeneral.dm
+0	ROOT blocks-world-overgeneral blocks-world-overgeneral 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR clear clear.soar 5
+5	3	FOPERATOR in-place in-place.soar 6
+6	3	FOPERATOR monitor monitor.soar 7
+7	3	FOPERATOR moveable moveable.soar 8
+8	3	FOPERATOR problem-space problem-space.soar 9
+9	3	FOPERATOR reward reward.soar 10
+10	0	FOPERATOR _readme _readme.soar 11
+11	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 29 12
+12	11	FOPERATOR evaluate-operator_reject evaluate-operator_reject.soar 13
+13	11	FOPERATOR heuristic heuristic.soar 14
+14	11	FOPERATOR monitor monitor.soar 15
+15	11	OPERATOR evaluate-rl evaluate-rl.soar 16
+16	11	OPERATOR evaluate-rl_binary evaluate-rl_binary.soar 17
+17	11	OPERATOR evaluate-rl_unary evaluate-rl_unary.soar 18
+18	11	OPERATOR select-feature select-feature.soar 19
+19	11	OPERATOR select-item select-item.soar 20
+20	0	OPERATOR initialize-blocks-world initialize-blocks-world.soar 21
+21	0	OPERATOR move-block move-block.soar 22
+END

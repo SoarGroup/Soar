@@ -1,0 +1,18 @@
+sp {blocks-world*force-tie*false
+   (state <s> ^name blocks-world
+              ^operator <o> +)
+   (<o> ^name move-block
+        ^feature-lists <fl>)
+   (<fl> ^feature.count 20)
+-->
+   (<o> ^force-tie false)
+}
+#sp {blocks-world*force-tie*true
+#   (state <s> ^name blocks-world
+#              ^operator <o> +)
+#   (<o> ^name move-block
+#        ^feature-lists <fl>)
+# -{(<fl> ^feature.count 3)}
+#-->
+#   (<o> ^force-tie true)
+#}

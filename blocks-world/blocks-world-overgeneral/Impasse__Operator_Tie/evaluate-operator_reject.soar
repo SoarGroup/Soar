@@ -1,0 +1,7 @@
+sp {evaluate-operator*reject
+   (state <s> ^name selection
+              ^operator <op> +)
+   (<op> ^name evaluate-operator)
+-->
+   (<s> ^operator <op> -)
+}

@@ -1,0 +1,59 @@
+###
+### MOVE-BLOCK
+###
+
+# Propose moving a clear block ontop a clear object
+ 
+sp {P5*propose*move-block
+   (state <s> ^name blocks-world)
+   (<s> ^moveable <blockA>
+        ^clear { <> <blockA> <object> }
+        ^step <step>)
+   (<blockA> ^type block)
+  -{(<s> ^ontop <ontop>)      # needed to avoid moving a block onto the table that is already there
+    (<ontop> ^top-block <blockA>
+             ^bottom-block <object>)}
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move-block
+        ^moving-block <blockA>
+        ^destination <object>
+        ^feature-lists <fl>
+        ^step <step>)
+   (<fl> ^feature <f>)
+   (<f> ^count 0
+        ^id nil)
+}
+
+sp {default*evaluation*move-block
+   :template
+   (state <s> ^name blocks-world
+              ^operator <o> +)
+   (<o> ^name move-block
+        ^moving-block.name <blockA>
+        ^destination.name <object>
+#       -^feature-lists.feature.previd nil
+   )
+-->
+   (<s> ^operator <o> = 0)
+}
+
+sp {blocks-world*apply*operator*move-block*change-ontop
+   (state <s> ^operator <o>
+              ^ontop <ontop>)
+   (<ontop> ^top-block <mblock>
+            ^bottom-block { <> <tblock> <object> })
+   (<o> ^moving-block <mblock>
+        ^destination <tblock>)
+-->
+   (<ontop> ^bottom-block <tblock>
+            ^bottom-block <object> -)}
+
+
+sp {blocks-world*apply*operator*increment-step
+   (state <s> ^operator <o>
+              ^step <step>)
+   (<o> ^step <step>)
+-->
+   (<s> ^step <step> -
+        ^step (+ <step> 1) +)}

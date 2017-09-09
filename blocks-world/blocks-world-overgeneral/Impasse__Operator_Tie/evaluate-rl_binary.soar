@@ -1,0 +1,121 @@
+sp {selection*propose*evaluate-rl*binary
+   (state <s> ^name selection
+              ^top-state <ts>
+              ^item <i>
+              ^over-threshold <i>
+              ^selected-item <i>
+              ^selected-feature <f>)
+   (<ts> ^problem-space.features <psf>)
+   (<psf> ^binary <bf>)
+   (<bf> ^name <name>)
+   (<ts> ^object.name <name0>
+         ^object.name <name1>)
+   (<i> ^feature-lists <fl>)
+   (<fl> ^feature <f>)
+   (<f> ^count <c>
+        ^id <id>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^binary <name>
+        ^first <name0>
+        ^second <name1>
+        ^count (+ <c> 1)
+        ^id (make-constant-symbol)
+#        ^id (concat |binary(| <name>
+#            |,| <name0>
+#            |,| <name1>
+#            |)*| <id>)
+        ^previd <id>)
+#   (write |  PROPOSING | <name> |(| <name0> |,| <name1> |) for | <i> | = | <o> (crlf))
+}
+
+sp {elaborate*evaluate-rl*binary*present
+   (state <s> ^name selection
+              ^operator <o> +
+              ^top-state <ts>)
+   (<o> ^name evaluate-rl
+        ^binary <name>
+        ^first <name0>
+        ^second <name1>)
+   (<ts> ^problem-space.features.binary <bf>)
+   (<bf> ^name <name>
+         ^first <arg0>
+         ^second <arg1>)
+   (<ts> ^<name> <rel>)
+   (<rel> ^<arg0>.name <name0>
+          ^<arg1>.name <name1>)
+-->
+   (<o> ^value present)
+}
+
+sp {elaborate*evaluate-rl*binary*absent
+   (state <s> ^name selection
+              ^operator <o> +
+              ^top-state <ts>)
+   (<o> ^name evaluate-rl
+        ^binary <name>
+        ^first <name0>
+        ^second <name1>)
+   (<ts> ^problem-space.features.binary <bf>)
+   (<bf> ^name <name>
+         ^not <not>
+         ^first <arg0>
+         ^second <arg1>)
+   (<ts> ^<not> <rel>)
+   (<rel> ^<arg0>.name <name0>
+          ^<arg1>.name <name1>)
+-->
+   (<o> ^value absent)
+}
+
+sp {reject*evaluate-rl*existing-binary-feature
+   (state <s> ^name selection
+              ^operator <o> +
+              ^item <i>)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^binary <name>
+        ^first <name0>
+        ^second <name1>
+        ^value <value>
+        ^id <id>
+        ^previd <pid>)
+   (<i> ^feature-lists <fl>)
+   (<fl> ^feature <fi>)
+   (<fi> ^all <f>
+         ^id <pid>)
+   (<f> ^binary <name>
+        ^first <name0>
+        ^second <name1>
+        ^value <value>)
+-->
+   (<s> ^operator <o> -)
+}
+
+gp {apply*evaluate-rl*binary*feature
+   (state <s> ^operator <o>)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^binary <name>
+        ^first <name0>
+        ^second <name1>
+        ^value { <value> [ present absent ] }
+        ^count <c>
+        ^id <id>
+        ^previd <pid>)
+   (<i> ^moving-block.name <blockA>
+        ^destination.name <object>
+        ^feature-lists <fl>)
+-->
+   (<fl> ^feature <fnew>)
+   (<fnew> ^binary <name>
+           ^first <name0>
+           ^second <name1>
+           ^value <value>
+           ^count <c>
+           ^id <id>
+           ^previd <pid>
+           ^all <fnew>)
+}

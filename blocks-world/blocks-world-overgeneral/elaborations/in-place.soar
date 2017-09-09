@@ -1,0 +1,71 @@
+sp {P3*elaborate*object-on-table
+   (state <s> ^object <table>)
+   (<table> ^name table)
+-->
+   (<s> ^inplace-object <table>)}
+
+sp {P3*elaborate*object-on-tableb
+   (state <s> ^name evaluate-operator
+              ^object <table>
+              ^tried-tied-operator)
+   (<table> ^name table)
+-->
+   (<s> ^inplace-object <table>)}
+
+sp {P4*elaborate*object-on-inplace
+   (state <s> ^desired.ontop <ontop-d>
+              ^inplace-object <blockB>
+              ^ontop <ontop-s>)
+   (<ontop-d> ^top-block <blockA>
+              ^bottom-block <blockB>)
+   (<ontop-s> ^top-block <blockA>
+              ^bottom-block <blockB>)
+-->
+   (<s> ^inplace-object <blockA>)}
+
+sp {P4*elaborate*object-on-notinplace*1
+   (state <s> ^desired.ontop <ontop-d>
+              ^outplace-object <blockB>)
+   (<ontop-d> ^top-block <blockA>
+              ^bottom-block <blockB>)
+-->
+   (<s> ^outplace-object <blockA>)}
+
+sp {P4*elaborate*object-on-notinplace*2
+   (state <s> ^desired.ontop <ontop-d>
+              ^inplace-object <blockB>
+              ^ontop <ontop-s>)
+   (<ontop-d> ^top-block <blockA>
+              ^bottom-block <blockB>)
+   (<ontop-s> ^top-block <blockA>
+              ^bottom-block <> <blockB>)
+-->
+   (<s> ^outplace-object <blockA>)}
+
+sp {P4*elaborate*object-on-notontop*1
+   (state <s> ^object <blockA>
+              ^object <blockB>
+              ^ontop <ontop-s>)
+   (<ontop-s> ^top-block <blockA> <> <blockB>
+              ^bottom-block <> <blockB>)
+-->
+   (<s> ^notontop <notontop>)
+   (<notontop> ^top-block <blockA>
+               ^bottom-block <blockB>)}
+
+sp {P4*elaborate*object-on-notontop*2
+   (state <s> ^object <blockA>
+              ^object <blockB>)
+   (<blockA> ^name table)
+   (<blockB> ^name <> table)
+-->
+   (<s> ^notontop <notontop>)
+   (<notontop> ^top-block <blockA>
+               ^bottom-block <blockB>)}
+
+sp {P4*elaborate*object-on-notontop*3
+   (state <s> ^object <blockA>)
+-->
+   (<s> ^notontop <notontop>)
+   (<notontop> ^top-block <blockA>
+               ^bottom-block <blockA>)}
