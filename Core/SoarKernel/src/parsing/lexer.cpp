@@ -664,8 +664,18 @@ bool Lexer::init ()
   return true;
 }
 
-int Lexer::current_parentheses_level () {
+int Lexer::current_parentheses_level () const {
   return parentheses_level;
+}
+
+const char *Lexer::current_remaining_string() const
+{
+	return production_string;
+}
+
+const char *Lexer::current_orig_string() const
+{
+	return orig_string;
 }
 
 void Lexer::skip_ahead_to_balanced_parentheses (int parentheses_level) {
@@ -759,6 +769,7 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
 Lexer::Lexer(agent* agent, const char* string)
 {
     thisAgent = agent;
+		orig_string = string;
     production_string = string;
     current_char = ' ';
     parentheses_level = 0;
