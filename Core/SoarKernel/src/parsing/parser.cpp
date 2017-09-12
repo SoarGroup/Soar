@@ -1469,21 +1469,68 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 
 				if ( !fun_name )
 				{
-					str  = "( (exec ";
+					//str = lexer->current_orig_string();
+
+					//size_t pos = str.find( lexer->current_lexeme.string() );
+
+					//str.insert( pos, "exec " );
+
+					str.clear();
+
+					for ( int j = 0; j < lexer->current_parentheses_level(); ++j )
+						str += "( ";
+
+					str += "exec ";
 					str += lexer->current_lexeme.string();
+					str += " ";
 					str += " |";
 
 					lexer->get_lexeme();
 
-					str += lexer->current_lexeme.string();
-					str += "|))\n";
+					if ( lexer->current_lexeme.string()[0] != ')' )
+					{
+						str += lexer->current_lexeme.string();
+						str += "| ";
+					}
+					else
+					{
+						str += "| ";
+						str += lexer->current_lexeme.string();
+					}
+					str += lexer->current_remaining_string();
+
+					if ( str.back() != '\n' )
+					{
+						for ( int j = 0; j < lexer->current_parentheses_level(); ++j )
+							str += " )";
+						
+						str += "\n";
+					}
+					//if ( str.back() != '\n' )
+					//	str += ")\n";
+//					str  = "( (exec ";
+//					str += lexer->current_lexeme.string();
+//					str += " |";
+
+					//lexer->get_lexeme();
+
 					
 					// gonna try to fake this out with an exec
 					// bring the current one to the end;
 					while (lexer->current_lexeme.type != R_PAREN_LEXEME)
 						lexer->get_lexeme();
 
+//					str += lexer->current_remaining_string();
+
+//					if ( str.back() == '\n' )
+//						str.pop_back();
+
+//					str += "))\n";
+					
 					lexer->get_lexeme();
+
+					if ( lexer->current_remaining_string()[0] == '\n' )
+						lexer->get_lexeme();
 
 					lexer   = new Lexer(thisAgent,str.c_str());
 					bDelete = true;

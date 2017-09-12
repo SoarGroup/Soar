@@ -122,7 +122,14 @@ namespace soar
          * Return the current level of parentheses nesting (0 means
          * no open paren's have been encountered).
          */
-        int current_parentheses_level ();
+        int current_parentheses_level () const;
+
+				/**
+				* Return the remaining string in the lex.
+				*/
+				const char *current_orig_string() const;
+				const char *current_remaining_string() const;
+
         /**
          * Eat lexemes until current_parentheses_level matches the input
          * integer (0 means eat until back at the top level).
@@ -166,6 +173,7 @@ namespace soar
          * The second-to-last character read from the input string.
          */
         int                 prev_char;
+				const char*         orig_string;
         const char*         production_string;
         //0 means top level, no left parens seen
         int                 parentheses_level;
