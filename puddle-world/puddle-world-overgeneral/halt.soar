@@ -1,0 +1,13 @@
+sp {cartpole*propose*halt
+    (state <s> ^io.input-link.state terminal)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^name halt)
+}
+
+sp {cartpole*apply*halt
+    (state <s> ^operator <o>)
+    (<o> ^name halt)
+-->
+    (halt)
+}

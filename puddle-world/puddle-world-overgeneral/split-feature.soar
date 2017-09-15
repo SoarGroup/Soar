@@ -1,0 +1,88 @@
+sp {simple*split-feature
+   (state <s> ^problem-space.features <psf>)
+   (<psf> ^unary <uf>)
+   (<uf> ^value <v>)
+   (<v> ^name <name>
+        ^id <id>
+        ^lower <lower>
+        ^upper <upper>
+        ^deepen true
+        ^depth <d>
+        ^midpt <midpt>)
+-->
+   (<uf> ^value <vnew1> <vnew2>)
+   (<vnew1> ^name <name>
+            ^id (concat <id> |0|)
+            ^lower <lower>
+            ^upper <midpt>
+            ^depth (+ <d> 1)
+            ^previd <id>
+            ^split false)
+   (<vnew2> ^name <name>
+            ^id (concat <id> |1|)
+            ^lower <midpt>
+            ^upper <upper>
+            ^depth (+ <d> 1)
+            ^previd <id>
+            ^split false)
+}
+
+#sp {propose*split-feature
+#   (state <s> ^problem-space.features <psf>)
+#   (<psf> ^unary <uf>)
+#   (<uf> ^value <v>)
+#   (<v> ^split {<sp> false}
+#        ^name <name>
+#        ^id <id>
+#        ^lower <lower>
+#        ^upper <upper>
+#        ^deepen true
+#        ^depth <d>
+#        ^midpt <midpt>)
+#-->
+#   (<s> ^operator <o> + > =)
+#   (<o> ^name split-feature
+#        ^value <v>
+#        ^split <sp>
+#        ^value-name <name>
+#        ^id <id>
+#        ^lower <lower>
+#        ^upper <upper>
+#        ^deepen true
+#        ^depth <d>
+#        ^midpt <midpt>)
+#}
+#
+#sp {apply*split-feature
+#   (state <s> ^operator <o>
+#              ^problem-space.features <psf>)
+#   (<psf> ^unary <uf>)
+#   (<o> ^name split-feature
+#        ^value <v>
+#        ^split <sp>
+#        ^value-name <name>
+#        ^id <id>
+#        ^lower <lower>
+#        ^upper <upper>
+#        ^deepen true
+#        ^depth <d>
+#        ^midpt <midpt>)
+#-->
+#   (<v> ^split true
+#        ^split <sp> -)
+#   (<uf> ^value <vnew1> <vnew2>)
+#   (<vnew1> ^name <name>
+#            ^id (concat <id> |0|)
+#            ^lower <lower>
+#            ^upper <midpt>
+#            ^depth (+ <d> 1)
+#            ^previd <id>
+#            ^split false)
+#   (<vnew2> ^name <name>
+#            ^id (concat <id> |1|)
+#            ^lower <midpt>
+#            ^upper <upper>
+#            ^depth (+ <d> 1)
+#            ^previd <id>
+#            ^split false)
+#}

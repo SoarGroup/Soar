@@ -1,0 +1,102 @@
+#sp {copy*evaluate-rl*feature
+#   (state <s> ^operator <o> +)
+#   (<o> ^feature-lists <fl>)
+#   (<fl> ^feature <f>
+#         ^feature <fnew>)
+#   (<f> ^id <pid>
+#        ^all <pall>)
+#   (<fnew> ^previd <pid>)
+#-->
+#   (<fnew> ^all <pall>)
+#}
+
+sp {deepen*evaluate-rl*feature
+   (state <s> ^operator <o>
+              ^top-state <ts>)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^first <idnew>
+        ^id <constant>
+        ^previd <id>)
+   (<ts> ^problem-space.features <psf>)
+   (<psf> ^unary <uf>)
+   (<uf> ^value <v>)
+   (<v> ^id <idnew>)
+#   (<i> ^direction <dir>
+#        ^feature-lists <fl>)
+#   (<fl> ^feature <f>)
+#   (<f> ^first <idnew>
+#        ^id <constant>)
+-->
+   (<v> ^deepen true)
+}
+
+sp {apply*evaluate-rl
+   (state <s> ^operator <o>
+              ^superstate <ss>)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^id <id>)
+   (<i> ^direction <d>) # "move" action specific
+#   (<i> ^feature-lists <fl>)
+#   (<fl> ^feature <f>)
+#   (<f> ^id <id>
+#        ^acceptable true
+#   )
+-->
+#   (write (crlf)
+#          <i> | SUPPORTED BY | <id>
+#          (crlf))
+   (<ss> ^operator <i> = .0)
+}
+
+#sp {force*retract*part-1
+#   (state <s> ^superstate <ss>
+#              ^operator.name evaluate-rl)
+#-->
+#   (<ss> ^force retract)
+#}
+#sp {force*retract*part-2
+#   (state <s> ^force retract)
+#-->
+#   (<s> ^operator <o> + !)
+#   (<o> ^name retract)
+#}
+#sp {force*retract*part-3
+#   (state <s> ^operator.name retract)
+#-->
+#   (<s> ^force retract -)
+#}
+
+#sp {elaborate*feature*acceptable
+#   (state <s> ^operator <o> +)
+#   (<o> ^feature-lists <fl>)
+#   (<fl> ^feature <f>)
+#-->
+#   (<f> ^acceptable true)
+#}
+#
+#sp {reject*acceptable*lower-count
+#   (state <s> ^operator <o> +)
+#   (<o> ^feature-lists <fl>)
+#   (<fl> ^feature <f0>
+#         ^feature <f1>)
+#   (<f0> ^count <c0>)
+#   (<f1> ^count < <c0>)
+#-->
+#   (<f1> ^acceptable true -)
+#}
+#
+#sp {reject*acceptable*lower-id
+#   "This is an arbitrary way to avoid multiple RL-rules (with the same count) for the same operator."
+#   (state <s> ^operator <o> +)
+#   (<o> ^feature-lists <fl>)
+#   (<fl> ^feature <f0>
+#         ^feature <f1>)
+#   (<f0> ^count <c0>
+#         ^id <id0>)
+#   (<f1> ^count <c0>
+#         ^id <id1> < <id0>)
+#-->
+#   (<f1> ^acceptable true -)
+#}

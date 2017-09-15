@@ -1,0 +1,20 @@
+sp {selection*propose*select-item
+   (state <s> ^name selection
+              ^item <i>
+              ^over-threshold <i>)
+  -{(<s> ^item <j>
+         ^over-threshold <j>
+         ^selected-item <j>)}
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name select-item
+        ^superoperator <i>)
+}
+
+sp {selection*apply*select-item
+   (state <s> ^operator <o>)
+   (<o> ^name select-item
+        ^superoperator <i>)
+-->
+   (<s> ^selected-item <i>)
+}

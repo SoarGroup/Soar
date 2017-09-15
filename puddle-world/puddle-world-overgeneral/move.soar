@@ -1,0 +1,48 @@
+gp {puddleworld*propose*move
+   (state <s> ^name puddleworld
+              ^io.input-link <il>)
+   (<il> ^step <c>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move
+        ^step <c>
+        ^direction [north south east west]
+        ^feature-lists <fl>)
+   (<fl> ^feature <f>)
+   (<f> #^all <f>
+        ^count 0
+        ^id nil
+        ^unary nil
+        ^first nil)
+}
+
+gp {puddleworld*reinforce*move
+   (state <s> ^operator <o> +)
+   (<o> ^name move
+        ^direction [north south east west])
+-->
+   (<s> ^operator <o> = 0)
+}
+
+sp {puddleworld*apply*move
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name move
+        ^step <c>
+        ^direction <d>)
+-->
+   (<ol> ^move <m>)
+   (<m> ^step <c>
+        ^direction <d>)
+}
+
+sp {puddleworld*remove*old-move
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^name move
+        ^step <c>)
+   (<ol> ^move <m>)
+   (<m> ^step <> <c>)
+-->
+   (<ol> ^move <m> -)
+}

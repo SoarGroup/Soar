@@ -1,0 +1,58 @@
+#sp {blocks-world*monitor*features*unary
+#   (state <s> ^problem-space.features <f>)
+#   (<f> ^unary <name>)
+#   (<s> ^<name>.name <name0>)
+#-->
+#   (write (crlf)
+#          |  | <s>
+#          |: | <name0>
+#          | | <name>)
+#}
+#
+#sp {blocks-world*monitor*features*unary*negation
+#   (state <s> ^problem-space.features <f>)
+#   (<f> ^unary <name>)
+#   (<s> ^object.name <name0>
+#       -^<name>.name <name0>)
+#-->
+#   (write (crlf)
+#          |  | <s>
+#          |: | <name0>
+#          | not | <name>)
+#}
+#
+#sp {blocks-world*monitor*features*binary
+#   (state <s> ^problem-space.features <f>)
+#   (<f> ^binary <b>)
+#   (<b> ^name <name>
+#        ^first <first>
+#        ^second <second>)
+#   (<s> ^<name> <rel>)
+#   (<rel> ^<first>.name <name0>
+#          ^<second>.name <name1>)
+#-->
+#   (write (crlf)
+#          |  | <s>
+#          |: | <name0>
+#          | | <name>
+#          | of | <name1>)
+#}
+#
+#sp {blocks-world*monitor*features*binary*negation
+#   (state <s> ^problem-space.features <f>)
+#   (<f> ^binary <b>)
+#   (<b> ^name <name>
+#        ^first <first>
+#        ^second <second>)
+#   (<s> ^object.name <name0>
+#        ^object.name <name1> <> <name0>)
+# -{(<s> ^<name> <rel>)
+#   (<rel> ^<first>.name <name0>
+#          ^<second>.name <name1>)}
+#-->
+#   (write (crlf)
+#          |  | <s>
+#          |: | <name0>
+#          | not | <name>
+#          | of | <name1>)
+#}

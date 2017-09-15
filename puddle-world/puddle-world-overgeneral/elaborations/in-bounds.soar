@@ -1,0 +1,15 @@
+sp {cartpole*elaborate*in-bounds
+   (state <s> ^superstate nil
+              ^problem-space.features.unary <f>)
+   (<f> ^name in-bounds
+        ^value <v>)
+   (<v> ^name <name>
+        ^id <id>
+        ^lower <lower>
+        ^upper <upper>)
+   (<s> ^io.input-link <il>)
+  -{(<il> ^<name> < <lower>)}
+  -{(<il> ^<name> >= <upper>)}
+-->
+   (<s> ^in-bounds <id>)
+}

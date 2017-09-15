@@ -1,0 +1,9 @@
+sp {puddleworld*elaborate*midpt
+   (state <s> ^name puddleworld
+              ^problem-space <p>)
+   (<p> ^features.unary.value <v>)
+   (<v> ^lower <lower>
+        ^upper <upper>)
+-->
+   (<v> ^midpt (/ (+ <lower> <upper>) 2.0))
+}

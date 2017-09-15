@@ -1,0 +1,13 @@
+sp {elaborate*reward
+    (state <s> ^io.input-link.reward <r>
+               ^reward-link <rl>)
+-->
+    (<rl> ^reward.value <r>)
+}
+
+sp {elaborate*terminal
+    (state <s> ^io.input-link.terminal <t>
+               ^reward-link <rl>)
+-->
+    (<rl> ^reward.terminal <t>)
+}

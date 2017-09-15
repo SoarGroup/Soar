@@ -1,0 +1,9 @@
+source cleanup.soar
+source evaluate-operator_reject.soar
+source heuristic.soar
+source monitor.soar
+source evaluate-rl.soar
+source evaluate-rl_unary.soar
+source select-feature.soar
+source select-item.soar
+source select-split.soar

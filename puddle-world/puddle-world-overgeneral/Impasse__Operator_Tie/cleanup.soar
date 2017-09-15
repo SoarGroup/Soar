@@ -1,0 +1,35 @@
+sp {prepare*evaluate-rl*cleanup
+   (state <s> ^operator.name evaluate-rl)
+-->
+   (<s> ^cleanup true)
+}
+sp {propose*evaluate-rl*cleanup
+   (state <s> ^cleanup true)
+-->
+   (<s> ^operator <o> + !)
+   (<o> ^name cleanup)
+}
+sp {apply*evaluate-rl*cleanup
+   (state <s> ^operator.name cleanup
+              ^cleanup <c>)
+-->
+   (<s> ^cleanup <c> -)
+}
+sp {apply*evaluate-rl*cleanup*selected-item
+   (state <s> ^operator.name cleanup
+              ^selected-item <si>)
+-->
+   (<s> ^selected-item <si> -)
+}
+sp {apply*evaluate-rl*cleanup*selected-feature
+   (state <s> ^operator.name cleanup
+              ^selected-feature <sf>)
+-->
+   (<s> ^selected-feature <sf> -)
+}
+sp {apply*evaluate-rl*cleanup*selected-split
+   (state <s> ^operator.name cleanup
+              ^selected-split <ss>)
+-->
+   (<s> ^selected-split <ss> -)
+}

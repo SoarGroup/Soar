@@ -1,0 +1,28 @@
+sp {puddleworld*elaborate*problem-space
+   (state <s> ^name puddleworld)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name puddleworld
+        ^default-state-copy yes
+        ^dont-copy top-state
+        ^one-level-attributes in-bounds
+        ^features <f>)
+   (<f> ^unary <in-bounds>)
+   (<in-bounds> ^name in-bounds
+                ^not out-bounds
+                ^value <x> <y>)
+   (<x> ^name x
+        ^id x
+        ^lower 0
+        ^upper 1.001
+        ^previd nil
+        ^depth 0
+        ^split false)
+   (<y> ^name y
+        ^id y
+        ^lower 0
+        ^upper 1.001
+        ^previd nil
+        ^depth 0
+        ^split false)
+}

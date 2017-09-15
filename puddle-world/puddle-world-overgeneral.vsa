@@ -1,0 +1,29 @@
+VERSION 4
+/puddle-world-overgeneral/puddle-world-overgeneral.dm
+0	ROOT puddle-world-overgeneral puddle-world-overgeneral 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR in-bounds in-bounds.soar 5
+5	3	FOPERATOR midpt midpt.soar 6
+6	3	FOPERATOR monitor monitor.soar 7
+7	3	FOPERATOR out-bounds out-bounds.soar 8
+8	3	FOPERATOR problem-space problem-space.soar 9
+9	3	FOPERATOR reward reward.soar 10
+10	0	FOPERATOR _readme _readme.soar 11
+11	0	FOPERATOR force-tie force-tie.soar 26
+12	0	FOPERATOR halt halt.soar 12
+13	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 29 13
+14	13	FOPERATOR cleanup cleanup.soar 25
+15	13	FOPERATOR evaluate-operator_reject evaluate-operator_reject.soar 14
+16	13	FOPERATOR heuristic heuristic.soar 15
+17	13	FOPERATOR monitor monitor.soar 16
+18	13	OPERATOR evaluate-rl evaluate-rl.soar 17
+19	13	OPERATOR evaluate-rl_unary evaluate-rl_unary.soar 18
+20	13	OPERATOR select-feature select-feature.soar 19
+21	13	OPERATOR select-item select-item.soar 20
+22	13	OPERATOR select-split select-split.soar 21
+23	0	OPERATOR initialize-puddleworld initialize-puddleworld.soar 22
+24	0	OPERATOR move move.soar 23
+25	0	OPERATOR split-feature split-feature.soar 24
+END

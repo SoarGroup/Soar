@@ -1,13 +1,10 @@
 #!/bin/bash
 
-TERMINAL=2000
+TERMINAL=1000
 OUTPUT=blocks-world-out
 mkdir -p $OUTPUT
 
-SEED=""
-for i in $(seq 0 9); do
-  SEED="$SEED $RANDOM"
-done
+SEED="$RANDOM"
 
 for seed in ${SEED[@]}; do
   killall cli

@@ -1,0 +1,18 @@
+#sp {puddleworld*force-tie*false
+#   (state <s> ^name puddleworld
+#              ^operator <o> +)
+#   (<o> ^name move
+#        ^feature-lists <fl>)
+#   (<fl> ^feature.count 10)
+#-->
+#   (<o> ^force-tie false)
+#}
+sp {puddleworld*force-tie*true
+   (state <s> ^name puddleworld
+              ^operator <o> +)
+   (<o> ^name move
+        ^feature-lists <fl>)
+ -{(<fl> ^feature.count 3)}
+-->
+   (<o> ^force-tie true)
+}

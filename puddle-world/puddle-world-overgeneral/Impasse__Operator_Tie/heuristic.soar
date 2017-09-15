@@ -1,0 +1,23 @@
+#sp {prefer*evaluate-rl*unary-to-binary
+#   "Prefer unary features to binary ones."
+#   (state <s> ^operator <op1> +
+#              ^operator <op2> +)
+#   (<op1> ^unary <name1>
+#          ^value <value>)
+#   (<op2> ^binary <name2>
+#          ^value <value>)
+#-->
+#   (<s> ^operator <op1> > <op2>)
+#}
+
+#sp {prefer*evaluate-rl*present-to-absent
+#   "Prefer present features to absent ones."
+#   (state <s> ^operator <op1> +
+#              ^operator <op2> +)
+#   (<op1> ^{<type> << unary binary >>} <name1>
+#          ^value present)
+#   (<op2> ^<type> <name2>
+#          ^value absent)
+#-->
+#   (<s> ^operator <op1> > <op2>)
+#}

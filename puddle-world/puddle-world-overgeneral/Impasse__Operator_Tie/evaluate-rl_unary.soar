@@ -1,0 +1,105 @@
+sp {selection*propose*evaluate-rl*unary
+   (state <s> ^name selection
+              ^item <i>
+              ^over-threshold <i>
+              ^selected-item <i>
+              ^selected-feature.feature <f>
+              ^selected-split <sp>
+              ^top-state <ts>)
+   (<sp> ^feature <f>
+         ^unary.name <name>
+         ^value.id <idnew>)
+   (<i> ^feature-lists <fl>)
+   (<fl> ^feature <f>)
+   (<f> ^count <c>
+        ^id <id>)
+#   (<ts> ^<name> <idnew>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^unary <name>
+        ^first <idnew>
+        ^count (+ <c> 1)
+#        ^id (make-constant-symbol)
+        ^id (concat |unary(| <name>
+            |,| <idnew>
+            |)*| <id>)
+#        ^id <id>
+        ^previd <id>
+        ^value present)
+}
+
+#sp {elaborate*evaluate-rl*unary*present
+#   (state <s> ^name selection
+#              ^operator <o> +
+#              ^top-state <ts>)
+#   (<o> ^name evaluate-rl
+#        ^unary <name>
+#        ^first <idnew>)
+#   (<ts> ^<name> <idnew>)
+#-->
+#   (<o> ^value present)
+#}
+
+#sp {elaborate*evaluate-rl*unary*absent
+#   (state <s> ^name selection
+#              ^operator <o> +
+#              ^top-state <ts>)
+#   (<o> ^name evaluate-rl
+#        ^unary <name>
+#        ^first <idnew>)
+#   (<ts> ^problem-space.features.unary <uf>)
+#   (<uf> ^name <name>
+#         ^not <not>)
+#   (<ts> ^<not> <idnew>)
+#-->
+#   (<o> ^value absent)
+#}
+
+#sp {reject*evaluate-rl*existing-unary-feature
+#   (state <s> ^name selection
+#              ^operator <o> +
+#              ^item <i>)
+#   (<o> ^name evaluate-rl
+#        ^superoperator <i>
+#        ^unary <name>
+#        ^first <idnew>
+#        ^value <value>
+#        ^id <id>
+#        ^previd <pid>)
+#   (<i> ^feature-lists <fl>)
+#   (<fl> ^feature <fi>)
+#   (<fi> ^all <f>
+#         ^id <pid>)
+#   (<f> ^unary <name>
+#        ^first <idnew>
+#        ^value <value>)
+#-->
+#   (<s> ^operator <o> -)
+#   (interrupt)
+#}
+
+gp {apply*evaluate-rl*unary*feature
+   (state <s> ^operator <o>)
+   (<o> ^name evaluate-rl
+        ^superoperator <i>
+        ^unary <name>
+        ^first <idnew>
+        ^value { <value> [ present absent ] }
+        ^count <c>
+        ^id <id>
+        ^previd <pid>)
+   (<i> ^direction <dir>
+        ^feature-lists <fl>)
+-->
+   (<fl> ^feature <fnew>)
+   (<fnew> ^unary <name>
+           ^first <idnew>
+           ^value <value>
+           ^count <c>
+           ^id <id>
+           ^previd <pid>
+           #^all <fnew>
+   )
+}

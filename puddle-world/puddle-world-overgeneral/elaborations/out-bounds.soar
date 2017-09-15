@@ -1,0 +1,24 @@
+#sp {cartpole*elaborate*out-bounds*1
+#   (state <s> ^superstate nil
+#              ^problem-space.features.unary <f>)
+#   (<f> ^name in-bounds
+#        ^value <v>)
+#   (<v> ^name <name>
+#        ^id <id>
+#        ^lower <lower>)
+#   (<s> ^io.input-link.<name> < <lower>)
+#-->
+#   (<s> ^out-bounds <id>)
+#}
+#sp {cartpole*elaborate*out-bounds*2
+#   (state <s> ^superstate nil
+#              ^problem-space.features.unary <f>)
+#   (<f> ^name in-bounds
+#        ^value <v>)
+#   (<v> ^name <name>
+#        ^id <id>
+#        ^upper <upper>)
+#   (<s> ^io.input-link.<name> > <upper>)
+#-->
+#   (<s> ^out-bounds <id>)
+#}

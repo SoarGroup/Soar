@@ -1,0 +1,9 @@
+sp {puddleworld*monitor*operator-application*move
+   (state <s> ^operator <o>)
+   (<o> ^name move
+        ^direction <dir>)
+-->
+   (write (crlf)
+          |  APPLYING | <o>
+          |: move(| <dir>
+          |)|)}

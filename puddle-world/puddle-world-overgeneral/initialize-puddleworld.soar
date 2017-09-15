@@ -1,0 +1,22 @@
+###
+### Initialize the state
+###
+
+sp {puddleworld*propose*initialize-puddleworld
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name initialize-puddleworld)
+}
+
+## Modify the following rule to change the initial state or the goal.
+## It is necessary for the initial state and the desired state to share the same
+## identifiers for the objects (<blockA>, <blockB>, <blockC>, <table>) because of
+## the way the goal is detected (in elaborations/detect-success).
+#
+sp {puddleworld*apply*initialize
+   (state <s> ^operator.name initialize-puddleworld)
+-->
+   (<s> ^name puddleworld)
+}

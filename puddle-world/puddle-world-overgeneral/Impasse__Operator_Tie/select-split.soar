@@ -1,0 +1,94 @@
+sp {selection*propose*select-split
+   (state <s> ^name selection
+              ^top-state <ts>
+              ^item <i>
+              ^over-threshold <i>
+              ^selected-item <i>
+              ^selected-feature.feature <f>)
+   (<i> ^feature-lists <fl>)
+   (<fl> ^feature <f>)
+   (<ts> ^problem-space.features <psf>
+         ^<name> <id>)
+   (<psf> ^unary <uf>)
+   (<uf> ^name <name>
+         ^value <v>)
+   (<v> ^id <id>
+        ^previd <pid>)
+  -{(<s> ^selected-split <sp>)
+    (<sp> ^feature <f>)}
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name select-split
+        ^superoperator <i>
+        ^feature-lists <fl>
+        ^feature <f>
+        ^unary <uf>
+        ^value <v>)
+}
+
+#sp {prefer*select-split*grounded
+#   (state <s> ^operator <o> +)
+#   (<o> ^name select-split
+#        ^superoperator <i>
+#        ^feature <f>
+#        ^value <v>)
+#   (<f> ^all.first <pid>)
+#   (<v> ^previd <pid>)
+#-->
+#   (<s> ^operator <o> >)
+#}
+
+sp {compare*select-split*depth
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name select-split
+         ^value.depth <d1>)
+   (<o2> ^name select-split
+         ^value.depth > <d1>)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {compare*select-split*depth-id
+   "Heuristic: Imposes a total ordering on the splits, guarantees no different splits of the same level."
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name select-split
+         ^value <v1>)
+   (<v1> ^depth <d>
+         ^id <id1>)
+   (<o2> ^name select-split
+         ^value <v2>)
+   (<v2> ^depth <d>
+         ^id > <id1>)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {reject*select-split*done
+   (state <s> ^operator <o> +)
+   (<o> ^name select-split
+        ^superoperator <i>
+        ^feature-lists <fl>
+        ^feature <f>
+        ^value <v>)
+#   (<f> ^all <id>)
+   (<fl> ^feature.first <id>)
+   (<v> ^id <id>)
+-->
+   (<s> ^operator <o> -)
+}
+
+sp {selection*apply*select-split
+   (state <s> ^operator <o>)
+   (<o> ^name select-split
+        ^superoperator <i>
+        ^feature <f>
+        ^unary <uf>
+        ^value <v>)
+-->
+   (<s> ^selected-split <sp>)
+   (<sp> ^feature <f>
+         ^unary <uf>
+         ^value <v>)
+}

@@ -1,0 +1,52 @@
+sp {selection*propose*select-feature
+   (state <s> ^name selection
+              ^top-state <ts>
+              ^item <i>
+              ^over-threshold <i>
+              ^selected-item <i>)
+   (<i> ^feature-lists.feature <f>)
+  -{(<s> ^selected-feature.feature <g>)
+    (<i> ^feature-lists.feature <g>)}
+#   (<ts> ^problem-space.features <psf>)
+#   (<psf> ^unary <uf>)
+#   (<uf> ^value <v>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name select-feature
+        ^feature <f>
+#        ^value <v>
+   )
+}
+
+#sp {selection*compare*select-feature*depth
+#   "This is a heuristic because splitting on a shorter axis may be more necessary."
+#   (state <s> ^operator <o1> +
+#              ^operator <o2> +)
+#   (<o1> ^name select-feature
+#         ^value.depth <c1>)
+#   (<o2> ^name select-feature
+#         ^value.depth > <c1>)
+#-->
+#   (<s> ^operator <o1> > <o2>)
+#}
+
+sp {selection*compare*select-feature*count
+   "This is a heuristic because adding a general rule conditions on a different set of features may be useful."
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name select-feature
+         ^feature.count <c1>)
+   (<o2> ^name select-feature
+         ^feature.count < <c1>)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {selection*apply*select-feature
+   (state <s> ^operator <o>)
+   (<o> ^name select-feature
+        ^feature <f>)
+-->
+   (<s> ^selected-feature <sf>)
+   (<sf> ^feature <f>)
+}
