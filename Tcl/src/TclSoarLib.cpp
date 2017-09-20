@@ -156,7 +156,7 @@ TclSoarLib::~TclSoarLib()
     //cout << "TclSoarLib destroyed" << endl;
 }
 
-std::string TclSoarLib::tclRHS( sml::smlRhsEventId, void *pData, sml::Agent *pAgent, char const *pFunc, char const *pArg )
+const char *TclSoarLib::tclRHS( sml::smlRhsEventId, void *pData, sml::Agent *pAgent, char const *pFunc, char const *pArg, int *buffSize, char *buff )
 {
 	TclSoarLib *pLib = (TclSoarLib *)pData;
 
@@ -169,8 +169,15 @@ std::string TclSoarLib::tclRHS( sml::smlRhsEventId, void *pData, sml::Agent *pAg
 	comm += "}";
 	
 	pLib->GlobalEval( comm, res);
-		
-	return res;
+
+	if ( res.size() + 1 > *buffSize )
+	{
+		*buffSize = res.size() + 1;
+		return NULL;
+	}
+	strcpy( buff, res.c_str() );
+
+	return buff;
 }
 
 void TclSoarLib::send_thread_command(int type, string info){

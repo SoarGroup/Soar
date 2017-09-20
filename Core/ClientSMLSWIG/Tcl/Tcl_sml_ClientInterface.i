@@ -161,8 +161,8 @@
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 
-	std::string TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
-	                    char const* pArgument)
+	const char *TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
+	                    char const* pArgument, int *bufSize, char *buf)
 	{
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
@@ -184,11 +184,20 @@
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
 
-		return Tcl_GetString(res);
+		char *tmp = Tcl_GetString(res);
+
+		if ( strlen(tmp) + 1 > *bufSize )
+		{
+			*bufSize = strlen(tmp) + 1;
+			return NULL;
+		}
+		strcpy( buf, tmp );
+		
+		return buf;
 	}
 
-	std::string TclClientMessageEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pClientName,
-	                    char const* pMessage)
+	const char *TclClientMessageEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pClientName,
+	                    char const* pMessage, int *bufSize, char *buf)
 	{
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
@@ -210,7 +219,16 @@
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
 
-		return Tcl_GetString(res);
+		char *tmp = Tcl_GetString(res);
+
+		if ( strlen(tmp) + 1 > *bufSize )
+		{
+			*bufSize = strlen(tmp) + 1;
+			return NULL;
+		}
+		strcpy( buf, tmp );
+		
+		return buf;
 	}
 
 	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)

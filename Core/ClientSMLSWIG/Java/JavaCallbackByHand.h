@@ -1108,8 +1108,8 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForStringEvent(JNIEnv *
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static std::string RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
-                                                        char const* pFunctionName, char const* pArgument)
+static const char *RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
+                                                        char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
         // The user data is the class we declared above, where we store the Java data to use in the callback.
         JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -1170,14 +1170,20 @@ static std::string RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::
                 jenv->ReleaseStringUTFChars(result, pResult);
         }
 
-        // Return the result
-        return resultStr ;
+				if ( resultStr.size() + 1 > *bufSize )
+				{
+					*bufSize = resultStr.size() + 1;
+					return NULL;
+				}
+				strcpy( buf, resultStr.c_str() );
+
+				return buf;
 }
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static std::string ClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
-                                                        char const* pFunctionName, char const* pArgument)
+static const char *ClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
+                                                        char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
         // The user data is the class we declared above, where we store the Java data to use in the callback.
         JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -1238,8 +1244,14 @@ static std::string ClientMessageHandler(sml::smlRhsEventId id, void* pUserData, 
                 jenv->ReleaseStringUTFChars(result, pResult);
         }
 
-        // Return the result
-        return resultStr ;
+				if ( resultStr.size() + 1 > *bufSize )
+				{
+					*bufSize = resultStr.size() + 1;
+					return NULL;
+				}
+				strcpy( buf, resultStr.c_str() );
+
+				return buf;
 }
 
 // This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be

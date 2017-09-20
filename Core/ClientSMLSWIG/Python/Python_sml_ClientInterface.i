@@ -280,7 +280,7 @@
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
 	
-	std::string PythonRhsEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
+	const char *PythonRhsEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 	{	    
 	    PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
@@ -304,11 +304,18 @@
 		Py_DECREF(result);
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
-		
-		return res;
+	
+		if ( res.size() + 1 > *bufSize )
+		{
+			*bufSize = res.size() + 1;
+			return NULL;
+		}
+		strcpy( buf, res.c_str() );
+
+		return buf;
 	}
 
-	std::string PythonClientMessageEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage)
+	const char *PythonClientMessageEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage, int *bufSize, char *buf)
 	{		    
 	    PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
@@ -331,8 +338,15 @@
 		Py_DECREF(result);
 		
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
-		
-		return res;
+
+		if ( res.size() + 1 > *bufSize )
+		{
+			*bufSize = res.size() + 1;
+			return NULL;
+		}
+		strcpy( buf, res.c_str() );
+
+		return buf;
 	}
 	
 	PythonUserData* CreatePythonUserData(PyObject* func, PyObject* userData) {
