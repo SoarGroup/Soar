@@ -74,15 +74,18 @@ namespace sml
 // NOTE: This is the one place in clientSML where we use a std::string in an interface.  If you wish to compile with a pure "C" interface
 // this can be replaced by a handler that is passed a buffer and a length.  The length is passed within the framework already (from the kernel to here)
 // so this is an easy transition.
-    typedef std::string(*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
-                                          char const* pFunctionName, char const* pArgument) ;
+// RETURN: returns pointer to buff.  If buff is not large enough, it will return NULL and set buffSize to a new size.  Reallocate the new size and call again.
+
+    typedef char const *(*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
+                                          char const* pFunctionName, char const* pArgument, int *buffSize, char *buff) ;
                                           
 // Handler for a generic "client message".  The content is determined by the client sending this data.
 // The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,
 // such as a simple series of integers up to a complete XML message.
-    typedef std::string(*ClientMessageHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
-            char const* pClientName, char const* pMessage) ;
-            
+// needs to match RhsEventHandler
+		typedef char const *(*ClientMessageHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
+																					 char const* pFunctionName, char const* pArgument, int *buffSize, char *buff) ;
+
 // We'll store a handler function together with a generic pointer to data of the user's choosing
 // (which is then passed back into the handler when the event occurs).
 // We also include a callback "id" which is a unique way to refer to this callback--used during unregistering.

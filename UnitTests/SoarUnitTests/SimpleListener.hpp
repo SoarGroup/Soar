@@ -12,7 +12,7 @@ class SimpleListener
         
         int run(); // returns zero on success, nonzero failure
         
-        static std::string MyClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pMessage);
+        static const char *MyClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pMessage, int *bufSize, char *buf);
         
     private:
         int life;

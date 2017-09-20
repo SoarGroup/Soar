@@ -828,7 +828,7 @@ typedef char const* (STDCALL* ClientMessageCallback)(int eventID, CallbackDataPt
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static std::string RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
+static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -841,12 +841,21 @@ static std::string RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, s
     char* csharpArgument     = SWIG_csharp_string_callback(pArgument);
 
     // Now try to call back to CSharp
-    return callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpFunctionName, csharpArgument) ;
+    std::string res = callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpFunctionName, csharpArgument) ;
+
+    if ( res.size() + 1 > *bufSize )
+    {
+        *bufSize = res.size() + 1;
+        return NULL;
+    }
+    strcpy( buf, res.c_str() );
+
+    return buf;
 }
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static std::string ClientEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage)
+static const char *ClientEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage, int *bufSize, char *buf )
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -859,7 +868,16 @@ static std::string ClientEventHandler(sml::smlRhsEventId /*id*/, void* pUserData
     char* csharpMessage     = SWIG_csharp_string_callback(pMessage);
 
     // Now try to call back to CSharp
-    return callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpClientName, csharpMessage) ;
+    std::string res = callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpClientName, csharpMessage) ;
+
+		if ( res.size() + 1 > *bufSize )
+		{
+			*bufSize = res.size() + 1;
+			return NULL;
+		}
+		strcpy( buf, res.c_str() );
+
+		return buf;
 }
 
 // This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
