@@ -1453,8 +1453,14 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     }
     else
     {
-        fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
+      fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
 
+			if ( std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed" )
+			{
+				// unit tests
+			}
+			else
+			{
 				if ( fun_name )
 				{
 					// might still be bad, so lookup the rh
@@ -1474,6 +1480,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 					
 					fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
 				}
+			}
     }
 
 	if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
