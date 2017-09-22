@@ -164,6 +164,16 @@
 	const char *TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
 	                    char const* pArgument, int *bufSize, char *buf)
 	{
+		static std::string prevResult;
+
+		if ( !prevResult.empty() )
+		{
+			strncpy( buf, prevResult.c_str(), *bufSize );
+			
+			prevResult = "";
+
+			return buf;
+		}
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -184,14 +194,15 @@
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
 
-		char *tmp = Tcl_GetString(res);
+		std::string sres = Tcl_GetString(res);
 
-		if ( strlen(tmp) + 1 > *bufSize )
+		if ( sres.length() + 1 > *bufSize )
 		{
-			*bufSize = strlen(tmp) + 1;
+			*bufSize = sres.length() + 1;
+			prevResult = sres;
 			return NULL;
 		}
-		strcpy( buf, tmp );
+		strcpy( buf, sres.c_str() );
 		
 		return buf;
 	}
@@ -199,6 +210,17 @@
 	const char *TclClientMessageEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pClientName,
 	                    char const* pMessage, int *bufSize, char *buf)
 	{
+		static std::string prevResult;
+
+		if ( !prevResult.empty() )
+		{
+			strncpy( buf, prevResult.c_str(), *bufSize );
+			
+			prevResult = "";
+
+			return buf;
+		}
+
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -219,14 +241,15 @@
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
 
-		char *tmp = Tcl_GetString(res);
+		std::string sres = Tcl_GetString(res);
 
-		if ( strlen(tmp) + 1 > *bufSize )
+		if ( sres.length() + 1 > *bufSize )
 		{
-			*bufSize = strlen(tmp) + 1;
+			*bufSize = sres.length() + 1;
+			prevResult = sres;
 			return NULL;
 		}
-		strcpy( buf, tmp );
+		strcpy( buf, sres.c_str() );
 		
 		return buf;
 	}
