@@ -199,6 +199,18 @@
 	const char *TclClientMessageEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pClientName,
 	                    char const* pMessage, int *bufSize, char *buf)
 	{
+		static std::string prevResult;
+
+		if ( !prevResult.empty() && prevResult.length() < *bufSize )
+		{
+			strcpy( buf, prevResult.c_str() );
+			
+			prevResult = "";
+
+			return buf;
+		}
+
+
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -224,6 +236,7 @@
 		if ( strlen(tmp) + 1 > *bufSize )
 		{
 			*bufSize = strlen(tmp) + 1;
+			prevResult = tmp;
 			return NULL;
 		}
 		strcpy( buf, tmp );
