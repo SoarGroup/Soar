@@ -197,6 +197,7 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_LTM_LINKS], "chunk add-ltm-links")) return false;
                 if (!AddSaveSettingInt("chunk max-chunks", thisAgent->explanationBasedChunker->max_chunks)) return false;
                 if (!AddSaveSettingInt("chunk max-dupes", thisAgent->explanationBasedChunker->max_dupes)) return false;
+                if (!AddSaveSettingInt("chunk confidence-threshold", thisAgent->explanationBasedChunker->confidence_threshold)) return false;		// CBC
                 if (!AddSaveSettingInt("soar max-elaborations", thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])) return false;
                 if (!AddSaveSettingInt("soar max-goal-depth", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH])) return false;
                 if (!AddSaveSettingOnOff(thisAgent->Decider->settings[DECIDER_WAIT_SNC], "soar wait-snc")) return false;

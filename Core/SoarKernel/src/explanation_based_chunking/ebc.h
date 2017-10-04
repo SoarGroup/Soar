@@ -44,7 +44,7 @@ class Explanation_Based_Chunker
         /* Settings and cli command related functions */
         ebc_param_container*    ebc_params;
         bool                    ebc_settings[num_ebc_settings];
-        uint64_t                max_chunks, max_dupes;
+        uint64_t                max_chunks, max_dupes, confidence_threshold;		// CBC edit
 
         /* Cached pointer to lti link rhs function since it may be used often */
         rhs_function*           lti_link_function;
@@ -114,7 +114,7 @@ class Explanation_Based_Chunker
          * 1 - Used by repair manager when creating grounding conditions
          * 2 - Used by reinforcement learning when building template instances. */
 
-        void        add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity);
+        chunk_element*     add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity);
         void        sti_variablize_test(test pTest, bool generate_identity = true);
         void        sti_variablize_rhs_symbol(rhs_value &pRhs_val, bool generate_identity = true);
         void        clear_sti_variablization_map() { m_sym_to_var_map->clear(); };
@@ -227,6 +227,9 @@ class Explanation_Based_Chunker
 
         /* List of STIs created in the sub-state that are linked to LTMs.  Used to add link-stm-to-ltm actions */
         rhs_value_list*     local_linked_STIs;
+        
+        /* CBC: Map of chunk hashes to creation counts for measuring chunk confidence. */
+        std::unordered_map<uint32_t, uint64_t> m_cbc_chunk_counts;
 
         /* Explanation/identity generation methods */
         void            add_var_test_bound_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
@@ -253,6 +256,7 @@ class Explanation_Based_Chunker
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
+        bool            build_rule();
         void            clean_up(uint64_t pClean_up_id, soar_timer* pTimer = NULL);
         bool            add_chunk_to_rete();
 

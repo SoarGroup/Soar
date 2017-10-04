@@ -34,6 +34,7 @@ class ebc_param_container: public soar_module::param_container
         /* Settings */
         soar_module::integer_param* max_chunks;
         soar_module::integer_param* max_dupes;
+        soar_module::integer_param* confidence_threshold;	// CBC
         soar_module::boolean_param* bottom_level_only;
         soar_module::boolean_param* interrupt_on_chunk;
         soar_module::boolean_param* interrupt_on_warning;
@@ -62,7 +63,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* mechanism_reorder_justifications;
         soar_module::boolean_param* mechanism_unify_all;
 
-        ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes);
+        ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes, uint64_t& pConfidenceThreshold);	// CBC edit
         void update_params(bool pEBC_settings[]);
         void update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam = NULL, soar_module::integer_param* pChangedIntParam = NULL);
 };

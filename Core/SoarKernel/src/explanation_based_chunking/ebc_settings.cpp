@@ -7,7 +7,7 @@
 
 #define setting_on(s) pEBC_settings[s] ? on : off
 
-ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes): soar_module::param_container(new_agent)
+ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes, uint64_t& pConfidenceThreshold): soar_module::param_container(new_agent) // <- CBC edit
 {
 
     /* Set up the settings array that is used for quick access */
@@ -46,6 +46,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
 
     pMaxChunks = 50;
     pMaxDupes = 3;
+    pConfidenceThreshold = 3;	// CBC
 
     // enabled
     chunk_in_states = new soar_module::constant_param<EBCLearnChoices>("learn", ebc_never, new soar_module::f_predicate<EBCLearnChoices>());
@@ -103,6 +104,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(max_chunks);
     max_dupes = new soar_module::integer_param("max-dupes", pMaxDupes, new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>());
     add(max_dupes);
+    confidence_threshold = new soar_module::integer_param("confidence-threshold", pConfidenceThreshold, new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>()); // CBC
+    add(confidence_threshold);
 
     bottom_level_only = new soar_module::boolean_param("bottom-only", setting_on(SETTING_EBC_BOTTOM_ONLY), new soar_module::f_predicate<boolean>());
     add(bottom_level_only);
@@ -193,13 +196,18 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
             }
             thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] == false);
         } else {
+
             if (pChangedIntParam == max_chunks)
             {
                 thisAgent->explanationBasedChunker->max_chunks = pChangedIntParam->get_value();
             }
             else if (pChangedIntParam == max_dupes)
             {
-                thisAgent->explanationBasedChunker->max_dupes= pChangedIntParam->get_value();
+                thisAgent->explanationBasedChunker->max_dupes = pChangedIntParam->get_value();
+            }
+            else if (pChangedIntParam == confidence_threshold)
+            {
+                thisAgent->explanationBasedChunker->confidence_threshold = pChangedIntParam->get_value();		// CBC
             }
         }
     }
@@ -460,6 +468,8 @@ void Explanation_Based_Chunker::print_chunking_settings()
         concatJustified("naming-style", tempString, 51).c_str(),"Simple numeric chunk names or informational rule-based name");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-chunks", ebc_params->max_chunks->get_string().c_str(), 45).c_str(), "Maximum chunks that can be learned (per phase)");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dupes", ebc_params->max_dupes->get_string().c_str(), 45).c_str(), "Maximum duplicate chunks (per rule, per phase)");
+    // CBC:
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("confidence-threshold", ebc_params->confidence_threshold->get_string().c_str(), 45).c_str(), "Number of times to generate chunk before it is added");
     outputManager->printa_sf(thisAgent, "------------------- Debugging ---------------------\n");
     outputManager->printa_sf(thisAgent, "interrupt                  %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_chunk->get_value()), "Stop Soar after learning from any rule");
     outputManager->printa_sf(thisAgent, "explain-interrupt          %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_watched->get_value()), "Stop Soar after learning rule watched by explainer");

@@ -43,7 +43,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     /* Create the parameter object where the cli settings are stored.
      * This also initializes the ebc_settings array */
-    ebc_params = new ebc_param_container(thisAgent, ebc_settings, max_chunks, max_dupes);
+    ebc_params = new ebc_param_container(thisAgent, ebc_settings, max_chunks, max_dupes, confidence_threshold); // CBC
 
     /* Create the timers */
     ebc_timers = new ebc_timer_container(thisAgent);
@@ -55,6 +55,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     cond_merge_map = new triple_merge_map();
     local_linked_STIs = new rhs_value_list();
     m_sym_to_var_map = new sym_to_sym_id_map();
+    m_cbc_chunk_counts = std::unordered_map<uint32_t, uint64_t>();
 
     init_chunk_cond_set(&negated_set);
 

@@ -764,7 +764,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** 
 
 void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pMatchedSym, uint64_t pInstIdentity,  tc_number tc, matched_symbol_list* var_list)
 {
-    Symbol* referent;
+    //Symbol* referent;
 
     if (pSym->is_variable())
     {

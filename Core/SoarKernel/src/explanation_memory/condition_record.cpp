@@ -18,6 +18,7 @@
 #include "test.h"
 #include "working_memory.h"
 #include "visualize.h"
+#include "xml.h"
 
 void simplify_identity_in_test(agent* thisAgent, test t, bool isChunkInstantiation)
 {
@@ -60,7 +61,7 @@ void simplify_identity_in_test(agent* thisAgent, test t, bool isChunkInstantiati
     }
 }
 
-void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, instantiation_record* pInst, bool isChunkInstantiation)
+bool condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, instantiation_record* pInst, bool isChunkInstantiation)
 {
     thisAgent = myAgent;
     conditionID = pCondID;
@@ -88,8 +89,9 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
     } else if (condition_tests.id->eq_test->data.referent->is_sti())
     {
         assert (condition_tests.id->eq_test->data.referent->id->level);
+    	//assert (condition_tests.id->eq_test->data.referent->id->thisAgent);		// CBC patch: assures that the structure exists up to id, allows level to == 0
         wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
-        dprint(DT_EXPLAIN_CONDS, "   No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
+        dprint(DT_EXPLAIN_CONDS, "   No backtrace level found.  Setting condition level to id's current level %d.\n", wme_level_at_firing);
     } else {
         wme_level_at_firing = 0;
         dprint(DT_EXPLAIN_CONDS, "   No backtrace level or sti identifier found.  Setting condition level to 0.\n", wme_level_at_firing);
@@ -103,11 +105,21 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
 
     if (pCond->bt.trace)
     {
+    	//RETRY:
         if (isChunkInstantiation)
         {
             assert(pCond->explain_inst);
             my_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->explain_inst);
-            assert(my_instantiation);
+            assert(my_instantiation);	// fails if the instantiations list doesn't contain pCond->explain_inst
+            /*if (!my_instantiation) {	// CBC crash patch
+            	std::ostringstream message;
+            	message << "\nERROR: condition's instantiation not found. Probably a duplicate condition. Ignoring.";
+            	thisAgent->outputManager->printa_sf(thisAgent, message.str().c_str());
+            	xml_generate_verbose(thisAgent, message.str().c_str());
+            	//return false;
+            	isChunkInstantiation = false;
+            	goto RETRY;
+            }*/
 
             cached_pref = pCond->bt.trace;
             parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
@@ -141,6 +153,7 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
         dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for cond with no pref %l is now %u %u N/A\n", pCond, my_instantiation ? my_instantiation->get_instantiationID() : 0, parent_instantiation ? parent_instantiation->get_instantiationID() : 0);
     }
     dprint(DT_EXPLAIN_CONDS, "   Done creating condition %u.\n", conditionID);
+    return true;
 }
 
 void condition_record::clean_up()

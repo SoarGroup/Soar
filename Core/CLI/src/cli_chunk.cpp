@@ -207,7 +207,7 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
             if (!strcmp(pArg1->c_str(), "learn"))
             {
                 thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent);
-            } else if (!strcmp(pArg1->c_str(), "max-chunks") || !strcmp(pArg1->c_str(), "max-dupes")) {
+            } else if (!strcmp(pArg1->c_str(), "max-chunks") || !strcmp(pArg1->c_str(), "max-dupes") || !strcmp(pArg1->c_str(), "confidence-threshold")) {	// CBC
                 thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, NULL, static_cast<soar_module::integer_param*>(my_param));
             } else {
                 thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, static_cast<soar_module::boolean_param*>(my_param));

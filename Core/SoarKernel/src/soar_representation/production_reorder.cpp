@@ -886,6 +886,7 @@ cons* collect_root_variables(agent* thisAgent,
             }
             /* Dummy variables and literals won't have a matched sym */
             if (!lMatchedSym) lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
+            
             lSym = cond->data.tests.value_test->eq_test->data.referent;
             l_inst_identity = cond->data.tests.value_test->eq_test->inst_identity;
             dprint(DT_VALIDATE, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
@@ -921,45 +922,45 @@ cons* collect_root_variables(agent* thisAgent,
     /* --- make sure each root var has some condition with goal/impasse --- */
     std::string errorStr;
 
-        for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
-        {
-            found_goal_impasse_test = false;
-            dprint(DT_VALIDATE, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
+    for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
+    {
+    	found_goal_impasse_test = false;
+    	dprint(DT_VALIDATE, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
 
-            for (cond = cond_list; cond != NIL; cond = cond->next)
-            {
-            if (cond->type != POSITIVE_CONDITION) continue;
-            if ((cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym) &&
-                test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
-                {
-                        found_goal_impasse_test = true;
-                        dprint_noprefix(DT_REORDERER, "found\n");
-                        break;
-                    }
-            }
-            if (! found_goal_impasse_test)
-            {
-                dprint_noprefix(DT_REORDERER, "not found\n");
-                if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->inst_identity))
-                {
-                    chunk_element* lNewUngroundedSym;
-                    thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
-                    chunk_element* lOldMatchedSym = (*it);
-                    lNewUngroundedSym->variable_sym = (*it)->variable_sym;
-                    lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
-                    lNewUngroundedSym->inst_identity = (*it)->inst_identity;
-                    dprint(DT_VALIDATE, "Adding ungrounded lhs sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->inst_identity);
-                    ungrounded_syms->push_back(lNewUngroundedSym);
-                } else {
-                    thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
-                           thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
-                if (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
-                {
-                    thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
-                    xml_generate_warning(thisAgent, errorStr.c_str());
-                }
-            }
-        }
+    	for (cond = cond_list; cond != NIL; cond = cond->next)
+    	{
+    		if (cond->type != POSITIVE_CONDITION) continue;
+    		if ((cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym) &&
+    				test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
+    		{
+    			found_goal_impasse_test = true;
+    			dprint_noprefix(DT_REORDERER, "found\n");
+    			break;
+    		}
+    	}
+    	if (! found_goal_impasse_test)
+    	{
+    		dprint_noprefix(DT_REORDERER, "not found\n");
+    		if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->inst_identity))
+    		{
+    			chunk_element* lNewUngroundedSym;
+    			thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+    			chunk_element* lOldMatchedSym = (*it);
+    			lNewUngroundedSym->variable_sym = (*it)->variable_sym;
+    			lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
+    			lNewUngroundedSym->inst_identity = (*it)->inst_identity;
+    			dprint(DT_VALIDATE, "Adding ungrounded lhs sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->inst_identity);
+    			ungrounded_syms->push_back(lNewUngroundedSym);
+    		} else {
+    			thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
+    					thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
+    			if (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+    			{
+    				thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
+    				xml_generate_warning(thisAgent, errorStr.c_str());
+    			}
+    		}
+    	}
     }
 
     cons* returnList = NULL;
@@ -1566,55 +1567,56 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
     /* Collecting root variables will also detect ungrounded symbols on the LHS */
     if (add_ungrounded && ungrounded_syms->size() > 0)
     {
-        std::string unSymString;
-        for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
-            unSymString += (*it)->variable_sym->to_string(true);
-            if (++it != ungrounded_syms->end())
-            {
-                unSymString += ", ";
-            }
+    	std::string unSymString;
+    	for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
+    		unSymString += (*it)->variable_sym->to_string(true);
+    		if (++it != ungrounded_syms->end())
+    		{
+    			unSymString += ", ";
+    		}
 
-        }
-        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
-        {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s):");
-        }
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
-        }
-        #ifdef EBC_DEBUG_STATISTICS
-        thisAgent->explanationMemory->increment_stat_lhs_unconnected();
-        #endif
-        return false;
+    	}
+    	if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+    	{
+    		thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s):");
+    	}
+    	thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
+    	thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
+    	if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+    	{
+    		thisAgent->stop_soar = true;
+    		thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
+    	}
+    	
+#ifdef EBC_DEBUG_STATISTICS
+    	thisAgent->explanationMemory->increment_stat_lhs_unconnected();
+#endif
+    	return false;
     }
 
     if (!roots)
     {
-        condition* cond;
+    	condition* cond;
 
-        for (cond = *lhs_top; cond != NIL; cond = cond->next)
-        {
-            if ((cond->type == POSITIVE_CONDITION) && (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,  true, false)))
-            {
-                add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &roots);
-                if (roots) break;
-                }
-            }
-    if (!roots)
-    {
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
-        }
-        return false;
-    }
+    	for (cond = *lhs_top; cond != NIL; cond = cond->next)
+    	{
+    		if ((cond->type == POSITIVE_CONDITION) && (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,  true, false)))
+    		{
+    			add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &roots);
+    			if (roots) break;
+    		}
+    	}
+    	if (!roots)
+    	{
+    		thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
+    		thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
+    		if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+    		{
+    			thisAgent->stop_soar = true;
+    			thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
+    		}
+    		return false;
+    	}
     }
 
     remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);

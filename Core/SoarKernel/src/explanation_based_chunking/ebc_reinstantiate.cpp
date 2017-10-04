@@ -65,6 +65,24 @@ condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
 {
     dprint_header(DT_REINSTANTIATE, PrintBoth, "Reversing variablization of condition list\n");
 
+    // CBC: crash patch
+    /*for (condition* cond = m_lhs; cond != NIL; cond = cond->next)
+    {
+    	// Check for duplicate adjacent ^operator conditions and remove one
+    	// (fuzzy: doesn't actually test attribute (not sure how the structure is used), but checks that value is an operator)
+    	char 	idl1 = cond->data.tests.id_test.data.referent->id->name_letter,
+    			idl2 = cond->next->data.tests.id_test.data.referent->id->name_letter;
+    	uint64_t 	idn1 = cond->data.tests.id_test.data.referent->id->name_number,
+    				idn2 = cond->next->data.tests.id_test.data.referent->id->name_number;
+    	if (cond->data.tests.value_test.data.referent->is_operator()
+    			&& cond->next->data.tests.value_test.data.referent->is_operator()
+				&& cond->data.tests.value_test.inst_identity == cond->next->data.tests.value_test.inst_identity
+				&& idl1 == idl2 && idn1 == idn2)
+    	{
+    		
+    	}
+    }*/
+    
     condition* last_cond, *lCond, *inst_top;
     last_cond = inst_top = lCond = NULL;
 
@@ -76,7 +94,7 @@ condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
         {
             /* This case is rare (if it should happen at all any more).  It occurs when a learning attempt fails
              * and is being reverted to a justification instead */
-            reinstantiate_condition(cond, false);
+            reinstantiate_condition(cond, false, false);
             lCond = copy_condition(thisAgent, cond, false, false, false, false);
             reinstantiate_condition(cond, true);
             lCond->inst = m_chunk_inst;

@@ -112,7 +112,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     instantiation_record* lResultInstRecord, *lNewInstRecord;
     instantiation* lNewInst;
 
-    /* The following creates instantiations records for all instantiation involved in the backtrace.
+    /* The following creates instantiation records for all instantiation involved in the backtrace.
      *
      * Note that instantiation records are shared between multiple chunk explanations, so
      * we only create a new instantiation record for the first chunk explanation that

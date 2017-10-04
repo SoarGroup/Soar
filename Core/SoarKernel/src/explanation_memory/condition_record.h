@@ -25,7 +25,7 @@ class condition_record
         condition_record() {};
         ~condition_record() {};
 
-        void init(agent* myAgent, condition* pCond, uint64_t pCondID, instantiation_record* pInst, bool isChunkInstantiation = false);
+        bool init(agent* myAgent, condition* pCond, uint64_t pCondID, instantiation_record* pInst, bool isChunkInstantiation = false);
         void clean_up();
 
         uint64_t                        get_conditionID()   { return conditionID; };

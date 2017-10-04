@@ -34,6 +34,7 @@ typedef struct chunking_stats_struct {
         uint64_t            no_grounds;
         uint64_t            max_chunks;
         uint64_t            max_dupes;
+        uint64_t            confidence_threshold;		// CBC
         uint64_t            tested_local_negation;
         uint64_t            tested_quiescence;
         uint64_t            tested_ltm_recall;
@@ -128,6 +129,7 @@ class Explanation_Memory
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_max_dupes() { stats.max_dupes++; };
+        void increment_stat_confidence_threshold() { stats.confidence_threshold++; };		// CBC
         void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.tested_local_negation_just++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
         void increment_stat_tested_deep_copy(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_deep_copy++; else stats.tested_deep_copy_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_deep_copy = true; };
         void increment_stat_tested_ltm_recall(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_ltm_recall++; else stats.tested_ltm_recall_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_ltm_recall = true; };

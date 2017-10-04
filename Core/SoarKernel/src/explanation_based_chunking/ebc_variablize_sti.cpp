@@ -6,15 +6,24 @@
 #include "rhs.h"
 #include "test.h"
 
-void Explanation_Based_Chunker::add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity)
+chunk_element* Explanation_Based_Chunker::add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity)
 {
     dprint(DT_LHS_VARIABLIZATION, "Adding variablization found for %y -> %y [%u]\n", pSym, pVar, pInstIdentity);
     chunk_element* lVarInfo;
-    thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lVarInfo);
-    lVarInfo->variable_sym = pVar;
-    pVar->var->instantiated_sym = pSym;
-    lVarInfo->inst_identity = pInstIdentity;
-    (*m_sym_to_var_map)[pSym] = lVarInfo;
+    //if ((*m_sym_to_var_map).find(pSym) == (*m_sym_to_var_map).end()) {
+    	thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lVarInfo);
+    	lVarInfo->variable_sym = pVar;
+    	pVar->var->instantiated_sym = pSym;
+    	lVarInfo->inst_identity = pInstIdentity;
+    	(*m_sym_to_var_map)[pSym] = lVarInfo;
+    	return NIL;
+    /*}
+    else {	// CBC Patch:
+    	dprint(DT_REPAIR, "*** Already in sym_to_var_map! Should replace local %y [%y/%u] with %y.\n", pSym, pVar, pInstIdentity, pVar, ((*m_sym_to_var_map)[pSym])->variable_sym);
+        //thisAgent->memoryManager->free_with_pool(MP_chunk_element, lVarInfo);
+    	//pVar = ((*m_sym_to_var_map)[pSym])->variable_sym;
+    	return ((*m_sym_to_var_map)[pSym]);
+    }*/
 }
 
 void Explanation_Based_Chunker::sti_variablize_test(test pTest, bool generate_identity)
@@ -51,7 +60,13 @@ void Explanation_Based_Chunker::sti_variablize_test(test pTest, bool generate_id
         if (generate_identity) lMatchedIdentity = iter_sym->second->inst_identity;
     }
 
-    add_sti_variablization(lMatchedSym, lNewVar, lMatchedIdentity);
+    //if ((*m_sym_to_var_map).find(lMatchedSym) == (*m_sym_to_var_map).end()) {
+    	add_sti_variablization(lMatchedSym, lNewVar, lMatchedIdentity);
+    //}
+    //else {
+    //	dprint(DT_REPAIR, "*** Did not replace %y with [%y/%u] in sym_to_var_map. Replaced %y with %y.\n", lMatchedSym, lNewVar, lMatchedIdentity, lNewVar, ((*m_sym_to_var_map)[lMatchedSym])->variable_sym);
+    //	lNewVar = ((*m_sym_to_var_map)[lMatchedSym])->variable_sym;
+    //}
     pTest->data.referent = lNewVar;
     pTest->inst_identity = lMatchedIdentity;
     thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);
@@ -96,7 +111,16 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
         var = thisAgent->symbolManager->generate_new_variable(prefix);
         dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y: %y\n", rs->referent, var);
         if (generate_identity) lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_inst_identity_for_sym(var);
-        add_sti_variablization(rs->referent, var, lMatchedIdentity);
+        
+        //if ((*m_sym_to_var_map).find(rs->referent) == (*m_sym_to_var_map).end()) {
+        	//add_sti_variablization(lMatchedSym, lNewVar, lMatchedIdentity);
+        	add_sti_variablization(rs->referent, var, lMatchedIdentity);
+        //}
+        //else {
+        //	dprint(DT_REPAIR, "*** Did not replace %y with [%y/%u] in sym_to_var_map. Replaced %y with %y.\n", rs->referent, var, lMatchedIdentity, var, ((*m_sym_to_var_map)[rs->referent])->variable_sym);
+        //	var = ((*m_sym_to_var_map)[rs->referent])->variable_sym;
+        //}
+        
         has_variablization = true;
         was_unbound = true;
     } else if (rs->referent->is_sti()) {
