@@ -151,6 +151,13 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // using wma to supply the starting magnitude for a source of spread
     spreading_wma_source = new soar_module::boolean_param("spreading-wma-source", off, new soar_module::f_predicate<boolean>());
     add(spreading_wma_source);
+
+    // spreading direction
+    spreading_direction = new soar_module::constant_param<spreading_directions>("spreading-direction", forwards, new soar_module::f_predicate<spreading_directions>());
+    spreading_direction->add_mapping(forwards, "forwards");//along the edges
+    spreading_direction->add_mapping(backwards, "backwards");//against the direction of the edges - what act-r does
+    spreading_direction->add_mapping(bidirectional, "bidirectional");//bidirectional
+    add(spreading_direction);
 }
 
 //

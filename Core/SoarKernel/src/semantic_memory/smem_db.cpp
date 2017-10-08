@@ -318,6 +318,12 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     web_val_child = new soar_module::sqlite_statement(new_db, "SELECT value_lti_id, edge_weight FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR "");
     add(web_val_child);
 
+    web_val_parent = new soar_module::sqlite_statement(new_db, "SELECT lti_id, edge_weight FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR );
+    add(web_val_parent);
+
+    web_val_both = new soar_module::sqlite_statement(new_db, "SELECT value_lti_id, edge_weight FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " UNION ALL SELECT lti_id, edge_weight FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR);
+    add(web_val_both);
+
     //
 
     web_update_child_edge = new soar_module::sqlite_statement(new_db, "UPDATE smem_augmentations SET edge_weight = ? WHERE lti_id = ? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id = ?");

@@ -366,7 +366,23 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
 {
     if (lti_trajectories.find(lti_id) == lti_trajectories.end())
     {//If we don't already have the children and their edge weights, we need to get them.
-        soar_module::sqlite_statement* children_q = SQL->web_val_child;
+        soar_module::sqlite_statement* children_q;
+        if (settings->spreading_direction->get_value() == smem_param_container::forwards)
+        {
+            children_q = SQL->web_val_child;
+        }
+        else if (settings->spreading_direction->get_value() == smem_param_container::backwards)
+        {
+            children_q = SQL->web_val_parent;
+        }
+        else if (settings->spreading_direction->get_value() == smem_param_container::bidirectional)
+        {
+            children_q = SQL->web_val_both;
+        }
+        else
+        {
+            assert(false && "It HAS to be forwards, backwards, or bidirectional.");
+        }
         std::list<uint64_t> children;
 
         //First, we don't bother changing edge weights unless we have changes with which to update the edge weights.

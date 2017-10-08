@@ -22,6 +22,7 @@ class smem_param_container: public soar_module::param_container
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
         enum opt_choices { opt_safety, opt_speed };
         enum act_choices { act_recency, act_frequency, act_base };
+        enum spreading_directions { forwards, backwards, bidirectional };
 
         soar_module::boolean_param* learning;
         soar_module::constant_param<db_choices>* database;
@@ -57,6 +58,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::boolean_param* spreading_edge_updating;
         soar_module::boolean_param* spreading_wma_source;
         soar_module::decimal_param* spreading_edge_update_factor;
+        soar_module::constant_param<spreading_directions>* spreading_direction;
         soar_module::boolean_param* base_inhibition;
 
         void print_settings(agent* thisAgent);
