@@ -222,6 +222,13 @@ Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
     return NIL;
 }
 
+/* --------------------------------------------------------------------
+                                 Log
+
+   Same as Write, but first arg specifies a trace level for output.
+   Prints if trace level is >= to given arg value.
+-------------------------------------------------------------------- */
+
 Symbol* trace_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     if (thisAgent->outputManager->settings[OM_AGENT_WRITES])
@@ -232,11 +239,11 @@ Symbol* trace_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
         Symbol* lChannelSym = static_cast<Symbol*>(args->first);
         if (!lChannelSym->is_int() || (lChannelSym->ic->value < 1) || (lChannelSym->ic->value > maxAgentTraces))
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%eError: First argument of agent's trace command must be an integer channel number between 1 and %d.  %y is invalid.\n", maxAgentTraces, lChannelSym);
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError: First argument of agent's log command must be an integer channel number between 1 and %d.  %y is invalid.\n", maxAgentTraces, lChannelSym);
             return NIL;
         }
         args = args->rest;
-        if (thisAgent->output_settings->agent_traces_enabled[(lChannelSym->ic->value - 1)])
+        if (thisAgent->output_settings->agent_traces_enabled[(lChannelSym->ic->value - 1)] && thisAgent->trace_settings[lChannelSym->ic->value])
         {
             growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
 
