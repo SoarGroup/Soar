@@ -223,7 +223,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
 }
 
 /* --------------------------------------------------------------------
-                                 Log
+                                 Trace
 
    Same as Write, but first arg specifies a trace level for output.
    Prints if trace level is >= to given arg value.
@@ -237,13 +237,13 @@ Symbol* trace_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
         char* string;
 
         Symbol* lChannelSym = static_cast<Symbol*>(args->first);
-        if (!lChannelSym->is_int() || (lChannelSym->ic->value < 1) || (lChannelSym->ic->value > maxAgentTraces))
+        if (!lChannelSym->is_int() || (lChannelSym->ic->value < 0) || (lChannelSym->ic->value > 5))
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%eError: First argument of agent's log command must be an integer channel number between 1 and %d.  %y is invalid.\n", maxAgentTraces, lChannelSym);
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError: First argument of agent's (trace) rhs-function must be an integer trace level between 0 and 5.  %y is invalid.\n", lChannelSym);
             return NIL;
         }
         args = args->rest;
-        if (thisAgent->output_settings->agent_traces_enabled[(lChannelSym->ic->value - 1)] && thisAgent->trace_settings[lChannelSym->ic->value])
+        if (thisAgent->trace_settings[lChannelSym->ic->value])
         {
             growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
 
@@ -264,6 +264,49 @@ Symbol* trace_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
 
     return NIL;
 }
+
+/* --------------------------------------------------------------------
+                                 Log
+
+   Same as Log, but prints only if output log level for the given arg value is on.
+-------------------------------------------------------------------- */
+
+Symbol* log_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    if (thisAgent->outputManager->settings[OM_AGENT_WRITES])
+    {
+        Symbol* arg;
+        char* string;
+
+        Symbol* lChannelSym = static_cast<Symbol*>(args->first);
+        if (!lChannelSym->is_int() || (lChannelSym->ic->value < 1) || (lChannelSym->ic->value > maxAgentTraces))
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError: First argument of agent's (log) rhs-function must be an integer channel number between 1 and %d.  %y is invalid.\n", maxAgentTraces, lChannelSym);
+            return NIL;
+        }
+        args = args->rest;
+        if (thisAgent->output_settings->agent_traces_enabled[(lChannelSym->ic->value - 1)])
+        {
+            growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
+
+            for (; args != NIL; args = args->rest)
+            {
+                arg = static_cast<symbol_struct*>(args->first);
+                /* --- Note use of false here--print the symbol itself, not a rereadable version of it --- */
+                string = arg->to_string();
+                add_to_growable_string(thisAgent, &gs, string); // for XML generation
+                thisAgent->outputManager->printa(thisAgent, string);
+            }
+
+            xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+
+            free_growable_string(thisAgent, gs);
+        }
+    }
+
+    return NIL;
+}
+
 /* --------------------------------------------------------------------
                                 Crlf
 
@@ -965,7 +1008,8 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("link-stm-to-ltm"), set_lti_id_rhs_function_code, 2, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("log"), trace_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trace"), trace_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("log"), log_rhs_function_code, -1, false, true, 0, false);
 
     /* RHS functions that return a simple value */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), get_lti_id_rhs_function_code, 1, true, false, 0, false);
@@ -997,6 +1041,7 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("wait"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trace"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("log"));
 
     remove_rhs_function(thisAgent,thisAgent->symbolManager->soarSymbols.at_symbol);
