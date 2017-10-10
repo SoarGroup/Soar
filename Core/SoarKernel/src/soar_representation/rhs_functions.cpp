@@ -386,34 +386,26 @@ Symbol* dc_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data
 
 Symbol* timestamp_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)
 {
-    time_t now;
-    struct tm* temp;
 #define TIMESTAMP_BUFFER_SIZE 100
     char buf[TIMESTAMP_BUFFER_SIZE];
-
-    now = time(NULL);
-#ifdef THINK_C
-    temp = localtime((const time_t*)&now);
-#else
-#ifdef __SC__
-    temp = localtime((const time_t*)&now);
-#else
-#ifdef __ultrix
-    temp = localtime((const time_t*)&now);
-#else
-#ifdef MACINTOSH
-    temp = localtime((const time_t*) &now);
-#else
-    temp = localtime(&now);
-#endif
-#endif
-#endif
-#endif
-    SNPRINTF(buf, TIMESTAMP_BUFFER_SIZE, "%d/%d/%d-%02d:%02d:%02d",
-             temp->tm_mon + 1, temp->tm_mday, temp->tm_year,
-             temp->tm_hour, temp->tm_min, temp->tm_sec);
+    
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    
+    // get the milliseconds part of the time
+    std::chrono::system_clock::duration fraction = now.time_since_epoch();
+    fraction -= std::chrono::duration_cast<std::chrono::seconds>(fraction);
+    
+    // get the local time
+    time_t tt = std::chrono::system_clock::to_time_t(now);
+    tm t = *localtime(&tt);
+    
+    SNPRINTF(buf, TIMESTAMP_BUFFER_SIZE, "%04u-%02u-%02u %02u:%02u:%02u.%03u", t.tm_year + 1900,
+                t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec,
+                static_cast<unsigned>(fraction / std::chrono::milliseconds(1)));
+                
     buf[TIMESTAMP_BUFFER_SIZE - 1] = 0; /* ensure null termination */
     return thisAgent->symbolManager->make_str_constant(buf);
+    
 }
 
 /* --------------------------------------------------------------------
