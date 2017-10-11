@@ -56,7 +56,9 @@
 #include "working_memory.h"
 #include "xml.h"
 
-#include <iomanip>
+#include "ElementXMLInterface.h" // TODO: There was a comment in xml.h that the Kernel shouldn't use soarxml functions. Not sure what other xml parsing functions are available?
+#include "soar_module.h"
+
 #include <map>
 #include <stdlib.h>
 #include <string>
@@ -388,24 +390,24 @@ Symbol* timestamp_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*us
 {
 #define TIMESTAMP_BUFFER_SIZE 100
     char buf[TIMESTAMP_BUFFER_SIZE];
-    
+
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    
+
     // get the milliseconds part of the time
     std::chrono::system_clock::duration fraction = now.time_since_epoch();
     fraction -= std::chrono::duration_cast<std::chrono::seconds>(fraction);
-    
+
     // get the local time
     time_t tt = std::chrono::system_clock::to_time_t(now);
     tm t = *localtime(&tt);
-    
+
     SNPRINTF(buf, TIMESTAMP_BUFFER_SIZE, "%04u-%02u-%02u %02u:%02u:%02u.%03u", t.tm_year + 1900,
                 t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec,
                 static_cast<unsigned>(fraction / std::chrono::milliseconds(1)));
-                
+
     buf[TIMESTAMP_BUFFER_SIZE - 1] = 0; /* ensure null termination */
     return thisAgent->symbolManager->make_str_constant(buf);
-    
+
 }
 
 /* --------------------------------------------------------------------
@@ -1009,6 +1011,149 @@ Symbol* wait_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
     return NIL;
 }
 
+/* --------------------------------------------------------------------
+                                Xml To WME
+
+	Auto converts xml strings into WME structures
+-------------------------------------------------------------------- */
+
+// Forward declare
+Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, Symbol* targetId, LinkMap& linkMap, Links& links);
+
+Symbol* xmltowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap& linkMap, Links& links)
+{
+	Symbol* result = NULL;
+
+	const char* rawType = soarxml_GetAttribute(element, "type");
+	std::string type = rawType == NULL ? std::string("") : std::string(rawType);
+
+	if (type.empty() && soarxml_GetNumberChildren(element) > 0)
+	{
+		return xmltowme_from_xml_internal(thisAgent, element, NULL, linkMap, links);
+	}
+
+	const char* value = soarxml_GetAttribute(element, "value");
+	if (value == NULL)
+		value = soarxml_GetCharacterData(element);
+
+	if (value == NULL)
+		result = thisAgent->symbolManager->make_str_constant("");
+	else if (type == "double")
+	{
+		float floatValue = 0.0f;
+		bool parsed = true;
+
+		try { floatValue = std::stof(value); }
+		catch (const std::invalid_argument& ia) { parsed = false; }
+		catch (const std::out_of_range& oor) { parsed = false; }
+
+		if (parsed)
+			result = thisAgent->symbolManager->make_float_constant(floatValue);
+		else
+			result = thisAgent->symbolManager->make_float_constant(0.0f);
+	}
+	else if (type == "integer")
+	{
+		int intValue = 0;
+		bool parsed = true;
+
+		try { intValue = std::stoi(value); }
+		catch (const std::invalid_argument& ia) { parsed = false; }
+		catch (const std::out_of_range& oor) { parsed = false; }
+
+		if (parsed)
+			result = thisAgent->symbolManager->make_int_constant(intValue);
+		else
+			result = thisAgent->symbolManager->make_int_constant(0);
+	}
+	else
+		result = thisAgent->symbolManager->make_str_constant(value);
+	return result;
+}
+
+Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, Symbol* targetId, LinkMap& linkMap, Links& links)
+{
+	if (targetId == NULL)
+	{
+		const char* tag = soarxml_GetTagName(element);
+		targetId = thisAgent->symbolManager->make_new_identifier(*tag, 0, NIL);
+	}
+
+	int numChildren = soarxml_GetNumberChildren(element);
+	for (int i = 0; i < numChildren; i++)
+	{
+		ElementXML_Handle child = soarxml_GetChild(element, i);
+		const char* linkTo = soarxml_GetAttribute(child, "link");
+		const char* tag = soarxml_GetTagName(child);
+
+		if (tag == NULL)
+			continue;	// Warning null tag on node
+
+		Symbol* attribute = thisAgent->symbolManager->make_str_constant(tag);
+
+		if (linkTo == NULL)
+		{
+			Symbol* value = xmltowme_get_value(thisAgent, child, linkMap, links);
+
+			// add wme
+			wme* w = soar_module::add_module_wme(thisAgent, targetId, attribute, value, false);
+			const char* link = soarxml_GetAttribute(child, "link-id");
+			if (link != NULL)
+			{
+				linkMap.insert(std::make_pair(std::string(link), value));
+			}
+		}
+		else
+		{
+			Link newLink;
+			newLink.from = targetId;
+			newLink.attribute = attribute;
+			newLink.linkTo = linkTo;
+
+			links.push_back(newLink);
+		}
+	}
+
+	return targetId;
+}
+
+Symbol* xmltowme_from_xml(agent* thisAgent, ElementXML_Handle element, Symbol* targetId)
+{
+	LinkMap linkMap;
+	Links links;
+	Symbol* result = xmltowme_from_xml_internal(thisAgent, element, targetId, linkMap, links);
+
+	for (Link link : links)
+	{
+		auto targetIt = linkMap.find(std::string(link.linkTo));
+		if (targetIt != linkMap.end())
+		{
+			wme* w = soar_module::add_module_wme(thisAgent, link.from, link.attribute, targetIt->second, false);
+		}
+		else
+		{
+			// Warning Unknown link target
+		}
+	}
+	return result;
+}
+
+Symbol* xmltowme_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+	// No arguments
+	if (args == NIL)
+		return NIL;
+
+	Symbol* xml = static_cast<Symbol*>(args->first);
+	ElementXML_Handle handle = soarxml_ParseXMLFromString(xml->to_string());
+
+	// Failed to parse
+	if (handle == NULL)
+		return NIL;
+
+	return xmltowme_from_xml(thisAgent, handle, NULL);
+}
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Functions
@@ -1046,8 +1191,12 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
 
+	// TODO: Not sure about some of the final params in this call?
+	add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("from-st-xml"), xmltowme_rhs_function_code, 1, true, false, 0, false);
+
     /* EBC Manager caches these rhs functions since it may re-use them many times */
     thisAgent->explanationBasedChunker->lti_link_function = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
+
 
     init_built_in_rhs_math_functions(thisAgent);
 }
@@ -1077,6 +1226,7 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("accept"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("deep-copy"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("ifeq"));
+	remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("from-st-xml"));
 
     remove_built_in_rhs_math_functions(thisAgent);
 
