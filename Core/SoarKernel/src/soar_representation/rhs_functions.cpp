@@ -945,6 +945,8 @@ Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, 
 
 Symbol* xmltowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap& linkMap, Links& links)
 {
+	Symbol* result = NULL;
+
 	const char* type = soarxml_GetAttribute(element, "type");
 	if (type == NULL && soarxml_GetNumberChildren(element) > 0)
 	{
@@ -956,7 +958,7 @@ Symbol* xmltowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap&
 		value = soarxml_GetCharacterData(element);
 
 	if (value == NULL)
-		return thisAgent->symbolManager->make_str_constant("");
+		result = thisAgent->symbolManager->make_str_constant("");
 	else if (type == "double")
 	{
 		float floatValue = 0.0f;
@@ -967,9 +969,9 @@ Symbol* xmltowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap&
 		catch (const std::out_of_range& oor) { parsed = false; }
 
 		if (parsed)
-			return thisAgent->symbolManager->make_float_constant(floatValue);
+			result = thisAgent->symbolManager->make_float_constant(floatValue);
 		else
-			return thisAgent->symbolManager->make_float_constant(0.0f);
+			result = thisAgent->symbolManager->make_float_constant(0.0f);
 	}
 	else if (type == "integer")
 	{
@@ -981,12 +983,13 @@ Symbol* xmltowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap&
 		catch (const std::out_of_range& oor) { parsed = false; }
 
 		if (parsed)
-			return thisAgent->symbolManager->make_int_constant(intValue);
+			result = thisAgent->symbolManager->make_int_constant(intValue);
 		else
-			return thisAgent->symbolManager->make_int_constant(0);
+			result = thisAgent->symbolManager->make_int_constant(0);
 	}
 	else
-		return thisAgent->symbolManager->make_str_constant(value);
+		result = thisAgent->symbolManager->make_str_constant(value);
+	return result;
 }
 
 Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, Symbol* targetId, LinkMap& linkMap, Links& links)
