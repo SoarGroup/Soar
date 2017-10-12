@@ -948,8 +948,10 @@ Symbol* xmltowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap&
 {
 	Symbol* result = NULL;
 
-	const char* type = soarxml_GetAttribute(element, "type");
-	if (type == NULL && soarxml_GetNumberChildren(element) > 0)
+	const char* rawType = soarxml_GetAttribute(element, "type");
+	std::string type = rawType == NULL ? std::string("") : std::string(rawType);
+
+	if (type.empty() && soarxml_GetNumberChildren(element) > 0)
 	{
 		return xmltowme_from_xml_internal(thisAgent, element, NULL, linkMap, links);
 	}
