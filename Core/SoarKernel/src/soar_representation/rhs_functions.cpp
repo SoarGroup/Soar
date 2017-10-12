@@ -57,6 +57,7 @@
 #include "xml.h"
 
 #include "ElementXMLInterface.h" // TODO: There was a comment in xml.h that the Kernel shouldn't use soarxml functions. Not sure what other xml parsing functions are available?
+#include "soar_module.h"
 
 #include <map>
 #include <stdlib.h>
@@ -1017,9 +1018,7 @@ Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, 
 			Symbol* value = xmltowme_get_value(thisAgent, child, linkMap, links);
 
 			// add wme
-			wme* wme = make_wme(thisAgent, targetId, attribute, value, true); // TODO not sure about last param?
-			add_wme_to_wm(thisAgent, wme);
-
+			wme* w = soar_module::add_module_wme(thisAgent, targetId, attribute, value, false);
 			const char* link = soarxml_GetAttribute(child, "link-id");
 			if (link != NULL)
 			{
@@ -1051,8 +1050,7 @@ Symbol* xmltowme_from_xml(agent* thisAgent, ElementXML_Handle element, Symbol* t
 		auto targetIt = linkMap.find(std::string(link.linkTo));
 		if (targetIt != linkMap.end())
 		{
-			wme* wme = make_wme(thisAgent, link.from, link.attribute, targetIt->second, true); // TODO not sure about last param?
-			add_wme_to_wm(thisAgent, wme);
+			wme* w = soar_module::add_module_wme(thisAgent, link.from, link.attribute, targetIt->second, false);
 		}
 		else
 		{
@@ -1075,11 +1073,7 @@ Symbol* xmltowme_rhs_function_code(agent* thisAgent, cons* args, void* /*user_da
 	if (handle == NULL)
 		return NIL;
 
-	Symbol* result = xmltowme_from_xml(thisAgent, handle, NULL);
-
-	do_buffered_wm_changes(thisAgent);
-
-	return result;
+	return xmltowme_from_xml(thisAgent, handle, NULL);
 }
 
 /* ====================================================================
@@ -1118,7 +1112,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
 
 	// TODO: Not sure about some of the final params in this call?
-	add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("from-st-xml"), xmltowme_rhs_function_code, 1, true, true, 0, false);
+	add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("from-st-xml"), xmltowme_rhs_function_code, 1, true, false, 0, false);
 
     /* EBC Manager caches these rhs functions since it may re-use them many times */
     thisAgent->explanationBasedChunker->lti_link_function = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
