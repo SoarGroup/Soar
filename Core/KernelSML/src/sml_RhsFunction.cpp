@@ -101,33 +101,17 @@ Symbol* sml::InterruptRhsFunction::Execute(std::vector<Symbol*>* /*pArguments*/)
 
 Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 {
-    std::ostringstream ostr;
-    Symbol* lastSymbol = NULL;
+    std::string ostr;
     
     for (std::vector<Symbol*>::iterator iter = pArguments->begin() ; iter != pArguments->end() ; iter++)
     {
         Symbol* pSymbol = *iter ;
         
-        if (!pSymbol)
-        {
-            std::cerr << "Concat function was sent a null symbol! " << "Ignoring it..." << std::endl;
-        }
-        else
-        {
-            if (lastSymbol && (lastSymbol->symbol_type != STR_CONSTANT_SYMBOL_TYPE))
-            {
-                ostr << " ";
-            }
-            std::string nextString = pSymbol->to_string();
-            ostr << nextString;
-            lastSymbol = pSymbol;
-        }
+        if (!pSymbol) std::cerr << "Concat function was sent a null symbol! " << "Ignoring it..." << std::endl;
+        else ostr.append(pSymbol->to_string());
     }
     
-    std::string result = ostr.str();
-    char const* pResultStr = result.c_str() ;
-    Symbol* pResult = m_pAgentSML->GetSoarAgent()->symbolManager->make_str_constant(pResultStr) ;
-    return pResult ;
+    return m_pAgentSML->GetSoarAgent()->symbolManager->make_str_constant(ostr.c_str()) ;
 }
 
 Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
