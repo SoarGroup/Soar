@@ -417,8 +417,8 @@ typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocat
 typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_stack;
 
 // types/structures to facilitate incremental storage
-typedef std::map< epmem_node_id, bool, std::less< epmem_node_id >, soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > > > epmem_id_removal_map;
-typedef std::map< std::pair<epmem_node_id,int64_t>, bool, std::less< std::pair<epmem_node_id,int64_t> >, soar_module::soar_memory_pool_allocator< std::pair< std::pair<epmem_node_id,int64_t>, bool > > > epmem_edge_removal_map;
+typedef std::map< epmem_node_id, bool, std::less< epmem_node_id >, soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id const, bool > > > epmem_id_removal_map;
+typedef std::map< std::pair<epmem_node_id const,int64_t>, bool, std::less< std::pair<epmem_node_id const,int64_t> >, soar_module::soar_memory_pool_allocator< std::pair< std::pair<epmem_node_id const,int64_t>  const, bool > > > epmem_edge_removal_map;
 typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_set;
 
 #else
@@ -427,6 +427,7 @@ typedef std::list< Symbol* > epmem_symbol_stack;
 
 // types/structures to facilitate incremental storage
 typedef std::map<epmem_node_id, bool> epmem_id_removal_map;
+typedef std::map< std::pair<epmem_node_id const,int64_t>, bool> epmem_edge_removal_map;
 typedef std::set< Symbol* > epmem_symbol_set;
 #endif
 typedef std::map<epmem_node_id, epmem_wme_set*> epmem_id_ref_counter;
@@ -513,7 +514,7 @@ typedef std::set<epmem_literal*> epmem_literal_set;
 typedef std::set<epmem_pedge*> epmem_pedge_set;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::map<epmem_triple, epmem_uedge*, std::less<epmem_triple>, soar_module::soar_memory_pool_allocator<std::pair<const epmem_triple, epmem_uedge*> > > epmem_triple_uedge_map;
+typedef std::map<epmem_triple, epmem_uedge*, std::less<epmem_triple>, soar_module::soar_memory_pool_allocator<std::pair<epmem_triple const, epmem_uedge*> > > epmem_triple_uedge_map;
 typedef std::set<epmem_interval*, std::less<epmem_interval*>, soar_module::soar_memory_pool_allocator<epmem_interval*> > epmem_interval_set;
 typedef std::set<epmem_node_id, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<epmem_node_id> > epmem_node_set;
 typedef std::set<epmem_node_pair, std::less<epmem_node_pair>, soar_module::soar_memory_pool_allocator<epmem_node_pair> > epmem_node_pair_set;
