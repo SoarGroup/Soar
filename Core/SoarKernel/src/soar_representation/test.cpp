@@ -171,10 +171,8 @@ void deallocate_test(agent* thisAgent, test t)
         case IMPASSE_ID_TEST:
         case SMEM_LINK_UNARY_TEST:
         case SMEM_LINK_UNARY_NOT_TEST:
-            TDI_remove(thisAgent, t);
             break;
         case DISJUNCTION_TEST:
-            TDI_remove(thisAgent, t);
             thisAgent->symbolManager->deallocate_symbol_list_removing_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
@@ -191,10 +189,8 @@ void deallocate_test(agent* thisAgent, test t)
             }
             dprint(DT_DEALLOCATE_TEST, "DEALLOCATE tests in conjunction complete.  Next deallocation should be conjunction.\n");
             t->data.conjunct_list = NULL;
-            TDI_remove(thisAgent, t);
             break;
         default: /* tests with a referent */
-            TDI_remove(thisAgent, t);
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
             break;
     }
@@ -969,8 +965,6 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->identity = NULL_IDENTITY_SET;
     new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;
     if (sym) thisAgent->symbolManager->symbol_add_ref(sym);
-
-    TDI_add(thisAgent, new_ct);
     return new_ct;
 }
 

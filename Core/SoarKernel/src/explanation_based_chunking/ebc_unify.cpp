@@ -10,7 +10,6 @@
 #include "ebc_timers.h"
 
 #include "condition.h"
-#include "debug_inventories.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"

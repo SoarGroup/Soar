@@ -482,15 +482,11 @@ void deallocate_production(agent* thisAgent, production* prod)
         /* Soar used to abort here, but I think this can easily happen with the
          * excise command, so we'll try clearing out the production pointers from
          * the remaining instantiations instead. */
-        dprint(DT_DEALLOCATE_PROD, "Instantiations still exist based on production %y, which is being excised!  Should only happen with manual excise command.\n", prod->name);
         for (instantiation* lInst = prod->instantiations; lInst != NULL; lInst = lInst->next)
         {
-            dprint(DT_DEALLOCATE_PROD, "Clearing production pointer from instantiation %u (%y).\n", lInst->i_id, lInst->prod_name);
             lInst->prod = NULL;
         }
     }
-    dprint_header(DT_DEALLOCATE_PROD, PrintBoth, "Deallocating production %y (p %u).\n", prod->name, prod->p_id);
-    //std::cout << "Deallocating production " << prod->name->sc->name << ' ' << prod->p_id << "\n";
 
     deallocate_action_list(thisAgent, prod->action_list);
     thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
@@ -506,14 +502,10 @@ void deallocate_production(agent* thisAgent, production* prod)
 
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign, bool cacheProdForExplainer)
 {
-    dprint_header(DT_DEALLOCATE_PROD, PrintBoth, "Excising production %y (p %u).\n", prod->name, prod->p_id);
-    //std::cout << "Excising production " << prod->name->sc->name << ' ' << prod->p_id << "\n";
     /* When excising, the explainer needs to save the production before we excise it from
      * the RETE.  Otherwise, it won't be able to reconstruct the cached conditions/actions */
     if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
     {
-        dprint(DT_DEALLOCATE_PROD, "Caching production for %y (p %u) before excising.\n", prod->name, prod->p_id);
-        //std::cout << "Caching production " << prod->name->sc->name << ' ' << prod->p_id << "before excising.\n";
         thisAgent->explanationMemory->save_excised_production(prod);
     }
     if (thisAgent->explanationMemory->is_any_enabled())
@@ -550,7 +542,6 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     }
     prod->name->sc->production = NIL;
     production_remove_ref(thisAgent, prod);
-    dprint_header(DT_DEALLOCATE_PROD, PrintAfter, "Done excising production.\n");
 }
 
 void excise_all_productions_of_type(agent* thisAgent, byte type, bool print_sharp_sign, bool cacheProdForExplainer)

@@ -4,7 +4,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug_inventories.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "symbol_manager.h"
@@ -20,7 +19,6 @@ Identity* Explanation_Based_Chunker::create_new_identity(Symbol* pGoal)
 
     thisAgent->explanationMemory->increment_stat_identities_created();
 
-    ISI_add(thisAgent, l_identity->idset_id);
     if (thisAgent->explanationMemory->is_any_enabled()) thisAgent->explanationMemory->add_identity(l_identity, pGoal);
 
     dprint(DT_DEALLOCATE_IDENTITIES, "Created identity set %u for variable identity %u\n", l_identity->idset_id);
@@ -109,13 +107,11 @@ Identity* Explanation_Based_Chunker::get_or_add_identity(uint64_t pID, Identity*
         return l_identity;
     }
 
-    #ifndef EBC_DONT_PROPAGATE_IDENTITIES
     if (pIdentity)
     {
         (*inst_id_to_identity_map)[pID] = pIdentity;
         return pIdentity;
     } else
-    #endif
     {
         Identity* newIdentitySet = create_new_identity(pGoal);
         (*inst_id_to_identity_map)[pID] = newIdentitySet;

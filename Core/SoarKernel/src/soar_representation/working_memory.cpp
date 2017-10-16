@@ -1,7 +1,6 @@
 #include "working_memory.h"
 
 #include "agent.h"
-#include "debug_inventories.h"
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"
@@ -132,8 +131,6 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
 
-    WDI_add(thisAgent, w);
-
     return w;
 }
 
@@ -153,14 +150,6 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
             w->value->id->isa_operator++;
         }
     }
-
-    #ifdef DEBUG_ATTR_AS_LINKS
-    if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-    {
-        dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", w->id, w->attr);
-        post_link_addition(thisAgent, w->id, w->attr);
-    }
-    #endif
 }
 
 void remove_wme_from_wm(agent* thisAgent, wme* w)
@@ -173,13 +162,6 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
         post_link_removal(thisAgent, w->id, w->value);
-#ifdef DEBUG_ATTR_AS_LINKS
-        if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-        {
-            dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);
-            post_link_removal(thisAgent, w->id, w->attr);
-        }
-#endif
         if (w->id->is_state() && w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
         {
             w->value->id->isa_operator--;
@@ -199,7 +181,6 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
             {
                 w->gds->goal->id->gds = NIL;
             }
-            GDI_remove(thisAgent, w->gds);
             thisAgent->memoryManager->free_with_pool(MP_gds, w->gds);
         }
     }
@@ -397,9 +378,6 @@ void do_buffered_wm_changes(agent* thisAgent)
 
 void deallocate_wme(agent* thisAgent, wme* w)
 {
-    dprint(DT_WME_CHANGES, "Deallocating wme %w\n", w);
-    WDI_remove(thisAgent, w);
-
     if (wma_enabled(thisAgent))
     {
         wma_remove_decay_element(thisAgent, w);

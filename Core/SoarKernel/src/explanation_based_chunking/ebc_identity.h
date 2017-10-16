@@ -13,16 +13,6 @@
 
 #include <list>
 
-//#define DEBUG_TRACE_IDSET_REFCOUNTS 3
-
-#ifndef SOAR_RELEASE_VERSION
-#ifdef DEBUG_TRACE_IDSET_REFCOUNTS
-#define DEBUG_MAC_STACKTRACE
-    #include "dprint.h"
-    void get_stacktrace(std::string& return_string);
-#endif
-#endif
-
 #ifdef USE_MEM_POOL_ALLOCATORS
     typedef std::list< Identity*, soar_module::soar_memory_pool_allocator< Identity* > >    identity_list;
 #else
@@ -39,28 +29,8 @@ class Identity
         void init(agent* my_agent);
         void clean_up();
 
-#ifndef DEBUG_TRACE_IDSET_REFCOUNTS
         void        add_ref()               { ++refcount; }
-        bool        internal_remove_ref()            { --refcount; return (refcount == 0);}
-#else
-        void        add_ref()
-        {
-            ++refcount;
-            std::string caller_string;
-            get_stacktrace(caller_string);
-            if (idset_id == DEBUG_TRACE_IDSET_REFCOUNTS)
-                dprint_noprefix(DT_IDSET_REFCOUNTS, "++ %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
-        }
-        bool        internal_remove_ref()
-        {
-            --refcount;
-            std::string caller_string;
-            get_stacktrace(caller_string);
-            if (idset_id == DEBUG_TRACE_IDSET_REFCOUNTS)
-                dprint_noprefix(DT_IDSET_REFCOUNTS, "-- %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
-            return (refcount == 0);
-        }
-#endif
+        bool        internal_remove_ref()   { --refcount; return (refcount == 0);}
 
         bool        literalized()           { return joined_identity->m_literalized; }
         bool        joined()                { return (joined_identity != this); }

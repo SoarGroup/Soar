@@ -22,7 +22,6 @@
 #include "condition.h"
 #include "decide.h"
 #include "debug.h"
-#include "debug_inventories.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
@@ -843,23 +842,11 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     m_chunk_inst->creates_deep_copy         = m_inst->creates_deep_copy;
     m_chunk_inst->tested_LTM                = m_inst->tested_LTM;
     m_chunk_inst->tested_quiescence         = m_inst->tested_quiescence;
-    #ifdef DEBUG_ONLY_CHUNK_ID
-    #ifndef DEBUG_ONLY_CHUNK_ID_LAST
-    if (m_chunk_inst->i_id == DEBUG_ONLY_CHUNK_ID)
-    #else
-    if ((m_chunk_inst->i_id >= DEBUG_ONLY_CHUNK_ID) && (m_chunk_inst->i_id <= DEBUG_ONLY_CHUNK_ID_LAST))
-    #endif
-        {
-            dprint(DT_DEBUG, "Turning on debug tracing for chunk ID %u that is flagged for debugging.\n", m_chunk_inst->i_id);
-            debug_trace_on();
-        }
-    #endif
 
     dprint_header(DT_MILESTONES, PrintBoth, "EBC learning new rule with id %u for match of %y (i%u)\n", m_chunk_inst->i_id, m_inst->prod_name, inst->i_id);
     dprint(DT_VARIABLIZATION_MANAGER, "EBC learning new rule with id %u for match of %y (i%u):\n%5\n...which produced results...\n%6\n", m_chunk_inst->i_id, inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated, NULL, m_results);
     thisAgent->explanationMemory->add_chunk_record(m_inst);
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
-    //debug_refcount_change_start(thisAgent, false);
 
     /* Set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1019,15 +1006,8 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     make_clones_of_results();
     finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst, true, true);
 
-    /* Add this function to inventory deallocation inventory if that is enabled.
-     * Note: All instantiations except chunks call IDI_add in init_instantiation. For chunks,
-     *       though, we don't have the final rule name set up until now, so we call it here. */
-    IDI_add(thisAgent, m_chunk_inst);
-    //debug_refcount_change_end(thisAgent, m_chunk_inst->prod_name->sc->name, " learning rule ", false);
-
     dprint(DT_VARIABLIZATION_MANAGER, "Production adding to RETE: \n%4", m_lhs, m_rhs);
     dprint(DT_VARIABLIZATION_MANAGER, "Instantiation adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
-    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_inst->i_id, m_inst->prod_name);
 
     /* Add to RETE */
     bool lAddedSuccessfully = add_chunk_to_rete();
@@ -1070,8 +1050,6 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, soar_timer* pTi
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
     {
-        IDI_remove(thisAgent, m_chunk_inst->i_id);
-
         thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
         m_chunk_inst = NULL;
     }
@@ -1102,18 +1080,6 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, soar_timer* pTi
         clean_up_identities();
         clear_cached_constraints();
     }
-    #ifdef DEBUG_ONLY_CHUNK_ID
-    #ifndef DEBUG_ONLY_CHUNK_ID_LAST
-    if (pClean_up_id == DEBUG_ONLY_CHUNK_ID)
-    #else
-    if (pClean_up_id >= DEBUG_ONLY_CHUNK_ID_LAST)
-    #endif
-    {
-        dprint(DT_DEBUG, "Turning off debug tracing for chunk ID %u.\n", pClean_up_id);
-        debug_trace_off();
-    }
-    #endif
-
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     pTimer->stop();
     thisAgent->timers_chunking_cpu_time[thisAgent->current_phase].update(*pTimer);

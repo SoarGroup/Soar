@@ -23,7 +23,6 @@
 #include "callback.h"
 #include "cmd_settings.h"
 #include "condition_record.h"
-#include "debug_inventories.h"
 #include "decide.h"
 #include "decider.h"
 #include "decision_manipulation.h"
@@ -313,10 +312,6 @@ agent* create_soar_agent(char* agent_name)                                      
 */
 void destroy_soar_agent(agent* delete_agent)
 {
-
-    /* Tell explainer to write out after action report before we clean up everything */
-    delete_agent->explanationMemory->after_action_report_for_exit();
-
     delete delete_agent->visualizationManager;
     delete delete_agent->explanationBasedChunker;
     delete_agent->explanationBasedChunker = NULL;
@@ -356,16 +351,6 @@ void destroy_soar_agent(agent* delete_agent)
     /* We can't clean up the explanation manager until after production excision */
     delete delete_agent->explanationMemory;
     delete_agent->explanationMemory = NULL;
-
-    /* Print deallocation inventory results (compiled out in release build)
-     * - Note: The last three are included here but not during init-soar because
-     *         productions can contain actions, rhs symbols and rhs functions
-     *         which aren't deallocated until exit.*/
-    clean_up_debug_inventories(delete_agent);
-    ADI_print_and_cleanup(delete_agent);
-    RSI_print_and_cleanup(delete_agent);
-    RFI_print_and_cleanup(delete_agent);
-    TDI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
     delete_agent->symbolManager->release_common_variables_and_numbers();
@@ -423,9 +408,6 @@ void destroy_soar_agent(agent* delete_agent)
 
 void reinitialize_agent(agent* thisAgent)
 {
-    /* Tell explainer to write out after action report before we clean up everything */
-    thisAgent->explanationMemory->after_action_report_for_init();
-
     /* Clean up explanation-based chunking, episodic and semantic memory data structures */
     epmem_reinit(thisAgent);
     thisAgent->SMem->reinit();
@@ -458,9 +440,6 @@ void reinitialize_agent(agent* thisAgent)
 
     /* It's now safe to clear out explanation memory */
     thisAgent->explanationMemory->re_init();
-
-    /* Print deallocation inventory results (compiled out in release build) */
-    clean_up_debug_inventories(thisAgent);
 
     /* Reset Soar identifier hash table and counters for WMEs, SMem and Soar IDs.
      * Note:  reset_hash_table() is where refcount leaks in identifiers are detected. */

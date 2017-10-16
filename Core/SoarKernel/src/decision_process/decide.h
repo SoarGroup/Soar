@@ -28,7 +28,6 @@
 #define DECIDE_H
 
 #include "kernel.h"
-#include "debug_inventories.h"
 
 #include <set>
 #include <map>
@@ -70,9 +69,6 @@ typedef struct gds_struct
 {
     Symbol* goal;                /* pointer to the goal for the dependency set */
     wme* wmes_in_gds;            /* pointer to the dll of WMEs in GDS of goal */
-    #ifdef DEBUG_GDS_INVENTORY
-    uint64_t g_id;
-    #endif
 } goal_dependency_set;
 
 /* ------------------------------------------------------------------------

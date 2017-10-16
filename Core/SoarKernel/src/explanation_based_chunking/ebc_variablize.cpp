@@ -446,8 +446,6 @@ void Explanation_Based_Chunker::add_LTM_linking_actions(action* pLastAction)
         funcall_list = destructively_reverse_list(funcall_list);
         lNewFuncallList = funcall_list_to_rhs_value(funcall_list);
 
-        RFI_add(thisAgent, lNewFuncallList);
-
         lAction = make_action(thisAgent);
         lAction->type = FUNCALL_ACTION;
         lAction->value = lNewFuncallList;

@@ -199,9 +199,6 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         }
     }
     pSoarAgent->outputManager->cache_output_modes();
-    #if defined(DEBUG_ONLY_CHUNK_ID) || defined(DEBUG_ONLY_AFTER_DC)
-        debug_trace_off();
-    #endif
 
     // Return true if we got an agent constructed.
     return true ;

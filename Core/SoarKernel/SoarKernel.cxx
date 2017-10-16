@@ -6,8 +6,6 @@
 #include <condition_record.cpp>
 #include <condition.cpp>
 #include <consistency.cpp>
-#include <debug_inventories.cpp>
-#include <debug_stacktrace.cpp>
 #include <debug.cpp>
 #include <decide.cpp>
 #include <decider_settings.cpp>
@@ -34,7 +32,6 @@
 #include <explanation_memory.cpp>
 #include <explanation_settings.cpp>
 #include <exploration.cpp>
-#include <after_action_report.cpp>
 #include <ebc_identity.cpp>
 #include <ebc_identity_graph.cpp>
 #include <identity_record.cpp>

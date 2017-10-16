@@ -547,7 +547,6 @@ class cli_command_params
         decide_param_container*         decide_params;
         load_param_container*           load_params;
         save_param_container*           save_params;
-        memory_param_container*         memory_params;
         production_param_container*     production_params;
         wm_param_container*             wm_params;
 
