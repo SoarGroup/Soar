@@ -947,18 +947,12 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
         variablize_condition_list(m_lhs);
         dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
-
-        #ifdef EBC_SANITY_CHECK_RULES
-        if (m_rule_type == ebc_chunk) sanity_chunk_conditions(m_lhs);
-        #endif
-
         merge_conditions();
         m_rhs = variablize_results_into_actions();
     } else {
         update_identities_in_condition_list(m_lhs);
         m_rhs = convert_results_into_actions();
     }
-
 
     /* Add isa_goal tests for first conditions seen with a goal identifier */
     add_goal_or_impasse_tests();

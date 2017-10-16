@@ -99,7 +99,6 @@
     //#define DEBUG_INCOMING_SML    /* Prints message coming in via KernelSML::ProcessIncomingSML */
 
     /* Only used for EBC debugging and experimentation */
-    //#define EBC_SANITY_CHECK_RULES
     //#define EBC_DONT_PROPAGATE_IDENTITIES
     #define EBC_DETAILED_STATISTICS
     #define EBC_DEBUG_STATISTICS

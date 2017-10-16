@@ -296,55 +296,6 @@ void Explanation_Based_Chunker::clear_data()
     }
 }
 
-void Explanation_Based_Chunker::sanity_chunk_test (test pTest)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            sanity_chunk_test(static_cast<test>(c->first));
-        }
-    } else {
-        assert((!test_has_referent(pTest) || !pTest->data.referent->is_sti()) && !pTest->identity);
-    }
-}
-
-void Explanation_Based_Chunker::sanity_chunk_conditions(condition* top_cond)
-{
-    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
-    {
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            sanity_chunk_test(cond->data.tests.id_test);
-            sanity_chunk_test(cond->data.tests.attr_test);
-            sanity_chunk_test(cond->data.tests.value_test);
-        }
-        else
-        {
-            sanity_chunk_conditions(cond->data.ncc.top);
-        }
-    }
-}
-
-void Explanation_Based_Chunker::sanity_justification_test (test pTest, bool pIsNCC)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            sanity_justification_test(static_cast<test>(c->first), pIsNCC);
-        }
-    } else {
-        if (pIsNCC)
-        {
-            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity));
-
-        } else {
-            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable() || !pTest->identity);
-        }
-    }
-}
-
 goal_stack_level Explanation_Based_Chunker::get_inst_match_level()
 {
     if (m_inst)
