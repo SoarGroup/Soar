@@ -71,15 +71,12 @@
 /* =============================== */
 #ifdef SOAR_RELEASE_VERSION
 
-    #define EBC_DETAILED_STATISTICS
-
     //#define MEMORY_POOL_STATS
     #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1
 //        #define USE_UNORDERED_STL
     #endif
-
 #else
 
     /* Memory settings */
@@ -100,9 +97,7 @@
 
     /* Only used for EBC debugging and experimentation */
     //#define EBC_DONT_PROPAGATE_IDENTITIES
-    #define EBC_DETAILED_STATISTICS
-    #define EBC_DEBUG_STATISTICS
-    #define EBC_DETAILED_TIMERS
+
 
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting that increments and decrements for identifiers in attribute elements*/
 

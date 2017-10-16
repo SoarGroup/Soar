@@ -82,50 +82,30 @@ void Explanation_Memory::initialize_counters()
     action_id_count = 0;
 
     stats.duplicates = 0;
-    stats.justification_did_not_match = 0;
-    stats.chunk_did_not_match = 0;
     stats.no_grounds = 0;
     stats.max_chunks = 0;
     stats.max_dupes = 0;
     stats.tested_local_negation = 0;
-    stats.tested_deep_copy = 0;
     stats.tested_quiescence = 0;
     stats.tested_ltm_recall = 0;
     stats.tested_local_negation_just = 0;
-    stats.tested_deep_copy_just = 0;
     stats.tested_ltm_recall_just = 0;
     stats.merged_conditions = 0;
     stats.merged_disjunctions = 0;
-    stats.merged_disjunction_values = 0;
-    stats.eliminated_disjunction_values = 0;
     stats.chunks_attempted = 0;
     stats.chunks_succeeded = 0;
-    stats.justifications_attempted = 0;
     stats.justifications_succeeded = 0;
     stats.instantations_backtraced = 0;
-    stats.seen_instantations_backtraced = 0;
     stats.constraints_attached = 0;
     stats.constraints_collected = 0;
-    stats.grounding_conditions_added = 0;
-    stats.lhs_unconnected = 0;
-    stats.rhs_unconnected = 0;
-    stats.repair_failed = 0;
     stats.chunks_repaired = 0;
-    stats.chunks_reverted = 0;
     stats.identities_created                = 0;
     stats.identities_joined                 = 0;
-    stats.identities_joined_variable        = 0;
-    stats.identities_joined_local_singleton = 0;
-    stats.identities_joined_singleton       = 0;
-    stats.identities_joined_child_results   = 0;
-    stats.identities_literalized_rhs_literal    = 0;
+    stats.identities_literalized            = 0;
     stats.identities_participated           = 0;
     stats.identity_propagations             = 0;
     stats.identity_propagations_blocked     = 0;
     stats.operational_constraints           = 0;
-    stats.OSK_instantiations                = 0;
-    stats.identities_literalized_rhs_func_arg       = 0;
-    stats.identities_literalized_rhs_func_compare   = 0;
 }
 
 void Explanation_Memory::clear_explanations()
@@ -655,27 +635,6 @@ void Explanation_Memory::increment_stat_duplicates(production* duplicate_rule)
             increment_counter(lChunkRecord->stats.duplicates);
         }
     }
-};
-
-void Explanation_Memory::increment_stat_grounding_conds_added(int pNumConds)
-{
-    add_to_counter(stats.grounding_conditions_added, pNumConds);
-    if (current_recording_chunk)
-    {
-        dprint(DT_EXPLAIN, "Incrementing stats for %d grounding conditions in rule %y.\n", pNumConds, current_recording_chunk->name);
-        add_to_counter(current_recording_chunk->stats.grounding_conditions_added, pNumConds);
-    }
-};
-
-void Explanation_Memory::increment_stat_chunks_reverted()
-{
-    increment_counter(stats.chunks_reverted);
-    if (current_recording_chunk)
-    {
-        dprint(DT_EXPLAIN, "Incrementing stats for reverted chunk in rule %y.\n", current_recording_chunk->name);
-        current_recording_chunk->stats.reverted = true;
-    }
-    stats.justifications_attempted--;
 };
 
 void Explanation_Memory::clear_chunk_from_instantiations()

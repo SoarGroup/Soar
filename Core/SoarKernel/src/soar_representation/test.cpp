@@ -255,11 +255,7 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
         ++final_count;
     }
     destination->data.disjunction_list = c_first;
-    #ifdef EBC_DETAILED_STATISTICS
-        thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
-        thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
-        thisAgent->explanationMemory->increment_stat_merged_disjunctions();
-    #endif
+    thisAgent->explanationMemory->increment_stat_merged_disjunctions();
 }
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
@@ -386,9 +382,7 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool 
                 return;
             }
 
-    #ifdef EBC_DETAILED_STATISTICS
     if (thisAgent->explanationBasedChunker->is_learning_chunk()) thisAgent->explanationMemory->increment_stat_operational_constraints();
-    #endif
 
     add_test(thisAgent, t, add_me, merge_disjunctions);
 }

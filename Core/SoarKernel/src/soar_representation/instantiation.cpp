@@ -823,9 +823,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 thisAgent->explanationBasedChunker->force_id_to_identity_mapping(cond->data.tests.value_test->eq_test->inst_identity, cond->bt.wme_->local_singleton_value_identity_set);
                 set_test_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.wme_->local_singleton_id_identity_set);
                 set_test_identity(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_value_identity_set);
-               #ifdef EBC_DETAILED_STATISTICS
-                thisAgent->explanationMemory->increment_stat_identities_propagated_local_singleton();
-                #endif
+                thisAgent->explanationMemory->increment_stat_identity_propagations();
             }
             if (lDoIdentities)
             {

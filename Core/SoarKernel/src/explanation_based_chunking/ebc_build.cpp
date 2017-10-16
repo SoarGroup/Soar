@@ -753,9 +753,6 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
-            #ifdef EBC_DEBUG_STATISTICS
-                thisAgent->explanationMemory->increment_stat_justification_did_not_match();
-            #endif
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
@@ -764,9 +761,6 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
                 print_current_built_rule("Justification that did not match WM: ");
             }
         } else {
-            #ifdef EBC_DEBUG_STATISTICS
-                thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
-            #endif
             thisAgent->explanationMemory->increment_stat_chunks_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
@@ -930,9 +924,6 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     {
         thisAgent->explanationMemory->cancel_chunk_record();
     }
-    #ifdef EBC_DETAILED_STATISTICS
-        if (m_tested_deep_copy) thisAgent->explanationMemory->increment_stat_tested_deep_copy(m_rule_type);
-    #endif
     if (m_tested_local_negation) thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
     if (m_tested_ltm_recall) thisAgent->explanationMemory->increment_stat_tested_ltm_recall(m_rule_type);
     if (m_tested_quiescence) thisAgent->explanationMemory->increment_stat_tested_quiescence();
@@ -981,9 +972,6 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "Soar will learn a justification instead of a variablized rule.");
             }
-            #ifdef EBC_DEBUG_STATISTICS
-                thisAgent->explanationMemory->increment_stat_chunks_reverted();
-            #endif
         }
     }
 

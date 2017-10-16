@@ -26,10 +26,8 @@ typedef struct chunking_stats_struct {
         /* Core */
         uint64_t            chunks_attempted;
         uint64_t            chunks_succeeded;
-        uint64_t            justifications_attempted;
         uint64_t            justifications_succeeded;
         uint64_t            instantations_backtraced;
-        uint64_t            seen_instantations_backtraced;
         uint64_t            duplicates;
         uint64_t            no_grounds;
         uint64_t            max_chunks;
@@ -41,42 +39,18 @@ typedef struct chunking_stats_struct {
         uint64_t            tested_ltm_recall_just;
         uint64_t            chunks_repaired;
 
-        /* Detailed (only used if EBC_DETAILED_STATISTICS is #defined) */
-        uint64_t            grounding_conditions_added;
         uint64_t            merged_conditions;
         uint64_t            merged_disjunctions;
-        uint64_t            merged_disjunction_values;
-        uint64_t            eliminated_disjunction_values;
+        uint64_t            operational_constraints;
         uint64_t            constraints_attached;
         uint64_t            constraints_collected;
-        uint64_t            tested_deep_copy;
-        uint64_t            tested_deep_copy_just;
 
         uint64_t            identities_created;
-        uint64_t            identities_joined;
-        uint64_t            identities_joined_variable;
-        uint64_t            identities_joined_local_singleton;
-        uint64_t            identities_joined_singleton;
-        uint64_t            identities_joined_child_results;
-        uint64_t            identities_literalized_rhs_literal;
-        uint64_t            identities_literalized_lhs_literal;
-        uint64_t            identities_literalized_rhs_func_arg;
-        uint64_t            identities_literalized_rhs_func_compare;
-
         uint64_t            identities_participated;
+        uint64_t            identities_joined;
+        uint64_t            identities_literalized;
         uint64_t            identity_propagations;
         uint64_t            identity_propagations_blocked;
-        uint64_t            operational_constraints;
-        uint64_t            OSK_instantiations;
-
-        /* Debug stats (only used if EBC_DEBUG_STATISTICS is #defined) */
-        uint64_t            lhs_unconnected;
-        uint64_t            rhs_unconnected;
-        uint64_t            chunk_did_not_match;
-        uint64_t            justification_did_not_match;
-        uint64_t            chunks_reverted;
-        uint64_t            repair_failed;
-
 } chunking_stats;
 
 
@@ -123,52 +97,32 @@ class Explanation_Memory
         chunk_record*           get_current_discussed_chunk() { return current_discussed_chunk; };
 
         void increment_stat_duplicates(production* duplicate_rule);
-        void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; if (current_recording_chunk) current_recording_chunk->stats.did_not_match_wm = true;};
-        void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; if (current_recording_chunk) current_recording_chunk->stats.did_not_match_wm = true; };
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_max_dupes() { stats.max_dupes++; };
         void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.tested_local_negation_just++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
-        void increment_stat_tested_deep_copy(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_deep_copy++; else stats.tested_deep_copy_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_deep_copy = true; };
         void increment_stat_tested_ltm_recall(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_ltm_recall++; else stats.tested_ltm_recall_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_ltm_recall = true; };
         void increment_stat_tested_quiescence() { stats.tested_quiescence++; if (current_recording_chunk) current_recording_chunk->stats.tested_quiescence = true; };
         void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions += pCount; };
         void increment_stat_merged_disjunctions() { stats.merged_disjunctions++; if (current_recording_chunk) current_recording_chunk->stats.merged_disjunctions++; };
-        void increment_stat_eliminated_disjunction_values(int pCount = 1) { stats.eliminated_disjunction_values += pCount; if (current_recording_chunk) current_recording_chunk->stats.eliminated_disjunction_values += pCount; };
-        void increment_stat_merged_disjunction_values(int pCount = 1) { stats.merged_disjunction_values += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_disjunction_values += pCount; };
         void increment_stat_chunks_attempted() { stats.chunks_attempted++; };
         void increment_stat_chunks_succeeded() { stats.chunks_succeeded++; };
-        void increment_stat_justifications_attempted() { stats.justifications_attempted++; };
         void increment_stat_justifications_succeeded() { stats.justifications_succeeded++; };
         void increment_stat_instantations_backtraced() { stats.instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.instantations_backtraced++; };
-        void increment_stat_seen_instantations_backtraced() { stats.seen_instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.seen_instantations_backtraced++; };
         void increment_stat_constraints_attached() { stats.constraints_attached++; if (current_recording_chunk) current_recording_chunk->stats.constraints_attached++; };
         void increment_stat_constraints_collected() { stats.constraints_collected++; if (current_recording_chunk) current_recording_chunk->stats.constraints_collected++; };
-        void increment_stat_grounding_conds_added(int pNumConds);
-        void increment_stat_lhs_unconnected() { stats.lhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.lhs_unconnected = true; };
-        void increment_stat_rhs_unconnected() { stats.rhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.rhs_unconnected = true; };
-        void increment_stat_could_not_repair() { stats.repair_failed++;  if (current_recording_chunk) current_recording_chunk->stats.repair_failed = true; };
         void increment_stat_chunks_repaired() { stats.chunks_repaired++;   if (current_recording_chunk) current_recording_chunk->stats.repaired = true; };
-        void increment_stat_chunks_reverted();
 
         void increment_stat_identities_created() { stats.identities_created++;};
         void increment_stat_identity_propagations() { stats.identity_propagations++;};
-        void increment_stat_identities_propagated_local_singleton() { stats.identities_joined_local_singleton++; };
         void increment_stat_identity_propagations_blocked() { stats.identity_propagations_blocked++; };
 
         void increment_stat_identities_joined() { stats.identities_joined++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined++; };
-        void increment_stat_OSK_instantiations() { stats.OSK_instantiations++; if (current_recording_chunk) current_recording_chunk->stats.OSK_instantiations++; };
         void increment_stat_operational_constraints() { stats.operational_constraints++; if (current_recording_chunk) current_recording_chunk->stats.operational_constraints++; };
+        void increment_stat_identities_participated(int pCount = 1) { stats.identities_participated += pCount; if (current_recording_chunk) current_recording_chunk->stats.identities_participated += pCount; };
 
         /* Only occur with the explainer on */
-        void increment_stat_identities_joined_variable() { stats.identities_joined_variable++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_variable++; };
-        void increment_stat_identities_joined_singleton() { stats.identities_joined_singleton++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_singleton++; };
-        void increment_stat_identities_joined_child_results() { stats.identities_joined_child_results++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_child_results++; };
-        void increment_stat_identities_literalized_rhs_literal() { stats.identities_literalized_rhs_literal++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_rhs_literal++; };
-        void increment_stat_identities_literalized_lhs_literal() { stats.identities_literalized_lhs_literal++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_lhs_literal++; };
-        void increment_stat_identities_literalized_rhs_func_arg() { stats.identities_literalized_rhs_func_arg++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_rhs_func_arg++; };
-        void increment_stat_identities_literalized_rhs_func_compare() { stats.identities_literalized_rhs_func_compare++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_rhs_func_compare++; };
-        void increment_stat_identities_participated(int pCount = 1) { stats.identities_participated += pCount; if (current_recording_chunk) current_recording_chunk->stats.identities_participated += pCount; };
+        void increment_stat_identities_literalized() { stats.identities_literalized++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized++; };
 
         uint64_t get_stat_succeeded() { return stats.chunks_succeeded; };
         uint64_t get_stat_chunks_attempted() { return stats.chunks_attempted; };

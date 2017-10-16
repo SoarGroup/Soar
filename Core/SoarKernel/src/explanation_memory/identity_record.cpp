@@ -47,36 +47,17 @@ void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pT
     lMapping->mappingType = pType;
     lInstMappingList->push_back(lMapping);
 
-    #ifdef EBC_DETAILED_STATISTICS
     switch (lMapping->mappingType)
     {
-        case IDS_join:
-            thisAgent->explanationMemory->increment_stat_identities_joined_variable();
-            break;
-        case IDS_unified_with_singleton:
-            thisAgent->explanationMemory->increment_stat_identities_joined_singleton();
-            break;
-        case IDS_unified_child_result:
-            thisAgent->explanationMemory->increment_stat_identities_joined_child_results();
-            break;
         case IDS_literalized_LHS_literal:
-            thisAgent->explanationMemory->increment_stat_identities_literalized_lhs_literal();
-            break;
         case IDS_literalized_RHS_literal:
-            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_literal();
-            break;
         case IDS_literalized_RHS_function_arg:
-            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_func_arg();
-            break;
         case IDS_literalized_RHS_function_compare:
-            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_func_compare();
+            thisAgent->explanationMemory->increment_stat_identities_literalized();
             break;
         default:
-            assert(false);
             break;
     }
-    #endif
-
 }
 
 void identity_record::clean_up()
@@ -157,12 +138,10 @@ void identity_record::analyze_chunk_identities(uint64_t pInstID, condition* lhs)
 
     /* MToDo | Might need to generate identity sets for RHS as well (for unbound vars) */
 
-    #ifdef EBC_DETAILED_STATISTICS
     for (auto it = identities_in_chunk->begin(); it != identities_in_chunk->end(); ++it)
     {
         thisAgent->explanationMemory->increment_stat_identities_participated();
     }
-    #endif
 
 }
 

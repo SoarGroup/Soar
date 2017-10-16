@@ -133,8 +133,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
-        thisAgent->explanationMemory->increment_stat_seen_instantations_backtraced();
-        dprint(DT_BACKTRACE, "... already backtraced through.\n");
         return;
     }
 
@@ -227,11 +225,6 @@ void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, uint64
 {
     cons* l_OSK_prefs;
     preference* p;
-
-    #ifdef EBC_DETAILED_STATISTICS
-    thisAgent->explanationMemory->increment_stat_OSK_instantiations();
-    #endif
-
 
     for (l_OSK_prefs = pOSKPrefList; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
     {
