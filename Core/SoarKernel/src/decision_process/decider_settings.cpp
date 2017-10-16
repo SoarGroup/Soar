@@ -65,8 +65,6 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     add(reset_cmd);
     stop_cmd = new soar_module::boolean_param("stop", on, new soar_module::f_predicate<boolean>());
     add(stop_cmd);
-//    run_cmd = new soar_module::boolean_param("run", on, new soar_module::f_predicate<boolean>());
-//    add(run_cmd);
     version_cmd = new soar_module::boolean_param("version", on, new soar_module::f_predicate<boolean>());
     add(version_cmd);
 
@@ -100,6 +98,7 @@ void decider_param_container::print_status(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Disabled:", disabledStr.c_str(), 55).c_str());
     outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Number of rules:", std::to_string(totalProductions).c_str(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Number of chunks:", std::to_string(thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE]).c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Decisions", std::to_string(thisAgent->d_cycle_count).c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Elaborations", std::to_string(thisAgent->e_cycle_count).c_str(), 55).c_str());
     outputManager->printa(thisAgent,    "-------------------------------------------------------\n");

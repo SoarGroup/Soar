@@ -369,29 +369,20 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     dprint_noprefix(DT_REORDERER, "%1", *lhs_top);
     dprint_noprefix(DT_REORDERER, "Actions:\n");
     dprint_noprefix(DT_REORDERER, "%2", *rhs_top);
-    thisAgent->explanationBasedChunker->ebc_timers->reorder->start();
 
     if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms, add_ungrounded_rhs))
     {
-        thisAgent->explanationBasedChunker->ebc_timers->reorder->stop();
         /* If there are problems on the LHS, we need the ungrounded_syms
          * from them, before we return.  So we call, reorder_lhs too.
          * Note ungrounded_syms is null when not called for a chunk. */
         if (add_ungrounded_lhs)
         {
-            thisAgent->explanationBasedChunker->ebc_timers->repair->start();
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
-            thisAgent->explanationBasedChunker->ebc_timers->repair->stop();
         }
         return false;
     }
     lhs_good = reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms, add_ungrounded_lhs);
-    thisAgent->explanationBasedChunker->ebc_timers->reorder->stop();
-    if (!lhs_good)
-    {
-        return false;
-    }
-
+    if (!lhs_good) return false;
     return true;
 }
 

@@ -1087,8 +1087,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     int64_t index;
     Symbol** cell;
 
-    thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->start();
-
     //debug_refcount_change_start(thisAgent, true);
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.architecture_inst_symbol, prod, tok, w);
     inst->next = thisAgent->newly_created_instantiations;
@@ -1239,8 +1237,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
     if (isSubGoalMatch) thisAgent->explanationBasedChunker->clear_symbol_identity_map();
-
-    thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->stop();
 
     if (isSubGoalMatch)
     {

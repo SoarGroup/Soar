@@ -289,7 +289,6 @@ void reset_statistics(agent* thisAgent)
 
     thisAgent->WM->wma_timers->reset();
     thisAgent->EpMem->epmem_timers->reset();
-    thisAgent->explanationBasedChunker->ebc_timers->reset();
     thisAgent->SMem->timers->reset();
 
     thisAgent->WM->wma_d_cycle_count = 0;

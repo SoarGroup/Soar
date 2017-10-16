@@ -157,10 +157,6 @@ void Explanation_Based_Chunker::join_identities(Identity* lFromJoinSet, Identity
     thisAgent->explanationMemory->increment_stat_identities_joined();
     #endif
 
-    ebc_timers->variablization_rhs->start();
-    ebc_timers->variablization_rhs->stop();
-    ebc_timers->identity_unification->start();
-
     lFromJoinSet->touch();
     lToJoinSet->touch();
 
@@ -194,17 +190,10 @@ void Explanation_Based_Chunker::join_identities(Identity* lFromJoinSet, Identity
             if (lPreviouslyJoinedIdentity->literalized()) lToJoinSet->literalize();
         }
         lToJoinSet->merged_identities->splice(lToJoinSet->merged_identities->begin(), (*lFromJoinSet->merged_identities));
-        /* For use when we try using a vector with a new memory allocator that can handle variable size allocations */
-        //lToJoinSet->identity_sets->insert(
-        //    lToJoinSet->identity_sets->end(),
-        //    std::make_move_iterator(lFromJoinSet->identity_sets->begin()),
-        //    std::make_move_iterator(lFromJoinSet->identity_sets->end())
-        //  );
         delete lFromJoinSet->merged_identities;
         lFromJoinSet->merged_identities = NULL;
     }
     /* The identity set being joined is not on its child identity_sets list, so we add it to other identity set here*/
-//    dprint(DT_UNIFY_IDENTITY_SETS, "Changing join set mapping of %u -> %u to %u -> %u\n", lFromJoinSet->idset_id, lFromJoinSet->super_join->idset_id, lFromJoinSet->idset_id, lToJoinSet->idset_id);
     lToJoinSet->merged_identities->push_back(lFromJoinSet);
 
     /* Propagate literalization and constraint info */
@@ -212,8 +201,6 @@ void Explanation_Based_Chunker::join_identities(Identity* lFromJoinSet, Identity
 
     /* Point super_join to joined identity set */
     lFromJoinSet->joined_identity = lToJoinSet;
-
-    ebc_timers->identity_unification->stop();
 }
 
 void Explanation_Based_Chunker::update_identities_in_test(test t, instantiation* pInst)
