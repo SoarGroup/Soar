@@ -446,6 +446,8 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_value FROM smem_lti WHERE lti_id=?");
     add(vis_lti_act);
+    vis_lti_spread_act = new soar_module::sqlite_statement(new_db, "SELECT activation_value FROM smem_current_spread_activations WHERE lti_id=?");
+    add(vis_lti_spread_act);
 
     vis_value_const = new soar_module::sqlite_statement(new_db, "SELECT lti_id, tsh1.symbol_type AS attr_type, tsh1.s_id AS attr_hash, tsh2.symbol_type AS val_type, tsh2.s_id AS val_hash FROM smem_augmentations w, smem_symbols_type tsh1, smem_symbols_type tsh2 WHERE (w.attribute_s_id=tsh1.s_id) AND (w.value_constant_s_id=tsh2.s_id)");
     add(vis_value_const);
