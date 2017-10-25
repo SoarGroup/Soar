@@ -6024,13 +6024,13 @@ EpMem_Manager::EpMem_Manager(agent* myAgent)
      epmem_id_ref_counts = new epmem_id_ref_counter();
 
  #ifdef USE_MEM_POOL_ALLOCATORS
-     epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< std::pair<epmem_node_id,int64_t>, bool > >(thisAgent));
-     epmem_edge_removals = new epmem_edge_removal_map(std::less< std::pair<epmem_node_id,int64_t> >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
+     epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< std::pair<epmem_node_id const,int64_t> const, bool > >(thisAgent));
+     epmem_edge_removals = new epmem_edge_removal_map(std::less< std::pair<epmem_node_id const,int64_t> >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id const, bool > >(thisAgent));
      epmem_wme_adds = new epmem_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
      epmem_id_removes = new epmem_symbol_stack(soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
  #else
      epmem_node_removals = new epmem_id_removal_map();
-     epmem_edge_removals = new epmem_id_removal_map();
+     epmem_edge_removals = new epmem_edge_removal_map();
      epmem_wme_adds = new epmem_symbol_set();
      epmem_id_removes = new epmem_symbol_stack();
  #endif

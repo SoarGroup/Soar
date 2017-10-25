@@ -17,7 +17,6 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest, bool pIsInstanti
             reinstantiate_test(static_cast<test>(c->first), pIsInstantiationCond);
         }
     }
-    //else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
     else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->inst_identity && pTest->data.referent->var->instantiated_sym)
     {
         Symbol* oldSym = pTest->data.referent;
@@ -50,15 +49,9 @@ void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pI
         reinstantiate_test(cond->data.tests.attr_test, pIsInstantiationCond);
         reinstantiate_test(cond->data.tests.value_test, pIsInstantiationCond);
         dprint(DT_REINSTANTIATE, "Reinstantiated condition is now %l\n", cond);
-        #ifdef EBC_SANITY_CHECK_RULES
-        sanity_justification_test(cond->data.tests.id_test, pIsNCC);
-        sanity_justification_test(cond->data.tests.attr_test, pIsNCC);
-        sanity_justification_test(cond->data.tests.value_test, pIsNCC);
-        #endif
     } else {
         reinstantiate_condition_list(cond->data.ncc.top, pIsInstantiationCond, true);
     }
-
 }
 
 condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
@@ -192,8 +185,6 @@ condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 
     condition* returnConds = reinstantiate_lhs(m_lhs);
 
-    /* If this was a chunk failure that is being reverted to a justification, we must
-     * reinstantiate the actions as well */
     if (m_rule_type == ebc_justification)
     {
         reinstantiate_actions(m_rhs);

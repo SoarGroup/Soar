@@ -22,23 +22,6 @@
 
 #include <sstream>
 
- /* DEBUG_TRACE_REFCOUNT_FOR prints refcount trace messages for a specific Soar
-  * identifier.  You must enable DT_ID_LEAKING to see the messages printing.
-  * DEBUG_MAC_STACKTRACE enables the building of a small library to print the
-  * call stack within debug messages. Tested on OSX only.
-  * Note: DEBUG_TRACE_REFCOUNT_FOR is currently dependent on DEBUG_MAC_STACKTRACE.
-  *       This could be changed by commenting out the code that prints the stack
-  *       in the symbol and symbol_manager code.*/
-
-#ifndef SOAR_RELEASE_VERSION
-    //#define DEBUG_TRACE_REFCOUNT_FOR "D1"
-    //#define DEBUG_MAC_STACKTRACE
-
-    #ifdef DEBUG_MAC_STACKTRACE
-    void get_stacktrace(std::string& return_string);
-    #endif
-#endif
-
 /* -- Forward declarations needed for symbol base struct -- */
 
 struct floatSymbol;
@@ -91,20 +74,14 @@ typedef struct EXPORT symbol_struct
     smem_hash_id smem_hash;
     uint64_t smem_valid;
 
-#ifdef SOAR_RELEASE_VERSION
     union
     {
-#endif
-
         floatSymbol* fc;
         idSymbol*    id;
         varSymbol*   var;
         intSymbol*   ic;
         strSymbol*   sc;
-
-#ifdef SOAR_RELEASE_VERSION
     };
-#endif
 
     bool        is_sti()        { return (symbol_type == IDENTIFIER_SYMBOL_TYPE); }
     bool        is_variable()   { return (symbol_type == VARIABLE_SYMBOL_TYPE); }

@@ -121,15 +121,14 @@ typedef struct preference_struct
     Symbol*                         value;
     Symbol*                         referent;
 
-    /* Identity information used by EBC */
-    identity_set_quadruple          identities;                  /* identity sets for all four elements */
-    identity_quadruple              inst_identities;                /* identities for a preferences in relation to instantiation that created*/
-    identity_quadruple              chunk_inst_identities;          /* identities for a result preference in relation to chunk formed*/
-    rhs_quadruple                   rhs_func_inst_identities;       /* identities of syms in rhs functions*/
-    rhs_quadruple                   rhs_func_chunk_inst_identities; /* identities of syms in chunk instantiation's rhs functions */
+    identity_set_quadruple          identities;                             /* identity sets for all four elements */
+    identity_quadruple              inst_identities;                        /* identities for a preferences in relation to instantiation that created*/
+    identity_quadruple              chunk_inst_identities;                  /* identities for a result preference in relation to chunk formed*/
+    rhs_quadruple                   rhs_func_inst_identities;               /* identities of syms in rhs functions*/
+    rhs_quadruple                   rhs_func_chunk_inst_identities;         /* identities of syms in chunk instantiation's rhs functions */
 
-    bool_quadruple                  was_unbound_vars;               /* Whether a RHS variable is a newly created unbound RHS var.  Used by re-orderer */
-    action*                         parent_action;                  /* Action that created pref.  Used by the explainer */
+    bool_quadruple                  was_unbound_vars;                       /* Whether a RHS variable is a newly created unbound RHS var.  Used by re-orderer */
+    action*                         parent_action;                          /* Action that created pref.  Used by the explainer */
 
     struct slot_struct*             slot;
     struct preference_struct*       next, *prev;                            /* dll of pref's of same type in same slot */
@@ -148,8 +147,6 @@ typedef struct preference_struct
     double                          rl_rho;                                 /* ratio of target policy to behavior policy */
 
     wme_set*                        wma_o_set;
-
-    uint64_t                        p_id;                                   /* This is an ID used by DEBUG_PREFERENCE_INVENTORY */
 } preference;
 
 preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent = NULL,

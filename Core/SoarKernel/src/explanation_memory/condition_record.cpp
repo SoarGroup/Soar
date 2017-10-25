@@ -18,7 +18,6 @@
 #include "test.h"
 #include "working_memory.h"
 #include "visualize.h"
-#include "xml.h"
 
 void simplify_identity_in_test(agent* thisAgent, test t, bool isChunkInstantiation)
 {
@@ -61,7 +60,7 @@ void simplify_identity_in_test(agent* thisAgent, test t, bool isChunkInstantiati
     }
 }
 
-bool condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, instantiation_record* pInst, bool isChunkInstantiation)
+void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, instantiation_record* pInst, bool isChunkInstantiation)
 {
     thisAgent = myAgent;
     conditionID = pCondID;
@@ -78,7 +77,6 @@ bool condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
     simplify_identity_in_test(thisAgent, condition_tests.id, isChunkInstantiation);
     simplify_identity_in_test(thisAgent, condition_tests.attr, isChunkInstantiation);
     simplify_identity_in_test(thisAgent, condition_tests.value, isChunkInstantiation);
-    dprint(DT_EXPLAIN_CONDS, "   ...simplified condition: (%t ^%t %t) [(%g ^%g %g)]\n", condition_tests.id, condition_tests.attr, condition_tests.value, condition_tests.id, condition_tests.attr, condition_tests.value);
     test_for_acceptable_preference = pCond->test_for_acceptable_preference;
 
     set_matched_wme_for_cond(pCond);
@@ -88,13 +86,9 @@ bool condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
         wme_level_at_firing = pCond->bt.level;
     } else if (condition_tests.id->eq_test->data.referent->is_sti())
     {
-        assert (condition_tests.id->eq_test->data.referent->id->level);
-    	//assert (condition_tests.id->eq_test->data.referent->id->thisAgent);		// CBC patch: assures that the structure exists up to id, allows level to == 0
         wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
-        dprint(DT_EXPLAIN_CONDS, "   No backtrace level found.  Setting condition level to id's current level %d.\n", wme_level_at_firing);
     } else {
         wme_level_at_firing = 0;
-        dprint(DT_EXPLAIN_CONDS, "   No backtrace level or sti identifier found.  Setting condition level to 0.\n", wme_level_at_firing);
     }
 
     /* Cache the pref to make it easier to connect this condition to the action that created
@@ -105,42 +99,20 @@ bool condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
 
     if (pCond->bt.trace)
     {
-    	//RETRY:
         if (isChunkInstantiation)
         {
             assert(pCond->explain_inst);
             my_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->explain_inst);
-            assert(my_instantiation);	// fails if the instantiations list doesn't contain pCond->explain_inst
-            /*if (!my_instantiation) {	// CBC crash patch
-            	std::ostringstream message;
-            	message << "\nERROR: condition's instantiation not found. Probably a duplicate condition. Ignoring.";
-            	thisAgent->outputManager->printa_sf(thisAgent, message.str().c_str());
-            	xml_generate_verbose(thisAgent, message.str().c_str());
-            	//return false;
-            	isChunkInstantiation = false;
-            	goto RETRY;
-            }*/
+            assert(my_instantiation);
 
             cached_pref = pCond->bt.trace;
             parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
-
-            dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for chunk instantiation cond %l is now %u %u %u\n", pCond, my_instantiation ? my_instantiation->get_instantiationID() : 0, parent_instantiation ? parent_instantiation->get_instantiationID() : 0, cached_pref ? cached_pref->p_id : 0);
-            if (pCond->bt.trace)
-            {
-                dprint(DT_EXPLAIN_CONDS, "   (parent inst record found %s) inst match level %d, pref level %d, pref inst i%u, explain inst i%u\n", parent_instantiation ? "Yes" : "No", thisAgent->explanationBasedChunker->get_inst_match_level(), pCond->bt.trace->level, pCond->bt.trace->inst->i_id, pCond->explain_inst->i_id);
-                dprint(DT_EXPLAIN_CONDS, "   (bt pref id %u) (bt pref found id %u) (explain pref id %u)\n", pCond->bt.trace ? pCond->bt.trace->p_id : 0, cached_pref ? cached_pref->p_id : 0);
-
-            }
         }
         else
         {
             cached_pref = pCond->bt.trace;
             parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
             my_instantiation = pInst;
-
-            dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for cond %l is now %u %u %u\n", pCond, my_instantiation->get_instantiationID(), parent_instantiation ? parent_instantiation->get_instantiationID() : 0, cached_pref ? cached_pref->p_id : 0);
-            dprint(DT_EXPLAIN_CONDS, "   (parent inst record found %s)  inst match level %d, pref level %d, pref inst i%u\n", parent_instantiation ? "Yes" : "No", thisAgent->explanationBasedChunker->get_inst_match_level(), pCond->bt.trace->level, pCond->bt.trace->inst->i_id);
-            dprint(DT_EXPLAIN_CONDS, "   (bt pref id %u) (bt pref found id %u) (explain pref id %u)\n", pCond->bt.trace ? pCond->bt.trace->p_id : 0, cached_pref ? cached_pref->p_id : 0);
         }
     } else {
         cached_pref = NULL;
@@ -150,10 +122,7 @@ bool condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
         } else  {
             my_instantiation = pInst;
         }
-        dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for cond with no pref %l is now %u %u N/A\n", pCond, my_instantiation ? my_instantiation->get_instantiationID() : 0, parent_instantiation ? parent_instantiation->get_instantiationID() : 0);
     }
-    dprint(DT_EXPLAIN_CONDS, "   Done creating condition %u.\n", conditionID);
-    return true;
 }
 
 void condition_record::clean_up()
@@ -164,7 +133,6 @@ void condition_record::clean_up()
     deallocate_test(thisAgent, condition_tests.attr);
     deallocate_test(thisAgent, condition_tests.value);
 
-    dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme.id, matched_wme.attr, matched_wme.value);
     if (matched_wme.id) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.id);
     if (matched_wme.attr) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.attr);
     if (matched_wme.value) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.value);
@@ -173,7 +141,6 @@ void condition_record::clean_up()
     {
         delete path_to_base;
     }
-    dprint(DT_EXPLAIN_CONDS, "   Done deleting condition record c%u\n", conditionID);
 }
 
 void condition_record::connect_to_action()
@@ -186,7 +153,6 @@ void condition_record::connect_to_action()
     } else {
         dprint(DT_EXPLAIN_CONNECT, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
     }
-//    cached_pref = NULL;
 }
 
 void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel, bool isChunkInstantiation)
@@ -206,7 +172,6 @@ void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel, bool 
 
 void condition_record::update_condition(condition* pCond, instantiation_record* pInst, bool isChunkInstantiation)
 {
-    //dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);
     if (!matched_wme.id)
     {
         set_matched_wme_for_cond(pCond);
@@ -228,8 +193,6 @@ void condition_record::update_condition(condition* pCond, instantiation_record* 
 
 void condition_record::set_matched_wme_for_cond(condition* pCond)
 {
-    /* bt info wme doesn't seem to always exist (maybe just for terminal nodes), so
-     * we use actual tests if we know it's a literal condition because identifier is STI */
     if (condition_tests.id->eq_test->data.referent->is_sti() &&
         !condition_tests.attr->eq_test->data.referent->is_variable() &&
         !condition_tests.attr->eq_test->data.referent->is_variable())

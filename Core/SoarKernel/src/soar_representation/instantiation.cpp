@@ -26,7 +26,6 @@
 #include "agent.h"
 #include "callback.h"
 #include "condition.h"
-#include "debug_inventories.h"
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -628,8 +627,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                     else if (rhs_value_is_symbol(act->id))
                     {
                         Symbol* lSym = rhs_value_to_symbol(act->id);
-                        /* -- Not sure rhs id can even be a symbol at this point.  Temporary warning here. -- */
-                        thisAgent->outputManager->printa_sf(thisAgent, "ERROR!  Unexpected symbol %y in calculate_support_for_instantiation_preferences().\n", lSym);
                         if (lSym->is_state())
                         {
                             operator_proposal = true;
@@ -825,9 +822,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 thisAgent->explanationBasedChunker->force_id_to_identity_mapping(cond->data.tests.value_test->eq_test->inst_identity, cond->bt.wme_->local_singleton_value_identity_set);
                 set_test_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.wme_->local_singleton_id_identity_set);
                 set_test_identity(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_value_identity_set);
-               #ifdef EBC_DETAILED_STATISTICS
-                thisAgent->explanationMemory->increment_stat_identities_propagated_local_singleton();
-                #endif
+                thisAgent->explanationMemory->increment_stat_identity_propagations();
             }
             if (lDoIdentities)
             {
@@ -1062,7 +1057,6 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     {
         thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
     }
-    IDI_add(thisAgent, inst);
 }
 
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
@@ -1089,9 +1083,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     int64_t index;
     Symbol** cell;
 
-    thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->start();
-
-    //debug_refcount_change_start(thisAgent, true);
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.architecture_inst_symbol, prod, tok, w);
     inst->next = thisAgent->newly_created_instantiations;
     thisAgent->newly_created_instantiations = inst;
@@ -1242,22 +1233,14 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
     if (isSubGoalMatch) thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
-    thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->stop();
-
     if (isSubGoalMatch)
     {
         /* Copy any operator selection knowledge preferences for conditions of this instantiation */
         thisAgent->explanationBasedChunker->copy_OSK(inst);
 
-        //debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
-
         /* build chunks/justifications if necessary */
         thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
         thisAgent->explanationBasedChunker->learn_rule_from_instance(inst, &(thisAgent->newly_created_instantiations));
-    }
-    else
-    {
-        //debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
     }
 
     if (!thisAgent->system_halted) soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
@@ -1275,7 +1258,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     dprint(DT_DEALLOCATE_INST, "Deallocating instantiation called for %u (%y)\n", inst->i_id, inst->prod_name);
     if (inst->in_newly_created)
     {
-        dprint(DT_DEALLOCATE_INST, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
         if (!inst->in_newly_deleted)
         {
             inst->in_newly_deleted = true;
@@ -1296,9 +1278,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     {
         lInst = *next_iter;
         ++next_iter;
-        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation: Stage 1 (prefs) for %u (%y)\n", lInst->i_id, lInst->prod_name);
-        //dprint(DT_DEALLOCATE_INST,  "Deallocating instantiation for match of %y (%u) in %y (%d) : \n%5", lInst->prod_name, lInst->i_id, lInst->match_goal, static_cast<long long>(lInst->match_goal_level), lInst->top_of_instantiated_conditions, lInst->preferences_generated);
-        //debug_refcount_change_start(thisAgent, false);
         lProdName = lInst->prod_name ? lInst->prod_name->sc->name : NULL;
 
         for (condition* cond = lInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
@@ -1349,8 +1328,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             preference* next;
                             bool has_active_clones = false;
 
-                            dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) looking for clones of preference %p (%u) at level %d...\n", lPref, lPref->p_id, static_cast<int64_t>(lPref->level));
-
                             for (clone = lPref->next_clone; clone != NIL; clone = clone->next_clone)
                                 if (clone->reference_count) has_active_clones = true;
                             if (has_active_clones) continue;
@@ -1358,10 +1335,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                                 if (clone->reference_count) has_active_clones = true;
                             if (has_active_clones)
                             {
-                                dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) found clones of %p (%u) at level %d.  Not deallocating.\n", lPref, lPref->p_id, static_cast<int64_t>(lPref->level));
                                 continue;
                             }
-                            dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating clones of %p (%u) at level %d...\n", lPref, lPref->p_id, static_cast<int64_t>(lPref->level));
                             clone = lPref->next_clone;
                             while (clone)
                             {
@@ -1382,7 +1357,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                              * ------------------------------ */
                             if (lPref->in_tm)
                             {
-                                dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) removing from temporary memory %p (%u) at level %d...\n", lPref, lPref->p_id, static_cast<int64_t>(lPref->level));
                                 remove_preference_from_tm(thisAgent, lPref);
                             }
                             if (lPref->on_goal_list)
@@ -1406,56 +1380,32 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                 }
             }
         }
-        //debug_refcount_change_end(thisAgent, lProdName, "instantiation deallocation: wme and clones", false);
     }
 
-    /* --------------------------------------------------
-     * deallocate_preference() part 2 (cleans up bt pref)
-     * -------------------------------------------------- */
-    //debug_refcount_change_start(thisAgent, false);
     while (!cond_stack.empty())
     {
         condition* temp = cond_stack.back();
         cond_stack.pop_back();
 
-        dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating preference %p (%u) at level %d...\n", temp->bt.trace, temp->bt.trace->p_id, static_cast<int64_t>(temp->bt.trace->level));
         deallocate_preference_contents(thisAgent, temp->bt.trace, true);
     }
 
-//    condition* cond_temp;
-//    for  (condition_list::iterator cond_it = cond_stack.begin(), end = cond_stack.end(); cond_it != end; ++cond_it)
-//    {
-//        cond_temp = *cond_it;
-//        dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating preference %p (%u) at level %d...\n", cond_temp->bt.trace, cond_temp->bt.trace->p_id, static_cast<int64_t>(cond_temp->bt.trace->level));
-//        deallocate_preference_contents(thisAgent, cond_temp->bt.trace, true);
-//    }
-
-    //debug_refcount_change_end(thisAgent, "All conds", "instantiation deallocation: cumulative bt pref cleanup", false);
-
     // free instantiations in the reverse order
 
-    dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) processing deallocation list built from %u (%y)\n", inst->i_id, inst->prod_name);
     for (inst_list::reverse_iterator riter = l_instantiation_list.rbegin(); riter != l_instantiation_list.rend(); ++riter)
     {
         instantiation* lDelInst = *riter;
         lProdName = lDelInst->prod_name ? lDelInst->prod_name->sc->name : NULL;
 
-        //debug_refcount_change_start(thisAgent, false);
-        dprint(DT_MILESTONES, "Deallocating instantiation for %u (%y)\n", lDelInst->i_id, lDelInst->prod_name);
-        dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) deallocating instantiation: %u (%y)\n", lDelInst->i_id, lDelInst->prod_name);
-
         deallocate_condition_list(thisAgent, lDelInst->top_of_instantiated_conditions);
 
         /* Clean up operator selection knowledge */
-        dprint(DT_DEALLOCATE_PREF, "Stage 2 (instantiations) freeing OSK Lists for inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
         if (lDelInst->OSK_prefs)
         {
-            dprint(DT_OSK, "Cleaning up OSK preference contained in inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
             clear_preference_list(thisAgent, lDelInst->OSK_prefs);
         }
         if (lDelInst->OSK_proposal_prefs)
         {
-            dprint(DT_OSK, "Cleaning up OSK proposal preference contained in inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
             /* These prefs did not have their refcounts increased, so we don't want to call clear_preference_list */
             free_list(thisAgent, lDelInst->OSK_proposal_prefs);
             lDelInst->OSK_proposal_prefs = NULL;
@@ -1466,23 +1416,18 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         }
 
         /* Clean up preferences cached for possible explanations */
-        dprint(DT_DEALLOCATE_PREF, "Stage 2 (instantiations) deallocating cached prefs for inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
         preference* next_pref;
         while (lDelInst->preferences_cached)
         {
             next_pref = lDelInst->preferences_cached->inst_next;
-            dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation i%u (match of %y): p%u (^%y ^%y ^%y) at level %d\n", lDelInst->i_id, lDelInst->prod_name, lDelInst->preferences_cached->p_id,
-                lDelInst->preferences_cached->id, lDelInst->preferences_cached->attr, lDelInst->preferences_cached->value, static_cast<int64_t>(lDelInst->preferences_cached->level));
             deallocate_preference(thisAgent, lDelInst->preferences_cached, true);
             lDelInst->preferences_cached = next_pref;
         }
 
-        dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) deallocating prod and final deallocation of inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
         thisAgent->symbolManager->symbol_remove_ref(&lDelInst->prod_name);
 
         if (lDelInst->prod)
         {
-            dprint(DT_DEALLOCATE_PROD, "  Removing production reference for i %u (%y = %d).\n", lDelInst->i_id, lDelInst->prod->name, lDelInst->prod->reference_count);
             if ((lDelInst->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (lDelInst->prod->reference_count == 1))
             {
                 /* We are about to remove a justification that has not been excised from the rete.
@@ -1495,15 +1440,10 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             }
         }
 
-        //debug_refcount_change_end(thisAgent, lProdName, "final cleanup", false);
-        IDI_remove(thisAgent, lDelInst->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, lDelInst);
     }
-    dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) has finished deallocating all instantiations in list.  Deallocating identity sets...\n");
 
     inst = NULL;
-
-    dprint(DT_DEALLOCATE_INST, "All stages of deallocate_instantiation() call complete.\n");
 }
 
 /* -----------------------------------------------------------------------
@@ -1528,7 +1468,6 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     /* retract any preferences that are in TM and aren't o-supported */
     pref = inst->preferences_generated;
 
-    //debug_refcount_change_start(thisAgent, true);
     while (pref != NIL)
     {
         next = pref->inst_next;
@@ -1559,7 +1498,6 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         }
         pref = next;
     }
-    //debug_refcount_change_end(thisAgent, "Instantiation ", "retraction", true);
     /* prod may not exist if rule was manually excised */
     if (inst->prod)
     {
@@ -1590,7 +1528,6 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
 
     /* mark as no longer in MS, and possibly deallocate  */
     inst->in_ms = false;
-    dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for retraction.\n", inst->i_id, inst->prod_name);
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 

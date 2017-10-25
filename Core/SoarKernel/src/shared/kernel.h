@@ -71,15 +71,11 @@
 /* =============================== */
 #ifdef SOAR_RELEASE_VERSION
 
-    #define EBC_DETAILED_STATISTICS
-
     //#define MEMORY_POOL_STATS
     #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1
-//        #define USE_UNORDERED_STL
     #endif
-
 #else
 
     /* Memory settings */
@@ -89,7 +85,6 @@
     #define MEM_POOLS_ENABLED 1             /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
-        //#define USE_UNORDERED_STL           /* Whether to use unordered STL structures that don't use memory pools instead of ordered ones that do */
     #endif
 
     /* The following provide trace messages that could not be easily switch to dprints */
@@ -98,36 +93,6 @@
     //#define DEBUG_GDS             /* Use DT_GDS and DT_GDS_HIGH.  This setting just adds parent instantiations that it recurses through */
     //#define DEBUG_INCOMING_SML    /* Prints message coming in via KernelSML::ProcessIncomingSML */
 
-    /* Only used for EBC debugging and experimentation */
-    //#define EBC_SANITY_CHECK_RULES
-    //#define EBC_DONT_PROPAGATE_IDENTITIES
-    #define EBC_DETAILED_STATISTICS
-    #define EBC_DEBUG_STATISTICS
-    #define EBC_DETAILED_TIMERS
-
-    //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting that increments and decrements for identifiers in attribute elements*/
-
-    //#define DEBUG_REFCOUNT_CHANGE_REGIONS
-    //#define DEBUG_TRACE_IDSET_REFCOUNTS
-
-    /* The debug inventories are a tool to keep track of instantiations/prefs/wme
-     * allocation/deallocation manually using numeric IDs to see if any are still
-     * around at soar init or exit.  Code that changes refcounts are instrumented
-     * to add these counts.  Compiled out in optimized build.
-     *
-     * Note: Unit tests that use multiple agents will fail if inventories are enabled. If
-     *       someone wanted to use this stuff with multiple agents, they'd need to refactor
-     *       the code to be agent specific. */
-
-    //#define DEBUG_GDS_INVENTORY
-    //#define DEBUG_INSTANTIATION_INVENTORY
-    //#define DEBUG_PREFERENCE_INVENTORY
-    //#define DEBUG_WME_INVENTORY
-    //#define DEBUG_IDSET_INVENTORY
-    //#define DEBUG_RHS_SYMBOL_INVENTORY
-    //#define DEBUG_RHS_FUNCTION_INVENTORY
-    //#define DEBUG_ACTION_INVENTORY
-    //#define DEBUG_TEST_INVENTORY
 #endif
 
 #endif

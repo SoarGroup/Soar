@@ -45,9 +45,7 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
             new_constraint->constraint_test = ctest;
             dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
             constraints->push_back(new_constraint);
-            #ifdef EBC_DETAILED_STATISTICS
-                thisAgent->explanationMemory->increment_stat_constraints_collected();
-            #endif
+            thisAgent->explanationMemory->increment_stat_constraints_collected();
         }
     }
 }
@@ -108,9 +106,7 @@ void Explanation_Based_Chunker::attach_relational_test(test pRelational_test, co
     {
         add_test(thisAgent, &(pCond->data.tests.id_test), pRelational_test, true);
     }
-    #ifdef EBC_DETAILED_STATISTICS
-        thisAgent->explanationMemory->increment_stat_constraints_attached();
-    #endif
+    thisAgent->explanationMemory->increment_stat_constraints_attached();
 }
 
 void Explanation_Based_Chunker::add_additional_constraints()

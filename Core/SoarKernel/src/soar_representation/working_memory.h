@@ -33,7 +33,6 @@
 
 #include "kernel.h"
 
-#include "debug_inventories.h"
 #include "stl_typedefs.h"
 #include "semantic_memory.h"
 #include "symbol.h"
@@ -103,8 +102,8 @@ typedef struct wme_struct
     struct condition_struct*    chunker_bt_last_ground_cond;
     bool                        is_singleton;
     bool                        singleton_status_checked;
-    Identity*                local_singleton_id_identity_set;
-    Identity*                local_singleton_value_identity_set;
+    Identity*                   local_singleton_id_identity_set;
+    Identity*                   local_singleton_value_identity_set;
 
     struct gds_struct*          gds;
     struct wme_struct*          gds_next, *gds_prev;   /* wmes in gds */
@@ -114,10 +113,6 @@ typedef struct wme_struct
 
     wma_decay_element*          wma_decay_el;
     tc_number                   wma_tc_value;
-
-    #ifdef DEBUG_WME_INVENTORY
-    uint64_t                    w_id;                   /* used by WME debug inventory mechanism */
-    #endif
 } wme;
 
 inline void wme_add_ref(wme* w, bool always_add = false)

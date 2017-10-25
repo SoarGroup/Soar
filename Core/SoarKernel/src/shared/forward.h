@@ -77,7 +77,6 @@ class cli_command_params;
 class decide_param_container;
 class load_param_container;
 class save_param_container;
-class memory_param_container;
 class production_param_container;
 class wm_param_container;
 
@@ -161,12 +160,5 @@ extern void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes]);
 extern void debug_trace_set(int dt_num, bool pEnable);
 extern void debug_trace_on();
 extern void debug_trace_off();extern bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
-extern bool break_if_pref_matches_string(preference *w, const char* match_id, const char* match_attr, const char* match_value);
-extern bool break_if_symbol_matches_string(Symbol* sym, const char* match);
-extern bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
-extern bool break_if_bool(bool shouldBreak);
-extern bool break_if_test_symbol_matches_string(test t, const char* match);
-extern void debug_refcount_change_start(agent* thisAgent, bool twoPart);
-extern void debug_refcount_change_end(agent* thisAgent, const char* callerName, const char* callerString, bool twoPart);
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_ */

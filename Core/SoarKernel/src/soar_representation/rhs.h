@@ -28,7 +28,6 @@
 
 #include "kernel.h"
 
-#include "debug_inventories.h"
 #include "mem.h"
 
 typedef char* rhs_value;
@@ -39,11 +38,6 @@ typedef struct rhs_struct
     Identity*           identity;
     uint64_t            identity_id_unjoined;   /* cached value only used for the explainer */
     bool                was_unbound_var;        /* used by re-orderer */
-
-    #ifdef DEBUG_RHS_SYMBOL_INVENTORY
-    uint64_t            r_id;
-    #endif
-
 } rhs_info;
 typedef rhs_info* rhs_symbol;
 
@@ -86,9 +80,6 @@ typedef struct action_struct
     rhs_value               value;   /* for FUNCALL_ACTION's, this holds the funcall */
     rhs_value               referent;
     SupportType             support;
-    #ifdef DEBUG_RHS_SYMBOL_INVENTORY
-    uint64_t                a_id;
-    #endif
     struct action_struct*   next;
 } action;
 

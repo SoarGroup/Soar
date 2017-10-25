@@ -42,38 +42,21 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
 
     identity_analysis.init(thisAgent);
 
+    stats.instantations_backtraced          = 0;
     stats.duplicates                        = 0;
     stats.tested_local_negation             = false;
-    stats.tested_deep_copy                  = false;
     stats.tested_quiescence                 = false;
     stats.tested_ltm_recall                 = false;
-    stats.reverted                          = false;
-    stats.lhs_unconnected                   = false;
-    stats.rhs_unconnected                   = false;
-    stats.repaired                          = false;
-    stats.repair_failed                     = false;
-    stats.did_not_match_wm                  = false;
-    stats.grounding_conditions_added        = 0;
     stats.merged_conditions                 = 0;
     stats.merged_disjunctions               = 0;
-    stats.merged_disjunction_values         = 0;
-    stats.eliminated_disjunction_values     = 0;
-    stats.instantations_backtraced          = 0;
-    stats.seen_instantations_backtraced     = 0;
     stats.constraints_attached              = 0;
     stats.constraints_collected             = 0;
-
     stats.identities_created                = 0;
     stats.identities_joined                 = 0;
-    stats.identities_joined_variable        = 0;
-    stats.identities_joined_singleton       = 0;
-    stats.identities_joined_child_results   = 0;
-    stats.identities_literalized_rhs_literal= 0;
+    stats.identities_literalized            = 0;
     stats.identities_participated           = 0;
     stats.operational_constraints           = 0;
-    stats.OSK_instantiations                = 0;
-    stats.identities_literalized_rhs_func_arg       = 0;
-    stats.identities_literalized_rhs_func_compare   = 0;
+    stats.repaired                          = false;
 
     dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
 }
@@ -97,9 +80,11 @@ void chunk_record::clean_up()
     dprint(DT_EXPLAIN, "Done deleting chunk record c%u\n", chunkID);
 }
 
-void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
+void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation, ProductionType prodType)
 {
     name = pProduction->name;
+    type = (prodType == CHUNK_PRODUCTION_TYPE) ? ebc_chunk : ebc_justification;
+
     thisAgent->symbolManager->symbol_add_ref(name);
     original_productionID = thisAgent->explanationMemory->add_production_id_if_necessary(pProduction);
     pProduction->save_for_justification_explanation = true;

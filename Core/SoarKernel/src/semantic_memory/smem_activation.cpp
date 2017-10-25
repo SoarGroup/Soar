@@ -348,6 +348,12 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         SQL->act_set->bind_int(2, pLTI_ID);
         SQL->act_set->execute(soar_module::op_reinit);
     }
+    else if (num_edges >= static_cast<uint64_t>(settings->thresh->get_value()) && !already_in_spread_table)
+    {
+        SQL->act_set->bind_double(1, SMEM_ACT_MAX);
+        SQL->act_set->bind_int(2, pLTI_ID);
+        SQL->act_set->execute(soar_module::op_reinit);
+    }
     else if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()) && already_in_spread_table)
     {
         //SQL->act_set->bind_double(1, SMEM_ACT_LOW);
@@ -435,10 +441,10 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                     //children_q->bind_int(2, lti_id);
                     while (children_q->execute() == soar_module::row)
                     {
-                        if (settings->spreading_loop_avoidance->get_value() == on && children_q->column_int(0) == lti_id)
+                        /*if (settings->spreading_loop_avoidance->get_value() == on && children_q->column_int(0) == lti_id)
                         {
                             continue;
-                        }
+                        }*///We actually do want the edge weight to a self-edge to adjust even if we don't use it.
                         old_edge_weight_map_for_children[(uint64_t)(children_q->column_int(0))] = children_q->column_double(1);
                         edge_weight_update_map_for_children[(uint64_t)(children_q->column_int(0))] = 0;
                     }
@@ -1199,7 +1205,9 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 double wma_multiplicative_factor = pre_logd_wma/(1.0+pre_logd_wma);//1;//pre_logd_wma/(1.0+pre_logd_wma);
                 if (!used_wma || pre_logd_wma == 0)
                 {
-                    wma_multiplicative_factor = 1;
+                    //wma_multiplicative_factor = 1; This is actually bad. Since probabilities max at one, I rewarded not having wma.
+                    pre_logd_wma = pow(static_cast<double>(smem_max_cycle+settings->base_unused_age_offset->get_value()),static_cast<double>(-(settings->base_decay->get_value())));
+                    wma_multiplicative_factor = pre_logd_wma/(1.0+pre_logd_wma);
                 }
                 {
                     raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));

@@ -45,9 +45,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
      * This also initializes the ebc_settings array */
     ebc_params = new ebc_param_container(thisAgent, ebc_settings, max_chunks, max_dupes, confidence_threshold); // CBC
 
-    /* Create the timers */
-    ebc_timers = new ebc_timer_container(thisAgent);
-
     /* Create data structures used for EBC */
     instantiation_identities = new sym_to_id_map();
     constraints = new constraint_list();
@@ -72,10 +69,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 Explanation_Based_Chunker::~Explanation_Based_Chunker()
 {
     clear_data();
-
     delete ebc_params;
-    delete ebc_timers;
-
     delete instantiation_identities;
     delete constraints;
     delete inst_id_to_identity_map;
@@ -92,11 +86,10 @@ void Explanation_Based_Chunker::reinit()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
-    ebc_timers->reset();
     inst_id_counter                     = 0;
     prod_id_counter                     = 0;
-    identity_counter                = 0;
-    inst_identity_counter     = 0;
+    identity_counter                    = 0;
+    inst_identity_counter               = 0;
     backtrace_number                    = 0;
     chunk_naming_counter                = 0;
     justification_naming_counter        = 0;
@@ -275,9 +268,6 @@ void Explanation_Based_Chunker::set_up_rule_name()
         m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
-        #ifdef EBC_DEBUG_STATISTICS
-            thisAgent->explanationMemory->increment_stat_justifications_attempted();
-        #endif
     }
 
     if (m_should_print_name)
@@ -304,101 +294,9 @@ void Explanation_Based_Chunker::clear_data()
     }
 }
 
-void Explanation_Based_Chunker::sanity_chunk_test (test pTest)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            sanity_chunk_test(static_cast<test>(c->first));
-        }
-    } else {
-        assert((!test_has_referent(pTest) || !pTest->data.referent->is_sti()) && !pTest->identity);
-    }
-}
-
-void Explanation_Based_Chunker::sanity_chunk_conditions(condition* top_cond)
-{
-    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
-    {
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            sanity_chunk_test(cond->data.tests.id_test);
-            sanity_chunk_test(cond->data.tests.attr_test);
-            sanity_chunk_test(cond->data.tests.value_test);
-        }
-        else
-        {
-            sanity_chunk_conditions(cond->data.ncc.top);
-        }
-    }
-}
-
-void Explanation_Based_Chunker::sanity_justification_test (test pTest, bool pIsNCC)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            sanity_justification_test(static_cast<test>(c->first), pIsNCC);
-        }
-    } else {
-        if (pIsNCC)
-        {
-            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity));
-
-        } else {
-            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable() || !pTest->identity);
-        }
-    }
-}
-
 goal_stack_level Explanation_Based_Chunker::get_inst_match_level()
 {
     if (m_inst)
         return m_inst->match_goal_level;
     else return 0;
 }
-
-ebc_timer_container::ebc_timer_container(agent* new_agent): soar_module::timer_container(new_agent)
-{
-    instantiation_creation = new ebc_timer("1.00 Instantiation creation", thisAgent, soar_module::timer::one);
-    chunk_instantiation_creation = new ebc_timer("2.01 Chunk instantiation creation", thisAgent, soar_module::timer::one);
-    dependency_analysis = new ebc_timer("2.02 Dependency analysis", thisAgent, soar_module::timer::one);
-    identity_unification = new ebc_timer("2.03 Identity unification", thisAgent, soar_module::timer::one);
-    identity_update = new ebc_timer("2.04 Identity transitive updates", thisAgent, soar_module::timer::one);
-    variablization_lhs = new ebc_timer("2.05 Variablizing LHS", thisAgent, soar_module::timer::one);
-    variablization_rhs = new ebc_timer("2.06 Variablizing RHS", thisAgent, soar_module::timer::one);
-    merging = new ebc_timer("2.07 Merging Conditions", thisAgent, soar_module::timer::one);
-    reorder = new ebc_timer("2.08 Validation and reordering", thisAgent, soar_module::timer::one);
-    repair = new ebc_timer("2.09 Rule repair", thisAgent, soar_module::timer::one);
-    reinstantiate = new ebc_timer("2.10 Reinstantiation", thisAgent, soar_module::timer::one);
-    add_to_rete = new ebc_timer("2.11 Adding rule to RETE", thisAgent, soar_module::timer::one);
-    clean_up = new ebc_timer("2.12 EBC Clean-Up", thisAgent, soar_module::timer::one);
-    ebc_total = new ebc_timer("2.13 EBC Total", thisAgent, soar_module::timer::one);
-
-    add(instantiation_creation);
-    add(ebc_total);
-    add(dependency_analysis);
-    add(chunk_instantiation_creation);
-    add(variablization_lhs);
-    add(variablization_rhs);
-    add(merging);
-    add(repair);
-    add(reorder);
-    add(reinstantiate);
-    add(add_to_rete);
-    add(clean_up);
-    add(identity_unification);
-    add(identity_update);
-}
-
-ebc_timer_level_predicate::ebc_timer_level_predicate(agent* new_agent): soar_module::agent_predicate<soar_module::timer::timer_level>(new_agent) {}
-
-bool ebc_timer_level_predicate::operator()(soar_module::timer::timer_level val)
-{
-    return (thisAgent->explanationBasedChunker->ebc_params->timers_cmd->get_value() == on);
-}
-
-ebc_timer::ebc_timer(const char* new_name, agent* new_agent, soar_module::timer::timer_level new_level): soar_module::timer(new_name, new_agent, new_level, new ebc_timer_level_predicate(new_agent)) {}
-

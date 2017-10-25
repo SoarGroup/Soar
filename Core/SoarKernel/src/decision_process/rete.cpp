@@ -3,7 +3,6 @@
 #include "agent.h"
 #include "callback.h"
 #include "condition.h"
-#include "debug_inventories.h"
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -3664,7 +3663,6 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         if (find_var_location(sym, static_cast<rete_node_level>(bottom_depth + 1), &var_loc))
         {
             /* --- Yes, replace it with reteloc --- */
-            RSI_remove(thisAgent, rhs_value_to_rhs_symbol(*rv));
             thisAgent->symbolManager->symbol_remove_ref(&sym);
             thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, *rv);
             *rv = reteloc_to_rhs_value(var_loc.field_num, var_loc.levels_up - 1);
@@ -3684,7 +3682,6 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
             {
                 index = reinterpret_cast<uint64_t>(sym->var->current_binding_value);
             }
-            RSI_remove(thisAgent, rhs_value_to_rhs_symbol(*rv));
             thisAgent->symbolManager->symbol_remove_ref(&sym);
             thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, *rv);
             *rv = unboundvar_to_rhs_value(index);
@@ -7221,7 +7218,6 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
                 push(thisAgent, temp, funcall_list);
             }
             funcall_list = destructively_reverse_list(funcall_list);
-            RFI_add(thisAgent, funcall_list_to_rhs_value(funcall_list));
             rv = funcall_list_to_rhs_value(funcall_list);
             break;
         case 2:

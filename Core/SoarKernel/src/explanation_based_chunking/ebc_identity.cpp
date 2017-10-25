@@ -2,7 +2,6 @@
 #include "ebc.h"
 
 #include "agent.h"
-#include "debug_inventories.h"
 #include "symbol_manager.h"
 #include "dprint.h"
 
@@ -46,7 +45,6 @@ void Identity::clean_up()
         }
         clean_up_transient();
     }
-    ISI_remove(thisAgent, idset_id);
 }
 
 void Identity::touch()

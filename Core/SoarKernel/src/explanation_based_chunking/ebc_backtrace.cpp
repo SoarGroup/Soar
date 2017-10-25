@@ -113,9 +113,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
 
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
-        ebc_timers->dependency_analysis->stop();
         unify_lhs_rhs_connection(trace_cond, pPref->identities, rhs_funcs);
-        ebc_timers->dependency_analysis->start();
     }
 
     if (thisAgent->explanationMemory->isCurrentlyRecording())
@@ -135,8 +133,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
-        thisAgent->explanationMemory->increment_stat_seen_instantations_backtraced();
-        dprint(DT_BACKTRACE, "... already backtraced through.\n");
         return;
     }
 
@@ -230,11 +226,6 @@ void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, uint64
 {
     cons* l_OSK_prefs;
     preference* p;
-
-    #ifdef EBC_DETAILED_STATISTICS
-    thisAgent->explanationMemory->increment_stat_OSK_instantiations();
-    #endif
-
 
     for (l_OSK_prefs = pOSKPrefList; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
     {
@@ -355,8 +346,6 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
 
-    ebc_timers->dependency_analysis->start();
-
     increment_counter(backtrace_number);
     increment_counter(grounds_tc);
     grounds = NIL;
@@ -385,8 +374,6 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     trace_locals();
 
     outputManager->clear_print_test_format();
-
-    ebc_timers->dependency_analysis->stop();
 
     dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
     dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);

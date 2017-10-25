@@ -10,7 +10,6 @@
 #include "ebc_timers.h"
 
 #include "condition.h"
-#include "debug_inventories.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
@@ -160,14 +159,13 @@ void Explanation_Based_Chunker::unify_lhs_rhs_connection(condition* lhs_cond, id
  *           first condition that matched. */
 void Explanation_Based_Chunker::check_for_singleton_unification(condition* pCond)
 {
-    if (wme_is_a_singleton(pCond->bt.wme_) || ebc_settings[SETTING_EBC_UNIFY_ALL])
+    if (wme_is_a_singleton(pCond->bt.wme_))
     {
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
         dprint(DT_UNIFY_SINGLETONS, "Unifying value element of second condition that matched singleton wme: %l\n", pCond);
         dprint(DT_UNIFY_SINGLETONS, "-- Original condition seen: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
         if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
-            ebc_timers->dependency_analysis->stop();
             if (!pCond->data.tests.value_test->eq_test->identity)
             {
                 thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, last_cond->data.tests.value_test->eq_test->identity, NULL);
@@ -181,7 +179,6 @@ void Explanation_Based_Chunker::check_for_singleton_unification(condition* pCond
                 thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
                 join_identities(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             }
-            ebc_timers->dependency_analysis->start();
         }
     }
     /* The code that sets isa_operator checks if an id is a goal, so don't need to check here */
@@ -196,10 +193,8 @@ void Explanation_Based_Chunker::check_for_singleton_unification(condition* pCond
             Identity* pLCondIDSet = get_joined_identity(last_cond->data.tests.value_test->eq_test->identity);
             if (pCondIDSet != pLCondIDSet)
             {
-                ebc_timers->dependency_analysis->stop();
                 thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
                 join_identities(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
-                ebc_timers->dependency_analysis->start();
             }
         }
     }

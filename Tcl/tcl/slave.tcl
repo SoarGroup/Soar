@@ -313,3 +313,148 @@ proc initializeSlave {} {
 
   reconfigureOutput
 }
+
+# The following is a workaround to deal with a limitation of the Tcl
+# interface.  Alias issues from the command line go through the normal
+# Soar CLI alias mechanism, but aliases used in sourced files do not seem
+# to be, which breaks backwards compatibility.  The following code creates 
+# Tcl-based aliases that parallel the real ones defined in the cli code.  
+
+global defined_aliases
+set defined_aliases {}
+
+proc myalias {{name ""} args} {
+  global defined_aliases print_alias_switch
+  
+  if {[string compare $name ""] == 0} {
+    puts [lsort [set defined_aliases]]
+  } elseif {[string compare $args ""] == 0} {
+    set position [lsearch -exact $defined_aliases $name]
+    if {$position >= 0} {
+      puts "$name: [info body $name]"
+    } else {
+      puts "Error: There is no alias named \"$name\". "
+    }
+  } elseif {[string compare $args "-off"] == 0} {a
+    set position [lsearch -exact $defined_aliases $name]
+    if {$position >= 0} {
+      set defined_aliases [lreplace $defined_aliases $position $position]
+      rename $name {}
+      if {[string compare $print_alias_switch "on"] == 0} {
+        puts "Removing alias \"$name\"."
+      }
+    } else {
+      puts "Error: There is no alias named \"$name\"."
+    }
+  } else {
+    if {[lsearch -exact [info commands] $name] >= 0 | \
+      [lsearch -exact $defined_aliases $name] >= 0 } {
+      puts "Alias Error: \"$name\" already exists as a previously defined alias or command.\nNew alias not created.\n"
+    } else {
+      set defined_aliases [linsert $defined_aliases 0 $name]
+      
+      uplevel #0 "proc $name {args} {
+        if {\$args == \"\"} {
+          $args
+        } else {
+          eval $args \$args
+        }
+      }"
+    }
+  }
+}
+
+myalias a alias
+myalias aw wm add
+myalias chdir cd
+myalias ctf output command-to-file
+myalias d run -d
+myalias dir ls
+myalias e run -e
+myalias ex production excise
+myalias fc production firing-counts
+myalias gds_print print --gds
+myalias inds decide indifferent-selection
+myalias init soar init
+myalias interrupt soar stop
+myalias is soar init
+myalias man help
+myalias p print
+myalias pc print --chunks
+myalias ps print --stack
+myalias pw production watch
+myalias quit exit
+myalias r run
+myalias rn load rete-network
+myalias rw wm remove
+myalias s run 1
+myalias set-default-depth output print-depth
+myalias ss soar stop
+myalias st stats
+myalias step run -d
+myalias stop soar stop
+#myalias topd pwd
+myalias un alias -r
+myalias varprint print -v -d 100
+myalias w trace
+myalias wmes print -depth 0 -internal
+
+myalias unalias alias -r
+myalias indifferent-selection decide indifferent-selection
+myalias numeric-indifferent-mode decide numeric-indifferent-mode
+myalias predict decide predict
+myalias select decide select
+#myalias srand decide srand
+
+myalias replay-input load percepts
+myalias rete-net load rete-network
+myalias load-library load library
+# myalias source load file
+myalias capture-input save percepts
+
+myalias pbreak production break
+myalias excise production excise
+myalias production-find production find
+myalias firing-counts production firing-counts
+myalias matches production matches
+myalias memories production memory-usage
+myalias multi-attributes production optimize-attribute
+myalias pwatch production watch
+
+myalias add-wme wm add
+myalias wma wm activation
+myalias remove-wme wm remove
+myalias watch-wmes wm watch
+
+myalias allocate debug allocate
+myalias internal-symbols debug internal-symbols
+myalias port debug port
+#myalias time debug time
+
+myalias init-soar soar init
+myalias stop-soar soar stop
+myalias gp-max soar max-gp
+myalias max-dc-time soar max-dc-time
+myalias max-elaborations soar max-elaborations
+myalias max-goal-depth soar max-goal-depth
+myalias max-memory-usage soar max-memory-usage
+myalias max-nil-output-cycles soar max-nil-output-cycles
+myalias set-stop-phase soar stop-phase
+myalias soarnews soar
+myalias cli soar tcl
+myalias tcl soar tcl
+myalias timers soar timers
+myalias version soar version
+myalias waitsnc soar wait-snc
+
+myalias chunk-name-format chunk naming-style
+myalias max-chunks chunk max-chunks
+
+myalias clog output log
+myalias command-to-file output command-to-file
+myalias default-wme-depth output print-depth
+myalias echo-commands output echo-commands
+myalias verbose trace -A
+myalias warnings output warnings
+
+myalias watch trace

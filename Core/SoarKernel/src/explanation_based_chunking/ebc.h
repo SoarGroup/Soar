@@ -39,8 +39,6 @@ class Explanation_Based_Chunker
         Explanation_Based_Chunker(agent* myAgent);
         ~Explanation_Based_Chunker();
 
-        ebc_timer_container*    ebc_timers;
-
         /* Settings and cli command related functions */
         ebc_param_container*    ebc_params;
         bool                    ebc_settings[num_ebc_settings];
@@ -310,11 +308,6 @@ class Explanation_Based_Chunker
         void        update_identities_in_rhs_value(const rhs_value pRhs_val);
         action*     convert_results_into_actions();
         action*     convert_result_into_action(preference* result);
-
-        /* Methods to make sure that we didn't create rules that are bad but the RETE would accept */
-        void sanity_chunk_conditions(condition* top_cond);
-        void sanity_chunk_test (test pTest);
-        void sanity_justification_test (test pTest, bool pIsNCC = false);
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);

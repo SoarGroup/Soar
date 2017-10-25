@@ -47,7 +47,6 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     if (rhs_value_is_funcall(rv))
     {
 
-        RFI_remove(thisAgent, rv);
         fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
@@ -58,7 +57,6 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        RSI_remove(thisAgent, r);
         if (r->referent) thisAgent->symbolManager->symbol_remove_ref(&r->referent);
         thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, r);
     }
@@ -92,7 +90,6 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
             prev_new_c = new_c;
         }
         prev_new_c->rest = NIL;
-        RFI_add(thisAgent, funcall_list_to_rhs_value(new_fl));
         return funcall_list_to_rhs_value(new_fl);
     }
     else
@@ -139,8 +136,6 @@ void deallocate_action_list(agent* thisAgent, action* actions)
     {
         a = actions;
         actions = actions->next;
-
-        ADI_remove(thisAgent, a);
 
         if (a->type == FUNCALL_ACTION)
         {
@@ -342,8 +337,6 @@ action* make_action(agent* thisAgent)
     new_action->value = NIL;
     new_action->referent = NIL;
 
-    ADI_add(thisAgent, new_action);
-
     return new_action;
 }
 
@@ -466,7 +459,6 @@ rhs_value create_RHS_value(agent* thisAgent,
             prev_new_c = new_c;
         }
         prev_new_c->rest = NIL;
-        RFI_add(thisAgent, funcall_list_to_rhs_value(new_fl));
         return funcall_list_to_rhs_value(new_fl);
     }
     else
@@ -546,9 +538,6 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     new_rhs_symbol->identity_id_unjoined = LITERAL_VALUE;
     new_rhs_symbol->identity = pIdentity;
     new_rhs_symbol->was_unbound_var = pWasUnbound;
-
-    RSI_add(thisAgent, new_rhs_symbol);
-
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
@@ -568,9 +557,6 @@ rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t 
     new_rhs_symbol->identity_id_unjoined = LITERAL_VALUE;
     new_rhs_symbol->identity = pIdentity;
     new_rhs_symbol->was_unbound_var = pWasUnbound;
-
-    RSI_add(thisAgent, new_rhs_symbol);
-
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 

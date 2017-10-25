@@ -124,19 +124,19 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
         }
         else if (my_param == thisAgent->explanationMemory->settings->list_chunks)
         {
-            thisAgent->explanationMemory->print_all_chunks(true);
+            thisAgent->explanationMemory->list_rules_of_type(true);
             return true;
         }
         else if (my_param == thisAgent->explanationMemory->settings->list_justifications)
         {
-            thisAgent->explanationMemory->print_all_chunks(false);
+            thisAgent->explanationMemory->list_rules_of_type(false);
             return true;
         }
         else if (my_param == thisAgent->explanationMemory->settings->record_chunk)
         {
             if (!pArg2)
             {
-                thisAgent->explanationMemory->print_all_watched_rules();
+                thisAgent->explanationMemory->list_watched_rules();
                 return true;
             } else {
                 return thisAgent->explanationMemory->watch_rule(pArg2);

@@ -171,10 +171,8 @@ void deallocate_test(agent* thisAgent, test t)
         case IMPASSE_ID_TEST:
         case SMEM_LINK_UNARY_TEST:
         case SMEM_LINK_UNARY_NOT_TEST:
-            TDI_remove(thisAgent, t);
             break;
         case DISJUNCTION_TEST:
-            TDI_remove(thisAgent, t);
             thisAgent->symbolManager->deallocate_symbol_list_removing_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
@@ -191,10 +189,8 @@ void deallocate_test(agent* thisAgent, test t)
             }
             dprint(DT_DEALLOCATE_TEST, "DEALLOCATE tests in conjunction complete.  Next deallocation should be conjunction.\n");
             t->data.conjunct_list = NULL;
-            TDI_remove(thisAgent, t);
             break;
         default: /* tests with a referent */
-            TDI_remove(thisAgent, t);
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
             break;
     }
@@ -255,11 +251,7 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
         ++final_count;
     }
     destination->data.disjunction_list = c_first;
-    #ifdef EBC_DETAILED_STATISTICS
-        thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
-        thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
-        thisAgent->explanationMemory->increment_stat_merged_disjunctions();
-    #endif
+    thisAgent->explanationMemory->increment_stat_merged_disjunctions();
 }
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
@@ -386,9 +378,7 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool 
                 return;
             }
 
-    #ifdef EBC_DETAILED_STATISTICS
     if (thisAgent->explanationBasedChunker->is_learning_chunk()) thisAgent->explanationMemory->increment_stat_operational_constraints();
-    #endif
 
     add_test(thisAgent, t, add_me, merge_disjunctions);
 }
@@ -975,8 +965,6 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->identity = NULL_IDENTITY_SET;
     new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;
     if (sym) thisAgent->symbolManager->symbol_add_ref(sym);
-
-    TDI_add(thisAgent, new_ct);
     return new_ct;
 }
 

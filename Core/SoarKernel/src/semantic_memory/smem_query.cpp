@@ -608,7 +608,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
                 {
                     SQL->act_lti_get->bind_int(1, q->column_int(0));
                     SQL->act_lti_get->execute();
-                    plentiful_parents.push(std::make_pair< double, uint64_t >(SQL->act_lti_get->column_double(0), q->column_int(0)));
+                    plentiful_parents.push(std::make_pair< double, uint64_t >(SQL->act_lti_get->column_double(2), q->column_int(0)));
                     SQL->act_lti_get->reinitialize();
 
                     more_rows = (q->execute() == soar_module::row);
