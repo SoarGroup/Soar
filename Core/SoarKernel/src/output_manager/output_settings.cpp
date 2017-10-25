@@ -160,7 +160,7 @@ const std::string OM_Parameters::get_agent_channel_string(agent* thisAgent)
                         tempStringStream << ", " << (i+1);
                     }
                 } else {
-                    tempStringStream << i;
+                    tempStringStream << (i+1);
                     isFirst = false;
                 }
             }

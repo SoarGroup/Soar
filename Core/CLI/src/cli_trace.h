@@ -500,13 +500,13 @@ namespace cli
                 switch (level)
                 {
                     case 0:// none
-                    options.reset();
-                    options.flip();
-                    settings.reset();
-                    learnSetting = 0;
-                    wmeSetting = 0;
-                    cli.PrintCLIMessage("Trace level 0 enabled:  All trace messages disabled.");
-                    break;
+						options.reset();
+						options.flip();
+						settings.reset();
+						learnSetting = 0;
+						wmeSetting = 0;
+						cli.PrintCLIMessage("Trace level 0 enabled:  All trace messages disabled.");
+						break;
                     case 5:// preferences, waterfall, gds wme additions
                         cli.PrintCLIMessage("Trace level 5 enabled: Preferences");
                         settings.set(cli::WATCH_PREFERENCES);
