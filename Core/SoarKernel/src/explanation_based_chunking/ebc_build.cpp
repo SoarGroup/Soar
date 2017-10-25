@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
+#include <string>
 
 using namespace soar_TraceNames;
 
@@ -102,6 +103,80 @@ inline bool pref_has_same_identity_sets_in_2_fields(preference* pPref1, WME_Fiel
         if (pField2 == REFERENT_ELEMENT) { if (pPref1->identities.value == pPref2->identities.referent) return true; else return false; }
     }
     return false;
+}
+
+// Based on version from boost
+inline uint32_t hash_combine(const uint32_t& hash1, const uint32_t& hash2)
+{
+	uint32_t result = hash1;
+    result ^= hash2 + 0x9e3779b9 + (hash1<<6) + (hash1>>2);
+    return result;
+}
+
+/* An attempt to hash a rhs_value (char*) without entirely knowing how all these data structures are used.
+ * (In particular, cons->first is a generic void*.)
+ * Based on the rhs_values_equal definition in rhs.h. */
+inline uint32_t hash_rhs_value(rhs_value val) {
+	if (rhs_value_is_symbol(val)) {
+		if (!val)
+			return 1;	// When the rhs_value has no referent
+		return reinterpret_cast<rhs_symbol>(val)->referent->hash_id;
+	}
+	std::hash<char> c_hasher;
+	if (rhs_value_is_funcall(val)) {
+		cons* fl = rhs_value_to_funcall_list(val);
+		uint32_t result = c_hasher(*static_cast<char*>(fl->first));
+		for (cons* c = fl->rest; c != NIL; c = c->rest)
+			result = hash_combine(result, hash_rhs_value(static_cast<char*>(c->first)));
+		return result;
+	}
+	return c_hasher(*val);	// TODO: Is this valid? Doesn't seem to be reached normally.
+}
+
+inline uint32_t hash_action(action* pAct) {
+	
+	std::hash<uint64_t> int64_hasher;
+	uint32_t result = pAct->type + 129064587;	// random number
+	result = hash_combine(result, hash_rhs_value(pAct->id));
+	result = hash_combine(result, hash_rhs_value(pAct->attr));
+	result = hash_combine(result, hash_rhs_value(pAct->value));
+	result = hash_combine(result, hash_rhs_value(pAct->referent));
+	return result;
+}
+
+inline uint32_t get_lhs_hash(agent* thisAgent, condition* pCond) {
+	uint32_t hsh = 0,
+			minihsh = 0;
+	while (pCond != NULL)
+	{
+		minihsh = hash_condition(thisAgent, pCond);
+		if (!hsh)
+			hsh = minihsh;
+		else
+			hsh = hash_combine(hsh, minihsh);
+		pCond = pCond->next;
+	}
+	return hsh;
+}
+
+inline uint32_t get_rhs_hash(action* pAct) {
+	uint32_t hsh = 0,
+			minihsh = 0;
+	while (pAct != NULL)
+	{
+		minihsh = hash_action(pAct);
+		if (!hsh)
+			hsh = minihsh;
+		else
+			hsh = hash_combine(hsh, minihsh);
+		pAct = pAct->next;
+	}
+	return hsh;
+}
+
+inline uint32_t get_rule_hash(agent* thisAgent, condition* lhs, action* rhs) {
+	uint32_t result = get_lhs_hash(thisAgent, lhs);
+	return hash_combine(result, get_rhs_hash(rhs));
 }
 
 void Explanation_Based_Chunker::add_pref_to_results(preference* pref, preference* pLinkPref, WME_Field pField)
@@ -941,6 +1016,26 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     {
         lChunkValidated = reorder_and_validate_chunk();
         dprint(DT_VARIABLIZATION_MANAGER, "Variablized rule after re-ordering and repair:\n%1\n-->\n%2", m_lhs, m_rhs);
+    }
+
+    /* CBC: Sample chunk generation for confidence update. Make it a justification if not confident. (bws, 07/17) */
+    if (m_rule_type == ebc_chunk) {
+    	// Sample the rule
+    	uint32_t rule_hash = get_rule_hash(thisAgent, m_lhs, m_rhs);
+    	if (m_cbc_chunk_counts.find(rule_hash) == m_cbc_chunk_counts.end())
+    		m_cbc_chunk_counts[rule_hash] = 1;
+    	else
+    		m_cbc_chunk_counts[rule_hash]++;
+
+    	// Rebuild the rule as a justification if not confident in the chunk
+    	if (m_cbc_chunk_counts[rule_hash] < confidence_threshold) {
+    		std::ostringstream message;
+    		message << "\nChunk confidence at " << std::to_string(m_cbc_chunk_counts[rule_hash]) << " < " << std::to_string(confidence_threshold) << ". Rebuilding as justification:";
+    		thisAgent->outputManager->printa_sf(thisAgent, message.str().c_str());
+    		xml_generate_verbose(thisAgent, message.str().c_str());
+
+    		lChunkValidated = false;
+    	}
     }
 
     /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there

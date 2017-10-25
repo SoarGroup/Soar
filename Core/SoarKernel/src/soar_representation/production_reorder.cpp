@@ -1554,84 +1554,84 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
 
 bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, matched_symbol_list* ungrounded_syms, bool add_ungrounded)
 {
-    tc_number tc;
-    cons* roots;
+	tc_number tc;
+	cons* roots;
 
-    tc = get_new_tc_number(thisAgent);
-    roots = collect_root_variables(thisAgent, *lhs_top, tc, ungrounded_syms, add_ungrounded);
+	tc = get_new_tc_number(thisAgent);
+	roots = collect_root_variables(thisAgent, *lhs_top, tc, ungrounded_syms, add_ungrounded);
 
-    /* Collecting root variables will also detect ungrounded symbols on the LHS */
-    if (add_ungrounded && ungrounded_syms->size() > 0)
-    {
-        std::string unSymString;
-        for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
-            unSymString += (*it)->variable_sym->to_string(true);
-            if (++it != ungrounded_syms->end())
-            {
-                unSymString += ", ";
-            }
+	/* Collecting root variables will also detect ungrounded symbols on the LHS */
+	if (add_ungrounded && ungrounded_syms->size() > 0)
+	{
+		std::string unSymString;
+		for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
+			unSymString += (*it)->variable_sym->to_string(true);
+			if (++it != ungrounded_syms->end())
+			{
+				unSymString += ", ";
+			}
 
-        }
-        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
-        {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s):");
-        }
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
-        }
-        return false;
-    }
+		}
+		if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+		{
+			thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s):");
+		}
+		thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
+		thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
+		if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+		{
+			thisAgent->stop_soar = true;
+			thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
+		}
+		return false;
+	}
 
-    if (!roots)
-    {
-        condition* cond;
+	if (!roots)
+	{
+		condition* cond;
 
-        for (cond = *lhs_top; cond != NIL; cond = cond->next)
-        {
-            if ((cond->type == POSITIVE_CONDITION) && (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,  true, false)))
-            {
-                add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &roots);
-                if (roots) break;
-                }
-            }
-    if (!roots)
-    {
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
-        }
-        return false;
-    }
-    }
+		for (cond = *lhs_top; cond != NIL; cond = cond->next)
+		{
+			if ((cond->type == POSITIVE_CONDITION) && (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,  true, false)))
+			{
+				add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &roots);
+				if (roots) break;
+			}
+		}
+		if (!roots)
+		{
+			thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
+			thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
+			if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+			{
+				thisAgent->stop_soar = true;
+				thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
+			}
+			return false;
+		}
+	}
 
-    remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);
+	remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);
 
-    fill_in_vars_requiring_bindings(thisAgent, *lhs_top, tc);
+	fill_in_vars_requiring_bindings(thisAgent, *lhs_top, tc);
 
-    reorder_condition_list(thisAgent, lhs_top, roots, tc, reorder_nccs);
-    remove_vars_requiring_bindings(thisAgent, *lhs_top);
-    free_list(thisAgent, roots);
+	reorder_condition_list(thisAgent, lhs_top, roots, tc, reorder_nccs);
+	remove_vars_requiring_bindings(thisAgent, *lhs_top);
+	free_list(thisAgent, roots);
 
-    if (!check_negative_relational_test_bindings(thisAgent, *lhs_top, get_new_tc_number(thisAgent)))
-    {
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_negative_relational_test_bindings, thisAgent->name_of_production_being_reordered);
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_negative_relational_test_bindings);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with negative relational test bindings.";
-        }
-        return false;
-    }
+	if (!check_negative_relational_test_bindings(thisAgent, *lhs_top, get_new_tc_number(thisAgent)))
+	{
+		thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_negative_relational_test_bindings, thisAgent->name_of_production_being_reordered);
+		thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_negative_relational_test_bindings);
+		if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+		{
+			thisAgent->stop_soar = true;
+			thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with negative relational test bindings.";
+		}
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 void init_reorderer(agent* thisAgent)     /* called from init_production_utilities() */
