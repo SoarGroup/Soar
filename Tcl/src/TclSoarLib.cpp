@@ -137,6 +137,7 @@ TclSoarLib::TclSoarLib(Kernel* myKernel) :
 
     // Wait until the new thread has finished initialization
     cv.wait(lock, [this]{ return thread_ready; });
+		lock.unlock();
 }
 
 TclSoarLib::~TclSoarLib()
@@ -145,10 +146,15 @@ TclSoarLib::~TclSoarLib()
     //cout << "   Waiting for TclThread to exit" << std::endl;
 
     // Tell the thread to shutdown
-    send_thread_command(SHUTDOWN_TCL_THREAD, "");
+    //send_thread_command(SHUTDOWN_TCL_THREAD, "");
+
+		//!!!!!!! The lib_thread is always already dead here, so waiting on anything causes a hang and the code won't shut down
+	  // lots of memory leaks, but doing anything else prevents shutdown
+	  // since this is only called on shutdown, it's not too big a deal
+		lib_thread.detach();
 
     // Wait until the thread exits
-    lib_thread.join();
+    //lib_thread.join();
 
     m_kernel = 0;
 
@@ -196,6 +202,7 @@ void TclSoarLib::send_thread_command(int type, std::string info){
         cmd_lock.lock();
         cv.wait(cmd_lock, [this]{ return finished_command; });
         finished_command = false;
+				cmd_lock.unlock();
     }
 }
 
