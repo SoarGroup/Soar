@@ -418,7 +418,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
     soar_module::sqlite_statement* q = NULL;
 
     std::set<std::pair<double,uint64_t>> all_king_ids;
-
+    double cand_act = 0.0;
     uint64_t king_id = NIL;
     for (std::list<Symbol*>::iterator query_it = query.begin(); query_it != query.end(); ++query_it)
     {
@@ -514,7 +514,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
             }
         }
 
-        double cand_act = 0.0;
+        //double cand_act = 0.0;
         // only search if the cue was valid
         if (good_cue && !weighted_cue.empty())
         {
@@ -793,9 +793,9 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
         if (king_id != NIL)
         {
             // success!
-            //Symbol* act_sym = thisAgent->symbolManager->make_float_constant(cand_act);
-            //add_triple_to_recall_buffer(retrieval_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_act, act_sym);
-            //thisAgent->symbolManager->symbol_remove_ref(&act_sym);
+            /*Symbol* act_sym = thisAgent->symbolManager->make_float_constant(cand_act);
+            add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_act, act_sym);
+            thisAgent->symbolManager->symbol_remove_ref(&act_sym);*/
 
             add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, *(query.begin()));
             if (negquery)
