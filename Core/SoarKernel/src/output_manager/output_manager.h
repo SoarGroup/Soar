@@ -93,6 +93,9 @@ class Output_Manager
         char* m_pre_string, *m_post_string;
         int  m_column_indent[MAX_COLUMNS];
 
+        bool record_output;
+        std::string record_str;
+
         /* -- The following tracks column of the next character to print if Soar is writing to cout --*/
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
@@ -129,6 +132,9 @@ class Output_Manager
         void restore_output_modes();
         void print_output_modes(trace_mode_info mode_info_to_print[num_trace_modes]);
         void clear_output_modes();
+        // Compile all output sent between begin and end.
+        void begin_output_record() { record_output = true; record_str = ""; }
+        std::string end_output_record() { record_output = false; return record_str; }
 
         bool is_trace_enabled(TraceMode mode) { return mode_info[mode].enabled; }
 

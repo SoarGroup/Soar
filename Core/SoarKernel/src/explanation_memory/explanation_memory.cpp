@@ -256,11 +256,7 @@ condition_record* Explanation_Memory::add_condition(condition_record_list* pCond
     {
         thisAgent->memoryManager->allocate_with_pool(MP_condition_record, &lCondRecord);
         increment_counter(condition_id_count);
-        if (!lCondRecord->init(thisAgent, pCond, condition_id_count, pInst, isChunkInstantiation)) {
-        	// CBC crash patch
-        	thisAgent->memoryManager->free_with_pool(MP_condition_record, lCondRecord);
-        	return NULL;
-        }
+        lCondRecord->init(thisAgent, pCond, condition_id_count, pInst, isChunkInstantiation);
         if (pMakeNegative)
         {
             lCondRecord->type = CONJUNCTIVE_NEGATION_CONDITION;

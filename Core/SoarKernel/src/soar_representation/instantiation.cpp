@@ -308,6 +308,21 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 
     if (rhs_value_is_reteloc(rv))
     {
+
+    	/*wme* w2 = w;
+    	wme* w3 = w;
+    	token* tok2 = tok;
+        for (int i=rhs_value_to_reteloc_levels_up(rv); i>0; --i)
+        {
+        	if (!tok2) {
+        		print_wme(thisAgent, w3);
+        		print_wme(thisAgent, w2);
+        	}
+        	w3 = w2;
+            w2 = tok2->w;		// FIXME: this can crash (using PROPs agent)
+            tok2 = tok2->parent;
+        }*/
+
         result = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(rv),
                                           rhs_value_to_reteloc_field_num(rv), tok, w);
         thisAgent->symbolManager->symbol_add_ref(result);

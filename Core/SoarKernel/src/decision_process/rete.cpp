@@ -1026,7 +1026,7 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
         }
 
         return false; /* if we are in an initiazation and there are no
-                      assertions, just retrurn false to terminate
+                      assertions, just return false to terminate
                       the procedure. */
 
     }
@@ -3657,6 +3657,7 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         sym = rhs_value_to_symbol(*rv);
         if (sym->symbol_type != VARIABLE_SYMBOL_TYPE)
         {
+        	thisAgent->outputManager->printa_sf(thisAgent, "FIXUP: %y\n", sym);
             return;
         }
         /* --- Found a variable.  Is is bound on the LHS? --- */
@@ -3666,6 +3667,9 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
             thisAgent->symbolManager->symbol_remove_ref(&sym);
             thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, *rv);
             *rv = reteloc_to_rhs_value(var_loc.field_num, var_loc.levels_up - 1);
+
+            uint16_t level = rhs_value_to_reteloc_levels_up(*rv);
+            //assert(level < 100);
         }
         else
         {
@@ -3685,6 +3689,10 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
             thisAgent->symbolManager->symbol_remove_ref(&sym);
             thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, *rv);
             *rv = unboundvar_to_rhs_value(index);
+
+            uint16_t level = rhs_value_to_reteloc_levels_up(*rv);
+            //assert(level < 100);
+
         }
         return;
     }
@@ -3773,13 +3781,42 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             fixup_rhs_value_variable_references(thisAgent, &(a->id), bottom_depth,
                                                 rhs_unbound_vars_for_new_prod, num_rhs_unbound_vars_for_new_prod, rhs_unbound_vars_tc);
+            if (rhs_value_is_symbol(a->attr))
+			{
+				if ((rhs_value_to_rhs_symbol(a->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+						(a->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
+				{
+					uint16_t level = rhs_value_to_reteloc_levels_up(a->id);
+					if (level >= 100) {
+						thisAgent->outputManager->printa_sf(thisAgent, "ERROR after id: %a", a);
+						//assert(level < 100);
+					}
+				}
+			}
             fixup_rhs_value_variable_references(thisAgent, &(a->attr), bottom_depth,
                                                 rhs_unbound_vars_for_new_prod, num_rhs_unbound_vars_for_new_prod, rhs_unbound_vars_tc);
+
             if (preference_is_binary(a->preference_type))
                 fixup_rhs_value_variable_references(thisAgent, &(a->referent), bottom_depth,
                                                     rhs_unbound_vars_for_new_prod, num_rhs_unbound_vars_for_new_prod, rhs_unbound_vars_tc);
         }
     }
+
+    /*for (a = p->action_list; a != NIL; a = a->next) // sanity check for bad levels
+    {
+    	if ((a->type == MAKE_ACTION) && (rhs_value_is_symbol(a->attr)))
+    	{
+    		if ((rhs_value_to_rhs_symbol(a->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+    				(a->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
+    		{
+    			uint16_t level = rhs_value_to_reteloc_levels_up(a->id);
+    			if (level >= 100) {
+    				thisAgent->outputManager->printa_sf(thisAgent, "ERROR: The action level is too high for: %a", a);
+    				assert(level < 100);
+    			}
+    		}
+    	}
+    }*/
 
     /* --- clean up variable bindings created by build_network...() --- */
     pop_bindings_and_deallocate_list_of_variables(thisAgent, vars_bound);
@@ -4360,7 +4397,7 @@ Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
     while (levels_up)
     {
         levels_up--;
-        w = tok->w;
+        w = tok->w;		// FIXME: this can crash (using PROPs agent)
         tok = tok->parent;
     }
     if (field_num == 0)
@@ -5993,7 +6030,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                     Symbol* lSym = NULL;
                     if (tok && w)
                     {
-                        lSym = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
+                    	lSym = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
                                                        rhs_value_to_reteloc_field_num(act->id), tok, w);
                     }
                     if (lSym && lSym->id->isa_goal)

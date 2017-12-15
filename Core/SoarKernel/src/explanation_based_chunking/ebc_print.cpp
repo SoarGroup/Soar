@@ -21,6 +21,7 @@
 
 void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
 {
+	outputManager->begin_output_record();
     if (pHeader)
     {
         outputManager->printa_sf(thisAgent, "\n%s\n   ", pHeader);

@@ -43,6 +43,11 @@ void Output_Manager::printa(agent* pSoarAgent, const char* msg)
     if (pSoarAgent)
     {
 //        xml_generate_message(pSoarAgent, const_cast<char*>(msg));
+        if (record_output)
+        {
+        	record_str += msg;
+        	return;
+        }
         if (!pSoarAgent->output_settings->print_enabled) return;
         if (pSoarAgent->output_settings->callback_mode)
         {

@@ -54,12 +54,14 @@ void Output_Manager::set_output_params_global(bool pDebugEnabled){
         m_print_actual_effective = true;
         m_print_identity_effective = true;
         stdout_mode = true;
+        record_output = false;
     } else {
         m_print_actual = true;
         m_print_identity = false;
         m_print_actual_effective = true;
         m_print_identity_effective = false;
         stdout_mode = false;
+        record_output = false;
     }
 }
 

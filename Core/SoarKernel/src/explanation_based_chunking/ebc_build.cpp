@@ -45,6 +45,12 @@
 #include <ctype.h>
 #include <string>
 
+// Just for sort_rule_str():
+#include <sstream>
+#include <vector>
+#include <algorithm>
+#include <unordered_map>
+
 using namespace soar_TraceNames;
 
 /* =====================================================================
@@ -178,6 +184,154 @@ inline uint32_t get_rule_hash(agent* thisAgent, condition* lhs, action* rhs) {
 	uint32_t result = get_lhs_hash(thisAgent, lhs);
 	return hash_combine(result, get_rhs_hash(rhs));
 }
+
+std::string sorted_conds_str(agent* thisAgent, condition* conds) {
+    std::string line;
+    std::string ret_str = "";
+	std::vector<std::string> srt_list = std::vector<std::string>();
+
+	// Split the structure into condition lines
+    condition* c;
+	for (c = conds; c != NIL; c = c->next) {
+		line = "";
+		if (c->type == CONJUNCTIVE_NEGATION_CONDITION) {
+			line = sorted_conds_str(thisAgent, c->data.ncc.top);
+			srt_list.push_back("-{" + line + "}");
+			continue;
+		}
+		if (c->type == NEGATIVE_CONDITION)
+		    line = "-";
+		line += "(^";
+		thisAgent->outputManager->sprinta_sf(thisAgent, line, "%t", c->data.tests.attr_test);
+		line += " ";
+		thisAgent->outputManager->sprinta_sf(thisAgent, line, "%t", c->data.tests.value_test);
+		line += " ";
+		thisAgent->outputManager->sprinta_sf(thisAgent, line, "%t", c->data.tests.id_test);
+		line += ")";
+
+		srt_list.push_back(line);
+	}
+	std::sort(srt_list.begin(), srt_list.end(), std::greater<std::string>());
+	for (auto const& vs : srt_list) { ret_str += vs + "\n"; }
+	return ret_str;
+}
+
+std::string sorted_acts_str(agent* thisAgent, action* acts) {
+	std::string line;
+	std::string ret_str = "";
+	std::vector<std::string> srt_list = std::vector<std::string>();
+
+	// Split the structure into action lines
+	action* a;
+	for (a = acts; a != NIL; a = a->next) {
+		line = "";
+		if (a->type == FUNCALL_ACTION) {
+			thisAgent->outputManager->rhs_value_to_string(a->value, line);
+		}
+		else {
+			line += preference_to_char(a->preference_type);
+			if (a->referent) {
+				line += " ";
+				thisAgent->outputManager->rhs_value_to_string(a->referent, line);
+			}
+			line += "(^";
+			thisAgent->outputManager->rhs_value_to_string(a->attr, line);
+			line += " ";
+			thisAgent->outputManager->rhs_value_to_string(a->value, line);
+			line += " ";
+			thisAgent->outputManager->rhs_value_to_string(a->id, line);
+			line += ')';
+		}
+
+		srt_list.push_back(line);
+	}
+	std::sort(srt_list.begin(), srt_list.end(), std::greater<std::string>());
+	for (auto const& vs : srt_list) { ret_str += vs + "\n"; }
+	return ret_str;
+}
+
+std::string sorted_conds_str2(agent* thisAgent, condition* conds) {
+    std::string line;
+    std::string ret_str = "";
+	std::vector<std::string> srt_list = std::vector<std::string>();
+
+	// Split the structure into condition lines
+    condition* c;
+	for (c = conds; c != NIL; c = c->next) {
+		line = "";
+		if (c->type == CONJUNCTIVE_NEGATION_CONDITION) {
+			line = sorted_conds_str(thisAgent, c->data.ncc.top);
+			srt_list.push_back("-{" + line + "}");
+			continue;
+		}
+		if (c->type == NEGATIVE_CONDITION)
+		    line = "-";
+		line += "(^";
+		thisAgent->outputManager->sprinta_sf(thisAgent, line, "%t", c->data.tests.attr_test);
+		line += " ";
+		thisAgent->outputManager->sprinta_sf(thisAgent, line, "%t", c->data.tests.value_test);
+		line += " ";
+		thisAgent->outputManager->sprinta_sf(thisAgent, line, "%t", c->data.tests.id_test);
+		line += ")";
+
+		if (line.find("name") != std::string::npos)
+			srt_list.push_back(line);
+	}
+	if (!srt_list.size())
+		ret_str = "";
+	else {
+		std::sort(srt_list.begin(), srt_list.end(), std::greater<std::string>());
+		for (auto const& vs : srt_list) { ret_str += vs + "\n"; }
+	}
+	return ret_str;
+}
+
+
+std::string rename_str_vars(agent* thisAgent, const std::string& rule_str) {
+	std::unordered_map<std::string, std::string> newvars;
+	std::string ret_str = rule_str;
+	std::string temp_str;
+	int var_num = 1;
+	std::string gen_str = "1";
+	int curr_ind = ret_str.find("<");
+	int end_ind = curr_ind;
+
+	while (curr_ind != std::string::npos) {
+		end_ind = ret_str.find(">",curr_ind+1);	// Find closing '>'
+		if (!isspace(ret_str.at(curr_ind+1)) && end_ind != std::string::npos) {
+		 	temp_str = ret_str.substr(curr_ind+1, end_ind-curr_ind-1);
+		 	if (newvars.find(temp_str) == newvars.end()) {
+		 		newvars[temp_str] = gen_str;
+		 		temp_str = gen_str;
+		 		gen_str = std::to_string(++var_num);
+		 	}
+		 	else {
+		 		temp_str = newvars[temp_str];
+		 	}
+		 	ret_str.replace(curr_ind+1, end_ind-curr_ind-1, temp_str);
+		}
+		curr_ind = ret_str.find("<", curr_ind+2);
+	}
+
+	// Also remove identity number []'s from rhs IDs
+	curr_ind = ret_str.find("[");
+	while (curr_ind != std::string::npos) {
+		end_ind = ret_str.find("]",curr_ind+1);	// Find closing ']'
+		if (end_ind != std::string::npos) {
+			ret_str.erase(curr_ind, end_ind-curr_ind+1);
+		}
+		curr_ind = ret_str.find("[", curr_ind);
+	}
+
+	return ret_str;
+}
+
+std::string get_rule_str(agent* thisAgent, condition* conds, action* acts) {
+	std::string rule_str = sorted_conds_str2(thisAgent, conds) + "-->\n" + sorted_acts_str(thisAgent, acts);
+	rule_str = rename_str_vars(thisAgent, rule_str);
+	return rule_str;
+}
+
 
 void Explanation_Based_Chunker::add_pref_to_results(preference* pref, preference* pLinkPref, WME_Field pField)
 {
@@ -1019,9 +1173,13 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     }
 
     /* CBC: Sample chunk generation for confidence update. Make it a justification if not confident. (bws, 07/17) */
-    if (m_rule_type == ebc_chunk) {
+    /*if (m_rule_type == ebc_chunk) {
     	// Sample the rule
-    	uint32_t rule_hash = get_rule_hash(thisAgent, m_lhs, m_rhs);
+    	try {
+    	std::string str = get_rule_str(thisAgent,m_lhs,m_rhs);
+    	thisAgent->outputManager->printa(thisAgent, str.c_str());
+    	//
+    	uint32_t rule_hash = std::hash<std::string>{}(str);//get_rule_hash(thisAgent, m_lhs, m_rhs);
     	if (m_cbc_chunk_counts.find(rule_hash) == m_cbc_chunk_counts.end())
     		m_cbc_chunk_counts[rule_hash] = 1;
     	else
@@ -1036,7 +1194,23 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
 
     		lChunkValidated = false;
     	}
-    }
+    	}
+    	catch(const std::runtime_error& re) {
+    		thisAgent->outputManager->printa(thisAgent, "Runtime error: ");
+    		thisAgent->outputManager->printa(thisAgent, re.what());
+    	}
+    	catch(const std::exception& ex)
+    	{
+    		thisAgent->outputManager->printa(thisAgent, "Error occurred: ");
+    		thisAgent->outputManager->printa(thisAgent, ex.what());
+    	}
+    	catch(...)
+    	{
+    	    // catch any other errors (that we have no information about)
+    		thisAgent->outputManager->printa(thisAgent, "Unknown error occurred.\n");
+    	    std::cerr << "Unknown failure occurred. Possible memory corruption" << std::endl;
+    	}
+    }*/
 
     /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there
      * is a repair failure.  Unless there's a bug in the repair code, all rules should be reparable. */

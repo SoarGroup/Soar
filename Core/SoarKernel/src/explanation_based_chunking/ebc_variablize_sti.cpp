@@ -60,13 +60,8 @@ void Explanation_Based_Chunker::sti_variablize_test(test pTest, bool generate_id
         if (generate_identity) lMatchedIdentity = iter_sym->second->inst_identity;
     }
 
-    //if ((*m_sym_to_var_map).find(lMatchedSym) == (*m_sym_to_var_map).end()) {
-    	add_sti_variablization(lMatchedSym, lNewVar, lMatchedIdentity);
-    //}
-    //else {
-    //	dprint(DT_REPAIR, "*** Did not replace %y with [%y/%u] in sym_to_var_map. Replaced %y with %y.\n", lMatchedSym, lNewVar, lMatchedIdentity, lNewVar, ((*m_sym_to_var_map)[lMatchedSym])->variable_sym);
-    //	lNewVar = ((*m_sym_to_var_map)[lMatchedSym])->variable_sym;
-    //}
+    add_sti_variablization(lMatchedSym, lNewVar, lMatchedIdentity);
+
     pTest->data.referent = lNewVar;
     pTest->inst_identity = lMatchedIdentity;
     thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);
@@ -112,14 +107,7 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
         dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y: %y\n", rs->referent, var);
         if (generate_identity) lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_inst_identity_for_sym(var);
         
-        //if ((*m_sym_to_var_map).find(rs->referent) == (*m_sym_to_var_map).end()) {
-        	//add_sti_variablization(lMatchedSym, lNewVar, lMatchedIdentity);
-        	add_sti_variablization(rs->referent, var, lMatchedIdentity);
-        //}
-        //else {
-        //	dprint(DT_REPAIR, "*** Did not replace %y with [%y/%u] in sym_to_var_map. Replaced %y with %y.\n", rs->referent, var, lMatchedIdentity, var, ((*m_sym_to_var_map)[rs->referent])->variable_sym);
-        //	var = ((*m_sym_to_var_map)[rs->referent])->variable_sym;
-        //}
+        add_sti_variablization(rs->referent, var, lMatchedIdentity);
         
         has_variablization = true;
         was_unbound = true;
