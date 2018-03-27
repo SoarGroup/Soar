@@ -27,8 +27,8 @@ if sys.platform == 'win32':
     tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))
     tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'include'))
     tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
-    tcl_libname = 'tcl86.lib'
-    tcl_lib = 'tcl86'
+    tcl_libname = 'tcl86t.lib'
+    tcl_lib = 'tcl86t'
     tcl_shname = 'tclsh86'
     tcl_pkgindex_name = 'pkgIndex_win.tcl'
 elif sys.platform == 'darwin':
