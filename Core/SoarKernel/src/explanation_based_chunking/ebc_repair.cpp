@@ -268,41 +268,33 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
     wme* lWME;
     goal_stack_level targetLevel;
 
-
-    dprint(DT_REPAIR, "Repair rule started for:\n%1", p_lhs_top);
-
     /* Determine the highest level of a dangling sym.  We need to add conditions
      * for all (state ^superstate state) wme's between that level and the match
-     * level that are not already in the rule. We also add the identity-based
-     * variablizations for these dangling symbols so that the repair conditions
-     * connect to the real ones correctly */
-    dprint(DT_REPAIR, "Step 1: Iterating through dangling syms to determine lowest level that we need to build links to (also adding initial variablizations)...\n");
+     * level that are not already in the rule.*/
     targetLevel = thisAgent->bottom_goal->id->level;
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
         lDanglingSymInfo = *it;
-        dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %d...\n", lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym,
-            lDanglingSymInfo->inst_identity, static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level));
         if(lDanglingSymInfo->instantiated_sym->id->level < targetLevel)
         {
             targetLevel = lDanglingSymInfo->instantiated_sym->id->level;
-        } else {
-            dprint(DT_REPAIR, "...symbol is at Lower level %d than current target level of %d...\n",
-                static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level), static_cast<int64_t>(targetLevel));
         }
-        thisAgent->explanationBasedChunker->add_sti_variablization(lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym, lDanglingSymInfo->inst_identity);
     }
 
     tc_number tc;
     tc = get_new_tc_number(thisAgent);
 
-    dprint(DT_REPAIR, "Step 2: Marking states currently in conditions: \n");
     mark_states_WMEs_and_store_variablizations(p_lhs_top, tc);
+
+    for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
+    {
+        lDanglingSymInfo = *it;
+        thisAgent->explanationBasedChunker->add_sti_variablization(lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym, lDanglingSymInfo->inst_identity);
+    }
+
     thisAgent->symbolManager->reset_variable_generator(p_lhs_top, NULL);
-    dprint(DT_REPAIR, "Step 3: Iterating through goal stack to find linking ^superstate augmentations for marked states: \n");
     add_state_link_WMEs(targetLevel, tc);
 
-    dprint(DT_REPAIR, "Step 3: Adding WMEs to connect each dangling symbol...\n");
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
         lDanglingSymInfo = *it;
@@ -313,7 +305,6 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
         }
     }
 
-    dprint(DT_REPAIR, "Step 4:  Creating repair condition based on connecting set of WMEs: \n");
     condition* new_cond, *prev_cond = p_lhs_top, *first_cond = p_lhs_top;
 
     while (prev_cond->next != NULL) prev_cond = prev_cond->next;
@@ -331,8 +322,6 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
     else if (first_cond) first_cond->next = NIL;
 
     p_lhs_top = first_cond;
-
-    dprint(DT_REPAIR, "Final variablized conditions: \n%1", p_lhs_top);
 }
 
 bool Explanation_Based_Chunker::reorder_and_validate_chunk()

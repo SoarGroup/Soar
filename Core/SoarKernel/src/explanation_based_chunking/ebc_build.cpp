@@ -585,7 +585,7 @@ void Explanation_Based_Chunker::make_clones_of_results()
     {
         /* --- copy the preference --- */
         dprint(DT_CLONES, "Creating clone for result preference %p (instantiation i%u %y)\n", lResultPref, lResultPref->inst->i_id, lResultPref->inst->prod_name);
-        lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr, lResultPref->value, lResultPref->referent, lResultPref->chunk_inst_identities);
+        lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr, lResultPref->value, lResultPref->referent, lResultPref->chunk_inst_identities, lResultPref->was_unbound_vars);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->id);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->attr);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->value);
