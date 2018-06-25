@@ -103,13 +103,11 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     first_action = NIL;
     last_action = NIL;
 
-    dprint_header(DT_VALIDATE, PrintBefore, "Reordering action list:\n%2", *action_list);
     while (remaining_actions)
     {
         /* --- scan through remaining_actions, look for one that's legal --- */
         prev_a = NIL;
         a = remaining_actions;
-        dprint(DT_VALIDATE, "Looking for an action with a knowable level...\n");
         while (true)
         {
             if (!a)
@@ -118,20 +116,15 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             }
             if (legal_to_execute_action(a, lhs_tc))
             {
-                dprint(DT_VALIDATE, "...   Found. Levels of %a ARE knowable.\n", a);
                 break;
-            } else {
-                dprint(DT_VALIDATE, "...   Skipping. Levels of %a NOT knowable.\n", a);
             }
             prev_a = a;
             a = a->next;
         }
         if (!a)
         {
-            dprint(DT_VALIDATE, "...no more actions with a knowable level.\n");
             break;
         }
-        dprint(DT_VALIDATE, "...moving %a to reordered list.\n", a);
         /* --- move action a from remaining_actions to reordered list --- */
         if (prev_a)
         {
@@ -152,14 +145,11 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         }
         last_action = a;
         /* --- add new variables from a to new_bound_vars --- */
-        dprint(DT_VALIDATE, "...marking vars in %a\n", a);
         add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars);
     }
 
     if (remaining_actions)
     {   /* --- there are remaining_actions but none can be legally added --- */
-
-        dprint_header(DT_VALIDATE, PrintBefore, "Remaining unordered actions:\n%2", remaining_actions);
 
         std::string unSymString("");
         action* lAction;
@@ -168,7 +158,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
-            dprint(DT_VALIDATE, "Checking remaining action %a\n",  lAction);
             if (add_ungrounded && lAction->id && rhs_value_is_symbol(lAction->id) && !rhs_value_to_was_unbound_var(lAction->id))
             {
                 lSym = rhs_value_to_symbol(lAction->id);
@@ -190,7 +179,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                     lNewUngroundedSym->variable_sym = lVarSym;
                     lNewUngroundedSym->instantiated_sym = lInstSym;
                     lNewUngroundedSym->inst_identity = lNewID;
-                    dprint(DT_VALIDATE, "Adding unconnected rhs sym: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->inst_identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 }
             }
@@ -221,7 +209,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     else
     {
         result_flag = true;
-        dprint(DT_VALIDATE, "All actions are connected.\n");
     }
 
     /* --- unmark variables that we just marked --- */
@@ -229,7 +216,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
     /* --- return final result --- */
     *action_list = first_action;
-    dprint_header(DT_VALIDATE, PrintAfter, "Reordering %s.  Final action list:\n%2", result_flag ? "succeeded" : "failed", *action_list);
     return result_flag;
 }
 
