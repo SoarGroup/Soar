@@ -231,7 +231,7 @@ void Explanation_Based_Chunker::update_identities_in_condlist(condition* pCondTo
 
 void Explanation_Based_Chunker::update_identities_in_preferences(preference* lPref, Symbol* pGoal, bool is_chunk_inst)
 {
-
+    dprint(DT_PROPAGATE, "Updating identities in preference %p.\n", lPref);
     if (lPref->inst_identities.id) set_pref_identity(thisAgent, lPref, ID_ELEMENT, get_or_add_identity(lPref->inst_identities.id, NULL, pGoal));
     if (lPref->inst_identities.attr) set_pref_identity(thisAgent, lPref, ATTR_ELEMENT, get_or_add_identity(lPref->inst_identities.attr, NULL, pGoal));
     if (lPref->inst_identities.value) set_pref_identity(thisAgent, lPref, VALUE_ELEMENT, get_or_add_identity(lPref->inst_identities.value, NULL, pGoal));
@@ -239,15 +239,22 @@ void Explanation_Based_Chunker::update_identities_in_preferences(preference* lPr
 
     if (is_chunk_inst)
     {
+        dprint(DT_PROPAGATE, "...updating rhs function identities for chunk instantiation.\n");
+
         if (lPref->rhs_func_inst_identities.id)        update_identities_in_rhs_value(lPref->rhs_func_inst_identities.id);
         if (lPref->rhs_func_inst_identities.attr)      update_identities_in_rhs_value(lPref->rhs_func_inst_identities.attr);
         if (lPref->rhs_func_inst_identities.value)     update_identities_in_rhs_value(lPref->rhs_func_inst_identities.value);
         if (lPref->rhs_func_inst_identities.referent)  update_identities_in_rhs_value(lPref->rhs_func_inst_identities.referent);
+        if (lPref->rhs_func_chunk_inst_identities.id)        update_identities_in_rhs_value(lPref->rhs_func_chunk_inst_identities.id);
+        if (lPref->rhs_func_chunk_inst_identities.attr)      update_identities_in_rhs_value(lPref->rhs_func_chunk_inst_identities.attr);
+        if (lPref->rhs_func_chunk_inst_identities.value)     update_identities_in_rhs_value(lPref->rhs_func_chunk_inst_identities.value);
+        if (lPref->rhs_func_chunk_inst_identities.referent)  update_identities_in_rhs_value(lPref->rhs_func_chunk_inst_identities.referent);
     } else {
         /* For instantiations we don't deallocate the existing rhs_funcs before replacing them because
          * are created in execute_action() which doesn't have ownership of these rhs functions and
          * previously made copies for the preference that it's creating. We now just moved it here so
          * that it can be done after identity sets have been determined. */
+        dprint(DT_PROPAGATE, "...updating rhs function identities for non-chunk instantiation.\n");
         rhs_value lNewRHSValue;
         if (lPref->rhs_func_inst_identities.id)
         {

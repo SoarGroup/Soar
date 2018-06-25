@@ -762,6 +762,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     bool isSubGoalMatch = (inst->match_goal_level > TOP_GOAL_LEVEL);
     bool lDoIdentities = (isSubGoalMatch && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
 
+    dprint(DT_PROPAGATE, "Finalizing %sinstantiation %u.\n", is_chunk_inst ? "chunk " : " ", inst->i_id);
     /* We don't add a prod refcount for justifications so that they will be
      * excised when they no longer match or no longer have preferences asserted */
     if (inst->prod && (inst->prod->type != JUSTIFICATION_PRODUCTION_TYPE))
@@ -845,8 +846,13 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
         cond->inst = inst;
     }
 
+    dprint(DT_PROPAGATE, "...updating identities in condlist\n");
+    if (inst->i_id >= 474)
+        dprint(DT_PROPAGATE, "found\n");
+
     if (lDoIdentities) thisAgent->explanationBasedChunker->update_identities_in_condlist(cond = inst->top_of_instantiated_conditions, inst);
 
+    dprint(DT_PROPAGATE, "...updating identities in preferences\n");
     for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
     {
         if (lDoIdentities)
