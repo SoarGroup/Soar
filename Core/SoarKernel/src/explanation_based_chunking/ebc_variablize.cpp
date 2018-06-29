@@ -44,8 +44,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
     {
         if (rs->referent->is_sti())
         {
-            /* Can this still occur now?  I thought it could when trying to variablize a locally promoted STI, but assert hasn't fired in anything.*/
-            assert(false);
+            /* Should no longer be possible */
             return LITERAL_VALUE;
         }
     }
@@ -76,7 +75,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
         uint64_t returnID = l_identity->get_clone_identity();
         rs->identity = NULL;
 
-        /* If matched symbol had an LTI link, add the symbol to list of variables that we will later create news LTM-linking actions for */
         if (lMatchedSym_with_LTI_Link)
         {
             local_linked_STIs->push_back(lMatchedSym_with_LTI_Link);
@@ -87,16 +85,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
     rs->inst_identity = LITERAL_VALUE;
     return LITERAL_VALUE;
 }
-
-/* ============================================================================
- *            Variablization_Manager::variablize_equality_tests
- *
- * Requires: Test from positive condition.
- * Modifies: t
- * Effect:   Variablizes all equality tests in t, even if t is a conjunctive
- *           test.
- *
- * ========================================================================= */
 
 void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 {
@@ -304,8 +292,8 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     } else {
         result->chunk_inst_identities.id = LITERAL_VALUE;
         result->rhs_func_chunk_inst_identities.id = a->id;
-        reinstantiate_rhs_symbol(result->rhs_func_chunk_inst_identities.id);
         a->id = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.id, false, true);
+        reinstantiate_rhs_symbol(result->rhs_func_chunk_inst_identities.id);
     }
 
     l_inst_identity = variablize_rhs_value(a->attr, lti_link_tc);
@@ -315,8 +303,8 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     } else {
         result->chunk_inst_identities.attr = LITERAL_VALUE;
         result->rhs_func_chunk_inst_identities.attr = a->attr;
-        reinstantiate_rhs_symbol(result->rhs_func_chunk_inst_identities.attr);
         a->attr = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.attr, false, true);
+        reinstantiate_rhs_symbol(result->rhs_func_chunk_inst_identities.attr);
     }
 
     l_inst_identity = variablize_rhs_value(a->value, lti_link_tc);
@@ -326,8 +314,8 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     } else {
         result->chunk_inst_identities.value = LITERAL_VALUE;
         result->rhs_func_chunk_inst_identities.value = a->value;
-        reinstantiate_rhs_symbol(result->rhs_func_chunk_inst_identities.value);
         a->value = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.value, false, true);
+        reinstantiate_rhs_symbol(result->rhs_func_chunk_inst_identities.value);
     }
 
     if (preference_is_binary(result->type))
@@ -339,8 +327,8 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
         } else {
             result->chunk_inst_identities.referent = LITERAL_VALUE;
             result->rhs_func_chunk_inst_identities.referent = a->referent;
-            reinstantiate_rhs_symbol(result->rhs_func_chunk_inst_identities.referent);
             a->referent = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.referent, false, true);
+            reinstantiate_rhs_symbol(result->rhs_func_chunk_inst_identities.referent);
         }
     }
 
