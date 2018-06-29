@@ -4,7 +4,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
 #include "output_manager.h"
@@ -54,7 +53,6 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     wme_list*               final_path = NULL;
     tc_number               ground_lti_tc;
 
-    dprint(DT_REPAIR, "Finding path to connect %y (level %d) to a goal state.\n", pNonOperationalSym, static_cast<int64_t>(pNonOperationalSym->id->level));
 
     ground_lti_tc = get_new_tc_number(thisAgent);
 
@@ -63,7 +61,6 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     {
         g = g->id->lower_goal;
     }
-    dprint(DT_REPAIR, "...%y's goal found: %y at level %d.\n", pNonOperationalSym, g, static_cast<int64_t>(pNonOperationalSym->id->level));
 
     thisAgent->memoryManager->allocate_with_pool(MP_repair_path, &lNewPath);
     lNewPath->init(g);
@@ -83,13 +80,10 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
 
         if (!final_path) /* We keep iterating after we find the final path, so that  */
         {                /* we can delete the rest of the sym_grounding_path objects */
-//            dprint(DT_REPAIR, "Walk list += IDs from slots of %y to find %y...\n", lCurrentPath->get_root(), pNonOperationalSym);
             for (slot* s = lCurrentPath->get_root()->id->slots; s != NIL; s = s->next)
             {
                 for (wme* w = s->wmes; w != NIL; w = w->next)
                 {
-                    dprint(DT_REPAIR, "   ...considering WME: (%y ^%y %y) %s\n", w->id, w->attr, w->value, w->preference ? "Preference" : "NO Preference");
-
                     if (w->preference && w->value->is_sti() && (w->value->tc_num != ground_lti_tc))
                     {
                         w->value->tc_num = ground_lti_tc;
@@ -97,11 +91,9 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
                         lNewPath->init(w->value, lCurrentPath->get_path(), w);
                         if (w->value == pNonOperationalSym)
                         {
-                            dprint(DT_REPAIR, "...found path to %y: %w.\n", pNonOperationalSym, w);
                             final_path = new wme_list();
                             (*final_path) = *(lNewPath->get_path());
                         } else {
-                            dprint(DT_REPAIR, "      - Adding WME (%y ^%y %y) %s\n", w->id, w->attr, w->value, w->preference ? "Preference" : "NO Preference");
                             ids_to_walk.push_back(lNewPath);
                         }
                     }
@@ -142,17 +134,13 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
     {
         if (g->tc_num != pSeenTC && (g->id->level < m_match_goal_level))
         {
-            dprint(DT_REPAIR, "Found marked state %y.  Looking for superstate wme in subgoal %y...", g, last_goal);
             for (w = last_goal->id->impasse_wmes; w != NIL; w = w->next)
             {
                 if (w->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol)
                 {
                     m_repair_WMEs.insert(w);
-                    dprint_noprefix(DT_REPAIR, "adding wme for superstate link: %w \n", w);
                 }
             }
-        } else {
-            dprint(DT_REPAIR, "State %y not marked (%u != %u) or level is below match goal (%d < %d).\n", g, g->tc_num, pSeenTC, static_cast<int64_t>(g->id->level), static_cast<int64_t>(m_match_goal_level));
         }
         last_goal = g;
         g = g->id->higher_goal;
@@ -161,16 +149,12 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
 
 void Repair_Manager::add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number cond_tc)
 {
-    dprint(DT_REPAIR, "Searching for path to goal for %y [%y/%u]...\n", pTargetSym->instantiated_sym, pTargetSym->variable_sym, pTargetSym->inst_identity);
     wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->instantiated_sym);
-    dprint(DT_REPAIR, "...search complete.  Adding %d WMEs to repair wme path...\n", l_WMEPath->size());
     for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
     {
         wme* lWME = (*it);
-        dprint(DT_REPAIR, "......adding to repair wme set: (%y ^%y %y)\n", lWME->id, lWME->attr, lWME->value);
         if ((lWME->tc == cond_tc) && (lWME->value != pTargetSym->instantiated_sym))
         {
-            dprint(DT_REPAIR, "   ...WME exists in conditions already.  Skipping.\n");
             continue;
         }
         m_repair_WMEs.insert(lWME);
@@ -193,8 +177,6 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
 {
     condition* new_cond;
 
-    dprint(DT_REPAIR, "Creating condition for %u: (%y ^%y %y)\n", lWME->timetag, lWME->id, lWME->attr, lWME->value);
-//    dprint(DT_REPAIR, "   identities of associated pref: (%u ^%u %u)\n", lWME->preference ? lWME->preference->o_ids.id : 0, lWME->preference ? lWME->preference->o_ids.attr : 0, lWME->preference ? lWME->preference->o_ids.value : 0);
     new_cond = make_condition(thisAgent,
         make_test(thisAgent, lWME->id, EQUALITY_TEST),
         make_test(thisAgent, lWME->attr, EQUALITY_TEST),
@@ -227,12 +209,10 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
 
             if (lSym->is_sti() && lSym->id->isa_goal)
             {
-                dprint(DT_REPAIR, "Marking state found %y in id element with tc_num %u\n", lCond->data.tests.id_test->eq_test->data.referent, tc);
                 lSym->tc_num = tc;
             }
             else if (lMatchedSym && lMatchedSym->is_sti() && lMatchedSym->id->isa_goal)
             {
-                dprint(DT_REPAIR, "Marking state found %y in id element's instantiated sym with tc_num %u\n", lMatchedSym, tc);
                 lMatchedSym->tc_num = tc;
             }
             if (lMatchedSym)
@@ -246,12 +226,10 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
 
             if (lSym->is_sti() && lSym->id->isa_goal)
             {
-                dprint(DT_REPAIR, "Marking state found %y in value element with tc_num %u\n", lCond->data.tests.id_test->eq_test->data.referent, tc);
                 lSym->tc_num = tc;
             }
             else if (lMatchedSym && lMatchedSym->is_sti() && lMatchedSym->id->isa_goal)
             {
-                dprint(DT_REPAIR, "Marking state found %y in value element's instantiated sym with tc_num %u\n", lMatchedSym, tc);
                 lMatchedSym->tc_num = tc;
             }
             if (lMatchedSym && lMatchedSym->is_sti())

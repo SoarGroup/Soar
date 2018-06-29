@@ -2,7 +2,6 @@
 #include "ebc_identity.h"
 
 #include "agent.h"
-#include "dprint.h"
 #include "condition.h"
 #include "preference.h"
 #include "symbol_manager.h"
@@ -86,13 +85,11 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
         }
     }
 
-    dprint(DT_RHS_VARIABLIZATION, "Converted result: %a\n", a);
     return a;
 }
 
 action* Explanation_Based_Chunker::convert_results_into_actions()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before conversion: \n%6", NULL, m_results);
 
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;
@@ -108,7 +105,6 @@ action* Explanation_Based_Chunker::convert_results_into_actions()
         lLastAction = lAction;
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Actions after conversion: \n%2", returnAction);
     return returnAction;
 }
 
@@ -167,7 +163,6 @@ void Explanation_Based_Chunker::update_identities_in_tests_by_lookup(test t, boo
             }
             c = c->rest;
         }
-        dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
     }
     else
     {
@@ -208,11 +203,9 @@ void Explanation_Based_Chunker::update_identities_in_condition_list(condition* t
         {
             if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
-                dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Updating equality test in LHS positive condition: %l\n", cond);
                 update_identities_in_equality_tests(cond->data.tests.id_test);
                 update_identities_in_equality_tests(cond->data.tests.attr_test);
                 update_identities_in_equality_tests(cond->data.tests.value_test);
-                dprint(DT_LHS_VARIABLIZATION, "-->Updated equalities in condition: %l\n", cond);
             }
         }
     }

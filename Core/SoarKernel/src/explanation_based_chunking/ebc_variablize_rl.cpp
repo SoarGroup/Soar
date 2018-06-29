@@ -1,7 +1,6 @@
 #include "ebc.h"
 
 #include "agent.h"
-#include "dprint.h"
 #include "condition.h"
 #include "instantiation.h"
 #include "symbol_manager.h"
@@ -54,24 +53,17 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
         return NULL;
     }
 
-    dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
-
     tc_number lti_link_tc = get_new_tc_number(thisAgent);
     sti_variablize_rhs_symbol(rhs->id, false);
     sti_variablize_rhs_symbol(rhs->attr, false);
     sti_variablize_rhs_symbol(rhs->value, false);
     sti_variablize_rhs_symbol(rhs->referent, false);
 
-    dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
-
     return rhs;
 }
 
 void Explanation_Based_Chunker::variablize_rl_test(test pTest)
 {
-
-    dprint(DT_RL_VARIABLIZATION, "Variablizing by lookup tests in: %t\n", pTest);
-
     cons* c;
     test tt;
 
@@ -86,7 +78,6 @@ void Explanation_Based_Chunker::variablize_rl_test(test pTest)
             }
             c = c->rest;
         }
-        dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
     }
     else
     {
@@ -100,25 +91,17 @@ void Explanation_Based_Chunker::variablize_rl_test(test pTest)
 
 void Explanation_Based_Chunker::variablize_rl_condition_list(condition* top_cond)
 {
-    dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing LHS condition list for RL instance:\n");
-
     for (condition* cond = top_cond; cond != NIL; cond = cond->next)
     {
         if ((cond->type == POSITIVE_CONDITION) || (cond->type == NEGATIVE_CONDITION))
         {
-            dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing LHS negative condition: %l\n", cond);
             variablize_rl_test(cond->data.tests.id_test);
             variablize_rl_test(cond->data.tests.attr_test);
             variablize_rl_test(cond->data.tests.value_test);
-            dprint(DT_RL_VARIABLIZATION, "-->variablized condition: %l\n", cond);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing LHS negative conjunctive condition:\n");
-            dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond->data.ncc.top);
             variablize_rl_condition_list(cond->data.ncc.top);
-            dprint(DT_RL_VARIABLIZATION, "-->variablized NCC: %l\n", cond);
         }
     }
-    dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
 }
