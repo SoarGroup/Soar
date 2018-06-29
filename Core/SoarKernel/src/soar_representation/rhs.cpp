@@ -1,20 +1,7 @@
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
-/* =================================================================
- *
- *                               rhs.cpp
- *
- *               Utility Routines for Actions and RHS Values
- *
- * ================================================================= */
 #include "rhs.h"
 #include "rhs_functions.h"
 
 #include "agent.h"
-#include "dprint.h"
 #include "ebc.h"
 #include "ebc_identity.h"
 #include "preference.h"
@@ -43,7 +30,6 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 
     if (!rv || rhs_value_is_reteloc(rv) || rhs_value_is_unboundvar(rv)) return;
 
-    dprint(DT_DEALLOCATE_RHS_VALUE, "Deallocating rhs value %r\n", rv);
     if (rhs_value_is_funcall(rv))
     {
 
@@ -398,8 +384,6 @@ rhs_value create_RHS_value(agent* thisAgent,
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: reteloc %y %us%u\n", t->data.referent, t->inst_identity, t->identity ? t->identity->get_identity() : 0);
-
         return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->inst_identity, t->identity);
     }
 
@@ -424,7 +408,6 @@ rhs_value create_RHS_value(agent* thisAgent,
                 lO_id = thisAgent->explanationBasedChunker->get_or_create_inst_identity_for_sym(sym);
             }
             /* generate will increment the refcount on the new variable, so don't need to do it here. */
-            dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: unbound %y %u\n", sym, lO_id);
             return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id, NULL, true);
         }
         else
@@ -437,7 +420,6 @@ rhs_value create_RHS_value(agent* thisAgent,
             lO_id = thisAgent->explanationBasedChunker->get_or_create_inst_identity_for_sym(sym);
         }
 
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y [%u]\n", sym, lO_id);
         return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id, NULL, true);
     }
 
@@ -465,7 +447,6 @@ rhs_value create_RHS_value(agent* thisAgent,
     {
         /* Literal values including those in function calls. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, rs->inst_identity);
         if (ebcTraceType == Explanation_Trace)
             return allocate_rhs_value_for_symbol(thisAgent, rs->referent, rs->inst_identity, rs->identity, rs->was_unbound_var);
         else

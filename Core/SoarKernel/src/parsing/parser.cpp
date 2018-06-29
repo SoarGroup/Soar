@@ -16,7 +16,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "dprint.h"
 #include "ebc.h"
 #include "explanation_memory.h"
 #include "lexer.h"
@@ -144,12 +143,7 @@ void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol** sym)
         prefix[1] = '*';
         prefix[2] = 0;
         (*sym)->var->current_binding_value = thisAgent->symbolManager->generate_new_variable(prefix);
-        dprint(DT_PARSER, "Substituting for placeholder %y with newly generated %y.\n", (*sym), (*sym)->var->current_binding_value);
         just_created = true;
-    }
-    else
-    {
-        dprint(DT_PARSER, "Substituting for placeholder %y with existing %y.\n", (*sym), (*sym)->var->current_binding_value);
     }
     var = (*sym)->var->current_binding_value;
     thisAgent->symbolManager->symbol_remove_ref(&(*sym));
@@ -2384,7 +2378,6 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     } /* end of while (true) */
 
     /* --- read the LHS --- */
-    dprint(DT_PARSER, "Parsing LHS\n");
     lhs = parse_lhs(thisAgent, &lexer);
     if (!lhs)
     {
@@ -2406,7 +2399,6 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     }
 
     /* --- read the RHS --- */
-    dprint(DT_PARSER, "Parsing RHS\n");
     rhs_okay = parse_rhs(thisAgent, &lexer, &rhs);
     if (!rhs_okay)
     {
@@ -2423,7 +2415,6 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     /* --- everything parsed okay, so make the production structure --- */
     lhs_top = lhs;
     for (lhs_bottom = lhs; lhs_bottom->next != NIL; lhs_bottom = lhs_bottom->next);
-    dprint(DT_PARSER, "Parse OK.  Making production.\n");
 
     thisAgent->name_of_production_being_reordered = name->sc->name;
     if (!reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true))

@@ -4,7 +4,6 @@
 #include "callback.h"
 #include "condition.h"
 #include "decide.h"
-#include "dprint.h"
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "instantiation.h"
@@ -832,8 +831,6 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
     goal_stack_level lowest_level_so_far;
     token* tok;
 
-    //dprint(DT_WATERFALL, "Match goal for assertion: %y", msc->p_node->b.p.prod->name);
-
     lowest_goal_wme = NIL;
     lowest_level_so_far = -1;
 
@@ -873,11 +870,9 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
 
     if (lowest_goal_wme)
     {
-        dprint_noprefix(DT_WATERFALL, " is [%y]\n", lowest_goal_wme->id);
         return lowest_goal_wme->id;
     }
     {
-        dprint_noprefix(DT_WATERFALL, " has no lowest_goal_wme!\n");
         char msg[BUFFER_MSG_SIZE];
         thisAgent->outputManager->printa_sf(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
         SNPRINTF(msg, BUFFER_MSG_SIZE, "\nError: Did not find goal for ms_change assertion: %s\n",
@@ -890,22 +885,14 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
 
 Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
 {
-
-    //dprint(DT_WATERFALL, "Match goal level for retraction: %y", msc->inst->prod_name);
-
     if (msc->inst->match_goal)
     {
         /* If there is a goal, just return the goal */
-        dprint_noprefix(DT_WATERFALL, " is [%y]", msc->inst->match_goal);
         return  msc->inst->match_goal;
-
     }
     else
     {
-
-        dprint_noprefix(DT_WATERFALL, " is NIL (nil goal retraction)");
         return NIL;
-
     }
 }
 
@@ -2727,7 +2714,6 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
-        //dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
         New = make_test(thisAgent, temp, EQUALITY_TEST);
         add_test(thisAgent, t, New);
     }
@@ -2736,7 +2722,6 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
             temp = static_cast<Symbol*>(c->first);
-            //dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
             New =  make_test(thisAgent, temp, EQUALITY_TEST);
             add_test(thisAgent, t, New);
         }
@@ -3894,8 +3879,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         msc->level = NO_WME_LEVEL;
         msc->goal = NIL;
 
-        //dprint(DT_WATERFALL, " %y is a refracted instantiation\n", refracted_inst->prod_name);
-
         insert_at_head_of_dll(thisAgent->nil_goal_retractions,
                               msc, next_in_level, prev_in_level);
 
@@ -3920,10 +3903,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         remove_from_dll(p->instantiations, refracted_inst, next, prev);
         if (p_node->b.p.tentative_retractions)
         {
-            /* This doesn't seem to always work but can be useful to detect bad rules learned */
-            //dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation did not match!  Printing partial matches...\n");
-            //dprint_partial_matches(DT_VARIABLIZATION_MANAGER, p_node);
-
             production_addition_result = REFRACTED_INST_DID_NOT_MATCH;
             msc = p_node->b.p.tentative_retractions;
             p_node->b.p.tentative_retractions = NIL;
@@ -4190,22 +4169,18 @@ void rete_node_to_conditions(agent* thisAgent,
     if (node->node_type == CN_BNODE)
     {
         cond->type = CONJUNCTIVE_NEGATION_CONDITION;
-        //dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
         rete_node_to_conditions(thisAgent, node->b.cn.partner->parent, nvn ? nvn->data.bottom_of_subconditions : NIL, node->parent, NIL, NIL, cond->prev, &(cond->data.ncc.top), &(cond->data.ncc.bottom), ebcTraceType, true);
         cond->data.ncc.top->prev = NIL;
     }
     else
     {
-        //dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
         if (bnode_is_positive(node->node_type))
         {
             cond->type = POSITIVE_CONDITION;
-            //dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
         }
         else
         {
             cond->type = NEGATIVE_CONDITION;
-            //dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
         }
 
         if (w && (cond->type == POSITIVE_CONDITION))
@@ -4222,7 +4197,6 @@ void rete_node_to_conditions(agent* thisAgent,
             {
                 thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, ebcTraceType, inNegativeNodes);
             }
-            //dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
         else
         {
@@ -5962,8 +5936,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 
-    //dprint(DT_WATERFALL, "    Level of goal is  %d\n", static_cast<int64_t>(msc->level));
-
     prod_type = IE_PRODS;
 
     if (node->b.p.prod->declared_support == DECLARED_O_SUPPORT)
@@ -6297,8 +6269,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->goal = find_goal_for_match_set_change_retraction(msc);
         msc->level = msc->goal->id->level;
 
-        //dprint(DT_WATERFALL, "    Level of retraction is: %d\n", msc->level);
-
         if (msc->goal->id->link_count == 0)
         {
             /* BUG (potential) (Operand2/Waterfall: 2.101)
@@ -6333,8 +6303,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         {
             insert_at_head_of_dll(thisAgent->nil_goal_retractions,  msc, next_in_level, prev_in_level);
         }
-
-        //dprint(DT_WATERFALL, "Retraction: %y is active at level %d.  Enable DEBUG_WATERFALL for retraction lists.\n", msc->inst->prod_name, msc->level);
 
         #ifdef DEBUG_WATERFALL
 
