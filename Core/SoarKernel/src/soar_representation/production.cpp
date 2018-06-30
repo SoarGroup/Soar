@@ -16,7 +16,6 @@
 #include "condition.h"
 #include "ebc.h"
 #include "ebc_timers.h"
-#include "explanation_memory.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "preference.h"
@@ -25,12 +24,15 @@
 #include "rete.h"
 #include "reinforcement_learning.h"
 #include "rhs.h"
-#include "run_soar.h"
 #include "symbol.h"
 #include "test.h"
 
 #include <ctype.h>
+#include "run_soar.h"
 #include <stdlib.h>
+#include "dprint.h"
+
+#include "explanation_memory.h"
 
 void init_production_utilities(agent* thisAgent)
 {
@@ -362,6 +364,11 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     thisAgent->symbolManager->reset_variable_generator(*lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL);
+
+    dprint_header(DT_REORDERER, PrintBefore, "Reordering and validating:\n");
+    dprint_noprefix(DT_REORDERER, "%1", *lhs_top);
+    dprint_noprefix(DT_REORDERER, "Actions:\n");
+    dprint_noprefix(DT_REORDERER, "%2", *rhs_top);
 
     if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms, add_ungrounded_rhs))
     {

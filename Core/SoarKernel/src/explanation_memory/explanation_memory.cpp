@@ -4,6 +4,7 @@
 #include "agent.h"
 #include "condition_record.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "ebc_identity.h"
 #include "instantiation_record.h"
@@ -25,6 +26,7 @@
 
 Explanation_Memory::Explanation_Memory(agent* myAgent)
 {
+    /* Cache agent and Output Manager pointer */
     thisAgent = myAgent;
     outputManager = &Output_Manager::Get_OM();
 
@@ -53,6 +55,8 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
 
 Explanation_Memory::~Explanation_Memory()
 {
+    dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
+
     current_recording_chunk = NULL;
     current_discussed_chunk = NULL;
     clear_explanations();
@@ -67,6 +71,8 @@ Explanation_Memory::~Explanation_Memory()
     delete instantiations;
     delete production_id_map;
     delete settings;
+
+    dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
 }
 
 void Explanation_Memory::initialize_counters()
@@ -104,6 +110,7 @@ void Explanation_Memory::initialize_counters()
 
 void Explanation_Memory::clear_explanations()
 {
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d chunk records...\n", chunks->size());
     Symbol* lSym;
     for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
@@ -115,6 +122,7 @@ void Explanation_Memory::clear_explanations()
     chunks->clear();
     chunks_by_ID->clear();
 
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d instantiation records...\n", instantiations->size());
     for (auto it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
     {
         it->second->clean_up();
@@ -122,6 +130,7 @@ void Explanation_Memory::clear_explanations()
     }
     instantiations->clear();
 
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d condition records...\n", all_conditions->size());
     for (auto it = (*all_conditions).begin(); it != (*all_conditions).end(); ++it)
     {
         it->second->clean_up();
@@ -129,6 +138,7 @@ void Explanation_Memory::clear_explanations()
     }
     all_conditions->clear();
 
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d action records...\n", all_actions->size());
     for (auto it = (*all_actions).begin(); it != (*all_actions).end(); ++it)
     {
         it->second->clean_up();
@@ -136,6 +146,7 @@ void Explanation_Memory::clear_explanations()
     }
     all_actions->clear();
 
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d cached productions...\n", cached_production->size());
     for (auto it = (*cached_production).begin(); it != (*cached_production).end(); ++it)
     {
         (*it)->clean_up();
@@ -144,15 +155,20 @@ void Explanation_Memory::clear_explanations()
 
     cached_production->clear();
     production_id_map->clear();
+
+    dprint(DT_EXPLAIN, "Explanation logger done clearing explanation records...\n");
 }
 
 void Explanation_Memory::re_init()
 {
+    dprint(DT_EXPLAIN_CACHE, "Re-initializing explanation logger.\n");
     clear_explanations();
+    /* MToDo | Might not need to do.  They might get popped with stack */
     clear_identity_sets();
     initialize_counters();
     current_recording_chunk = NULL;
     current_discussed_chunk = NULL;
+    dprint(DT_EXPLAIN_CACHE, "Done re-initializing explanation logger: %d %d %d %d %d %d\n", chunks->size(), chunks_by_ID->size(), all_conditions->size(), all_actions->size(), instantiations->size(), production_id_map->size());
 }
 
 void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
@@ -160,6 +176,7 @@ void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
     bool lShouldRecord = false;
     if ((!m_all_enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
     {
+        dprint(DT_EXPLAIN, "Explainer ignoring this chunk because it is not being watched.\n");
         current_recording_chunk = NULL;
         return;
     }
@@ -219,15 +236,20 @@ void Explanation_Memory::record_chunk_contents(production* pProduction, conditio
 {
     if (current_recording_chunk)
     {
+        dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pProduction->name, current_recording_chunk->chunkID, backtrace_number);
         current_recording_chunk->record_chunk_contents(pProduction, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number, pChunkInstantiation, prodType);
         chunks->insert({pProduction->name, current_recording_chunk});
         chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
         thisAgent->symbolManager->symbol_add_ref(pProduction->name);
+        dprint(DT_EXPLAIN, "Explanation logger done record_chunk_contents...\n");
+    } else {
+        dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pProduction->name);
     }
 }
 
 condition_record* Explanation_Memory::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst, bool pMakeNegative, bool isChunkInstantiation)
 {
+    dprint(DT_EXPLAIN_CONDS, "   Creating condition: %l\n", pCond);
     condition_record* lCondRecord;
 
     if (pCond->type != CONJUNCTIVE_NEGATION_CONDITION)
@@ -245,6 +267,8 @@ condition_record* Explanation_Memory::add_condition(condition_record_list* pCond
     }
     else
     {
+        dprint(DT_EXPLAIN_CONDS, "   Recording new conditions for NCC...\n");
+
         /* Create condition and action records */
         condition_record* new_cond_record;
         for (condition* cond = pCond->data.ncc.top; cond != NIL; cond = cond->next)
@@ -260,6 +284,8 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
     if (pInst->explain_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
 
     bool lIsTerminalInstantiation = false;
+    dprint(DT_EXPLAIN_ADD_INST, "Adding instantiation for i%u (%y).\n",
+        pInst->i_id, pInst->prod_name);
 
     if (pInst->explain_status == explain_unrecorded)
     {
@@ -275,6 +301,8 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
          * of instantiations */
         if ((pInst->backtrace_number != backtrace_number) || (pInst->explain_depth == EXPLAIN_MAX_BT_DEPTH))
         {
+            dprint(DT_EXPLAIN_ADD_INST, "- Backtrace number does not match (%d != %d).  Creating terminal instantiation record...\n",
+                pInst->backtrace_number, backtrace_number);
             lIsTerminalInstantiation = true;
         }
 
@@ -287,12 +315,17 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
         lInstRecord->init(thisAgent, pInst, isChunkInstantiation);
         instantiations->insert({pInst->i_id, lInstRecord});
         lInstRecord->creating_chunk = pChunkID;
+        dprint(DT_EXPLAIN_ADD_INST, "- Returning new instantiation record for i%u (%y).\n",
+            pInst->i_id, pInst->prod_name);
         return lInstRecord;
     } else if ((pInst->explain_status == explain_recorded) && (pInst->explain_tc_num != backtrace_number))
     {
         /* Update instantiation*/
+        dprint(DT_EXPLAIN_ADD_INST, "- Updating instantiation record for i%u (%y) that was created explaining a previous chunk.\n", pInst->i_id, pInst->prod_name);
         if ((pInst->backtrace_number != backtrace_number) || (pInst->explain_depth == EXPLAIN_MAX_BT_DEPTH))
         {
+            dprint(DT_EXPLAIN_ADD_INST, "- Backtrace number does not match (%d != %d).  Creating terminal instantiation record for i%u (%y).\n",
+                pInst->backtrace_number, backtrace_number, pInst->i_id, pInst->prod_name);
             lIsTerminalInstantiation = true;
         }
         /* Set status flag to recording to handle recursive addition */
@@ -300,7 +333,16 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
         pInst->explain_tc_num = backtrace_number;
 
         instantiation_record* lInstRecord = get_instantiation(pInst);
+        dprint(DT_EXPLAIN_ADD_INST, "- Updated instantiation record for i%u (%y).\n", pInst->i_id, pInst->prod_name);
         return lInstRecord;
+    } else if (pInst->explain_status == explain_recording) {
+        dprint(DT_EXPLAIN_ADD_INST, "- Currently recording instantiation record for i%u (%y) in a parent call.  Did not create new record.\n", pInst->i_id, pInst->prod_name);
+    } else {
+        dprint(DT_EXPLAIN_ADD_INST, "- Already recorded instantiation record for i%u (%y).  Did not create new record.\n", pInst->i_id, pInst->prod_name);
+        for (auto it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
+        {
+            dprint(DT_EXPLAIN_ADD_INST, "i%u (%y)\n", it->second->instantiationID, it->second->production_name);
+        }
     }
     return get_instantiation(pInst);
 }
@@ -308,6 +350,7 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
 action_record* Explanation_Memory::add_result(preference* pPref, action* pAction, bool isChunkInstantiation)
 {
     increment_counter(action_id_count);
+    dprint(DT_EXPLAIN_CONDS, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
     action_record* lActionRecord;
     thisAgent->memoryManager->allocate_with_pool(MP_action_record, &lActionRecord);
     lActionRecord->init(thisAgent, pPref, pAction, action_id_count, isChunkInstantiation);
@@ -456,6 +499,7 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 
 void Explanation_Memory::save_excised_production(production* pProd)
 {
+    dprint(DT_EXPLAIN_CACHE, "Saving excised production: %y\n", pProd->name);
     production_record* lProductionRecord;
     thisAgent->memoryManager->allocate_with_pool(MP_production_record, &lProductionRecord);
     lProductionRecord->init(thisAgent, pProd);
@@ -465,6 +509,7 @@ void Explanation_Memory::save_excised_production(production* pProd)
     } else {
         thisAgent->memoryManager->free_with_pool(MP_production_record, lProductionRecord);
     }
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger done adding production record for excised production: %y\n", pProd->name);
 }
 
 bool Explanation_Memory::print_chunk_explanation_for_id(uint64_t pChunkID)
@@ -509,12 +554,14 @@ void Explanation_Memory::add_identity(Identity* pNewIdentity, Symbol* pGoal)
     auto iter = all_identities_in_goal->find(pGoal);
     if (iter == all_identities_in_goal->end())
     {
+        dprint(DT_EXPLAIN_IDENTITIES, "Creating new identities set and increasing refcount on goal %y\n", pGoal);
         lIdentities = new identity_set();
         (*all_identities_in_goal)[pGoal] = lIdentities;
         thisAgent->symbolManager->symbol_add_ref(pGoal);
     } else {
         lIdentities = iter->second;
     }
+    dprint(DT_EXPLAIN_IDENTITIES, "Increasing refcount of identity %u and adding to identities set of goal %y\n", pNewIdentity->idset_id, pGoal);
     lIdentities->insert(pNewIdentity);
     pNewIdentity->add_ref();
 }
@@ -526,6 +573,7 @@ void Explanation_Memory::clear_identities_in_set(identity_set* lIdenty_set)
     for (auto it = lIdenty_set->begin(); it != lIdenty_set->end(); ++it)
     {
         l_inst_identity = (*it);
+        dprint(DT_EXPLAIN_IDENTITIES, "Removing refcount %u \n", l_inst_identity->idset_id);
         IdentitySet_remove_ref(thisAgent, l_inst_identity);
     }
     delete lIdenty_set;
@@ -539,7 +587,9 @@ void Explanation_Memory::clear_identity_sets()
     for (auto it1 = all_identities_in_goal->begin(); it1 != all_identities_in_goal->end(); ++it1)
     {
         lSym = it1->first;
+        dprint(DT_EXPLAIN_IDENTITIES, "Clearing identity refcounts for goal %y\n", it1->first);
         clear_identities_in_set(it1->second);
+        dprint(DT_EXPLAIN_IDENTITIES, "... decreasing refcount for goal %y\n", it1->first);
         thisAgent->symbolManager->symbol_remove_ref(&lSym);
     }
     all_identities_in_goal->clear();
@@ -549,11 +599,13 @@ void Explanation_Memory::clear_identity_sets_for_goal(Symbol* pGoal)
 {
     Symbol*             lSym;
 
+    dprint(DT_EXPLAIN_IDENTITIES, "Clearing identity refcounts for goal %y\n", pGoal);
     auto iter = all_identities_in_goal->find(pGoal);
     if (iter != all_identities_in_goal->end())
     {
         lSym = iter->first;
         clear_identities_in_set(iter->second);
+        dprint(DT_EXPLAIN_IDENTITIES, "... decreasing refcount for goal %y\n", pGoal);
         thisAgent->symbolManager->symbol_remove_ref(&lSym);
         all_identities_in_goal->erase(iter);
     }
@@ -579,6 +631,7 @@ void Explanation_Memory::increment_stat_duplicates(production* duplicate_rule)
         chunk_record* lChunkRecord = get_chunk_record(duplicate_rule->name);
         if (lChunkRecord)
         {
+            dprint(DT_EXPLAIN, "Incrementing stats for duplicate chunk of rule %y.\n", duplicate_rule->name);
             increment_counter(lChunkRecord->stats.duplicates);
         }
     }
@@ -589,6 +642,7 @@ void Explanation_Memory::clear_chunk_from_instantiations()
     instantiation_record* lNewInstRecord;
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
+
         lNewInstRecord = (*it);
         if (lNewInstRecord->path_to_base)
         {
@@ -650,6 +704,10 @@ void Explanation_Memory::visualize_identity_graph_for_goal(Symbol* pGoal)
 {
     GraphViz_Visualizer* vm = thisAgent->visualizationManager;
     vm->viz_graph_start();
+//    auto iter = all_identities_in_goal->find(thisAgent->bottom_goal);
+//    if (iter != all_identities_in_goal->end())
+//    {
+//    current_discussed_chunk->identity_analysis.visualize();
     vm->viz_graph_end();
 }
 

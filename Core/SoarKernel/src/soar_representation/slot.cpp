@@ -1,7 +1,19 @@
+/*************************************************************************
+ *
+ *  file:  slot.cpp
+ *
+ * =======================================================================
+ *
+ *             Slot routines
+ *
+ * =======================================================================
+ */
+
 #include "slot.h"
 
 #include "agent.h"
 #include "decide.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "mem.h"
 #include "instantiation.h"
@@ -10,6 +22,12 @@
 #include "symbol_manager.h"
 
 #include <stdlib.h>
+
+/* **********************************************************************
+
+                        Temporary Memory
+
+********************************************************************** */
 
 /* ======================================================================
 
@@ -47,8 +65,9 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     slot* s;
     int i;
 
-    /* Search for a slot first.  If it exists
-    *  for the given symbol, then just return it */
+    /* JC: Search for a slot first.  If it exists
+    *  for the given symbol, then just return it
+    */
     for (s = id->id->slots; s != NIL; s = s->next)
     {
         if (s->attr == attr)
@@ -57,12 +76,13 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
         }
     }
 
-    /* Need to create a new slot */
+    /* JC: need to create a new slot */
     thisAgent->memoryManager->allocate_with_pool(MP_slot, &s);
     insert_at_head_of_dll(id->id->slots, s, next, prev);
 
     /* Context slots are goals and operators; operator slots get
-     *  created with a goal (see create_new_context). */
+     *  created with a goal (see create_new_context).
+     */
     if ((id->id->isa_goal) && (attr == thisAgent->symbolManager->soarSymbols.operator_symbol))
     {
         s->isa_context_slot = true;
@@ -83,8 +103,9 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     s->OSK_prefs = NIL;
     s->instantiation_with_temp_OSK = NULL;
 
-    /* JThis is the same as all_preferences
-     *  except they are indexed by type. */
+    /* JC: This is the same as all_preferences
+     *  except they are indexed by type.
+     */
     for (i = 0; i < NUM_PREFERENCE_TYPES; i++)
     {
         s->preferences[i] = NIL;
@@ -178,6 +199,7 @@ void remove_garbage_slots(agent* thisAgent)
         }
 
         /* --- deallocate the slot --- */
+        dprint(DT_DEALLOCATE_SLOT, "Deallocating slot %y ^%y.\n", s->id, s->attr);
         if (s->OSK_prefs)
         {
             clear_preference_list(thisAgent, s->OSK_prefs);

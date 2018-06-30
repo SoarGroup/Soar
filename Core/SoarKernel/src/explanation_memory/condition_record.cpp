@@ -3,6 +3,7 @@
 #include "action_record.h"
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "ebc_identity.h"
 #include "explanation_memory.h"
@@ -20,7 +21,10 @@
 
 void simplify_identity_in_test(agent* thisAgent, test t, bool isChunkInstantiation)
 {
+    test new_ct;
+
     if (!t) return;
+
 
     switch (t->type)
     {
@@ -64,6 +68,8 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
     parent_action = NULL;
     path_to_base = NULL;
     my_instantiation = NULL;
+
+    dprint(DT_EXPLAIN_CONDS, "Creating condition %u for %l.\n", conditionID, pCond);
 
     condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
     condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
@@ -121,6 +127,8 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
 
 void condition_record::clean_up()
 {
+    dprint(DT_EXPLAIN_CONDS, "   Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
+
     deallocate_test(thisAgent, condition_tests.id);
     deallocate_test(thisAgent, condition_tests.attr);
     deallocate_test(thisAgent, condition_tests.value);
@@ -140,6 +148,10 @@ void condition_record::connect_to_action()
     if (parent_instantiation && cached_pref)
     {
         parent_action = parent_instantiation->find_rhs_action(cached_pref);
+        assert(parent_action);
+        dprint(DT_EXPLAIN_CONNECT, "   Linked condition %u (%t ^%t %t) to a%u in i%u.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value, parent_action->get_actionID(), parent_instantiation->get_instantiationID());
+    } else {
+        dprint(DT_EXPLAIN_CONNECT, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
     }
 }
 
@@ -147,8 +159,11 @@ void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel, bool 
 {
     if (parent_instantiation && (wme_level_at_firing == pMatchLevel))
     {
-        if (!isChunkInstantiation)
+        assert(parent_action);
+        assert(my_instantiation);
+        if (isChunkInstantiation)
         {
+        } else {
             thisAgent->visualizationManager->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
                 parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
         }

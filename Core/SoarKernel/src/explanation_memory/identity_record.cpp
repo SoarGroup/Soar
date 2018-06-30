@@ -2,6 +2,7 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "ebc_identity.h"
 #include "explanation_memory.h"
@@ -30,6 +31,7 @@ void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pT
 {
     identity_mapping_list* lInstMappingList;
 
+    dprint(DT_EXPLAIN_IDENTITIES, "Adding identity mappings type %d: %u -> %u\n", static_cast<int>(pType), pFromID->get_identity(), pToID ? pToID->get_identity() : 0);
     auto lIterInst = instantiation_mappings->find(pI_ID);
     if (lIterInst == instantiation_mappings->end())
     {
@@ -130,7 +132,11 @@ void generate_identity_sets_from_conditions(agent* thisAgent, condition* lhs, ui
 void identity_record::analyze_chunk_identities(uint64_t pInstID, condition* lhs)
 {
     /* Generate identity sets and add mappings for all conditions in chunk */
+
+    dprint(DT_EXPLAIN_IDENTITIES, "Building identity mappings based on conditions of chunk...\n");
     generate_identity_sets_from_conditions(thisAgent, lhs, pInstID, identities_in_chunk, idset_to_var_map);
+
+    /* MToDo | Might need to generate identity sets for RHS as well (for unbound vars) */
 
     for (auto it = identities_in_chunk->begin(); it != identities_in_chunk->end(); ++it)
     {
@@ -293,6 +299,12 @@ void identity_record::visualize()
     Symbol*             lSym;
     identity_mapping*   lMapping;
     Identity*        l_inst_identity;
+
+//    for (auto it = identity_joins->begin(); it != identity_joins->end(); ++it)
+//    {
+//        if (it->first != it->second)
+//            thisAgent->visualizationManager->viz_connect_identities(it->first, it->second);
+//    }
 
     for (auto it = instantiation_mappings->begin(); it != instantiation_mappings->end(); ++it)
     {

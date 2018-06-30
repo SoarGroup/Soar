@@ -4,6 +4,7 @@
 #include "agent.h"
 #include "condition_record.h"
 #include "condition.h"
+#include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
 #include "output_manager.h"
@@ -59,9 +60,11 @@ void instantiation_record::init(agent* myAgent, instantiation* pInst, bool isChu
 
 void instantiation_record::clean_up()
 {
+    dprint(DT_EXPLAIN, "Deleting instantiation record i%u (%y)\n", instantiationID, production_name);
     thisAgent->symbolManager->symbol_remove_ref(&production_name);
     delete conditions;
     delete actions;
+    dprint(DT_EXPLAIN, "Done deleting instantiation record i%u (%y)\n", instantiationID, production_name);
     production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
     if (originalProduction)
     {
@@ -87,6 +90,7 @@ void instantiation_record::delete_instantiation()
 
 void instantiation_record::record_instantiation_contents(bool isChunkInstantiation)
 {
+    dprint(DT_EXPLAIN_ADD_INST, "- Recording instantiation contents for i%u (%y)\n", cached_inst->i_id, production_name);
     /* Create condition and action records */
     for (condition* cond = cached_inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
@@ -111,6 +115,7 @@ void instantiation_record::viz_connect_conditions(bool isChunkInstantiation)
 
 void instantiation_record::update_instantiation_contents(bool isChunkInstantiation)
 {
+    dprint(DT_EXPLAIN_UPDATE, "- Updating instantiation contents for i%u (%y)\n", cached_inst->i_id, production_name);
     /* Update condition and action records */
     condition_record* lCondRecord;
     condition* cond;
@@ -137,27 +142,44 @@ action_record* instantiation_record::find_rhs_action(preference* pPref)
         pAct = *iter;
         if (pAct->original_pref == pPref)
         {
+            dprint(DT_EXPLAIN_CONDS, "...found RHS action a%u for condition preference %p.\n", pAct->get_actionID(), pPref);
             return (*iter);
         }
     }
+    dprint(DT_EXPLAIN_CONNECT, "...did not find pref %p among:\n", pPref);
     for (iter = actions->begin(); iter != actions->end(); ++iter)
     {
         pAct = *iter;
+        dprint(DT_EXPLAIN_CONNECT, "      %p\n", pAct->original_pref);
     }
     return NULL;
 }
 
 condition_record* instantiation_record::find_condition_for_chunk(preference* pPref, wme* pWME)
 {
+    dprint(DT_EXPLAIN_PATHS, "Looking for condition in i%u: ", instantiationID);
+    if (pPref)
+    {
+        dprint_noprefix(DT_EXPLAIN_PATHS, " pref %p", pPref);
+    }
+    if (pWME)
+    {
+        dprint_noprefix(DT_EXPLAIN_PATHS, " wme %w", pWME);
+    }
+    dprint_noprefix(DT_EXPLAIN_PATHS, "\n");
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
     {
+        dprint(DT_EXPLAIN_PATHS, "Comparing against condition %u", (*it)->get_conditionID());
         if (pWME && ((*it)->get_cached_wme() == pWME))
         {
+            dprint(DT_EXPLAIN_PATHS, "Found condition %u %w for target wme %w\n", (*it)->get_conditionID(), (*it)->get_cached_wme(), pWME);
             return (*it);
         }
         else if (pPref && ((*it)->get_cached_pref() == pPref))
         {
             /* Don't think we can ever have a wme without a pref */
+            assert(false);
+            dprint(DT_EXPLAIN_PATHS, "Found condition %u %p for target preference %p\n", (*it)->get_conditionID(), (*it)->get_cached_pref(), pPref);
             return (*it);
         }
     }
@@ -183,14 +205,19 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
     (*path_to_base) = (*pInstPath);
     path_to_base->push_back(this);
     instantiation_record* lParentInst;
+    dprint(DT_EXPLAIN_PATHS, "Adding paths recursively for conditions of i%u (%y)...\n", instantiationID, production_name);
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
     {
         lParentInst = (*it)->get_parent_inst();
         if (lParentInst && (lParentInst->get_match_level() == match_level))
         {
             lParentInst->create_identity_paths(path_to_base);
+            dprint(DT_EXPLAIN_PATHS, "...creating identity path for i%u (%y) at level %d\n", lParentInst->instantiationID, lParentInst->production_name, static_cast<int64_t>(match_level));
         } else {
+            dprint(DT_EXPLAIN_PATHS, "...not recursing because %s: %d%s%d\n", lParentInst ? "parent inst level != match level for " : "no parent instantiation! ", (lParentInst ? static_cast<int64_t>(lParentInst->get_match_level()) : 0), (lParentInst ? " != " : " "), static_cast<int64_t>(match_level));
             condition_record* lCond = (*it);
+            dprint(DT_EXPLAIN_PATHS, "   pref: %p\n", lCond ? lCond->cached_pref : NULL);
+            dprint(DT_EXPLAIN_PATHS, "   cond: (%t ^%t %t)\n", lCond->condition_tests.id, lCond->condition_tests.attr, lCond->condition_tests.value);
         }
     }
 }
@@ -206,6 +233,7 @@ id_set* instantiation_record::get_lhs_identities()
         if (excised_production)
         {
             top = excised_production->get_lhs();
+            assert(top);
         } else {
             thisAgent->outputManager->printa_sf(thisAgent, "%eError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
         }

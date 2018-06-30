@@ -1,12 +1,14 @@
 #include "ebc.h"
 
 #include "agent.h"
+#include "dprint.h"
 #include "symbol_manager.h"
 #include "rhs.h"
 #include "test.h"
 
 void Explanation_Based_Chunker::add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity)
 {
+    dprint(DT_LHS_VARIABLIZATION, "Adding variablization found for %y -> %y [%u]\n", pSym, pVar, pInstIdentity);
     chunk_element* lVarInfo;
     thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lVarInfo);
     lVarInfo->variable_sym = pVar;
@@ -68,14 +70,20 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
         cons* c;
         rhs_value lRhsValue, *lc;
 
+        dprint(DT_RHS_FUN_VARIABLIZATION, "STI-variablizing RHS funcall %r\n", pRhs_val);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             lRhsValue = static_cast<rhs_value>(c->first);
+            dprint(DT_RHS_FUN_VARIABLIZATION, "STI-variablizing RHS funcall argument %r\n", lRhsValue);
             sti_variablize_rhs_symbol(lRhsValue, false);
+            dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS funcall argument is now   %r\n", static_cast<char*>(c->first));
         }
+        return;
     }
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
+
+    dprint(DT_RHS_VARIABLIZATION, "STI-variablizing %y [%u].\n", rs->referent, rs->inst_identity);
 
     auto iter_sym = m_sym_to_var_map->find(rs->referent);
     has_variablization = (iter_sym != m_sym_to_var_map->end());
@@ -83,9 +91,11 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
     if (!has_variablization && rs->referent->is_sti())
     {
         /* -- First time we've encountered an unbound rhs var. -- */
+        dprint(DT_RHS_VARIABLIZATION, "...is new unbound variable.\n");
         prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
         prefix[1] = 0;
         var = thisAgent->symbolManager->generate_new_variable(prefix);
+        dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y: %y\n", rs->referent, var);
         if (generate_identity) lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_inst_identity_for_sym(var);
         add_sti_variablization(rs->referent, var, lMatchedIdentity);
         has_variablization = true;
@@ -97,16 +107,20 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
     }
     if (has_variablization)
     {
+        dprint(DT_RHS_VARIABLIZATION, "... using variablization %y\n", var);
         thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
         thisAgent->symbolManager->symbol_add_ref(var);
         rs->referent = var;
         rs->inst_identity = lMatchedIdentity;
+//        rs->identity_set_wp.reset();
         rs->identity = NULL;
         rs->was_unbound_var = was_unbound;
     }
     else
     {
+        dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
         rs->inst_identity = LITERAL_VALUE;
         rs->identity = NULL;
+//        rs->identity_set_wp.reset();
     }
 }

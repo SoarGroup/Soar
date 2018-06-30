@@ -1,9 +1,17 @@
-#include "reinforcement_learning.h"
+/*************************************************************************
+ *
+ *  file:  reinforcement_learning.cpp
+ *
+ * =======================================================================
+ * Description  :  Various functions for Soar-RL
+ * =======================================================================
+ */
 
 #include "agent.h"
 #include "condition.h"
 #include "decide.h"
 #include "decision_manipulation.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "exploration.h"
 #include "instantiation.h"
@@ -11,6 +19,7 @@
 #include "preference.h"
 #include "print.h"
 #include "production.h"
+#include "reinforcement_learning.h"
 #include "rete.h"
 #include "rhs.h"
 #include "slot.h"
@@ -570,6 +579,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
         p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, WM_Trace_w_Inequalities);
         my_template_instance->prod->rl_template_conds = c_top;
+        dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
+        dprint(DT_RL_VARIABLIZATION, "Template actions: \n%2", rhs_actions);
     }
 
         production* my_template = my_template_instance->prod;
@@ -593,6 +604,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
         copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true);
 
+        dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
         thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
         thisAgent->explanationBasedChunker->set_rule_type(ebc_template);
         rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
@@ -610,10 +622,12 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             new_production->rl_efr = init_value;
             new_production->rl_gql = 0.0;
 
+            dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n%4", cond_top, new_action);
             // attempt to add to rete, remove if duplicate
             production* duplicate_rule = NULL;
             if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, duplicate_rule, true) == DUPLICATE_PRODUCTION)
             {
+                dprint(DT_RL_VARIABLIZATION, "Template production is a duplicate of %y: \n%4", duplicate_rule->name, cond_top, new_action);
                 excise_production(thisAgent, new_production, false, false);
                 rl_revert_template_id(thisAgent);
                 new_name_symbol = NULL;
@@ -622,6 +636,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         else
         {
             thisAgent->name_of_production_being_reordered = NULL;
+            dprint(DT_RL_VARIABLIZATION, "Re-orderer failure for template production: \n%4", cond_top, new_action);
             rl_revert_template_id(thisAgent);
             thisAgent->symbolManager->symbol_remove_ref(&new_name_symbol);
             new_name_symbol = NULL;

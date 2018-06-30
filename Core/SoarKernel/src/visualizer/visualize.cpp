@@ -18,6 +18,7 @@
 #include "rhs.h"
 #include "test.h"
 #include "working_memory.h"
+#include "dprint.h"
 #include "action_record.h"
 #include "condition_record.h"
 #include "identity_record.h"

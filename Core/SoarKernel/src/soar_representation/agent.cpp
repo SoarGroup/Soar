@@ -26,6 +26,7 @@
 #include "decide.h"
 #include "decider.h"
 #include "decision_manipulation.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "ebc_identity.h"
 #include "ebc_repair.h"

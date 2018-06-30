@@ -9,6 +9,7 @@
 #define SOAR_DB_H
 
 #include "kernel.h"
+#include "dprint.h"
 #include "soar_module.h"
 #include "sqlite3.h"
 
@@ -314,7 +315,7 @@ namespace soar_module
 
             inline void print_last_error()
             {
-                fprintf(stderr, "SQL errno: %d, errmsg: %s\n", sqlite3_errcode( my_db), sqlite3_errmsg( my_db));
+                dprint(DT_DEBUG, "SQL errno: %d, errmsg: %s\n", sqlite3_errcode( my_db), sqlite3_errmsg( my_db));
 
             }
             inline bool sql_execute(const char* sql);

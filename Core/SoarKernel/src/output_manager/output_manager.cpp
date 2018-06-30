@@ -14,6 +14,7 @@
 
 #include "agent.h"
 #include "callback.h"
+#include "dprint.h"
 #include "output_settings.h"
 #include "print.h"
 #include "soar_instance.h"

@@ -4,6 +4,7 @@
 #include "condition_record.h"
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "explanation_memory.h"
 #include "identity_record.h"
@@ -57,10 +58,13 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
     stats.operational_constraints           = 0;
     stats.repaired                          = false;
 
+    dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
 }
 
 void chunk_record::clean_up()
 {
+    dprint(DT_EXPLAIN, "Deleting chunk record %y (c %u)\n", name, chunkID);
+//    production_remove_ref(thisAgent, original_production);
     production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
     if (originalProduction)
     {
@@ -73,6 +77,7 @@ void chunk_record::clean_up()
     if (backtraced_instantiations) delete backtraced_instantiations;
 
     identity_analysis.clean_up();
+    dprint(DT_EXPLAIN, "Done deleting chunk record c%u\n", chunkID);
 }
 
 void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation, ProductionType prodType)
@@ -99,12 +104,16 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
      * backtraces through that instantiation.  If an instantiation already exists, we mark it for
      * an update, since the backtrace info will have changed for the new rule being explained. */
 
+    dprint(DT_EXPLAIN, "(1) Recording all bt instantiations (%d instantiations)...\n", backtraced_instantiations->size());
     for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
     {
         lNewInst = (*it);
         lNewInstRecord = thisAgent->explanationMemory->add_instantiation((*it), chunkID);
+        assert(lNewInstRecord);
         backtraced_inst_records->push_back(lNewInstRecord);
+        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod_name);
     }
+    dprint(DT_EXPLAIN, "There are now %d instantiations records...\n", backtraced_inst_records->size());
 
     /* The following actually records the contents of the instantiation.
      *
@@ -114,6 +123,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
     {
         lNewInstRecord = (*it);
+        dprint(DT_EXPLAIN, "Recording instantiation i%u.\n", lNewInstRecord->get_instantiationID());
         if (lNewInstRecord->cached_inst->explain_status == explain_recording)
         {
             lNewInstRecord->record_instantiation_contents();
@@ -127,12 +137,15 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
     baseInstantiation = thisAgent->explanationMemory->get_instantiation(pBaseInstantiation);
 
+    dprint(DT_EXPLAIN, "(2) Recording other result instantiation of chunk...\n", pBaseInstantiation->i_id);
     for (auto it = result_instantiations->begin(); it != result_instantiations->end(); ++it)
     {
         lResultInstRecord = thisAgent->explanationMemory->get_instantiation((*it));
         assert(lResultInstRecord);
         result_inst_records->insert(lResultInstRecord);
     }
+
+    dprint(DT_EXPLAIN, "(4) Recording conditions of chunk...\n");
 
     if (pChunkInstantiation->explain_status == explain_recorded)
     {
@@ -143,16 +156,27 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     }
     chunkInstantiation->cached_inst->explain_status = explain_recorded;
 
+
+    dprint(DT_EXPLAIN, "...done with (4) adding chunk instantiation conditions!\n");
+    dprint(DT_EXPLAIN, "(5) Recording identity analysis...\n");
+
     identity_analysis.analyze_chunk_identities(chunkInstantiationID, lhs);
     auto lGoalIter = thisAgent->explanationMemory->all_identities_in_goal->find(thisAgent->explanationBasedChunker->m_inst->match_goal);
+    assert(lGoalIter != thisAgent->explanationMemory->all_identities_in_goal->end());
+//    identity_analysis.record_identity_sets(lGoalIter->second);
     stats.identities_created = lGoalIter->second->size();
+
+    dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }
 
 
 void chunk_record::generate_dependency_paths()
 {
+    dprint(DT_EXPLAIN_PATHS, "Creating paths for chunk %u...\n", chunkID);
+
     inst_record_list* lInstPath = new inst_record_list();
 
+    /* MToDo | Need to add OSK instantiations */
     baseInstantiation->create_identity_paths(lInstPath);
     for (auto it = result_inst_records->begin(); it != result_inst_records->end(); it++)
     {
@@ -162,6 +186,7 @@ void chunk_record::generate_dependency_paths()
 
     delete lInstPath;
 
+    dprint(DT_EXPLAIN_PATHS, "Getting paths for chunk inst %u's conditions...\n", chunkID);
     condition_record* l_cond;
     instantiation_record* l_inst;
     inst_record_list* l_path;
@@ -177,9 +202,11 @@ void chunk_record::generate_dependency_paths()
              * are repaired.  Described above in record_chunk_contents. */
             if (l_path)
             {
+                dprint(DT_EXPLAIN_PATHS, "Path to base of length %d for chunk inst cond (%u: %t ^%t %t) found from instantiation i%u (%y): \n", l_path->size(), l_cond->conditionID, l_cond->condition_tests.id, l_cond->condition_tests.attr, l_cond->condition_tests.value, l_inst->get_instantiationID(), l_inst->production_name);
                 l_cond->set_path_to_base(l_path);
-            }
-        }
+            } else dprint(DT_EXPLAIN_PATHS, "No chunk inst path returned for chunk cond (%u: %t ^%t %t) in instantiation %u (%y)!\n", l_cond->conditionID, l_cond->condition_tests.id, l_cond->condition_tests.attr, l_cond->condition_tests.value, l_inst->instantiationID, l_inst->production_name);
+
+        } else dprint(DT_EXPLAIN_PATHS, "Condition (%u: %t ^%t %t) in chunk_inst has no parent instantiation!\n", l_cond->conditionID, l_cond->condition_tests.id, l_cond->condition_tests.attr, l_cond->condition_tests.value);
     }
 }
 

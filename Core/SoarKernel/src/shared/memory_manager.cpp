@@ -1,6 +1,7 @@
 #include "memory_manager.h"
 
 #include "agent.h"
+#include "dprint.h"
 #include "mem.h"
 #include "print.h"
 #include "run_soar.h"
@@ -41,22 +42,30 @@
 
 Memory_Manager::Memory_Manager()
 {
+//    std::cout << "MemPool Manager constructor called.\n";
+
     memory_for_usage_overhead = memory_for_usage + STATS_OVERHEAD_MEM_USAGE;
+
+    dprint(DT_SOAR_INSTANCE, "init_MemPool_Manager called.\n");
 
     for (int i = 0; i < NUM_MEM_USAGE_CODES; i++)
     {
         memory_for_usage[i] = 0;
     }
+
+    dprint(DT_SOAR_INSTANCE, "MemPool_Manager initialized.\n");
 }
 
 Memory_Manager::~Memory_Manager()
 {
+    dprint(DT_SOAR_INSTANCE, "~MemPoolManager called.\n");
     /* Releasing memory pools */
     memory_pool* cur_pool = memory_pools_in_use;
     memory_pool* next_pool;
     while (cur_pool != NIL)
     {
         next_pool = cur_pool->next;
+//        std::cout << "--> freeing pool for " << cur_pool->name << std::endl;
         free_memory_pool_by_ptr(cur_pool);
         cur_pool = next_pool;
     }
@@ -71,6 +80,8 @@ Memory_Manager::~Memory_Manager()
 
 void Memory_Manager::init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item_size, const char* name)
 {
+//    std::cout << "Init memory pool by ptr called for" << pThisPool->name << std::endl;
+
     if (pThisPool->initialized) return;
 
     if (item_size < sizeof(char*))
@@ -326,6 +337,13 @@ void Memory_Manager::print_memory_statistics()
     {
         total += memory_for_usage[i];
     }
+
+    dprint(DT_SOAR_INSTANCE, "%d bytes total memory allocated\n", total);
+    dprint(DT_SOAR_INSTANCE, "%d bytes statistics overhead\n", memory_for_usage[STATS_OVERHEAD_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes for strings\n", memory_for_usage[STRING_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes for hash tables\n", memory_for_usage[HASH_TABLE_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes for various memory pools\n", memory_for_usage[POOL_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes for miscellaneous other things\n",  memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
 }
 
 void Memory_Manager::debug_print_memory_stats(agent* thisAgent)

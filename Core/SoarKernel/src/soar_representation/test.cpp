@@ -1,7 +1,15 @@
+/* =======================================================================
+ *                    Test Utilities
+ * This file contains various utility routines for tests.
+ *
+ * =======================================================================
+ */
+
 #include "test.h"
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "ebc_identity.h"
 #include "ebc_repair.h"
@@ -15,6 +23,15 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
+
+/* =================================================================
+
+                      Utility Routines for Tests
+
+================================================================= */
+
+/* --- This just copies a consed list of tests and returns
+ *     a new copy of it. --- */
 
 cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
 {
@@ -34,6 +51,9 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
     return new_c;
 }
 
+/* ----------------------------------------------------------------
+   Takes a test and returns a new copy of it.
+---------------------------------------------------------------- */
 inline bool in_null_identity_set(test t) { if (t->identity) return t->identity->literalized(); return true; };
 
 test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
@@ -139,7 +159,11 @@ void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
-    if (!t) return;
+//    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test %t [%u]\n", t, t->identity);
+    if (!t)
+    {
+        return;
+    }
 
     switch (t->type)
     {
@@ -152,6 +176,7 @@ void deallocate_test(agent* thisAgent, test t)
             thisAgent->symbolManager->deallocate_symbol_list_removing_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
+            dprint(DT_DEALLOCATE_TEST, "DEALLOCATE tests in conjunction %t\n", t);
             c = t->data.conjunct_list;
             while (c)
             {
@@ -162,6 +187,7 @@ void deallocate_test(agent* thisAgent, test t)
                 free_cons(thisAgent, c);
                 c = next_c;
             }
+            dprint(DT_DEALLOCATE_TEST, "DEALLOCATE tests in conjunction complete.  Next deallocation should be conjunction.\n");
             t->data.conjunct_list = NULL;
             break;
         default: /* tests with a referent */
@@ -1010,17 +1036,30 @@ void copy_non_identical_test(agent* thisAgent, test* t, test add_me, bool consid
     cons* c;
 
     target_test = *t;
-    if (add_me->type != EQUALITY_TEST)
+    if (add_me->type == EQUALITY_TEST)
+    {
+        dprint(DT_MERGE, "          ...test is an equality test.  Skipping: %t\n", add_me);
+    }
+    else
     {
         if (target_test->type != CONJUNCTIVE_TEST)
         {
-            if (tests_identical(target_test, add_me)) return;
+            if (tests_identical(target_test, add_me))
+            {
+                dprint(DT_MERGE, "          ...test already exists.  Skipping: %t\n", add_me);
+                return;
+            }
         }
         else
         {
             for (c = target_test->data.conjunct_list; c != NIL; c = c->rest)
-                if (tests_identical(static_cast<test>(c->first), add_me)) return;
+                if (tests_identical(static_cast<test>(c->first), add_me))
+                {
+                    dprint(DT_MERGE, "          ...test already exists.  Skipping: %t\n", add_me);
+                    return;
+                }
         }
+        dprint(DT_MERGE, "          ...found test to copy: %t\n", add_me);
         add_test(thisAgent, t, copy_test(thisAgent, add_me), true);
     }
 }

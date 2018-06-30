@@ -9,6 +9,7 @@
 #include "ebc_identity.h"
 
 #include "agent.h"
+#include "dprint.h"
 #include "ebc_settings.h"
 #include "instantiation.h"
 #include "output_manager.h"

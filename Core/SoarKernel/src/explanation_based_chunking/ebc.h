@@ -283,14 +283,14 @@ class Explanation_Based_Chunker
         void        variablize_equality_tests(test t);
         void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
 
-        uint64_t    variablize_rhs_value(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
+        uint64_t    variablize_rhs_value(rhs_value &pRhs_val, tc_number lti_link_tc = 0, bool pStoreCloneIDForRHSFunction = false);
         action*     variablize_result_into_action(preference* result, tc_number lti_link_tc);
         action*     variablize_results_into_actions();
 
         void        add_LTM_linking_actions(action* pLastAction);
 
         void        reinstantiate_test(test pTest, bool pIsInstantiationCond);
-        void        reinstantiate_rhs_symbol(rhs_value pRhs_val);
+        void        reinstantiate_rhs_symbol(rhs_value pRhs_val, bool pKeepCloneIDForRHSFunction = false);
         condition*  reinstantiate_lhs(condition* top_cond);
         void        reinstantiate_condition_list(condition* top_cond, bool pIsInstantiationCond, bool pIsNCC = false);
         void        reinstantiate_condition(condition* cond, bool pIsInstantiationCond, bool pIsNCC = false);

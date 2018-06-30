@@ -1,11 +1,18 @@
-#include "ebc.h"
+/*
+ * variablization_manager.cpp
+ *
+ *  Created on: Jul 25, 2013
+ *      Author: mazzin
+ */
 
+#include "ebc.h"
 #include "ebc_settings.h"
 #include "ebc_timers.h"
 
 #include "agent.h"
 #include "condition.h"
 #include "decide.h"
+#include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
 #include "output_manager.h"
@@ -76,6 +83,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
 
 void Explanation_Based_Chunker::reinit()
 {
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
     inst_id_counter                     = 0;
     prod_id_counter                     = 0;
@@ -276,6 +284,7 @@ void Explanation_Based_Chunker::clear_data()
 {
     if (ebc_settings[SETTING_EBC_LEARNING_ON])
     {
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing all EBC maps.\n");
         clear_cached_constraints();
         clean_up_identities();
         clear_merge_map();

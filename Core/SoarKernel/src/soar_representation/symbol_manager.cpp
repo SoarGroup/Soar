@@ -8,6 +8,7 @@
 #include "symbol_manager.h"
 
 #include "agent.h"
+#include "dprint.h"
 #include "mem.h"
 #include "output_manager.h"
 #include "production.h"

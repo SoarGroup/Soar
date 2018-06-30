@@ -4,6 +4,7 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "explanation_memory.h"
 #include "symbol_manager.h"
 #include "preference.h"
@@ -20,6 +21,7 @@ Identity* Explanation_Based_Chunker::create_new_identity(Symbol* pGoal)
 
     if (thisAgent->explanationMemory->is_any_enabled()) thisAgent->explanationMemory->add_identity(l_identity, pGoal);
 
+    dprint(DT_DEALLOCATE_IDENTITIES, "Created identity set %u for variable identity %u\n", l_identity->idset_id);
     return l_identity;
 }
 
@@ -27,6 +29,7 @@ void IdentitySet_remove_ref(agent* thisAgent, Identity* &pIdentity)
 {
     if (pIdentity->internal_remove_ref())
     {
+        dprint(DT_IDSET_REFCOUNTS, "Dellocating identity set %u\n", pIdentity->get_sub_identity());
         pIdentity->clean_up();
         thisAgent->memoryManager->free_with_pool(MP_identity_sets, pIdentity);
         pIdentity = NULL;
@@ -80,6 +83,7 @@ void clear_test_identity(agent* thisAgent, test pTest)
 
 Identity* Explanation_Based_Chunker::get_floating_identity(Symbol* pGoal)
 {
+    dprint(DT_PROPAGATE, "Creating floating identity join set for singleton\n");
     Identity* l_identity = create_new_identity(pGoal);
     l_identity->add_ref();
     return l_identity;

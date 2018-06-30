@@ -2,6 +2,7 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "ebc_identity.h"
 #include "explanation_memory.h"
@@ -205,16 +206,19 @@ void action_record::init(agent* myAgent, preference* pPref, action* pAction, uin
         variablized_action = NULL;
     }
     identities_used = NULL;
+    dprint(DT_EXPLAIN_CONDS, "   Created action record a%u for pref %p (%r ^%r %r %r), [act %a]", pActionID, pPref, pPref->rhs_func_inst_identities.id, pPref->rhs_func_inst_identities.attr, pPref->rhs_func_inst_identities.value, pPref->rhs_func_inst_identities.referent, pAction);
 }
 
 void action_record::clean_up()
 {
+    dprint(DT_EXPLAIN_CONDS, "   Deleting action record a%u for: %p\n", actionID, instantiated_pref);
     deallocate_preference(thisAgent, instantiated_pref, true);
     deallocate_action_list(thisAgent, variablized_action);
     if (identities_used)
     {
         delete identities_used;
     }
+    dprint(DT_EXPLAIN_CONDS, "   Done deleting action record a%u\n", actionID);
 }
 
 void action_record::print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, bool printActual)

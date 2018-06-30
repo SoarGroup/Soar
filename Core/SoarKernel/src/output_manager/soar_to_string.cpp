@@ -459,6 +459,21 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
         sprinta_sf(thisAgent, destString, "%s(%s ^%s %s) %c", (m_print_actual_effective) ? ", " : "",
             lID.c_str(), lAttr.c_str(), lValue.c_str(), preference_to_char(pref->type));
 
+        if (pref->rhs_func_inst_identities.value)
+        {
+            lValue += " fi:";
+            set_print_test_format(false, true);
+            rhs_value_to_string(pref->rhs_func_inst_identities.value, lValue, true, NULL, NULL, false);
+            set_print_test_format(true, false);
+        }
+        if (pref->rhs_func_chunk_inst_identities.value)
+        {
+            lValue += " fci:";
+            set_print_test_format(false, true);
+            rhs_value_to_string(pref->rhs_func_chunk_inst_identities.value, lValue, true, NULL, NULL, false);
+            set_print_test_format(true, false);
+        }
+
         if (preference_is_binary(pref->type))
         {
             if (pref->inst_identities.referent && pref->identities.referent)

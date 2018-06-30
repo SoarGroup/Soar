@@ -1,3 +1,17 @@
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
+ *************************************************************************/
+
+/*************************************************************************
+ *
+ *  file:  semantic_memory.cpp
+ *
+ * =======================================================================
+ * Description  :  Various functions for Soar-SMem
+ * =======================================================================
+ */
+
 #include "semantic_memory.h"
 
 #include "smem_settings.h"
@@ -8,6 +22,7 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"
@@ -445,6 +460,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 // retrieve
                 if (path == cmd_retrieve)
                 {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to retrieve command.\n");
                     if (retrieve->id->LTI_ID == NIL)
                     {
                         // retrieve is not pointing to an lti!
@@ -465,6 +481,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 // query
                 else if (path == cmd_query)
                 {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to query command.\n");
                     id_set prohibit_lti;
                     symbol_list::iterator sym_p;
 
@@ -479,6 +496,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 }
                 else if (path == cmd_store_new)
                 {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to store-new command.\n");
                     symbol_list::iterator sym_p;
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -514,6 +532,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 }
                 else if (path == cmd_store)
                 {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to store command.\n");
                     symbol_list::iterator sym_p;
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -559,6 +578,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 }
                 else if (path == cmd_prohibit)
                 {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to prohibit command.\n");
                     symbol_list::iterator sym_p;
 
                     for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
@@ -584,6 +604,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
             {
 
+                dprint(DT_SMEM_INSTANCE, "SMem Manager installing recall buffer.\n");
                 // process preference assertion en masse
                 install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes, !link_to_ltm);
 
@@ -632,6 +653,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
     if (do_wm_phase)
     {
+        dprint(DT_SMEM_INSTANCE, "SMem Manager initiating working memory phase.\n");
         do_working_memory_phase(thisAgent);
     }
 }

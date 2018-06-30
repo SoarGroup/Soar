@@ -1,7 +1,20 @@
 
+/*************************************************************************
+ *
+ *  file:  condition.cpp
+ *
+ * ====================================================================
+ *                    Condition Utilities
+ *
+ * This file contains various utility routines for manipulating
+ * Init_production_utilities() should be called before anything else here.
+ * =======================================================================
+ */
+
 #include "condition.h"
 
 #include "agent.h"
+#include "dprint.h"
 #include "explanation_memory.h"
 #include "identity_record.h"
 #include "memory_manager.h"
@@ -17,6 +30,7 @@
 
 void deallocate_condition(agent* thisAgent, condition*& cond)
 {
+//    dprint(DT_DEALLOCATES, "Deallocating condition %l\n", cond);
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
         deallocate_condition_list(thisAgent, cond->data.ncc.top);
@@ -45,6 +59,8 @@ void deallocate_condition_list(agent* thisAgent, condition*& cond_list)
         }
         else     /* positive and negative conditions */
         {
+//            dprint(DT_DEALLOCATES, "Deallocating condition: %l\n", c);
+
             deallocate_test(thisAgent, c->data.tests.id_test);
             deallocate_test(thisAgent, c->data.tests.attr_test);
             deallocate_test(thisAgent, c->data.tests.value_test);
