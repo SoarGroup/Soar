@@ -280,7 +280,7 @@ void Explanation_Based_Chunker::add_to_singletons(wme* pWME)
 bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
 {
     if (pWME->singleton_status_checked) return pWME->is_singleton;
-    if (!pWME->attr->is_string() || !pWME->attr->sc->singleton.possible || !ebc_settings[SETTING_EBC_USER_SINGLETONS]) return false;
+    if (!pWME->attr->is_string() || !pWME->attr->sc->singleton.possible) return false;
 
     /* This WME has a valid singleton attribute but has never had it's identifier and
      * value elements checked, so we see if it matches the pattern defined in the attribute. */

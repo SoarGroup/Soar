@@ -306,12 +306,11 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 {
     matched_symbol_list* unconnected_syms = new matched_symbol_list();
 
-    reorder_and_validate_lhs_and_rhs(thisAgent, &m_lhs, &m_rhs, false, unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_RHS]);
+    reorder_and_validate_lhs_and_rhs(thisAgent, &m_lhs, &m_rhs, false, unconnected_syms, true, true);
 
     if (m_failure_type != ebc_success)
     {
-        if (((m_failure_type == ebc_failed_unconnected_conditions) && ebc_settings[SETTING_EBC_REPAIR_LHS]) ||
-            ((m_failure_type == ebc_failed_reordering_rhs) && ebc_settings[SETTING_EBC_REPAIR_RHS]))
+        if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
         {
             thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
 

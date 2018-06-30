@@ -57,8 +57,6 @@ condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)
 
 void Explanation_Based_Chunker::merge_conditions()
 {
-    if (!ebc_settings[SETTING_EBC_MERGE]) return;
-
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(m_lhs);
 
     condition* found_cond, *next_cond, *last_cond = NULL;
