@@ -112,7 +112,7 @@ class Explanation_Based_Chunker
          * 1 - Used by repair manager when creating grounding conditions
          * 2 - Used by reinforcement learning when building template instances. */
 
-        void        add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity);
+        void        add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity, uint64_t pInstCIdentity);
         void        sti_variablize_test(test pTest, bool generate_identity = true);
         void        sti_variablize_rhs_symbol(rhs_value &pRhs_val, bool generate_identity = true);
         void        clear_sti_variablization_map() { m_sym_to_var_map->clear(); };

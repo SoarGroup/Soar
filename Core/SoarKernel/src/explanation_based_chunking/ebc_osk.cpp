@@ -2,7 +2,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "dprint.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "preference.h"
@@ -95,17 +94,12 @@ void Explanation_Based_Chunker::copy_proposal_OSK(instantiation* inst, cons* new
     preference* pref;
     cons* l_OSK_prefs;
 
-    assert (!inst->OSK_proposal_prefs);
     if (ebc_settings[SETTING_EBC_ADD_OSK])
     {
         for (l_OSK_prefs = newOSK; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
         {
             pref = static_cast<preference*>(l_OSK_prefs->first);
             push(thisAgent, pref, inst->OSK_proposal_prefs);
-            dprint(DT_OSK, "Adding OSK proposal preference %p to instantiation.\n",  pref);
-            /* Note that we don't add refcount to the preference here. If we did, this 
-             * instantiation would never be deallocated since it will hold a refcount
-             * on one of its own preferences.  */
         }
     }
 }
@@ -129,7 +123,6 @@ void Explanation_Based_Chunker::copy_OSK(instantiation* inst)
                     {
                         pref = static_cast<preference*>(l_OSK_prefs->first);
                         push(thisAgent, pref, inst->OSK_prefs);
-                        dprint(DT_OSK, "Adding OSK preference %p to instantiation.\n",  pref);
                         preference_add_ref(pref);
                     }
                 }
@@ -139,7 +132,6 @@ void Explanation_Based_Chunker::copy_OSK(instantiation* inst)
             {
                 push(thisAgent, pref, inst->OSK_prefs);
                 preference_add_ref(pref);
-                dprint(DT_OSK, "Adding OSK prohibit preference %p to instantiation.\n",  pref);
                 pref = pref->next;
             }
         }
@@ -150,8 +142,6 @@ void Explanation_Based_Chunker::update_proposal_OSK(slot* s, preference* winner)
 {
     if (s->instantiation_with_temp_OSK)
     {
-        dprint(DT_OSK, "Cleaning up OSK proposal preferences contained in inst %u (%y) %s\n",  s->instantiation_with_temp_OSK->i_id,  s->instantiation_with_temp_OSK->prod_name, s->instantiation_with_temp_OSK->OSK_proposal_prefs ? "exists" : "NULL");
-        /* These prefs did not have their refcounts increased, so we don't want to call clear_preference_list */
         free_list(thisAgent, s->instantiation_with_temp_OSK->OSK_proposal_prefs);
         s->instantiation_with_temp_OSK->OSK_proposal_prefs = NULL;
         s->instantiation_with_temp_OSK->OSK_proposal_slot = NULL;
@@ -161,7 +151,6 @@ void Explanation_Based_Chunker::update_proposal_OSK(slot* s, preference* winner)
     {
         s->instantiation_with_temp_OSK = winner->inst;
         s->instantiation_with_temp_OSK->OSK_proposal_slot = s;
-        dprint(DT_OSK, "Adding OSK proposal preferences contained to inst %u (%y) from slot (%y ^%y)\n",  s->instantiation_with_temp_OSK->i_id,  s->instantiation_with_temp_OSK->prod_name, s->id, s->attr);
         copy_proposal_OSK(winner->inst, s->OSK_prefs);
     }
 }

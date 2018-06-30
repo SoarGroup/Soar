@@ -307,20 +307,20 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             {
                 if (l_identity->joined_identity != l_identity)
                 {
-                    sprint_sf(destString, "[%ui%uj%u]", rsym->inst_identity, l_identity->get_sub_identity(), l_identity->get_identity());
+                    sprint_sf(destString, "[v%uc%ui%uj%u]", rsym->inst_identity, rsym->cv_id, l_identity->get_sub_identity(), l_identity->get_identity());
                 }
                 else
                 {
-                    sprint_sf(destString, "[%ui%u]", rsym->inst_identity, l_identity->get_sub_identity());
+                    sprint_sf(destString, "[v%uc%ui%u]", rsym->inst_identity, rsym->cv_id, l_identity->get_sub_identity());
                 }
             }
             else if (rsym->identity_id_unjoined)
             {
-                sprint_sf(destString, "[%u->%u]", rsym->identity_id_unjoined, rsym->inst_identity);
+                sprint_sf(destString, "[%u->v%uc%u]", rsym->identity_id_unjoined, rsym->inst_identity, rsym->cv_id);
             }
             else
             {
-                sprint_sf(destString, "[%u]", rsym->inst_identity);
+                sprint_sf(destString, "[v%uc%u]", rsym->inst_identity, rsym->cv_id);
             }
         }
     }
