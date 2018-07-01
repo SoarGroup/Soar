@@ -20,6 +20,7 @@
 
 #include "misc.h"
 #include "agent.h"
+#include "decider.h"
 #include "symbol.h"
 
 using namespace cli;
@@ -138,6 +139,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
     }
     
     // Do the run
+    thisAgent->Decider->before_run();
     runResult = pScheduler->RunScheduledAgents(forever, runType, count, runFlags, interleave, synchronizeAtStart) ;
     
     // Reset goal retraction stop flag after any run
@@ -169,6 +171,11 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
         case sml_RUN_COMPLETED_AND_INTERRUPTED:                    // an interrupt was requested, but the run completed first
         // falls through
         case sml_RUN_INTERRUPTED:
+        {
+        	std::string temp;
+        	thisAgent->Decider->get_run_result_string(temp);
+            if (m_RawOutput) m_Result << "\n" << temp; else AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, temp.c_str());
+        }
             if (m_RawOutput)
             {
                 m_Result << "\nRun stopped (interrupted).";
@@ -196,6 +203,11 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
             // might be helpful if we checked agents to see if any halted...
             // retval is sml_RUN_COMPLETED, but agent m_RunState == gSKI_RUNSTATE_HALTED
             // should only check the agents m_pAgentSML->WasOnRunList()
+        {
+        	std::string temp;
+        	thisAgent->Decider->get_run_result_string(temp);
+            if (m_RawOutput) m_Result << "\n" << temp; else AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, temp.c_str());
+        }
             if (pScheduler->AnAgentHaltedDuringRun())
             {
                 if (m_RawOutput)

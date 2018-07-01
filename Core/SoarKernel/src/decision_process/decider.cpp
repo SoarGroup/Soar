@@ -30,6 +30,9 @@ SoarDecider::SoarDecider(agent* myAgent)
     outputManager = myAgent->outputManager;
 
     thisAgent->Decider = this;
+    last_dc = 0;
+    last_fc = 0;
+    last_cl = thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
 
     params = new decider_param_container(thisAgent, settings);
 
@@ -149,3 +152,41 @@ void SoarDecider::clean_up_for_agent_deletion()
     delete params;
 }
 
+void SoarDecider::before_run()
+{
+    if (thisAgent->d_cycle_count > 1) last_dc = thisAgent->d_cycle_count; else last_dc = 0;
+    last_fc = thisAgent->production_firing_count;
+    last_cl = thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+}
+
+void SoarDecider::get_run_result_string(std::string &runResultStr)
+{
+    uint64_t now_dc, now_fc, now_cl;
+    uint64_t dc_delta, fc_delta, cl_delta;
+    bool result_started, result_finished;
+    result_started = result_finished = false;
+    now_dc = thisAgent->d_cycle_count;
+    now_fc = thisAgent->production_firing_count;
+    now_cl = thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+    dc_delta = now_dc - last_dc;
+    fc_delta = now_fc - last_fc;
+    cl_delta = now_cl - last_cl;
+
+	runResultStr += "\n--> ";
+    runResultStr.append(std::to_string(dc_delta));
+
+    runResultStr += (dc_delta > 1 ? " decision cycles executed. " : " decision cycle executed. ");
+    if (fc_delta)
+    {
+    	runResultStr.append(std::to_string(fc_delta));
+    	runResultStr += ( fc_delta > 1 ? " rules fired. " : " rule fired. ");
+    } else runResultStr += "No rules fired. ";
+    if (cl_delta)
+    {
+    	runResultStr.append(std::to_string(cl_delta));
+    	runResultStr += ( cl_delta > 1 ? " new rules learned." : " new rule learned.");
+    }
+    last_dc = now_dc;
+    last_fc = now_fc;
+    last_cl = now_cl;
+}
