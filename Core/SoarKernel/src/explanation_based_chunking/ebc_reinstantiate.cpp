@@ -2,7 +2,6 @@
 #include "ebc_identity.h"
 
 #include "agent.h"
-#include "dprint.h"
 #include "condition.h"
 #include "symbol_manager.h"
 #include "test.h"
@@ -48,7 +47,6 @@ void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pI
         reinstantiate_test(cond->data.tests.id_test, pIsInstantiationCond);
         reinstantiate_test(cond->data.tests.attr_test, pIsInstantiationCond);
         reinstantiate_test(cond->data.tests.value_test, pIsInstantiationCond);
-        dprint(DT_REINSTANTIATE, "Reinstantiated condition is now %l\n", cond);
     } else {
         reinstantiate_condition_list(cond->data.ncc.top, pIsInstantiationCond, true);
     }
@@ -56,15 +54,11 @@ void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pI
 
 condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
 {
-    dprint_header(DT_REINSTANTIATE, PrintBoth, "Reversing variablization of condition list\n");
-
     condition* last_cond, *lCond, *inst_top;
     last_cond = inst_top = lCond = NULL;
 
     for (condition* cond = m_lhs; cond != NIL; cond = cond->next)
     {
-        dprint(DT_REINSTANTIATE, "Reversing variablization of condition: %l\n", cond);
-
         if (m_rule_type == ebc_justification)
         {
             /* This case is rare (if it should happen at all any more).  It occurs when a learning attempt fails
@@ -99,7 +93,6 @@ condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
         inst_top = NULL;
     }
 
-    dprint_header(DT_REINSTANTIATE, PrintAfter, "Done reversing variablization of LHS condition list.\n");
     return inst_top;
 }
 
@@ -115,9 +108,7 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
 
         for (c = fl->rest; c != NULL; c = c->rest)
         {
-            dprint(DT_RHS_FUN_VARIABLIZATION, "Reversing variablization of funcall RHS value %r\n", static_cast<char*>(c->first));
             reinstantiate_rhs_symbol(static_cast<char*>(c->first));
-            dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS value is now %r\n", static_cast<char*>(c->first));
         }
         return;
     }
@@ -126,7 +117,6 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
 
     if (rs->referent->is_variable())
     {
-        dprint(DT_REINSTANTIATE, "Reversing variablization for RHS symbol %y [%u] -> %y.\n", rs->referent, rs->inst_identity, rs->referent->var->instantiated_sym);
         Symbol* oldSym = rs->referent;
         rs->referent = rs->referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(rs->referent);
@@ -134,12 +124,18 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
         Identity* l_identity = rs->identity;
         if (l_identity)
         {
-            rs->inst_identity = l_identity->get_clone_identity();
-            rs->identity = NULL;
+            rs->inst_identity = l_identity->get_identity();
+            rs->cv_id = l_identity->get_clone_identity();
         }
+        else
+        {
+            uint64_t lTemp = rs->inst_identity;
+            rs->inst_identity = rs->cv_id;
+            rs->cv_id = lTemp;
+        }
+        rs->identity = NULL;
     } else {
-        dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->inst_identity);
-        rs->inst_identity = LITERAL_VALUE;
+        rs->inst_identity = rs->cv_id = LITERAL_VALUE;
         rs->identity = NULL;
     }
 }
@@ -163,15 +159,9 @@ void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
 
 condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 {
-    dprint(DT_REINSTANTIATE, "Before reinstantiation: \n%1-->\n%2", m_lhs, m_rhs);
-
     condition* returnConds = reinstantiate_lhs(m_lhs);
 
-    if (m_rule_type == ebc_justification)
-    {
-        reinstantiate_actions(m_rhs);
-    }
-    dprint(DT_REINSTANTIATE, "After reinstantiation: \n%1-->\n%2", m_lhs, m_rhs);
+    if (m_rule_type == ebc_justification) reinstantiate_actions(m_rhs);
 
     return returnConds;
 }

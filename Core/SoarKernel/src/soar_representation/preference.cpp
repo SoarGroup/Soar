@@ -3,7 +3,6 @@
 #include "agent.h"
 #include "decide.h"
 #include "decider.h"
-#include "dprint.h"
 #include "ebc.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
@@ -72,8 +71,6 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->was_unbound_vars.value = pWas_unbound_vars.value;
     p->was_unbound_vars.referent = pWas_unbound_vars.referent;
 
-    dprint(DT_PREFS, "Created preference %p\n", p);
-
     return p;
 }
 
@@ -141,22 +138,17 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->rhs_func_inst_identities.value = copy_rhs_value(thisAgent, pPref->rhs_func_inst_identities.value);
     p->rhs_func_inst_identities.referent = copy_rhs_value(thisAgent, pPref->rhs_func_inst_identities.referent);
 
-    dprint(DT_PREFS, "Created shallow copy of preference %p\n", p);
-
     return p;
 
     /* BUGBUG check to make sure the pref doesn't have
           value or referent .isa_goal or .isa_impasse; */
 }
-/* -------------------------------------------------------------------
-   Deallocate_preference() deallocates a given preference.
--------------------------------------------------------------------*/
+
 void cache_preference_if_necessary(agent* thisAgent, preference* pref)
 {
     if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
     {
         preference* lNewPref = shallow_copy_preference(thisAgent, pref);
-        dprint(DT_EXPLAIN_CACHE, "Caching preference for instantiation %u (match of %y): %p\n", pref->inst->i_id, pref->inst->prod_name, pref);
         insert_at_head_of_dll(pref->inst->preferences_cached, lNewPref, inst_next, inst_prev);
     }
 }
@@ -414,14 +406,12 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
     /*  update identifier levels */
     if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and value %y.\n", pref->id, pref->value);
         post_link_addition(thisAgent, pref->id, pref->value);
     }
     if (preference_is_binary(pref->type))
     {
         if (pref->referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         {
-            dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and referent %y.\n", pref->id, pref->referent);
             post_link_addition(thisAgent, pref->id, pref->referent);
         }
     }
@@ -472,13 +462,11 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
     /*  update identifier levels */
     if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", pref->id, pref->value);
         post_link_removal(thisAgent, pref->id, pref->value);
     }
     if (preference_is_binary(pref->type))
         if (pref->referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         {
-            dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and referent %y.\n", pref->id, pref->referent);
             post_link_removal(thisAgent, pref->id, pref->referent);
         }
     if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
@@ -553,7 +541,6 @@ void clear_preference_list(agent* thisAgent, cons* &pPrefList)
         for (c = pPrefList; c != NIL; c = c->rest)
         {
             lPref = static_cast<preference*>(c->first);
-            dprint(DT_OSK, "Cleaning up OSK preference %p\n", lPref);
             preference_remove_ref(thisAgent, lPref, true);
         }
         free_list(thisAgent, pPrefList);

@@ -16,7 +16,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
 #include "mem.h"
@@ -60,7 +59,6 @@ using namespace soar_TraceNames;
 
 void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 {
-    dprint(DT_BACKTRACE, "--> Ground condition added: %l.\n", cond);
     if ((cond)->bt.wme_->tc != grounds_tc)
     {
         (cond)->bt.wme_->tc = grounds_tc;
@@ -75,7 +73,6 @@ void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 
 void Explanation_Based_Chunker::add_to_locals(condition* cond)
 {
-    dprint(DT_BACKTRACE, "--> Local condition added: %l.\n", cond);
     push(thisAgent, (cond), locals);
 }
 
@@ -100,8 +97,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
 
     condition* c;
     cons* grounds_to_print, *locals_to_print, *negateds_to_print;
-
-    dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(m_goal_level));
 
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
@@ -182,7 +177,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
         }
         else
         {
-            dprint(DT_BACKTRACE, "Adding NC or NCC condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM]) push(thisAgent, c, negateds_to_print);
         }
@@ -236,7 +230,6 @@ void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, uint64
             print_preference(thisAgent, p);
         }
 
-        dprint(DT_BACKTRACE, "Tracing through OSK pref %p for instantiation \n", p);
         backtrace_through_instantiation(p, NULL, lExplainDepth, BT_OSK);
 
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
@@ -253,7 +246,6 @@ void Explanation_Based_Chunker::trace_locals()
     condition* cond;
     preference* bt_pref, *p;
 
-    dprint(DT_BACKTRACE, "Tracing locals...\n");
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa(thisAgent, "\n\n*** Tracing Locals ***\n");
@@ -274,8 +266,6 @@ void Explanation_Based_Chunker::trace_locals()
             print_wme(thisAgent, cond->bt.wme_);
             thisAgent->outputManager->printa(thisAgent, " ");
         }
-
-        dprint(DT_BACKTRACE, "Tracing through local condition of of instantiation %y (i%u): %l\n", cond->inst->prod_name, cond->inst->i_id, cond);
 
         bt_pref = NULL;
         if (cond->bt.trace)
@@ -321,8 +311,6 @@ void Explanation_Based_Chunker::trace_locals()
             continue;
         }
 
-        dprint(DT_BACKTRACE, "--! Local condition removed (no trace): %l.\n", cond);
-
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             xml_end_tag(thisAgent, kTagLocal);
@@ -342,8 +330,6 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     m_goal_level = m_inst->match_goal_level - 1;
 
     outputManager->set_print_test_format(true, true);
-    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
-    dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
 
     increment_counter(backtrace_number);
     increment_counter(grounds_tc);
@@ -374,7 +360,4 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
     outputManager->clear_print_test_format();
 
-    dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
-    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
-    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 }

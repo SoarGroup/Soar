@@ -11,7 +11,6 @@
 #include "smem_timers.h"
 #include "smem_settings.h"
 
-#include "dprint.h"
 #include "symbol.h"
 #include "working_memory.h"
 
@@ -422,7 +421,6 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
     uint64_t king_id = NIL;
     for (std::list<Symbol*>::iterator query_it = query.begin(); query_it != query.end(); ++query_it)
     {
-        dprint(DT_SMEM_INSTANCE, "process_query called with %y %y %y %y\n", state, *query_it, negquery, mathQuery);
         std::list<uint64_t> temp_list;
         if (query_level == qry_full)
         {

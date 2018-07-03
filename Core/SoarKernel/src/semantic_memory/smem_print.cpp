@@ -8,7 +8,6 @@
 #include "semantic_memory.h"
 #include "smem_db.h"
 
-#include "dprint.h"
 #include "output_manager.h"
 #include "lexer.h"
 

@@ -21,10 +21,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_INTERRUPT_WARNING] = false;
     pEBC_settings[SETTING_EBC_INTERRUPT_WATCHED] = false;
     pEBC_settings[SETTING_EBC_ADD_OSK] = true;
-    pEBC_settings[SETTING_EBC_REPAIR_LHS] = true;
-    pEBC_settings[SETTING_EBC_REPAIR_RHS] = true;
-    pEBC_settings[SETTING_EBC_MERGE] = true;
-    pEBC_settings[SETTING_EBC_USER_SINGLETONS] = true;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
     pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] = true;
     pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] = false;
@@ -96,18 +92,9 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     // mechanisms
     mechanism_add_OSK = new soar_module::boolean_param("add-osk", setting_on(SETTING_EBC_ADD_OSK), new soar_module::f_predicate<boolean>());
     add(mechanism_add_OSK);
-    mechanism_repair_rhs = new soar_module::boolean_param("rhs-repair", setting_on(SETTING_EBC_REPAIR_RHS), new soar_module::f_predicate<boolean>());
-    add(mechanism_repair_rhs);
-    mechanism_repair_lhs = new soar_module::boolean_param("lhs-repair", setting_on(SETTING_EBC_REPAIR_LHS), new soar_module::f_predicate<boolean>());
-    add(mechanism_repair_lhs);
 
     mechanism_add_ltm_links = new soar_module::boolean_param("add-ltm-links", setting_on(SETTING_EBC_ADD_LTM_LINKS), new soar_module::f_predicate<boolean>());
     add(mechanism_add_ltm_links);
-
-    mechanism_merge = new soar_module::boolean_param("merge", setting_on(SETTING_EBC_MERGE), new soar_module::f_predicate<boolean>());
-    add(mechanism_merge);
-    mechanism_user_singletons = new soar_module::boolean_param("user-singletons", setting_on(SETTING_EBC_USER_SINGLETONS), new soar_module::f_predicate<boolean>());
-    add(mechanism_user_singletons);
 
     allow_missing_negative_reasoning = new soar_module::boolean_param("allow-local-negations", setting_on(SETTING_EBC_ALLOW_LOCAL_NEGATIONS), new soar_module::f_predicate<boolean>());
     add(allow_missing_negative_reasoning);
@@ -181,25 +168,9 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK] = pChangedParam->get_value();
     }
-    else if (pChangedParam == mechanism_repair_rhs)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_LHS] = pChangedParam->get_value();
-    }
-    else if (pChangedParam == mechanism_repair_lhs)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_RHS] = pChangedParam->get_value();
-    }
-    else if (pChangedParam == mechanism_merge)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_MERGE] = pChangedParam->get_value();
-    }
     else if (pChangedParam == mechanism_add_ltm_links)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_LTM_LINKS] = pChangedParam->get_value();
-    }
-    else if (pChangedParam == mechanism_user_singletons)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_USER_SINGLETONS] = pChangedParam->get_value();
     }
     else if (pChangedParam == allow_missing_negative_reasoning)
     {
@@ -270,10 +241,6 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     interrupt_on_warning->set_value(pEBC_settings[SETTING_EBC_INTERRUPT_WARNING] ? on : off);
 
     mechanism_add_OSK->set_value(pEBC_settings[SETTING_EBC_ADD_OSK] ? on : off);
-    mechanism_repair_rhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_RHS] ? on : off);
-    mechanism_repair_lhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_LHS] ? on : off);
-    mechanism_merge->set_value(pEBC_settings[SETTING_EBC_MERGE] ? on : off);
-    mechanism_user_singletons->set_value(pEBC_settings[SETTING_EBC_USER_SINGLETONS] ? on : off);
     mechanism_add_ltm_links->set_value(pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] ? on : off);
     allow_missing_negative_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] ? on : off);
 }
@@ -373,10 +340,6 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "----------------- EBC Mechanisms ------------------\n");
     outputManager->printa_sf(thisAgent, "add-ltm-links              %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_add_ltm_links->get_value()), "Recreate LTM links in original results");
     outputManager->printa_sf(thisAgent, "add-osk                    %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_add_OSK->get_value()), "Incorporate operator selection knowledge");
-    outputManager->printa_sf(thisAgent, "merge                      %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_merge->get_value()), "Merge redundant conditions");
-    outputManager->printa_sf(thisAgent, "lhs-repair                 %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_lhs->get_value()), "Add grounding conditions for unconnected LHS identifiers");
-    outputManager->printa_sf(thisAgent, "rhs-repair                 %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_rhs->get_value()), "Add grounding conditions for unconnected RHS identifiers");
-    outputManager->printa_sf(thisAgent, "user-singletons            %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_user_singletons->get_value()), "Unify identities using domain-specific singletons");
     outputManager->printa_sf(thisAgent, "---------- Correctness Guarantee Filters ----------%-%s\n", "Allow rules to form that...");
     outputManager->printa_sf(thisAgent, "allow-local-negations          %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_negative_reasoning->get_value()), "...used local negative reasoning");
     outputManager->printa_sf(thisAgent, "allow-opaque                   %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "...used knowledge from a LTM recall");
