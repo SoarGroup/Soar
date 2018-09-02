@@ -9,4 +9,5 @@ sp {P11*halt*all-blocks-in-desired-position
               ^inplace-object.name C)
 -->
    (<s> ^success <ds>)
+   (interrupt)
    (write (crlf) |TASK: Finished Stacking the Blocks.|)}

@@ -8,5 +8,7 @@ sp {water-jug*evaluate*state*success
    (<dj> ^volume <v> ^contents <c>)
    (<j> ^volume <v> ^contents <c>)
 -->
-   (<s> ^success <d>)}
+   (<s> ^success <d>)
+   (interrupt)
+   }
 
