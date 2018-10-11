@@ -1001,7 +1001,9 @@ extern void print_sysparam_trace(agent* thisAgent, int64_t sysParamIndex, const 
     if ((sysParamIndex == INVALID_SYSPARAM) || thisAgent->trace_settings[ sysParamIndex ])
     {
         va_start(args, format);
-        thisAgent->outputManager->sprinta_sf(thisAgent, buf, format, args);
+        thisAgent->outputManager->sprinta_sf_given_va(thisAgent, buf, format, args);//thisAgent->outputManager->sprinta_sf(thisAgent, buf, format, args);
+        //sjj - in response to github issue number 304, I have added a different function as a pure kernel hack. It seems you cannot pass va_lists as variadic arguments.
+        //However, you can pass them as va_lists, so I just did that instead. I have left the rest as it was in case this was the wrong decision.
         va_end(args);
         xml_generate_warning(thisAgent, buf.c_str());
     }
