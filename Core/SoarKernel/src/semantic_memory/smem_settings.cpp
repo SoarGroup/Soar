@@ -141,6 +141,14 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     base_inhibition = new soar_module::boolean_param("base-inhibition", off, new soar_module::f_predicate<boolean>());
     add(base_inhibition);
 
+    // inhibition has parameters of scale and decay. scale defaults to ACT-R value of 10.0.
+    inhibition_scale = new soar_module::decimal_param("inhibition-scale", 10.0, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(inhibition_scale);
+
+    // inhibition has parameters of scale and decay. decay defaults to ACT-R value of 1.0.
+    inhibition_decay = new soar_module::decimal_param("inhibition-decay", 1.0, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(inhibition_decay);
+
     // using working memory activation for wmes that are LTI-to-LTI edges instanced in working memory to increase edge weight in SMEM
     spreading_edge_updating = new soar_module::boolean_param("spreading-edge-updating", off, new soar_module::f_predicate<boolean>());
     add(spreading_edge_updating);
@@ -350,6 +358,8 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-incremental-threshes", base_incremental_threshes->get_string(), 55).c_str(), "integer > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("thresh", thresh->get_string(), 55).c_str(), "integer >= 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-inhibition", base_inhibition->get_string(), 55).c_str(), "on, off");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("inhibition-scale", inhibition_scale->get_string(), 55).c_str(), "Time scale parameter for base-level inhibition");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("inhibition-decay", inhibition_decay->get_string(), 55).c_str(), "Decay parameter for base-level inhibition");
     outputManager->printa(thisAgent, "------------ Experimental Spreading Activation --------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading", spreading->get_string(), 55).c_str(), "on, off");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-limit", spreading_limit->get_string(), 55).c_str(), "integer > 0");

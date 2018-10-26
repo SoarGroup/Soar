@@ -83,12 +83,14 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     //return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));
     //return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : recent-3);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
     double inhibition_odds = 0;
+    double inhibition_time_scale = settings->inhibition_scale->get_value();
+    double inhibition_decay = settings->inhibition_decay->get_value();
     if (recent_time != 0 && settings->base_inhibition->get_value() == on )// && smem_in_wmem->find(pLTI_ID) != smem_in_wmem->end())
     {
-        inhibition_odds = pow(1+pow(recent_time/10.0,-1.0),-1.0);
-        return ((sum > 0) ? (log(sum/(1+sum)) + log(inhibition_odds/(1+inhibition_odds))) : (SMEM_ACT_LOW));
+        inhibition_odds = pow(1.0+pow(recent_time/inhibition_time_scale,-inhibition_decay),-1.0);
+        return ((sum > 0) ? (log(sum/(1.0+sum)) + log(inhibition_odds/(1.0+inhibition_odds))) : (SMEM_ACT_LOW));
     }
-    return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));//doing log prob instead of log odds.
+    return ((sum > 0) ? (log(sum/(1.0+sum))) : (SMEM_ACT_LOW));//doing log prob instead of log odds.
 }
 
 // activates a new or existing long-term identifier
