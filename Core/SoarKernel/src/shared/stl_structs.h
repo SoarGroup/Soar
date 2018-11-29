@@ -80,10 +80,12 @@ typedef struct chunk_element_struct {
         Symbol*     variable_sym;
         Symbol*     instantiated_sym;
         uint64_t    inst_identity;
+        uint64_t    cv_id;
         chunk_element_struct() {
             variable_sym = NULL;
             instantiated_sym = NULL;
             inst_identity = 0;
+            cv_id = 0;
         }
 } chunk_element;
 

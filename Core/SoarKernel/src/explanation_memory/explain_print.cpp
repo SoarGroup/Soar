@@ -4,7 +4,6 @@
 #include "agent.h"
 #include "condition_record.h"
 #include "condition.h"
-#include "dprint.h"
 #include "explanation_memory.h"
 #include "identity_record.h"
 #include "instantiation_record.h"

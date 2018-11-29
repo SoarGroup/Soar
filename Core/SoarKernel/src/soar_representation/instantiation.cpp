@@ -1,33 +1,9 @@
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
-/*************************************************************************
- *
- *  file:  instantiation.cpp
- *
- * =======================================================================
- *
- * Init_firer() and init_chunker() should be called at startup time, to
- * do initialization.
- *
- * Do_preference_phase() runs the entire preference phase.  This is called
- * from the top-level control in main.c.
- *
- * Possibly_deallocate_instantiation() checks whether an instantiation
- * can be deallocated yet, and does so if possible.  This is used whenever
- * the (implicit) reference count on the instantiation decreases.
- * =======================================================================
- */
-
 #include "instantiation.h"
 
 #include "agent.h"
 #include "callback.h"
 #include "condition.h"
 #include "decide.h"
-#include "dprint.h"
 #include "ebc.h"
 #include "ebc_identity.h"
 #include "ebc_timers.h"
@@ -59,7 +35,7 @@
 #include <assert.h>
 #include <list>
 #include <stdlib.h>
-#include <string> // SBW 8/4/08
+#include <string>
 
 using namespace soar_TraceNames;
 
@@ -380,16 +356,6 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 #endif
 
         result = (*(rf->f))(thisAgent, arglist, rf->user_data);
-
-//        dprint(DT_DEBUG, "Called RHS function %y with args", rf->name);
-//        Symbol* lSym2;
-//        for (c = arglist; c != NIL; c = c->rest)
-//            if (c->first)
-//            {
-//                lSym2 = static_cast<Symbol *>(c->first);
-//                dprint_noprefix(DT_DEBUG, " %y", lSym2);
-//            }
-//        dprint_noprefix(DT_DEBUG, "\n");
 
         #ifndef NO_TIMING_STUFF  // restart the kernel timer
         thisAgent->timers_kernel.start();
@@ -810,7 +776,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
 
                         if (cond->bt.trace->level == inst->match_goal_level)
                         {
-                            dprint(DT_PROPAGATE, "Propagating identity sets for subgoal condition at match goal level %l\n", cond);
                             if (lTest_id->inst_identity)
                                 set_test_identity(thisAgent, lTest_id, thisAgent->explanationBasedChunker->get_or_add_identity(lTest_id->inst_identity, cond->bt.trace->identities.id, inst->match_goal));
                             if (lTest_attr->inst_identity)
@@ -818,7 +783,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                             if (lTest_value->inst_identity)
                                 set_test_identity(thisAgent, lTest_value, thisAgent->explanationBasedChunker->get_or_add_identity(lTest_value->inst_identity, cond->bt.trace->identities.value, inst->match_goal));
                         } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
-                            dprint(DT_PROPAGATE, "Propagating identity sets for subgoal condition not at match goal level %l\n", cond);
                             if (lTest_id->inst_identity)
                                 set_test_identity(thisAgent, lTest_id, thisAgent->explanationBasedChunker->get_or_add_identity(lTest_id->inst_identity, NULL_IDENTITY_SET, inst->match_goal));
                             if (lTest_attr->inst_identity)
@@ -832,7 +796,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
             /* Check for local singletons */
             if (cond->bt.wme_->local_singleton_value_identity_set && lDoIdentities && (cond->bt.wme_->id == inst->match_goal))
             {
-                dprint(DT_PROPAGATE, "Propagating local singleton identity sets %u and %u for condition %l\n", cond->bt.wme_->local_singleton_id_identity_set->get_identity(), cond->bt.wme_->local_singleton_value_identity_set->get_identity(), cond);
                 thisAgent->explanationBasedChunker->force_id_to_identity_mapping(cond->data.tests.id_test->eq_test->inst_identity, cond->bt.wme_->local_singleton_id_identity_set);
                 thisAgent->explanationBasedChunker->force_id_to_identity_mapping(cond->data.tests.value_test->eq_test->inst_identity, cond->bt.wme_->local_singleton_value_identity_set);
                 set_test_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.wme_->local_singleton_id_identity_set);
@@ -841,7 +804,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
             }
             if (lDoIdentities)
             {
-                dprint(DT_PROPAGATE, "Propagating identity sets for cond with no pref at this level (possibly architectural or RL) %l\n", cond);
                 /* Architectural WME or we couldn't find a pref at the current level.  Start a new identity set */
                 if (!cond->data.tests.id_test->eq_test->identity && cond->data.tests.id_test->eq_test->inst_identity)
                 {
@@ -866,7 +828,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     {
         if (lDoIdentities)
         {
-            dprint(DT_PROPAGATE, "Propagating identity sets for rhs preference %p\n", p);
             thisAgent->explanationBasedChunker->update_identities_in_preferences(p, inst->match_goal, is_chunk_inst);
         }
         if (addToGoal)
@@ -1107,9 +1068,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     inst->match_goal = thisAgent->active_goal;
 
 
-    dprint_header(DT_MILESTONES, PrintBefore, "Allocating instantiation for instance of %u (%y) in state %y (level %d) begun.\n", inst->i_id, inst->prod_name, inst->match_goal, static_cast<int64_t>(inst->match_goal_level));
-    dprint(DT_DEALLOCATE_INST, "Allocating instantiation for instance of %u (%y) in state %y (level %d) begun.\n", inst->i_id, inst->prod_name, inst->match_goal, static_cast<int64_t>(inst->match_goal_level));
-
     if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
         std::string lStr;
@@ -1194,7 +1152,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         }
         else
         {
-            dprint(DT_RL_VARIABLIZATION, "RL template %y matched.  Building instance of it...\n", inst->prod_name);
             pref = NIL;
             rl_build_template_instantiation(thisAgent, inst, tok, w, a2);
         }
@@ -1237,14 +1194,10 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     thisAgent->production_being_fired = NIL;
     if (rhs_vars) deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-
     if (isSubGoalMatch && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         thisAgent->explanationBasedChunker->clear_id_to_identity_map();
     }
-
-    dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
     if (isSubGoalMatch) thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
@@ -1270,7 +1223,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
 void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 {
-    dprint(DT_DEALLOCATE_INST, "Deallocating instantiation called for %u (%y)\n", inst->i_id, inst->prod_name);
     if (inst->in_newly_created)
     {
         if (!inst->in_newly_deleted)
@@ -1548,16 +1500,12 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
 
 instantiation* make_architectural_instantiation_for_memory_system(agent* thisAgent, Symbol* pState, wme_set* pConds, symbol_triple_list* pActions, bool forSMem)
 {
-    dprint_header(DT_MILESTONES, PrintBoth, "make_architectural_instantiation() called.\n");
-
     instantiation* inst;
 
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
     inst->match_goal = pState;
     inst->match_goal_level = pState->id->level;
     inst->tested_LTM = true;
-
-    dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
 
     // create LHS
     {
@@ -1594,14 +1542,11 @@ instantiation* make_architectural_instantiation_for_memory_system(agent* thisAge
     /* Initialize levels, add refcounts to prefs/wmes, sets on_goal_list flag, o-support calculation if needed */
     finalize_instantiation(thisAgent, inst, false, NULL, false);
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "Created architectural instantiation %u:\n%5", inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
-
-
     return inst;
 }
 
 /* ------------------------------------------------------------------
-            Fake Preferences for Goal ^Item Augmentations
+            make_architectural_instantiation_for_impasse_item
 
    When we backtrace through a (goal ^item) augmentation, we want
    to backtrace to the acceptable preference wme in the supercontext
@@ -1642,8 +1587,6 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
 
-    dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation for impasse item %u (match of %y)\n", inst->i_id, inst->prod_name);
-
     /* We already know the match goal, so we can just set it */
     inst->match_goal = goal;
     inst->match_goal_level = goal->id->level;
@@ -1662,8 +1605,6 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     /* Clean up symbol to identity mappings for this instantiation*/
     thisAgent->explanationBasedChunker->clear_symbol_identity_map();
-
-    dprint(DT_PRINT_INSTANTIATIONS,  "Created architectural instantiation for impasse item %u:\n%5", inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     return inst->preferences_generated;
 

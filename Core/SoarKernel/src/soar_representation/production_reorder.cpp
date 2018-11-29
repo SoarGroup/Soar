@@ -18,7 +18,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "dprint.h"
 #include "ebc.h"
 #include "ebc_repair.h"
 #include "explanation_memory.h"
@@ -103,13 +102,11 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     first_action = NIL;
     last_action = NIL;
 
-    dprint_header(DT_VALIDATE, PrintBefore, "Reordering action list:\n%2", *action_list);
     while (remaining_actions)
     {
         /* --- scan through remaining_actions, look for one that's legal --- */
         prev_a = NIL;
         a = remaining_actions;
-        dprint(DT_VALIDATE, "Looking for an action with a knowable level...\n");
         while (true)
         {
             if (!a)
@@ -118,20 +115,15 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             }
             if (legal_to_execute_action(a, lhs_tc))
             {
-                dprint(DT_VALIDATE, "...   Found. Levels of %a ARE knowable.\n", a);
                 break;
-            } else {
-                dprint(DT_VALIDATE, "...   Skipping. Levels of %a NOT knowable.\n", a);
             }
             prev_a = a;
             a = a->next;
         }
         if (!a)
         {
-            dprint(DT_VALIDATE, "...no more actions with a knowable level.\n");
             break;
         }
-        dprint(DT_VALIDATE, "...moving %a to reordered list.\n", a);
         /* --- move action a from remaining_actions to reordered list --- */
         if (prev_a)
         {
@@ -152,14 +144,11 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         }
         last_action = a;
         /* --- add new variables from a to new_bound_vars --- */
-        dprint(DT_VALIDATE, "...marking vars in %a\n", a);
         add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars);
     }
 
     if (remaining_actions)
     {   /* --- there are remaining_actions but none can be legally added --- */
-
-        dprint_header(DT_VALIDATE, PrintBefore, "Remaining unordered actions:\n%2", remaining_actions);
 
         std::string unSymString("");
         action* lAction;
@@ -168,7 +157,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
-            dprint(DT_VALIDATE, "Checking remaining action %a\n",  lAction);
             if (add_ungrounded && lAction->id && rhs_value_is_symbol(lAction->id) && !rhs_value_to_was_unbound_var(lAction->id))
             {
                 lSym = rhs_value_to_symbol(lAction->id);
@@ -190,7 +178,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                     lNewUngroundedSym->variable_sym = lVarSym;
                     lNewUngroundedSym->instantiated_sym = lInstSym;
                     lNewUngroundedSym->inst_identity = lNewID;
-                    dprint(DT_VALIDATE, "Adding unconnected rhs sym: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->inst_identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 }
             }
@@ -221,7 +208,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     else
     {
         result_flag = true;
-        dprint(DT_VALIDATE, "All actions are connected.\n");
     }
 
     /* --- unmark variables that we just marked --- */
@@ -229,7 +215,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
     /* --- return final result --- */
     *action_list = first_action;
-    dprint_header(DT_VALIDATE, PrintAfter, "Reordering %s.  Final action list:\n%2", result_flag ? "succeeded" : "failed", *action_list);
     return result_flag;
 }
 
@@ -321,14 +306,9 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     uint64_t sym_identity = LITERAL_VALUE;
     test sym_identity_set_test;
 
-    dprint(DT_REORDERER, "Simplifying test %t", (*t));
-
     if (!(*t))
     {
         add_gensymmed_equality_test(thisAgent, t, 'd');
-        dprint_noprefix(DT_REORDERER, "\n");
-        dprint(DT_REORDERER, "...returning by reference dummy equality test with %y.\n", sym);
-        dprint(DT_REORDERER, "...equality...skipping....\n");
         return old_sts;
     }
 
@@ -337,7 +317,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     switch (ct->type)
     {
         case EQUALITY_TEST:
-            dprint_noprefix(DT_REORDERER, "...equality...skipping...\n");
             return old_sts;
             break;
         case CONJUNCTIVE_TEST:
@@ -348,13 +327,9 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
              *           all the non-equality tests based on that symbol.  Couldn't this have
              *           occurred before with { <var> <var2> } where they match different
              *           symbols? --- */
-            dprint_noprefix(DT_REORDERER, "\n");
-
-            dprint(DT_REORDERER, "...Processing conjunctive test.  First find sym to index saved tests by...\n");
             sym = ct->eq_test->data.referent;
             sym_identity = ct->eq_test->inst_identity;
             sym_identity_set_test = ct->eq_test;
-            dprint(DT_REORDERER, "...Setting equality symbol %y as index.\n", sym);
             /* --- if no equality test was found, generate a dummy variable for it --- */
             if (!sym)
             {
@@ -362,7 +337,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 c->first = New;
                 c->rest = ct->data.conjunct_list;
                 ct->data.conjunct_list = c;
-                dprint(DT_REORDERER, "...no equality symbol found.  Generated EQ test for %y and added to beginning of t's conjunct list.\n", sym);
             }
             /* -- moves all tests except equality in this conjunction list to the saved test
              *    list passed in.
@@ -375,7 +349,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
              *
              *      Note: Could be a problem because an equality test with another symbol
              *            won't be saved anywhere.  It also won't be deallocated.-- */
-            dprint(DT_REORDERER, "...now save non-equality tests...\n");
             prev_c = NIL;
             c = ct->data.conjunct_list;
             while (c)
@@ -404,7 +377,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     {
                         ct->data.conjunct_list = next_c;
                     }
-                    dprint(DT_REORDERER, "...spliced test %t out of t's conjunct list and saved to saved_tests with index %y.\n", subtest, sym);
                     free_cons(thisAgent, c);
                 }
                 else
@@ -434,7 +406,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
              *    - Must make sure dummy variable also gets cleaned up-- */
             var = thisAgent->symbolManager->generate_new_variable("dummy-");
             New = make_test(thisAgent, var, EQUALITY_TEST);
-            /* -- generate variable already creates refcount -- */
             thisAgent->symbolManager->symbol_remove_ref(&var);
             thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);
             saved->next = old_sts;
@@ -442,11 +413,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             saved->var = var;
             saved->inst_identity = LITERAL_VALUE;
             saved->identity = NULL;
-            // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
             *t = New;
-            dprint(DT_REORDERER, "...goal/impasse, disjunction or non-equality relational tests...\n");
-            dprint(DT_REORDERER, "... generated EQ test with dummy variable %y using dummy variable as index.\n", var);
             break;
     }
     return old_sts;
@@ -458,8 +426,6 @@ saved_test* simplify_condition_list(agent* thisAgent, condition* conds_list)
     saved_test* sts;
 
     sts = NIL;
-    dprint_header(DT_REORDERER, PrintBefore, "=   Simplifying Conditions   =\n");
-    dprint_header(DT_REORDERER, PrintAfter, "%1", conds_list);
 
     for (c = conds_list; c != NIL; c = c->next)
     {
@@ -476,12 +442,6 @@ saved_test* simplify_condition_list(agent* thisAgent, condition* conds_list)
             sts = simplify_test(thisAgent, &(c->data.tests.value_test), sts);
         }
     }
-    dprint(DT_REORDERER, "...done simplifying.  Final results:\n");
-    dprint(DT_REORDERER, "Simplified Conditions:\n");
-    dprint_noprefix(DT_REORDERER, "%1", conds_list);
-    dprint(DT_REORDERER, "Saved Tests:\n");
-    dprint_saved_test_list(DT_REORDERER, sts);
-    dprint_header(DT_REORDERER, PrintAfter, "");
     return sts;
 }
 
@@ -525,9 +485,6 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
     bool added_it;
     Symbol* referent;
 
-    dprint(DT_REORDERER, "Looking for saved tests for: %t\n", (*t));
-//  dprint_saved_test_list (DT_REORDERER, tests_to_restore);
-
     prev_st = NIL;
     st = tests_to_restore;
     while (st)
@@ -535,7 +492,6 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
         next_st = st->next;
         added_it = false;
 
-        dprint(DT_REORDERER, "...comparing with: %y --> %t...", st->var, st->the_test);
 
         switch (st->the_test->type)
         {
@@ -548,35 +504,27 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 }
             /* ... otherwise fall through to the next case below ... */
             case DISJUNCTION_TEST:
-                dprint_noprefix(DT_REORDERER, "test is goal/impasse/disj...\n");
                 if ((*t)->eq_test->data.referent == st->var)
                 {
-                    dprint(DT_REORDERER, "Found match with  using index var %y: %t\n", st->var, st->the_test);
-                    dprint(DT_REORDERER, "Removing entry with index %y and adding test.\n", st->var);
                     add_test_if_not_already_there(thisAgent, t, st->the_test, neg, true);
                     added_it = true;
                 }
                 break;
             default:  /* --- st->test is a relational test --- */
-                dprint_noprefix(DT_REORDERER, "test is relational...\n");
                 referent = st->the_test->data.referent;
                 if ((*t)->eq_test->data.referent == st->var)
                 {
-                    dprint(DT_REORDERER, "Found match using index var %y: %t\n", st->var, st->the_test);
                     if (referent->is_constant_or_marked_variable(bound_vars_tc_number) ||
                             (st->var == referent))
                     {
-                        dprint(DT_REORDERER, "Adding test if not already there...\n");
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                         added_it = true;
                     }
                 }
                 else if ((*t)->eq_test->data.referent == referent)
                 {
-                    dprint(DT_REORDERER, "Found match using referent %y: %t\n", referent, st->the_test);
                     if (st->var->is_constant_or_marked_variable(bound_vars_tc_number) || (st->var == referent))
                     {
-                        dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
                         st->the_test->inst_identity = st->inst_identity;
@@ -618,64 +566,24 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
     condition* cond;
     cons* new_vars;
 
-    dprint_header(DT_REORDERER, PrintBoth, "=    Restoring Saved Tests    =\n");
-    dprint(DT_REORDERER, "Simplified Conditons:\n");
-    dprint_noprefix(DT_REORDERER, "%1", conds_list);
-    dprint(DT_REORDERER, "Saved Tests:\n");
-    dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-
-    new_vars = NIL;
+        new_vars = NIL;
     for (cond = conds_list; cond != NIL; cond = cond->next)
     {
-#ifdef CONSIDER_NEGATIVE
-        if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            continue;
-        }
-#else
-        if (cond->type != POSITIVE_CONDITION)
-        {
-            continue;
-        }
-#endif
+        #ifdef CONSIDER_NEGATIVE
+        if (cond->type == CONJUNCTIVE_NEGATION_CONDITION) continue;
+        #else
+        if (cond->type != POSITIVE_CONDITION) continue;
+        #endif
+
         bool neg = cond->type == NEGATIVE_CONDITION;
 
-        dprint(DT_REORDERER, "Starting Saved Tests:\n");
-        dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-
-        dprint(DT_REORDERER, "Restoring saved tests for cond's id:\n");
         tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.id_test), true, tc, tests_to_restore, neg);
-
-        dprint(DT_REORDERER, "After ID Saved Tests:\n");
-        dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-
         add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &new_vars);
-
-        dprint(DT_REORDERER, "Restoring saved tests for cond's attr:\n");
         tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.attr_test), false, tc, tests_to_restore, neg);
-
-        dprint(DT_REORDERER, "After attr Saved Tests:\n");
-        dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-
         add_bound_variables_in_test(thisAgent, cond->data.tests.attr_test, tc, &new_vars);
-
-        dprint(DT_REORDERER, "Restoring saved tests for cond's value:\n");
         tests_to_restore = restore_saved_tests_to_test(thisAgent, (&cond->data.tests.value_test), false, tc, tests_to_restore, neg);
-
-        dprint(DT_REORDERER, "After value Saved Tests:\n");
-        dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-
         add_bound_variables_in_test(thisAgent, cond->data.tests.value_test, tc, &new_vars);
-
-        dprint(DT_REORDERER, "Current Saved Tests:\n");
-        dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     }
-
-    dprint_header(DT_REORDERER, PrintBefore, "Final Conditions:\n");
-    dprint_noprefix(DT_REORDERER, "%1", conds_list);
-    dprint(DT_REORDERER, "Saved Tests:\n");
-    dprint_saved_test_list(DT_REORDERER, tests_to_restore);
-    dprint_header(DT_REORDERER, PrintAfter, "= end restore saved tests =\n");
 
     if (tests_to_restore)
     {
@@ -881,11 +789,9 @@ cons* collect_root_variables(agent* thisAgent,
             {
                 lMatchedSym = cond->data.tests.value_test->eq_test->data.referent->var->instantiated_sym;
             }
-            /* Dummy variables and literals won't have a matched sym */
             if (!lMatchedSym) lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
             lSym = cond->data.tests.value_test->eq_test->data.referent;
             l_inst_identity = cond->data.tests.value_test->eq_test->inst_identity;
-            dprint(DT_VALIDATE, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, l_inst_identity, tc, new_vars_from_value_slot);
         }
     }
@@ -898,12 +804,10 @@ cons* collect_root_variables(agent* thisAgent,
             {
                 lMatchedSym = cond->data.tests.id_test->eq_test->data.referent->var->instantiated_sym;
             }
-            /* Dummy variables and literals won't have a matched sym */
             if (!lMatchedSym) lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
 
             lSym = cond->data.tests.id_test->eq_test->data.referent;
             l_inst_identity = cond->data.tests.id_test->eq_test->inst_identity;
-            dprint(DT_VALIDATE, "Adding possible root from id element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, l_inst_identity, tc, new_vars_from_id_slot);
         }
     }
@@ -921,7 +825,6 @@ cons* collect_root_variables(agent* thisAgent,
         for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
         {
             found_goal_impasse_test = false;
-            dprint(DT_VALIDATE, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
 
             for (cond = cond_list; cond != NIL; cond = cond->next)
             {
@@ -930,13 +833,11 @@ cons* collect_root_variables(agent* thisAgent,
                 test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
                 {
                         found_goal_impasse_test = true;
-                        dprint_noprefix(DT_REORDERER, "found\n");
                         break;
                     }
             }
             if (! found_goal_impasse_test)
             {
-                dprint_noprefix(DT_REORDERER, "not found\n");
                 if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->inst_identity))
                 {
                     chunk_element* lNewUngroundedSym;
@@ -945,7 +846,6 @@ cons* collect_root_variables(agent* thisAgent,
                     lNewUngroundedSym->variable_sym = (*it)->variable_sym;
                     lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
                     lNewUngroundedSym->inst_identity = (*it)->inst_identity;
-                    dprint(DT_VALIDATE, "Adding ungrounded lhs sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->inst_identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 } else {
                     thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
@@ -960,13 +860,10 @@ cons* collect_root_variables(agent* thisAgent,
     }
 
     cons* returnList = NULL;
-    dprint(DT_VALIDATE, "Found the following root symbols:  ");
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
-        dprint_noprefix(DT_VALIDATE, "%y ", (*it)->variable_sym);
         push(thisAgent, (*it)->variable_sym, returnList);
     }
-    dprint_noprefix(DT_VALIDATE, "\n");
     delete_ungrounded_symbol_list(thisAgent, &new_vars_from_id_slot);
     return returnList;
 }
@@ -1191,15 +1088,8 @@ void reorder_simplified_conditions(agent* thisAgent,
                 add min-cost item to conds
     */
 
-    dprint_header(DT_REORDERER, PrintBefore, "Re-ordering simplified conditions:\n");
-//  dprint(DT_REORDERER, "Before Reorder Conditions:\n");
-    dprint_noprefix(DT_REORDERER, "%1", *top_of_conds);
-    dprint(DT_REORDERER, "Saved Tests:\n");
-//  dprint_saved_test_list (DT_REORDERER, saved_tests);
-    dprint_header(DT_REORDERER, PrintAfter, "");
     while (remaining_conds)
     {
-        dprint(DT_REORDERER, "Processing one of remaining conds...\n");
         /* --- find min-cost set --- */
         min_cost_conds = NIL;
         min_cost = 0;
@@ -1222,7 +1112,6 @@ void reorder_simplified_conditions(agent* thisAgent,
                                           Without the tie set we can't check the
                                           canonical order. */
         }
-        dprint(DT_REORDERER, "...cost is %d\n", min_cost);
 
         /* --- if min_cost==MAX_COST, print error message --- */
         if ((min_cost == MAX_COST) &&
@@ -1245,7 +1134,6 @@ void reorder_simplified_conditions(agent* thisAgent,
         /* --- if more than one min-cost item, and cost>1, do lookahead --- */
         if ((min_cost > 1) && (min_cost_conds->reorder.next_min_cost))
         {
-            dprint(DT_REORDERER, "...multiple candidates.  Doing lookahead.\n");
             min_cost = MAX_COST + 1;
             for (cond = min_cost_conds, next_cond = cond->reorder.next_min_cost;
                     cond != NIL;
@@ -1305,10 +1193,7 @@ void reorder_simplified_conditions(agent* thisAgent,
 
         /* --- install the first item in the min-cost set --- */
         chosen = min_cost_conds;
-        dprint(DT_REORDERER, "...reorderer adding chosen item: %l\n", chosen);
-        dprint(DT_REORDERER, "Before removing condition:\n%1", remaining_conds);
         remove_from_dll(remaining_conds, chosen, next, prev);
-        dprint(DT_REORDERER, "After removing condition:\n%1", remaining_conds);
         if (!first_cond)
         {
             first_cond = chosen;
@@ -1316,12 +1201,10 @@ void reorder_simplified_conditions(agent* thisAgent,
         /* Note: args look weird on the next line, because we're really
            inserting the chosen item at the *end* of the list */
         insert_at_head_of_dll(last_cond, chosen, prev, next);
-        dprint(DT_REORDERER, "New condition list:\n%1", chosen);
 
         /* --- if a conjunctive negation, recursively reorder its conditions --- */
         if ((chosen->type == CONJUNCTIVE_NEGATION_CONDITION) && reorder_nccs)
         {
-            dprint(DT_REORDERER, "...conjunctive negation being reordered...\n");
             cons* ncc_roots;
             ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top, bound_vars_tc_number);
             reorder_condition_list(thisAgent, &(chosen->data.ncc.top), ncc_roots, bound_vars_tc_number, reorder_nccs);
@@ -1329,7 +1212,6 @@ void reorder_simplified_conditions(agent* thisAgent,
         }
 
         /* --- update set of bound variables for newly added condition --- */
-        dprint(DT_REORDERER, "...updating bound variables in chosen condition.\n");
         add_bound_variables_in_condition(thisAgent, chosen, bound_vars_tc_number, &new_vars);
 
         /* --- if all roots are bound, set roots=NIL: don't need 'em anymore --- */
@@ -1349,10 +1231,8 @@ void reorder_simplified_conditions(agent* thisAgent,
 
     } /* end of while (remaining_conds) */
 
-    dprint(DT_REORDERER, "...unmarking variables.\n");
     unmark_variables_and_free_list(thisAgent, new_vars);
     *top_of_conds = first_cond;
-    dprint_header(DT_REORDERER, PrintBoth, "= Done re-ordering =\n");
 }
 
 void reorder_condition_list(agent* thisAgent,
@@ -1365,9 +1245,6 @@ void reorder_condition_list(agent* thisAgent,
 
     saved_tests = simplify_condition_list(thisAgent, *top_of_conds);
     reorder_simplified_conditions(thisAgent, top_of_conds, roots, tc, reorder_nccs);
-    dprint(DT_REORDERER, "After Reorder Conditions:\n");
-    dprint_noprefix(DT_REORDERER, "%1", *top_of_conds);
-    dprint(DT_REORDERER, "Saved Tests:\n");
     restore_and_deallocate_saved_tests(thisAgent, *top_of_conds, tc, saved_tests);
 }
 

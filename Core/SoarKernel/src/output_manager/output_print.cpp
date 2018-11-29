@@ -107,6 +107,12 @@ void Output_Manager::print_sf(const char* format, ...)
     }
 }
 
+void Output_Manager::sprinta_sf_given_va(agent* thisAgent, std::string &destString, const char* format, va_list args)
+{
+    vsnprint_sf(thisAgent, destString, format, args);
+    return;
+}
+
 void Output_Manager::sprinta_sf(agent* thisAgent, std::string &destString, const char* format, ...)
 {
     va_list args;
