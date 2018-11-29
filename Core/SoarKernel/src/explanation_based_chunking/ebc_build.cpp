@@ -14,6 +14,7 @@
  */
 
 #include "ebc.h"
+#include "ebc_settings.h" // CBC
 #include "ebc_identity.h"
 #include "ebc_repair.h"
 #include "ebc_timers.h"
@@ -50,6 +51,7 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <math.h> // CBC complexity uses exp()
 
 using namespace soar_TraceNames;
 
@@ -139,7 +141,7 @@ inline uint32_t hash_rhs_value(rhs_value val) {
 	return c_hasher(*val);	// TODO: Is this valid? Doesn't seem to be reached normally.
 }
 
-inline uint32_t hash_action(action* pAct) {
+inline uint32_t hash_action(const action* pAct) {
 	
 	std::hash<uint64_t> int64_hasher;
 	uint32_t result = pAct->type + 129064587;	// random number
@@ -185,7 +187,7 @@ inline uint32_t get_rule_hash(agent* thisAgent, condition* lhs, action* rhs) {
 	return hash_combine(result, get_rhs_hash(rhs));
 }
 
-std::string sorted_conds_str(agent* thisAgent, condition* conds) {
+std::string sorted_conds_str(agent* thisAgent, condition* conds, int &count) {
     std::string line;
     std::string ret_str = "";
 	std::vector<std::string> srt_list = std::vector<std::string>();
@@ -195,7 +197,7 @@ std::string sorted_conds_str(agent* thisAgent, condition* conds) {
 	for (c = conds; c != NIL; c = c->next) {
 		line = "";
 		if (c->type == CONJUNCTIVE_NEGATION_CONDITION) {
-			line = sorted_conds_str(thisAgent, c->data.ncc.top);
+			line = sorted_conds_str(thisAgent, c->data.ncc.top, count);
 			srt_list.push_back("-{" + line + "}");
 			continue;
 		}
@@ -212,11 +214,11 @@ std::string sorted_conds_str(agent* thisAgent, condition* conds) {
 		srt_list.push_back(line);
 	}
 	std::sort(srt_list.begin(), srt_list.end(), std::greater<std::string>());
-	for (auto const& vs : srt_list) { ret_str += vs + "\n"; }
+	for (auto const& vs : srt_list) { ret_str += vs + "\n"; count++; }
 	return ret_str;
 }
 
-std::string sorted_acts_str(agent* thisAgent, action* acts) {
+std::string sorted_acts_str(agent* thisAgent, action* acts, int &count) {
 	std::string line;
 	std::string ret_str = "";
 	std::vector<std::string> srt_list = std::vector<std::string>();
@@ -227,6 +229,7 @@ std::string sorted_acts_str(agent* thisAgent, action* acts) {
 		line = "";
 		if (a->type == FUNCALL_ACTION) {
 			thisAgent->outputManager->rhs_value_to_string(a->value, line);
+			count--;	// Don't count RHS functions in the complexity count
 		}
 		else {
 			line += preference_to_char(a->preference_type);
@@ -246,11 +249,11 @@ std::string sorted_acts_str(agent* thisAgent, action* acts) {
 		srt_list.push_back(line);
 	}
 	std::sort(srt_list.begin(), srt_list.end(), std::greater<std::string>());
-	for (auto const& vs : srt_list) { ret_str += vs + "\n"; }
+	for (auto const& vs : srt_list) { ret_str += vs + "\n"; count++; }
 	return ret_str;
 }
 
-std::string sorted_conds_str2(agent* thisAgent, condition* conds) {
+std::string sorted_conds_str2(agent* thisAgent, condition* conds, int &count) {
     std::string line;
     std::string ret_str = "";
 	std::vector<std::string> srt_list = std::vector<std::string>();
@@ -260,7 +263,7 @@ std::string sorted_conds_str2(agent* thisAgent, condition* conds) {
 	for (c = conds; c != NIL; c = c->next) {
 		line = "";
 		if (c->type == CONJUNCTIVE_NEGATION_CONDITION) {
-			line = sorted_conds_str(thisAgent, c->data.ncc.top);
+			line = sorted_conds_str(thisAgent, c->data.ncc.top, count);
 			srt_list.push_back("-{" + line + "}");
 			continue;
 		}
@@ -281,7 +284,7 @@ std::string sorted_conds_str2(agent* thisAgent, condition* conds) {
 		ret_str = "";
 	else {
 		std::sort(srt_list.begin(), srt_list.end(), std::greater<std::string>());
-		for (auto const& vs : srt_list) { ret_str += vs + "\n"; }
+		for (auto const& vs : srt_list) { ret_str += vs + "\n"; count++; }
 	}
 	return ret_str;
 }
@@ -326,9 +329,13 @@ std::string rename_str_vars(agent* thisAgent, const std::string& rule_str) {
 	return ret_str;
 }
 
-std::string get_rule_str(agent* thisAgent, condition* conds, action* acts) {
-	std::string rule_str = sorted_conds_str2(thisAgent, conds) + "-->\n" + sorted_acts_str(thisAgent, acts);
+/* Returns the simple string form of the rule, suitable for hashing.
+ * complexity returns the count of conditions and actions, not include RHS functions. */
+std::string get_rule_str(agent* thisAgent, condition* conds, action* acts, int &complexity) {
+	int ccount = 0, acount = 0;
+	std::string rule_str = sorted_conds_str(thisAgent, conds, ccount) + "-->\n" + sorted_acts_str(thisAgent, acts, acount);
 	rule_str = rename_str_vars(thisAgent, rule_str);
+	complexity = ccount + acount;
 	return rule_str;
 }
 
@@ -1173,26 +1180,59 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     }
 
     /* CBC: Sample chunk generation for confidence update. Make it a justification if not confident. (bws, 07/17) */
-    /*if (m_rule_type == ebc_chunk) {
+    if (m_rule_type == ebc_chunk) {
     	// Sample the rule
     	try {
-    	std::string str = get_rule_str(thisAgent,m_lhs,m_rhs);
-    	thisAgent->outputManager->printa(thisAgent, str.c_str());
-    	//
-    	uint32_t rule_hash = std::hash<std::string>{}(str);//get_rule_hash(thisAgent, m_lhs, m_rhs);
+    	int complexity,
+			t = confidence_threshold;
+    	float f = 1.0;	// temp
+    	std::string str = get_rule_str(thisAgent,m_lhs,m_rhs,complexity);
+    	//thisAgent->outputManager->printa(thisAgent, str.c_str());
+    	//xml_generate_verbose(thisAgent, str.c_str());
+    	uint32_t rule_hash = std::hash<std::string>{}(str);
+    	//uint32_t rule_hash = get_rule_hash(thisAgent, m_lhs, m_rhs);
     	if (m_cbc_chunk_counts.find(rule_hash) == m_cbc_chunk_counts.end())
     		m_cbc_chunk_counts[rule_hash] = 1;
     	else
     		m_cbc_chunk_counts[rule_hash]++;
 
     	// Rebuild the rule as a justification if not confident in the chunk
-    	if (m_cbc_chunk_counts[rule_hash] < confidence_threshold) {
+    	switch (ebc_params->confidence_function->get_value()) {
+    	case cbc_lin_incr:
+    		t = (int)((f*complexity + confidence_threshold - 1) / confidence_threshold); // t=ceil(c/T): So that param sets max rule complexity for t=1
+    		break;
+    	case cbc_lin_decr:
+    		t = 2 + (int)(-complexity * f / confidence_threshold);
+    		//t = (t<1) ? 1 : t;	// superfluous, but pretty
+    		break;
+    	case cbc_exp_incr: {
+    		// FIXME: move compute of C to only when threshold is changed.
+    		float C = exp(-f*confidence_threshold); // C so that t == 1 when complexity == threshold.
+    		t = (int)C*exp(f*complexity);
+    		break;
+    	}
+    	case cbc_exp_decr: {
+    		// FIXME: move compute of C to only when settings are changed.
+    		float C = exp(f*confidence_threshold); // C so that t == 1 when complexity == threshold.
+    		t = (int)C*exp(-f*complexity);
+    		break;
+    	}
+    	case cbc_constant: default:
+    		break;	// Leave as t=confidence_threshold
+    	}
+    	if (m_cbc_chunk_counts[rule_hash] < t) {
     		std::ostringstream message;
-    		message << "\nChunk confidence at " << std::to_string(m_cbc_chunk_counts[rule_hash]) << " < " << std::to_string(confidence_threshold) << ". Rebuilding as justification:";
+    		message << "\nChunk confidence at " << std::to_string(m_cbc_chunk_counts[rule_hash]) << " < " << std::to_string(t) << " for complexity " << std::to_string(complexity) << ". Rebuilding as justification:";
     		thisAgent->outputManager->printa_sf(thisAgent, message.str().c_str());
     		xml_generate_verbose(thisAgent, message.str().c_str());
 
     		lChunkValidated = false;
+    	}
+    	else {
+    		std::ostringstream message;
+			message << "\nChunk confidence at " << std::to_string(m_cbc_chunk_counts[rule_hash]) << " >= " << std::to_string(t) << " for complexity " << std::to_string(complexity) << ". Making chunk:";
+			thisAgent->outputManager->printa_sf(thisAgent, message.str().c_str());
+			xml_generate_verbose(thisAgent, message.str().c_str());
     	}
     	}
     	catch(const std::runtime_error& re) {
@@ -1210,7 +1250,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     		thisAgent->outputManager->printa(thisAgent, "Unknown error occurred.\n");
     	    std::cerr << "Unknown failure occurred. Possible memory corruption" << std::endl;
     	}
-    }*/
+    }
 
     /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there
      * is a repair failure.  Unless there's a bug in the repair code, all rules should be reparable. */

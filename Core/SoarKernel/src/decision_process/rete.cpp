@@ -97,7 +97,7 @@
     5:  Beta Net Primitive Destruction Routines
     6:  Variable Bindings and Locations
     7:  Varnames and Node_Varnames
-    8:  Building the Rete Net:  Condition-To-Node Converstion
+    8:  Building the Rete Net:  Condition-To-Node Conversion
     9:  Production Addition and Excising
    10:  Building Conditions (instantiated or not) from the Rete Net
    11:  Rete Test Evaluation Routines
@@ -1897,6 +1897,11 @@ void update_node_with_matches_from_above(agent* thisAgent, rete_node* child)
         return;
     }
 
+    /*if (parent->first_child->b.p.prod && parent->first_child->b.p.prod->action_list) {
+    	uint16_t level = rhs_value_to_reteloc_levels_up(parent->first_child->b.p.prod->action_list->id);
+    	assert(level < 100);
+    }*/
+
     /* --- if parent is negative or cn: easy, just look at the list of tokens
            on the parent node. --- */
     for (tok = parent->a.np.tokens; tok != NIL; tok = tok->next_of_node)
@@ -2262,10 +2267,11 @@ rete_node* make_new_cn_node(agent* thisAgent,
     init_new_rete_node_with_type(thisAgent, partner, CN_PARTNER_BNODE);
 
     /* NOTE: for improved efficiency, <node> should be on the parent's
-       children list *after* the ncc subcontitions top node */
+       children list *after* the ncc subconditions top node */
     remove_node_from_parents_list_of_children(ncc_subconditions_top_node);
     node->parent = parent;
-    node->next_sibling = parent->first_child;
+    node->next_sibling = parent->first_child;	// This isn't supposed to be a circular list, no?  vv
+    //node->next_sibling = ncc_subconditions_top_node->next_sibling;	// BWS: 1/14/18
     ncc_subconditions_top_node->next_sibling = node;
     parent->first_child = ncc_subconditions_top_node;
     node->first_child = NIL;
@@ -3228,7 +3234,6 @@ rete_node* make_node_for_positive_cond(agent* thisAgent,
                             &rt, &alpha_attr);
     add_rete_tests_for_test(thisAgent, cond->data.tests.value_test, current_depth, 2,
                             &rt, &alpha_value);
-
     /* --- Pop sparse variable bindings for this condition --- */
     pop_bindings_and_deallocate_list_of_variables(thisAgent, vars_bound_here);
 
@@ -3415,7 +3420,7 @@ rete_node* make_node_for_negative_cond(agent* thisAgent,
     first condition/node; <parent> gives the parent node under which the
     network should be built or shared.
 
-    Three "dest" parameters may be used for returing results from this
+    Three "dest" parameters may be used for returning results from this
     routine.  If <dest_bottom_node> is given as non-NIL, this routine
     fills it in with a pointer to the lowermost node in the resulting
     network.  If <dest_bottom_depth> is non-NIL, this routine fills it
@@ -3657,7 +3662,6 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         sym = rhs_value_to_symbol(*rv);
         if (sym->symbol_type != VARIABLE_SYMBOL_TYPE)
         {
-        	thisAgent->outputManager->printa_sf(thisAgent, "FIXUP: %y\n", sym);
             return;
         }
         /* --- Found a variable.  Is is bound on the LHS? --- */
@@ -3667,9 +3671,6 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
             thisAgent->symbolManager->symbol_remove_ref(&sym);
             thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, *rv);
             *rv = reteloc_to_rhs_value(var_loc.field_num, var_loc.levels_up - 1);
-
-            uint16_t level = rhs_value_to_reteloc_levels_up(*rv);
-            //assert(level < 100);
         }
         else
         {
@@ -3689,10 +3690,6 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
             thisAgent->symbolManager->symbol_remove_ref(&sym);
             thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, *rv);
             *rv = unboundvar_to_rhs_value(index);
-
-            uint16_t level = rhs_value_to_reteloc_levels_up(*rv);
-            //assert(level < 100);
-
         }
         return;
     }
@@ -3781,18 +3778,19 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             fixup_rhs_value_variable_references(thisAgent, &(a->id), bottom_depth,
                                                 rhs_unbound_vars_for_new_prod, num_rhs_unbound_vars_for_new_prod, rhs_unbound_vars_tc);
-            if (rhs_value_is_symbol(a->attr))
+
+            /*if (rhs_value_is_symbol(a->attr))
 			{
 				if ((rhs_value_to_rhs_symbol(a->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
 						(a->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
 				{
 					uint16_t level = rhs_value_to_reteloc_levels_up(a->id);
 					if (level >= 100) {
-						thisAgent->outputManager->printa_sf(thisAgent, "ERROR after id: %a", a);
+						thisAgent->outputManager->printa_sf(thisAgent, "\nERROR after action: %a\n levels_up too high at: %u", a, (uint64_t)level);
 						//assert(level < 100);
 					}
 				}
-			}
+			}*/
             fixup_rhs_value_variable_references(thisAgent, &(a->attr), bottom_depth,
                                                 rhs_unbound_vars_for_new_prod, num_rhs_unbound_vars_for_new_prod, rhs_unbound_vars_tc);
 
@@ -3801,22 +3799,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                                                     rhs_unbound_vars_for_new_prod, num_rhs_unbound_vars_for_new_prod, rhs_unbound_vars_tc);
         }
     }
-
-    /*for (a = p->action_list; a != NIL; a = a->next) // sanity check for bad levels
-    {
-    	if ((a->type == MAKE_ACTION) && (rhs_value_is_symbol(a->attr)))
-    	{
-    		if ((rhs_value_to_rhs_symbol(a->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
-    				(a->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
-    		{
-    			uint16_t level = rhs_value_to_reteloc_levels_up(a->id);
-    			if (level >= 100) {
-    				thisAgent->outputManager->printa_sf(thisAgent, "ERROR: The action level is too high for: %a", a);
-    				assert(level < 100);
-    			}
-    		}
-    	}
-    }*/
 
     /* --- clean up variable bindings created by build_network...() --- */
     pop_bindings_and_deallocate_list_of_variables(thisAgent, vars_bound);
@@ -3923,8 +3905,8 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         goal. In p_node_left_addition, where the tentative assertion will be
         generated, we make it a point to look at the goal value and extract
         from the appropriate list; here we just make a a simplifying
-        assumption that the goal is NIL (although, in reality), it never will
-        be.  */
+        assumption that the goal is NIL (although, in reality, it never will
+        be).  */
 
         /* This initialization is necessary (for at least safety reasons, for all
         msc's, regardless of the mode */
@@ -4397,7 +4379,7 @@ Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
     while (levels_up)
     {
         levels_up--;
-        w = tok->w;		// FIXME: this can crash (using PROPs agent)
+        w = tok->w;
         tok = tok->parent;
     }
     if (field_num == 0)
@@ -5444,7 +5426,7 @@ void unhashed_mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         /* --- match found, so call each child node --- */
         for (child = node->first_child; child != NIL; child = child->next_sibling)
         {
-            (*(left_addition_routines[child->node_type]))(thisAgent, child, tok, w);
+        	(*(left_addition_routines[child->node_type]))(thisAgent, child, tok, w);
         }
     }
     activation_exit_sanity_check();
@@ -5844,7 +5826,7 @@ void cn_partner_node_left_addition(agent* thisAgent, rete_node* node,
    because a match could appear and then disappear during one e-cycle
    (e.g., add one WME, this creates a match, then remove another WME,
    and the match goes away).  A match can also disappear then re-appear
-   (example case involves an NCC -- create a match fot the NCC by adding
+   (example case involves an NCC -- create a match for the NCC by adding
    a WME inside it, then remove another WME for a different condition
    inside the NCC).  When one of these "strobe" situations occurs,
    we don't want to actually fire the production or retract the
@@ -5902,8 +5884,12 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             if (bnode_is_positive(current_node->node_type))
                 if (current_wme != cond->bt.wme_)
                 {
-                    match_found = false;
-                    break;
+                	//thisAgent->outputManager->printa_sf(thisAgent, "\nCURRENT_WME: %w", current_wme);
+                	//thisAgent->outputManager->printa_sf(thisAgent, "\nRETRACT_WME: %w\n", cond->bt.wme_);
+                	// FIXME: In a rare case that a justification condition tests a just-blinked input-link wme,
+                	//        this equality test fails (the alpha node current_wme is newer than the bt.wme_) (BWS, 01/15/18)
+                	match_found = false;
+                	break;
                 }
             current_node = real_parent_node(current_node);
             current_wme = current_token->w;
@@ -5932,6 +5918,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         }
     }
 #endif
+
+
 
     /* --- if match found tentative_retractions, remove it --- */
     if (match_found)
@@ -5965,6 +5953,12 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         return;
     }
 
+    if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
+    	thisAgent->outputManager->printa_sf(thisAgent, "\nWARNING: Justification w/o match_found. Shortcutting p_node left addition.\n");
+    	//thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
+        activation_exit_sanity_check();
+        return;
+    }
     /* --- no match found, so add new assertion --- */
 
     thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);

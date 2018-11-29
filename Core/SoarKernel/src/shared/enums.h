@@ -316,6 +316,15 @@ enum chunkNameFormats
     ruleFormat
 };
 
+enum chunkConfidenceFunctions
+{
+    cbc_constant,
+	cbc_lin_incr,
+	cbc_lin_decr,
+	cbc_exp_incr,
+	cbc_exp_decr
+}; // CBC
+
 enum MessageType
 {
     debug_msg,

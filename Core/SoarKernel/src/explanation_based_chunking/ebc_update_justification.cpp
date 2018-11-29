@@ -87,6 +87,14 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
     }
 
     dprint(DT_RHS_VARIABLIZATION, "Converted result: %a\n", a);
+
+    /*uint16_t level = rhs_value_to_reteloc_levels_up(a->id);
+    if (level >= 100) {
+    	thisAgent->outputManager->printa_sf(thisAgent, "Fixup: %y, %u, %a\n", rhs_value_to_symbol(a->id), (uint64_t)level, a);
+    }
+    else
+    	thisAgent->outputManager->printa_sf(thisAgent, "Okay: %y\n", rhs_value_to_symbol(a->id));*/
+
     return a;
 }
 

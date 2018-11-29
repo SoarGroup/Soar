@@ -87,6 +87,14 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     confidence_threshold = new soar_module::integer_param("confidence-threshold", pConfidenceThreshold, new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>()); // CBC
     add(confidence_threshold);
 
+    confidence_function = new soar_module::constant_param<chunkConfidenceFunctions>("confidence-function", cbc_constant, new soar_module::f_predicate<chunkConfidenceFunctions>());
+    confidence_function->add_mapping(cbc_constant, "constant");
+    confidence_function->add_mapping(cbc_lin_incr, "lin-increase");
+    confidence_function->add_mapping(cbc_lin_decr, "lin-decrease");
+    confidence_function->add_mapping(cbc_exp_incr, "exp-increase");
+    confidence_function->add_mapping(cbc_exp_decr, "exp-decrease");
+    add(confidence_function);
+
     bottom_level_only = new soar_module::boolean_param("bottom-only", setting_on(SETTING_EBC_BOTTOM_ONLY), new soar_module::f_predicate<boolean>());
     add(bottom_level_only);
     interrupt_on_chunk = new soar_module::boolean_param("interrupt", setting_on(SETTING_EBC_INTERRUPT), new soar_module::f_predicate<boolean>());
@@ -372,6 +380,19 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dupes", ebc_params->max_dupes->get_string().c_str(), 45).c_str(), "Maximum duplicate chunks (per rule, per phase)");
     // CBC:
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("confidence-threshold", ebc_params->confidence_threshold->get_string().c_str(), 45).c_str(), "Number of times to generate chunk before it is added");
+    tempString = "[ ";
+        tempString += ebc_params->confidence_function->get_value() == cbc_constant ?  "CONSTANT": "constant";
+        tempString += " | ";
+        tempString += ebc_params->confidence_function->get_value() == cbc_lin_incr ?  "LIN-INCREASE" : "lin-increase";
+        tempString += " | \n    ";
+        tempString += ebc_params->confidence_function->get_value() == cbc_lin_decr ?  "LIN-DECREASE" : "lin-decrease";
+        tempString += " | ";
+        tempString += ebc_params->confidence_function->get_value() == cbc_exp_incr ?  "EXP-INCREASE" : "exp-increase";
+        tempString += " | ";
+        tempString += ebc_params->confidence_function->get_value() == cbc_exp_decr ?  "EXP-DECREASE" : "exp-decrease";
+        tempString += "]";
+    outputManager->printa_sf(thisAgent, "%s %-%s\n",
+        concatJustified("confidence-function", tempString, 51).c_str(),"Function for determining confidence threshold for chunk.");
     outputManager->printa_sf(thisAgent, "------------------- Debugging ---------------------\n");
     outputManager->printa_sf(thisAgent, "interrupt                  %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_chunk->get_value()), "Stop Soar after learning from any rule");
     outputManager->printa_sf(thisAgent, "explain-interrupt          %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_watched->get_value()), "Stop Soar after learning rule watched by explainer");

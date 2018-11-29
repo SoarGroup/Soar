@@ -95,8 +95,8 @@ void instantiation_record::record_instantiation_contents(bool isChunkInstantiati
     for (condition* cond = cached_inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
         condition_record* lCondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, this, false, isChunkInstantiation);
-        if (!lCondRecord) // CBC crash patch
-        	continue;
+        //if (!lCondRecord) // CBC crash patch
+        //	continue;
         if (!isChunkInstantiation)
         {
             lCondRecord->connect_to_action();

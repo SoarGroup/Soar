@@ -19,6 +19,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::constant_param<EBCLearnChoices>* chunk_in_states;
         soar_module::constant_param<chunkNameFormats>* naming_style;
         soar_module::constant_param<singleton_element_type>* element_type;
+        soar_module::constant_param<chunkConfidenceFunctions>* confidence_function;
 
         /* Parameters used as commands */
         soar_module::boolean_param* stats_cmd;
