@@ -13,7 +13,7 @@ sp {mac*detect*state*success
           ^cannibals <c>)
    -->
    (<s> ^success <d>)
-   (interrupt)
+   (halt)
    (write (crlf) |Success!|)
 }
 ###
@@ -27,5 +27,4 @@ sp {mac*evaluate*state*failure*more*cannibals
            ^cannibals > <n>)
    -->
    (write (crlf) |Failure!|)
-   (interrupt)
    (<s> ^failure <d>)}

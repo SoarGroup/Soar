@@ -10,5 +10,6 @@ multi-attributes holds 8
 multi-attributes upper-disk 2
 multi-attributes clear 2
 
-chunk off
+chunk bottom on
+chunk always
 # Does not work with chunking

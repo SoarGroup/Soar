@@ -9,6 +9,7 @@ sp {water-jug*evaluate*state*success
    (<j> ^volume <v> ^contents <c>)
 -->
    (<s> ^success <d>)
-   (interrupt)
+   (write (crlf) |Success! Jug with volume of 3 has 1 unit of water: |  <j> | | <c> | / | <v>)
+   #(interrupt)
    }
 

@@ -56,7 +56,7 @@ sp {answerx2*apply*up-gripper*pass*top-state*OpNoChange*t19-2
     (state <s1> ^top-state <t1> ^operator <o3>)
    -{ (<s1> ^operator <o1>)
       (<o1> ^name evaluate-operator)}
-    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <c1> <c1> })
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <a1> <c1> })
     (<g1> ^position down ^holding nothing ^above <a1>)
     (<i1> ^output-link <o2>)
     (<o2> ^gripper <g2>)
@@ -136,7 +136,7 @@ sp {answerx2*apply*move-gripper-above*pass*top-state*OpNoChange*t12-2
     (state <s1> ^top-state <t1> ^operator <o3>)
    -{ (<s1> ^operator <o1>)
       (<o1> ^name evaluate-operator)}
-    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <c1> <c1> <> <h1> })
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <a1> <c1> <> <h1> })
     (<g1> ^position up ^above <a1> ^holding { <h1> <> nothing })
     (<i1> ^output-link <o2>)
     (<o2> ^gripper <g2>)
@@ -162,7 +162,7 @@ sp {answerx2*apply*up-gripper*pass*top-state*OpNoChange*t11-2
     (state <s1> ^top-state <t1> ^operator <o3>)
    -{ (<s1> ^operator <o1>)
       (<o1> ^name evaluate-operator)}
-    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <c1> <c1> <> <h1> })
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <a1> <c1> <> <h1> })
     (<g1> ^position down ^above <a1> ^holding { <h1> <> nothing })
     (<i1> ^output-link <o2>)
     (<o2> ^gripper <g2>)
@@ -245,7 +245,7 @@ sp {answerx2*apply*move-gripper-above*pass*top-state*OpNoChange*t6-2
     (state <s1> ^top-state <t1> ^operator <o3>)
    -{ (<s1> ^operator <o1>)
       (<o1> ^name evaluate-operator)}
-    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <c1> <c1> })
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <a1> <c1> })
     (<g1> ^position up ^holding nothing ^above <a1>)
     (<i1> ^output-link <o2>)
     (<o2> ^gripper <g2>)

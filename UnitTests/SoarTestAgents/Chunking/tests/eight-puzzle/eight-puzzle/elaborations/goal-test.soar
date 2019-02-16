@@ -32,5 +32,5 @@ sp {eight*detect*state*success
    (<d33> ^cell.name c33 ^tile <o33>)
 -->
    (<s> ^success <d>)
-   (interrupt)
+   #(halt)
    }

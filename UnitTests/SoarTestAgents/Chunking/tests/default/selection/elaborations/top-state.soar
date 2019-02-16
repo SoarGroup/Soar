@@ -12,7 +12,7 @@ sp {top-goal*halt*success
               ^superstate nil
               ^<< required-success success >> <eb>)
 -->
-#   (write (crlf)   <name>  | achieved |)
+   (write (crlf) |Top state goal | <name>  | achieved. Halting |)
    (halt)}
 
 ###         B. top-goal*halt*state*failure
@@ -24,7 +24,7 @@ sp {top-goal*halt*failure
               ^name <name>
               ^ << prohibit-failure failure exhaustion-failure >> <eb>)
 -->
-#   (write (crlf)  <name>  | failed|)
+   (write (crlf) |Top state goal | <name>  | failed. Halting.|)
    (halt)}
 
 
