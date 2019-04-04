@@ -665,6 +665,7 @@ void SMem_Manager::STM_to_LTM(Symbol* pSTI, smem_storage_type store_type, bool u
                 }
 
                 v->val_lti.val_value = (*c);
+                v->val_lti.edge_weight = 0.0;
             }
 
             // add value to slot
