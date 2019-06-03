@@ -87,6 +87,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     activation_mode->add_mapping(act_recency, "recency");
     activation_mode->add_mapping(act_frequency, "frequency");
     activation_mode->add_mapping(act_base, "base-level");
+    activation_mode->add_mapping(act_none, "none");
     add(activation_mode);
 
     // base_decay

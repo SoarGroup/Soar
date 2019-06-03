@@ -276,6 +276,10 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
             new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + (add_access ? touches : 0), prev_access_1);
         }
     }
+    else if (act_mode == smem_param_container::act_none)
+    {
+        new_activation = SMEM_ACT_LOW;
+    }
     // get number of augmentations (if not supplied)
     if (num_edges == SMEM_ACT_MAX)
     {
@@ -312,7 +316,14 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     if (static_cast<double>(new_activation)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(new_activation)==0)
     {//When we have nothing to go on, we pretend the base-level of the memory is equivalent to having been accessed once at the time the agent was created.
         double decay = settings->base_decay->get_value();
-        new_base = pow(static_cast<double>(smem_max_cycle+settings->base_unused_age_offset->get_value()),static_cast<double>(-decay));
+        if (act_mode == smem_param_container::act_none)
+        {
+            new_base = pow(static_cast<double>(settings->base_unused_age_offset->get_value()),static_cast<double>(-decay));
+        }
+        else
+        {
+            new_base = pow(static_cast<double>(smem_max_cycle+settings->base_unused_age_offset->get_value()),static_cast<double>(-decay));
+        }
         new_base = log(new_base/(1.0+new_base));
     }
     else
