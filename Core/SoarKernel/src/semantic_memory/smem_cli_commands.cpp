@@ -381,14 +381,23 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         (*result_message) = new std::string();
 
         std::list<uint64_t> match_ids;
+        std::list<double> acts;
 
-        process_query(NIL, root_cue_id_list, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
+        process_query(NIL, root_cue_id_list, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install, &(acts));
 
         if (!match_ids.empty())
         {
             for (std::list<uint64_t>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
             {
                print_LTM((*id), 1, *result_message); //"1" is the depth.
+            }
+            (*result_message)->append("Activation values");
+            for (std::list<double>::const_iterator act = acts.begin(), end = acts.end(); act != end; ++act)
+            {
+                (*result_message)->append(", ");
+                std::string temp_act;
+                to_string(*act, temp_act);
+                (*result_message)->append(temp_act);
             }
         }
         else

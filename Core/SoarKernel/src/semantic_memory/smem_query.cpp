@@ -392,7 +392,7 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
     return result;
 }
 
-uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type)
+uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type, std::list<double>* acts)
 {
     //Under the philosophy that activation only matters in the service of a query, we defer processing prohibits until now..
     id_set::iterator prohibited_lti_p;
@@ -739,6 +739,10 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
                             king_id = cand;
                             first_element = true;
                             match_ids->push_back(cand);
+                            if (acts != NIL)
+                            {
+                                acts->push_back(cand_act);
+                            }
                             all_king_ids.insert(std::make_pair(cand_act,cand));
                             prohibit->insert(cand);
                         }
