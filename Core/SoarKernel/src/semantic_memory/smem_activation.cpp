@@ -1265,7 +1265,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     ////////////////////////////////////////////////////////////////////////////
                     SQL->act_lti_fake_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     SQL->act_lti_fake_set->bind_double(2, spread);
-                    SQL->act_lti_fake_set->bind_double(3, modified_spread+ new_base);
+                    SQL->act_lti_fake_set->bind_double(3, (settings->activation_mode->get_value() == smem_param_container::act_none ? modified_spread : new_base+modified_spread));//modified_spread+ new_base);
                     SQL->act_lti_fake_set->bind_int(4, *candidate);
                     SQL->act_lti_fake_set->execute(soar_module::op_reinit);
                     ////////////////////////////////////////////////////////////////////////////
@@ -1280,7 +1280,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     SQL->act_lti_fake_insert->bind_int(1, *candidate);
                     SQL->act_lti_fake_insert->bind_double(2, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     SQL->act_lti_fake_insert->bind_double(3, spread);
-                    SQL->act_lti_fake_insert->bind_double(4, modified_spread+ new_base);
+                    SQL->act_lti_fake_insert->bind_double(4, (settings->activation_mode->get_value() == smem_param_container::act_none ? modified_spread : new_base+modified_spread));//modified_spread+ new_base);
                     SQL->act_lti_fake_insert->execute(soar_module::op_reinit);
 
                     //In order to prevent the activation from the augmentations table from coming into play after this has been given spread, we set the augmentations bla to be smemactlow
