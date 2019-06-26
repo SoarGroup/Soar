@@ -58,6 +58,7 @@ srcs = [
 	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     		# ClientSML
 	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), 		# ConnectionSML
 	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    		# ElementXML
+	('ElementJSON/ElementJSON.cxx',     Glob('ElementJSON/src/*.cpp')),    		# ElementJSON
 # 	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           		# CLI
 ]
 
@@ -103,7 +104,7 @@ lib_install = env.Alias('kernel', env.Install(env['OUT_DIR'], soarlib))
 
 # headers
 headers = []
-for d in ['ElementXML/src', 'ConnectionSML/src', 'ClientSML/src', 'shared']:
+for d in ['ElementJSON/src', 'ElementXML/src', 'ConnectionSML/src', 'ClientSML/src', 'shared']:
 	headers.extend(InstallDir(env, env['OUT_DIR'] + '/include', env.Dir(d).srcnode().abspath, '*.h*'))
 env.Alias('headers', headers)
 
