@@ -1,13 +1,13 @@
 /////////////////////////////////////////////////////////////////
-// ParseXML class
+// ParseJSON class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
 //
-// This class is used to parse an XML document from a file/string and
-// create an ElementXMLImpl object that represents it.
+// This class is used to parse an JSON document from a file/string and
+// create an ElementJSONImpl object that represents it.
 //
-// This class can't parse all XML, just the subset ElementXMLImpl supports.
+// This class can't parse all JSON, just the subset ElementJSONImpl supports.
 // Things we don't support include processing instructions, comments and DTDs.
 //
 // Also, this class looks for the special attribute "bin_encoding=hex".
@@ -20,14 +20,14 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#ifndef PARSE_XML_H
-#define PARSE_XML_H
+#ifndef PARSE_JSON_H
+#define PARSE_JSON_H
 
 #include <string>
 #include <iostream>
 #include <sstream>
 
-namespace soarxml
+namespace soarjson
 {
 
 // I think we'll want to implement our own parseString class
@@ -37,16 +37,16 @@ namespace soarxml
 // Let's start with std::string until we know what capabilities we need.
     typedef std::string ParseString ;
     
-    class ElementXMLImpl ;
+    class ElementJSONImpl ;
     
 #define kEndMarkerString "</"
 #define kSingleTagEndMarkerString "/>"
     
-    class ParseXML
+    class ParseJSON
     {
         protected:
-            enum TokenType { kSymbol, kIdentifier, kQuotedString, kComment, kCharData, kEOF } ;
-            enum { kOpenTagChar = '<', kCloseTagChar = '>', kEndMarkerChar = '/', kEqualsChar = '=', kHeaderChar = '?', kEscapeChar = '&', kCommentStartChar = '!' } ;
+            enum TokenType { kSymbol, kIdentifier, kQuotedString, kCharData, kEOF } ;
+            enum { kOpenTagChar = '<', kCloseTagChar = '>', kEndMarkerChar = '/', kEqualsChar = '=', kHeaderChar = '?', kEscapeChar = '&' } ;
             
         protected:
             // Used to report an error.  We only report the first one we find and then we abort the parse.
@@ -57,9 +57,6 @@ namespace soarxml
             ParseString m_TokenValue ;
             TokenType   m_TokenType ;
             bool        m_InCharData ;  // True when reading character data
-            
-            // The last comment parsed.
-            ParseString m_LastComment ;
             
             // Set to true when we go to read the next line after the last line in the file.
             // (So it's not true when we're reading the last, incomplete line).
@@ -98,18 +95,6 @@ namespace soarxml
             void        SetInCharData(bool state)
             {
                 m_InCharData = state ;
-            }
-            void        SetLastComment(ParseString comment)
-            {
-                m_LastComment = comment ;
-            }
-            bool        HasLastComment()
-            {
-                return m_LastComment.size() > 0 ;
-            }
-            char const* GetLastComment()
-            {
-                return m_LastComment.c_str() ;
             }
             
             void        RecordError(std::string pStr)
@@ -158,7 +143,7 @@ namespace soarxml
             
             /************************************************************************
             *
-            * Returns true if this is a symbol (i.e. a special char in XML, like "<")
+            * Returns true if this is a symbol (i.e. a special char in JSON, like "<")
             *
             *************************************************************************/
             bool IsSymbol(char ch)
@@ -169,16 +154,6 @@ namespace soarxml
                             ch == kEndMarkerChar || ch == kHeaderChar || ch == kEqualsChar) ;
                 }
                 return (ch == kOpenTagChar || ch == kCloseTagChar);
-            }
-            
-            /************************************************************************
-            *
-            * Returns true if this is the start of a comment block <!
-            *
-            *************************************************************************/
-            bool IsCommentStart(char ch)
-            {
-                return (ch == kCommentStartChar) ;
             }
             
             /************************************************************************
@@ -276,7 +251,7 @@ namespace soarxml
             * Checks that the current token matches the given value.
             * If not, throws an exception.
             * Used for places in the parse when you know what must come next.
-            * E.g. At the end of an XML token : MustBe("/") ; MustBe(">") ;
+            * E.g. At the end of an JSON token : MustBe("/") ; MustBe(">") ;
             *
             * @param value          The value to test
             *
@@ -346,17 +321,17 @@ namespace soarxml
             
             virtual void        InitializeLexer() ;
             
-            // To support reading a stream of XML documents from a single string/file
+            // To support reading a stream of JSON documents from a single string/file
             // we need to mark when a new token is being read, because we end up reading
             // the first token from the next stream at the end of the current document and need
-            // to be able to backup.  (This has no impact if we're just reading one XML document from a stream).
+            // to be able to backup.  (This has no impact if we're just reading one JSON document from a stream).
             virtual void        StartingNewToken() = 0 ;
             
         public:
-            ParseXML(void);
-            virtual ~ParseXML(void);
+            ParseJSON(void);
+            virtual ~ParseJSON(void);
             
-            ElementXMLImpl* ParseElement() ;
+            ElementJSONImpl* ParseElement() ;
             std::string GetErrorMessage()
             {
                 return m_ErrorMsg ;
@@ -365,4 +340,4 @@ namespace soarxml
     
 }   // namespace
 
-#endif // PARSE_XML_H
+#endif // PARSE_JSON_H

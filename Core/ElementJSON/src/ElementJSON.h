@@ -1,40 +1,40 @@
-#ifndef SOARXML_ELEMENTXML_H
-#define SOARXML_ELEMENTXML_H
+#ifndef SOARJSON_ELEMENTJSON_H
+#define SOARJSON_ELEMENTJSON_H
 
 #include <cstring>
 #include "Export.h"
 
 /////////////////////////////////////////////////////////////////
-// ElementXML class
+// ElementJSON class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
 //
-// This library is responsible for representing an XML document as an object (actually a tree of objects).
+// This library is responsible for representing an JSON document as an object (actually a tree of objects).
 //
-// A client can send a stream of XML data which this class parses to create the object representation of the XML.
+// A client can send a stream of JSON data which this class parses to create the object representation of the JSON.
 // Or the client can call to this library directly, creating the object representation without ever producing the actual
-// XML output (this is just for improved efficiency when the client and the Soar kernel are embedded in the same process).
+// JSON output (this is just for improved efficiency when the client and the Soar kernel are embedded in the same process).
 //
-// This class will not support the full capabilities of XML which is now a complex language.
+// This class will not support the full capabilities of JSON which is now a complex language.
 // It will support just the subset that is necessary for SML (Soar Markup Language) which is intended to be its primary customer.
 //
-// This class is a simple wrapper around the ElementXML DLL, a separate library.
+// This class is a simple wrapper around the ElementJSON DLL, a separate library.
 // This arrangement allows us to pass references to objects created in that library around safely.
 //
-// The implementation of this class is based around a handle (pointer) to an ElementXMLImpl object stored in the ElementXML DLL.
-// Why do we have this abstraction rather than just storing the ElementXMLImpl object right here?
+// The implementation of this class is based around a handle (pointer) to an ElementJSONImpl object stored in the ElementJSON DLL.
+// Why do we have this abstraction rather than just storing the ElementJSONImpl object right here?
 // The reason is that we're going to pass these objects between an executable (the client) and a DLL (the kernel).
 // If both are compiled on the same day with the same compiler, there's no problem passing a pointer to an object between the two.
 // However, if that's not the case (e.g. we want to use a new client with an existing Soar DLL) then we need a safe way to ensure that
 // the class layout being pointed to in the executable is the same as that used in the DLL.  If we've used different versions of a compiler
-// or changed the ElementXMLImpl class in any way, the class layout (where the fields are in memory) won't be the same and we'll get a crash
+// or changed the ElementJSONImpl class in any way, the class layout (where the fields are in memory) won't be the same and we'll get a crash
 // as soon as the object is accessed on the other side of the EXE-DLL divide.
 //
-// The solution to this is to add a separate DLL (ElementXML DLL) and only pass around pointers to objects which it owns.
+// The solution to this is to add a separate DLL (ElementJSON DLL) and only pass around pointers to objects which it owns.
 // That way, there is no way for the two sides of the equation to get "out of synch" because there's only one implementation of
-// ElementXMLImpl in the system and it's inside ElementXML DLL.  If we change the class, we update the DLL and neither the client
-// nor the Soar Kernel DLL has any idea that a change has occured as neither can directly access the data within an ElementXMLImpl object.
+// ElementJSONImpl in the system and it's inside ElementJSON DLL.  If we change the class, we update the DLL and neither the client
+// nor the Soar Kernel DLL has any idea that a change has occured as neither can directly access the data within an ElementJSONImpl object.
 //
 // We wouldn't normally make all of this effort unless we thought there's a real chance this sort of problem will arise and in the case
 // of the Soar kernel it's quite possible (even likely) as systems are often tied to specific versions of Soar and so old libraries and
@@ -42,37 +42,37 @@
 // the source is available for both client and kernel--which may not always be the case if you consider commercial applications of either side.
 //
 // JRV/RPM Update: The function definitions for this class' members are now included in the headers and there are no corresponding .cpp files.
-// The reason for this is that the code that uses them needs to have these classes defined in that compilation unit so that the ElementXML objects
-// these units create are done so on their heap, and the ElementXMLImpl objects that actually do the work are created on the heap in the ElementXML
+// The reason for this is that the code that uses them needs to have these classes defined in that compilation unit so that the ElementJSON objects
+// these units create are done so on their heap, and the ElementJSONImpl objects that actually do the work are created on the heap in the ElementJSON
 // DLL. This is the Pimpl pattern.
 //
 /////////////////////////////////////////////////////////////////
 
-#include "ElementXMLInterface.h"
+#include "ElementJSONInterface.h"
 
 namespace sml
 {
     class Connection ;
 }
 
-namespace soarxml
+namespace soarjson
 {
     /*************************************************************
-    * @brief The ElementXML class represents an element in an XML stream.
-    *        Through its children, it can represent an entire XML document.
+    * @brief The ElementJSON class represents an element in an JSON stream.
+    *        Through its children, it can represent an entire JSON document.
     *************************************************************/
-    class EXPORT ElementXML
+    class EXPORT ElementJSON
     {
             // Let Connection have access to Fast methods (which are protected because they take care to use correctly).
             friend class sml::Connection ;
-            friend class XMLTrace ;
+            friend class JSONTrace ;
             
         protected:
-            ElementXML_Handle m_hXML ;  // Reference to the underlying object which is created from the ElementXML DLL.
+            ElementJSON_Handle m_hJSON;  // Reference to the underlying object which is created from the ElementJSON DLL.
             
         public:
             /*************************************************************
-            * @brief XML ids can only contain letters, numbers, “.” “-“ and “_”.
+            * @brief JSON ids can only contain letters, numbers, “.” “-“ and “_”.
             *************************************************************/
             static bool IsValidID(char const* str)
             {
@@ -102,9 +102,9 @@ namespace soarxml
             /*************************************************************
             * @brief Default constructor.
             *************************************************************/
-            ElementXML()
+            ElementJSON()
             {
-                m_hXML = ::soarxml_NewElementXML() ;
+                m_hJSON = ::soarjson_NewElementJSON() ;
             }
             
             
@@ -114,11 +114,11 @@ namespace soarxml
             *        This does not affect the referencing counting of the
             *        handle.
             *
-            * @param hXML   The handle to an existing ElementXML object
+            * @param hJSON   The handle to an existing ElementJSON object
             *************************************************************/
-            ElementXML(ElementXML_Handle hXML)
+            ElementJSON(ElementJSON_Handle hJSON)
             {
-                m_hXML = hXML ;
+                m_hJSON = hJSON ;
             }
             
             /*************************************************************
@@ -127,17 +127,17 @@ namespace soarxml
             *        If this object is managing a handle when it is deleted,
             *        that handle's ref count is reduced.
             *************************************************************/
-            virtual ~ElementXML(void)
+            virtual ~ElementJSON(void)
             {
-                if (m_hXML)
+                if (m_hJSON)
                 {
-                    int refCount = ::soarxml_ReleaseRef(m_hXML) ;
+                    int refCount = ::soarjson_ReleaseRef(m_hJSON) ;
                     
                     // This code should be unnecessary but harmless and it makes a useful place
                     // to put a break point if there are ref-counting problems with an object.
                     if (refCount == 0)
                     {
-                        m_hXML = NULL ;
+                        m_hJSON = NULL ;
                     }
                 }
             }
@@ -154,13 +154,13 @@ namespace soarxml
             *************************************************************/
             int ReleaseRefOnHandle()
             {
-                int refCount = ::soarxml_ReleaseRef(m_hXML) ;
+                int refCount = ::soarjson_ReleaseRef(m_hJSON) ;
                 
-                // We use a ReleaseRef() model on the ElementXML object
+                // We use a ReleaseRef() model on the ElementJSON object
                 // to delete it.
                 if (refCount == 0)
                 {
-                    m_hXML = NULL ;
+                    m_hJSON = NULL ;
                 }
                 
                 return refCount ;
@@ -181,7 +181,7 @@ namespace soarxml
             *************************************************************/
             int AddRefOnHandle()
             {
-                return ::soarxml_AddRef(m_hXML) ;
+                return ::soarjson_AddRef(m_hJSON) ;
             }
             
             /*************************************************************
@@ -189,7 +189,7 @@ namespace soarxml
             *************************************************************/
             int GetRefCount()
             {
-                return ::soarxml_GetRefCount(m_hXML) ;
+                return ::soarjson_GetRefCount(m_hJSON) ;
             }
             
             ////////////////////////////////////////////////////////////////
@@ -205,16 +205,16 @@ namespace soarxml
             *        handle being attached.  If this object is already
             *        managing a handle releaseRef() will be called on it.
             *
-            * @param hXML   The handle to an existing ElementXML object
+            * @param hJSON   The handle to an existing ElementJSON object
             *************************************************************/
-            void Attach(ElementXML_Handle hXML)
+            void Attach(ElementJSON_Handle hJSON)
             {
-                if (m_hXML)
+                if (m_hJSON)
                 {
-                    ::soarxml_ReleaseRef(m_hXML) ;
+                    ::soarjson_ReleaseRef(m_hJSON) ;
                 }
                 
-                m_hXML = hXML ;
+                m_hJSON = hJSON ;
             }
             
             /*************************************************************
@@ -223,13 +223,13 @@ namespace soarxml
             *        The caller must call releaseRef() on this handle
             *        when it is done with it.
             *************************************************************/
-            ElementXML_Handle Detach()
+            ElementJSON_Handle Detach()
             {
-                ElementXML_Handle hXML = m_hXML ;
+                ElementJSON_Handle hJSON = m_hJSON ;
                 
-                m_hXML = NULL ;
+                m_hJSON = NULL ;
                 
-                return hXML ;
+                return hJSON ;
             }
             
             /*************************************************************
@@ -240,9 +240,9 @@ namespace soarxml
             *        (If the caller wishes to keep a reference to this returned
             *         handle it should call addRef() on it).
             *************************************************************/
-            ElementXML_Handle GetXMLHandle() const
+            ElementJSON_Handle GetJSONHandle() const
             {
-                return m_hXML ;
+                return m_hJSON ;
             }
             
             ////////////////////////////////////////////////////////////////
@@ -267,7 +267,7 @@ namespace soarxml
                 }
 #endif
                 
-                return ::soarxml_SetTagName(m_hXML, tagName, copyName) ;
+                return ::soarjson_SetTagName(m_hJSON, tagName, copyName) ;
             }
             
             /*************************************************************
@@ -285,7 +285,7 @@ namespace soarxml
             *************************************************************/
             char const* GetTagName() const
             {
-                return ::soarxml_GetTagName(m_hXML) ;
+                return ::soarjson_GetTagName(m_hJSON) ;
             }
             
             /*************************************************************
@@ -297,7 +297,7 @@ namespace soarxml
             *************************************************************/
             bool IsTag(char const* pTagName) const
             {
-                if (!m_hXML)
+                if (!m_hJSON)
                 {
                     return false ;
                 }
@@ -321,43 +321,10 @@ namespace soarxml
             
             ////////////////////////////////////////////////////////////////
             //
-            // Comment functions (<!-- .... --> marks the bounds of a comment)
-            //
-            ////////////////////////////////////////////////////////////////
-            
-            /*************************************************************
-            * @brief Associate a comment with this XML element.
-            *        The comment is written in front of the element when stored/parsed.
-            *
-            * This type of commenting isn't completely general.  You can't have multiple
-            * comment blocks before an XML element, nor can you have trailing comment blocks
-            * where there is no XML element following the comment.  However, both of these are
-            * unusual situations and would require a significantly more complex API to support
-            * so it seems unnecessary.
-            *
-            * @param Comment    The comment string.
-            *************************************************************/
-            bool SetComment(char const* pComment)
-            {
-                return ::soarxml_SetComment(m_hXML, pComment) ;
-            }
-            
-            /*************************************************************
-            * @brief Returns the comment for this element.
-            *
-            * @returns The comment string for this element (or zero-length string if there is none)
-            *************************************************************/
-            char const* GetComment() const
-            {
-                return ::soarxml_GetComment(m_hXML) ;
-            }
-            
-            ////////////////////////////////////////////////////////////////
-            //
             // Child element functions.
             //
-            // These allow a single ElementXML object to represent a complete
-            // XML document through its children.
+            // These allow a single ElementJSON object to represent a complete
+            // JSON document through its children.
             //
             ////////////////////////////////////////////////////////////////
             
@@ -365,17 +332,17 @@ namespace soarxml
             * @brief Adds a child to the list of children of this element.
             *
             * NOTE: The child object is deleted immediately in this version
-            * although the handle it manages is added to the XML tree and
+            * although the handle it manages is added to the JSON tree and
             * will only be released when the parent is destroyed.
             *
             * @param  pChild    The child to add.  Will be released when the parent is destroyed.
             *************************************************************/
-            ElementXML_Handle AddChild(ElementXML* pChild)
+            ElementJSON_Handle AddChild(ElementJSON* pChild)
             {
-                ElementXML_Handle hChild = pChild->Detach() ;
+                ElementJSON_Handle hChild = pChild->Detach() ;
                 delete pChild ;
                 
-                ::soarxml_AddChild(m_hXML, hChild) ;
+                ::soarjson_AddChild(m_hJSON, hChild) ;
                 return hChild ;
             }
             
@@ -384,7 +351,7 @@ namespace soarxml
             *************************************************************/
             int GetNumberChildren() const
             {
-                return ::soarxml_GetNumberChildren(m_hXML) ;
+                return ::soarjson_GetNumberChildren(m_hJSON) ;
             }
             
             /*************************************************************
@@ -394,14 +361,14 @@ namespace soarxml
             *
             * The caller must delete the child when it is finished with it.
             *
-            * @param pChild An ElementXML object into which the n-th child is placed.
+            * @param pChild An ElementJSON object into which the n-th child is placed.
             * @param index  The 0-based index of the child to return.
             *
             * @returns false if index is out of range.
             *************************************************************/
-            bool GetChild(ElementXML* pChild, int index) const
+            bool GetChild(ElementJSON* pChild, int index) const
             {
-                ElementXML_Handle hChild = ::soarxml_GetChild(m_hXML, index) ;
+                ElementJSON_Handle hChild = ::soarjson_GetChild(m_hJSON, index) ;
                 
                 if (!hChild)
                 {
@@ -421,9 +388,9 @@ namespace soarxml
             *
             * @returns false if has no parent.
             *************************************************************/
-            bool GetParent(ElementXML* pParent) const
+            bool GetParent(ElementJSON* pParent) const
             {
-                ElementXML_Handle hParent = ::soarxml_GetParent(m_hXML) ;
+                ElementJSON_Handle hParent = ::soarjson_GetParent(m_hJSON) ;
                 
                 if (!hParent)
                 {
@@ -443,11 +410,11 @@ namespace soarxml
             *
             *        Call delete on the returned object when you are done with it.
             *************************************************************/
-            ElementXML* MakeCopy() const
+            ElementJSON* MakeCopy() const
             {
-                ElementXML_Handle hCopy = ::soarxml_MakeCopy(m_hXML) ;
+                ElementJSON_Handle hCopy = ::soarjson_MakeCopy(m_hJSON) ;
                 
-                return new ElementXML(hCopy) ;
+                return new ElementJSON(hCopy) ;
             }
             
             ////////////////////////////////////////////////////////////////
@@ -467,7 +434,7 @@ namespace soarxml
             *************************************************************/
             bool AddAttribute(char* attributeName, char* attributeValue, bool copyName = true, bool copyValue = true)
             {
-                return ::soarxml_AddAttribute(m_hXML, attributeName, attributeValue, copyName, copyValue) ;
+                return ::soarjson_AddAttribute(m_hJSON, attributeName, attributeValue, copyName, copyValue) ;
             }
             
             /*************************************************************
@@ -487,7 +454,7 @@ namespace soarxml
             *************************************************************/
             int GetNumberAttributes() const
             {
-                return ::soarxml_GetNumberAttributes(m_hXML) ;
+                return ::soarjson_GetNumberAttributes(m_hJSON) ;
             }
             
             /*************************************************************
@@ -498,7 +465,7 @@ namespace soarxml
             *************************************************************/
             const char* GetAttributeName(int index) const
             {
-                return ::soarxml_GetAttributeName(m_hXML, index) ;
+                return ::soarjson_GetAttributeName(m_hJSON, index) ;
             }
             
             /*************************************************************
@@ -508,7 +475,7 @@ namespace soarxml
             *************************************************************/
             const char* GetAttributeValue(int index) const
             {
-                return ::soarxml_GetAttributeValue(m_hXML, index) ;
+                return ::soarjson_GetAttributeValue(m_hJSON, index) ;
             }
             
             /*************************************************************
@@ -519,7 +486,7 @@ namespace soarxml
             *************************************************************/
             const char* GetAttribute(const char* attName) const
             {
-                return ::soarxml_GetAttribute(m_hXML, attName) ;
+                return ::soarjson_GetAttribute(m_hJSON, attName) ;
             }
             
             ////////////////////////////////////////////////////////////////
@@ -532,13 +499,13 @@ namespace soarxml
             * @brief Set the character data for this element.
             *
             * @param characterData  The character data passed in should *not* replace special characters such as “<” and “&”
-            *                       with the XML escape sequences &lt; etc.
-            *                       These values will be converted when the XML stream is created.
+            *                       with the JSON escape sequences &lt; etc.
+            *                       These values will be converted when the JSON stream is created.
             * @param  copyData      If true, characterData will be copied.  If false, we take ownership of characterData
             *************************************************************/
             void SetCharacterData(char* characterData, bool copyData = true)
             {
-                ::soarxml_SetCharacterData(m_hXML, characterData, copyData) ;
+                ::soarjson_SetCharacterData(m_hJSON, characterData, copyData) ;
             }
             void SetCharacterData(char const* characterData)
             {
@@ -555,7 +522,7 @@ namespace soarxml
             *************************************************************/
             void SetBinaryCharacterData(char* characterData, int length, bool copyData = true)
             {
-                ::soarxml_SetBinaryCharacterData(m_hXML, characterData, length, copyData) ;
+                ::soarjson_SetBinaryCharacterData(m_hJSON, characterData, length, copyData) ;
             }
             void SetBinaryCharacterData(char const* characterData, int length)
             {
@@ -566,12 +533,12 @@ namespace soarxml
             * @brief Get the character data for this element.
             *
             * @returns  Returns the character data for this element.  If the element has no character data, returns zero-length string.
-            *           The character data returned will not include any XML escape sequences (e.g. &lt;).
+            *           The character data returned will not include any JSON escape sequences (e.g. &lt;).
             *           It will include the original special characters (e.g. "<").
             *************************************************************/
             char const* GetCharacterData() const
             {
-                return ::soarxml_GetCharacterData(m_hXML) ;
+                return ::soarjson_GetCharacterData(m_hJSON) ;
             }
             
             /*************************************************************
@@ -580,13 +547,13 @@ namespace soarxml
             *************************************************************/
             bool IsCharacterDataBinary() const
             {
-                return ::soarxml_IsCharacterDataBinary(m_hXML) ;
+                return ::soarjson_IsCharacterDataBinary(m_hJSON) ;
             }
             
             /*************************************************************
             * @brief Converts a character data buffer into binary data.
             *
-            * If binary data is stored in an XML file it will encoded in
+            * If binary data is stored in an JSON file it will encoded in
             * some manner (e.g. as a string of hex digits).
             * When read back in, we may need to indicate that this particular
             * set of character data is encoded binary (converting it back from hex to binary).
@@ -602,7 +569,7 @@ namespace soarxml
             *************************************************************/
             bool ConvertCharacterDataToBinary()
             {
-                return ::soarxml_ConvertCharacterDataToBinary(m_hXML) ;
+                return ::soarjson_ConvertCharacterDataToBinary(m_hJSON) ;
             }
             
             /*************************************************************
@@ -613,7 +580,7 @@ namespace soarxml
             *************************************************************/
             int  GetCharacterDataLength() const
             {
-                return ::soarxml_GetCharacterDataLength(m_hXML) ;
+                return ::soarjson_GetCharacterDataLength(m_hJSON) ;
             }
             
             /*************************************************************
@@ -626,15 +593,15 @@ namespace soarxml
             *************************************************************/
             void SetUseCData(bool useCData)
             {
-                ::soarxml_SetUseCData(m_hXML, useCData) ;
+                ::soarjson_SetUseCData(m_hJSON, useCData) ;
             }
             
             /*************************************************************
-            * @brief Returns true if this element's character data should be stored in a CDATA section when streamed to XML.
+            * @brief Returns true if this element's character data should be stored in a CDATA section when streamed to JSON.
             *************************************************************/
             bool GetUseCData() const
             {
-                return ::soarxml_GetUseCData(m_hXML) ;
+                return ::soarjson_GetUseCData(m_hJSON) ;
             }
             
             ////////////////////////////////////////////////////////////////
@@ -644,35 +611,35 @@ namespace soarxml
             ////////////////////////////////////////////////////////////////
             
             /*************************************************************
-            * @brief Converts the XML object to a string.
+            * @brief Converts the JSON object to a string.
             *
-            * @param includeChildren    Includes all children in the XML output.
+            * @param includeChildren    Includes all children in the JSON output.
             * @param insertNewlines     Add newlines to space out the tags to be more human-readable
             *
             * @returns The string form of the object.  Caller must delete with DeleteString().
             *************************************************************/
-            char* GenerateXMLString(bool includeChildren, bool insertNewLines = false) const
+            char* GenerateJSONString(bool includeChildren, bool insertNewLines = false) const
             {
-                return ::soarxml_GenerateXMLString(m_hXML, includeChildren, insertNewLines) ;
+                return ::soarjson_GenerateJSONString(m_hJSON, includeChildren, insertNewLines) ;
             }
             
             /*************************************************************
             * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
             *
-            * @param includeChildren    Includes all children in the XML output.
+            * @param includeChildren    Includes all children in the JSON output.
             * @param insertNewlines     Add newlines to space out the tags to be more human-readable
             *************************************************************/
-            int DetermineXMLStringLength(bool includeChildren, bool insertNewLines = false) const
+            int DetermineJSONStringLength(bool includeChildren, bool insertNewLines = false) const
             {
-                return ::soarxml_DetermineXMLStringLength(m_hXML, includeChildren, insertNewLines) ;
+                return ::soarjson_DetermineJSONStringLength(m_hJSON, includeChildren, insertNewLines) ;
             }
             
             ////////////////////////////////////////////////////////////////
             //
             // String and memory functions
             //
-            // These operations allow a client to allocate memory that ElementXML will later release,
-            // or similarly, allow a client to release memory that ElementXML has allocated.
+            // These operations allow a client to allocate memory that ElementJSON will later release,
+            // or similarly, allow a client to release memory that ElementJSON has allocated.
             //
             // We may decide that a particular allocator will be used to do this (e.g. new[] and delete[]),
             // but in general it's safest to use these functions.
@@ -680,14 +647,14 @@ namespace soarxml
             ////////////////////////////////////////////////////////////////
             
             /*************************************************************
-            * @brief Utility function to allocate memory that the client will pass to the other ElementXML functions.
+            * @brief Utility function to allocate memory that the client will pass to the other ElementJSON functions.
             *
             * @param length     The length is the number of characters in the string, so length+1 bytes will be allocated
             *                   (so that a trailing null is always included).  Thus passing length 0 is valid and will allocate a single byte.
             *************************************************************/
             static char* AllocateString(int length)
             {
-                return ::soarxml_AllocateString(length) ;
+                return ::soarjson_AllocateString(length) ;
             }
             
             /*************************************************************
@@ -697,7 +664,7 @@ namespace soarxml
             *************************************************************/
             static void DeleteString(char* pString)
             {
-                ::soarxml_DeleteString(pString) ;
+                ::soarjson_DeleteString(pString) ;
             }
             
             /*************************************************************
@@ -707,7 +674,7 @@ namespace soarxml
             *************************************************************/
             static char* CopyString(char const* original)
             {
-                return ::soarxml_CopyString(original) ;
+                return ::soarjson_CopyString(original) ;
             }
             
             /*************************************************************
@@ -719,7 +686,7 @@ namespace soarxml
             *************************************************************/
             static char* CopyBuffer(char const* original, int length)
             {
-                return ::soarxml_CopyBuffer(original, length) ;
+                return ::soarjson_CopyBuffer(original, length) ;
             }
             
             ////////////////////////////////////////////////////////////////
@@ -729,63 +696,63 @@ namespace soarxml
             ////////////////////////////////////////////////////////////////
             
             /*************************************************************
-            * @brief Parse an XML document from a (long) string and return an ElementXML object
+            * @brief Parse an JSON document from a (long) string and return an ElementJSON object
             *        for the document.
             *
-            * @param  pString   The XML document stored in a string.
-            * @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
+            * @param  pString   The JSON document stored in a string.
+            * @returns NULL if parsing failed, otherwise the ElementJSON representing JSON doc
             *************************************************************/
-            static ElementXML* ParseXMLFromString(char const* pString)
+            static ElementJSON* ParseJSONFromString(char const* pString)
             {
-                ElementXML_Handle hXML = ::soarxml_ParseXMLFromString(pString) ;
+                ElementJSON_Handle hJSON = ::soarjson_ParseJSONFromString(pString) ;
                 
-                if (!hXML)
+                if (!hJSON)
                 {
                     return NULL ;
                 }
                 
-                return new ElementXML(hXML) ;
+                return new ElementJSON(hJSON) ;
             }
             
             /*************************************************************
-            * @brief Parse an XML document from a (long) string and return an ElementXML object
-            *        for the document.  This version supports a sequence of XML strings which
+            * @brief Parse an JSON document from a (long) string and return an ElementJSON object
+            *        for the document.  This version supports a sequence of JSON strings which
             *        need to be parsed in order (rather than all being part of one document).
             *
-            * @param  pString   The XML document stored in a string.
-            * @param  startPos  We'll start parsing the current XML document from this position (0 == beginning of the string)
+            * @param  pString   The JSON document stored in a string.
+            * @param  startPos  We'll start parsing the current JSON document from this position (0 == beginning of the string)
             * @param  endPos    This value is filled in at the end of the parse and indicates where the parse ended. (if endPos == strlen(pString) we're done)
-            * @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
+            * @returns NULL if parsing failed, otherwise the ElementJSON representing JSON doc
             *************************************************************/
-            static ElementXML* ParseXMLFromStringSequence(char const* pString, size_t startPos, size_t* endPos)
+            static ElementJSON* ParseJSONFromStringSequence(char const* pString, size_t startPos, size_t* endPos)
             {
-                ElementXML_Handle hXML = ::soarxml_ParseXMLFromStringSequence(pString, startPos, endPos) ;
+                ElementJSON_Handle hJSON = ::soarjson_ParseJSONFromStringSequence(pString, startPos, endPos) ;
                 
-                if (!hXML)
+                if (!hJSON)
                 {
                     return NULL ;
                 }
                 
-                return new ElementXML(hXML) ;
+                return new ElementJSON(hJSON) ;
             }
             
             /*************************************************************
-            * @brief Parse an XML document from a file and return an ElementXML object
+            * @brief Parse an JSON document from a file and return an ElementJSON object
             *        for the document.
             *
             * @param  pFilename The file to load
-            * @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
+            * @returns NULL if parsing failed, otherwise the ElementJSON representing JSON doc
             *************************************************************/
-            static ElementXML* ParseXMLFromFile(char const* pFilename)
+            static ElementJSON* ParseJSONFromFile(char const* pFilename)
             {
-                ElementXML_Handle hXML = ::soarxml_ParseXMLFromFile(pFilename) ;
+                ElementJSON_Handle hJSON = ::soarjson_ParseJSONFromFile(pFilename) ;
                 
-                if (!hXML)
+                if (!hJSON)
                 {
                     return NULL ;
                 }
                 
-                return new ElementXML(hXML) ;
+                return new ElementJSON(hJSON) ;
             }
             
             /*************************************************************
@@ -795,7 +762,7 @@ namespace soarxml
             *************************************************************/
             static char const* GetLastParseErrorDescription()
             {
-                return ::soarxml_GetLastParseErrorDescription() ;
+                return ::soarjson_GetLastParseErrorDescription() ;
             }
             
         protected:
@@ -812,7 +779,7 @@ namespace soarxml
             *************************************************************/
             bool AddAttributeFast(char const* attributeName, char* attributeValue, bool copyValue = true)
             {
-                return ::soarxml_AddAttributeFast(m_hXML, attributeName, attributeValue, copyValue) ;
+                return ::soarjson_AddAttributeFast(m_hJSON, attributeName, attributeValue, copyValue) ;
             }
             
             bool AddAttributeFast(char const* attributeName, char const* attributeValue)
@@ -832,7 +799,7 @@ namespace soarxml
             *************************************************************/
             bool AddAttributeFastFast(char const* attributeName, char const* attributeValue)
             {
-                return ::soarxml_AddAttributeFastFast(m_hXML, attributeName, attributeValue) ;
+                return ::soarjson_AddAttributeFastFast(m_hJSON, attributeName, attributeValue) ;
             }
             
             /*************************************************************
@@ -854,7 +821,7 @@ namespace soarxml
                 }
 #endif
                 
-                return ::soarxml_SetTagNameFast(m_hXML, tagName) ;
+                return ::soarjson_SetTagNameFast(m_hJSON, tagName) ;
             }
             
             
@@ -862,5 +829,5 @@ namespace soarxml
     
 } // end of namespace
 
-#endif // SOARXML_ELEMENTXML_H
+#endif // SOARJSON_ELEMENTJSON_H
 

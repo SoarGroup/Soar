@@ -1,23 +1,23 @@
 /////////////////////////////////////////////////////////////////
-// ParseXMLString class
+// ParseJSONString class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
 //
-// This class is used to parse an XML document from a file/string and
-// create an ElementXML object that represents it.
+// This class is used to parse an JSON document from a file/string and
+// create an ElementJSON object that represents it.
 //
 // This version reads from a string.
 //
 /////////////////////////////////////////////////////////////////
 
-#ifndef PARSE_XML_STRING_H
-#define PARSE_XML_STRING_H
+#ifndef PARSE_JSON_STRING_H
+#define PARSE_JSON_STRING_H
 
 #include <string>
-#include "ParseXML.h"
+#include "ParseJSON.h"
 
-namespace soarxml
+namespace soarjson
 {
 
 // I think we'll want to implement our own parseString class
@@ -27,9 +27,9 @@ namespace soarxml
 // Let's start with std::string until we know what capabilities we need.
     typedef std::string ParseString ;
     
-    class ElementXML ;
+    class ElementJSON ;
     
-    class ParseXMLString : public ParseXML
+    class ParseJSONString : public ParseJSON
     {
         protected:
             // The string we are reading.
@@ -79,24 +79,24 @@ namespace soarxml
                 return m_pInputLine[m_Pos] ;
             }
             
-            // To support reading a stream of XML documents from a single string/file
+            // To support reading a stream of JSON documents from a single string/file
             // we need to mark when a new token is being read, because we end up reading
             // the first token from the next stream at the end of the current document and need
-            // to be able to backup.  (This has no impact if we're just reading one XML document from a stream).
+            // to be able to backup.  (This has no impact if we're just reading one JSON document from a stream).
             virtual void        StartingNewToken()
             {
                 m_StartTokenPos = m_Pos ;
             }
             
         public:
-            ParseXMLString(char const* pInputLine, size_t startPos);
+            ParseJSONString(char const* pInputLine, size_t startPos);
             size_t getEndPosition()
             {
                 return m_StartTokenPos ;
             }
-            virtual ~ParseXMLString(void);
+            virtual ~ParseJSONString(void);
     };
     
 }   // namespace
 
-#endif // PARSE_XML_H
+#endif // PARSE_JSON_H

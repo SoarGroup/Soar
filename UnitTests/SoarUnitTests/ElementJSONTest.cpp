@@ -1,16 +1,16 @@
 //
-//  ElementXMLTest.cpp
+//  ElementJSONTest.cpp
 //  Soar-xcode
 //
 //  Created by Alex Turner on 6/26/15.
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.
 //
 
-#include "ElementXMLTest.hpp"
+#include "ElementJSONTest.hpp"
 
 #include <string>
 
-#include "ElementXML.h"
+#include "ElementJSON.h"
 
 const std::string tag1("tag1");
 const std::string att11("att11");
@@ -34,9 +34,9 @@ const std::string data4("some data");
 
 const std::string tag5("tag5");
 
-const int ElementXMLTest::BUFFER_LENGTH = 10;
+const int ElementJSONTest::BUFFER_LENGTH = 10;
 
-void ElementXMLTest::setUp()
+void ElementJSONTest::setUp()
 {
 	agent = nullptr;
 	
@@ -46,7 +46,7 @@ void ElementXMLTest::setUp()
 	}
 }
 
-bool ElementXMLTest::verifyBuffer(const char* newBuffer) const
+bool ElementJSONTest::verifyBuffer(const char* newBuffer) const
 {
 	for (int i = 0 ; i < BUFFER_LENGTH ; i++)
 	{
@@ -58,7 +58,7 @@ bool ElementXMLTest::verifyBuffer(const char* newBuffer) const
 	return true;
 }
 
-void ElementXMLTest::tearDown(bool caught)
+void ElementJSONTest::tearDown(bool caught)
 {
 	for (int i = 0 ; i < BUFFER_LENGTH ; i++)
 	{
@@ -66,88 +66,85 @@ void ElementXMLTest::tearDown(bool caught)
 	}
 }
 
-soarxml::ElementXML* ElementXMLTest::createXML1()
+soarjson::ElementJSON* ElementJSONTest::createJSON1()
 {
-	soarxml::ElementXML* pXML1 = new soarxml::ElementXML();
-	pXML1->SetTagName(tag1.c_str());
-	pXML1->AddAttribute(att11.c_str(), val11.c_str());
-	pXML1->AddAttribute(att12.c_str(), val12.c_str());
-	pXML1->SetCharacterData(data1.c_str());
-	pXML1->SetComment(comment1.c_str());
-	return pXML1;
+	soarjson::ElementJSON* pJSON1 = new soarjson::ElementJSON();
+	pJSON1->SetTagName(tag1.c_str());
+	pJSON1->AddAttribute(att11.c_str(), val11.c_str());
+	pJSON1->AddAttribute(att12.c_str(), val12.c_str());
+	pJSON1->SetCharacterData(data1.c_str());
+	return pJSON1;
 }
 
-soarxml::ElementXML* ElementXMLTest::createXML2()
+soarjson::ElementJSON* ElementJSONTest::createJSON2()
 {
-	soarxml::ElementXML* pXML2 = new soarxml::ElementXML();
-	pXML2->SetTagName(tag2.c_str());
-	pXML2->AddAttribute(att21.c_str(), val21.c_str());
-	pXML2->SetCharacterData(data2.c_str());
-	return pXML2;
+	soarjson::ElementJSON* pJSON2 = new soarjson::ElementJSON();
+	pJSON2->SetTagName(tag2.c_str());
+	pJSON2->AddAttribute(att21.c_str(), val21.c_str());
+	pJSON2->SetCharacterData(data2.c_str());
+	return pJSON2;
 }
 
-soarxml::ElementXML* ElementXMLTest::createXML3()
+soarjson::ElementJSON* ElementJSONTest::createJSON3()
 {
-	soarxml::ElementXML* pXML3 = new soarxml::ElementXML();
-	pXML3->SetTagName(tag3.c_str());
-	return pXML3;
+	soarjson::ElementJSON* pJSON3 = new soarjson::ElementJSON();
+	pJSON3->SetTagName(tag3.c_str());
+	return pJSON3;
 }
 
-soarxml::ElementXML* ElementXMLTest::createXML4()
+soarjson::ElementJSON* ElementJSONTest::createJSON4()
 {
-	soarxml::ElementXML* pXML4 = new soarxml::ElementXML();
-	pXML4->SetTagName(tag4.c_str());
-	pXML4->AddAttribute(att41.c_str(), val41.c_str());
-	pXML4->SetCharacterData(data4.c_str());
-	return pXML4;
+	soarjson::ElementJSON* pJSON4 = new soarjson::ElementJSON();
+	pJSON4->SetTagName(tag4.c_str());
+	pJSON4->AddAttribute(att41.c_str(), val41.c_str());
+	pJSON4->SetCharacterData(data4.c_str());
+	return pJSON4;
 }
 
-soarxml::ElementXML* ElementXMLTest::createXML5()
+soarjson::ElementJSON* ElementJSONTest::createJSON5()
 {
-	soarxml::ElementXML* pXML5 = new soarxml::ElementXML() ;
-	pXML5->SetTagName(tag5.c_str()) ;
-	pXML5->SetBinaryCharacterData(buffer, BUFFER_LENGTH) ;
-	return pXML5;
+	soarjson::ElementJSON* pJSON5 = new soarjson::ElementJSON() ;
+	pJSON5->SetTagName(tag5.c_str()) ;
+	pJSON5->SetBinaryCharacterData(buffer, BUFFER_LENGTH) ;
+	return pJSON5;
 }
 
-void ElementXMLTest::testSimple()
+void ElementJSONTest::testSimple()
 {
-	soarxml::ElementXML* pXML1 = createXML1();
+	soarjson::ElementJSON* pJSON1 = createJSON1();
 	
-	assertTrue(pXML1->GetNumberAttributes() == 2);
-	assertTrue(pXML1->GetAttribute(att11.c_str()) != NULL);
-	assertTrue(std::string(pXML1->GetAttribute(att11.c_str())) == val11);
-	assertTrue(pXML1->GetAttribute(att12.c_str()) != NULL);
-	assertTrue(std::string(pXML1->GetAttribute(att12.c_str())) == val12);
-	assertTrue(pXML1->GetAttribute("not att") == NULL);
-	assertTrue(pXML1->GetTagName() != NULL);
-	assertTrue(std::string(pXML1->GetTagName()) == tag1);
-	assertTrue(pXML1->GetCharacterData() != NULL);
-	assertTrue(std::string(pXML1->GetCharacterData()) == data1);
-	assertTrue(pXML1->GetUseCData() == false);
-	assertTrue(pXML1->GetComment() != NULL);
-	assertTrue(std::string(pXML1->GetComment()) == comment1);
+	assertTrue(pJSON1->GetNumberAttributes() == 2);
+	assertTrue(pJSON1->GetAttribute(att11.c_str()) != NULL);
+	assertTrue(std::string(pJSON1->GetAttribute(att11.c_str())) == val11);
+	assertTrue(pJSON1->GetAttribute(att12.c_str()) != NULL);
+	assertTrue(std::string(pJSON1->GetAttribute(att12.c_str())) == val12);
+	assertTrue(pJSON1->GetAttribute("not att") == NULL);
+	assertTrue(pJSON1->GetTagName() != NULL);
+	assertTrue(std::string(pJSON1->GetTagName()) == tag1);
+	assertTrue(pJSON1->GetCharacterData() != NULL);
+	assertTrue(std::string(pJSON1->GetCharacterData()) == data1);
+	assertTrue(pJSON1->GetUseCData() == false);
 	
-	delete pXML1;
+	delete pJSON1;
 }
 
-void ElementXMLTest::testChildren()
+void ElementJSONTest::testChildren()
 {
-	soarxml::ElementXML* pXML1 = createXML1();
-	soarxml::ElementXML* pXML2 = createXML2();
-	soarxml::ElementXML* pXML3 = createXML3();
-	soarxml::ElementXML* pXML4 = createXML4();
+	soarjson::ElementJSON* pJSON1 = createJSON1();
+	soarjson::ElementJSON* pJSON2 = createJSON2();
+	soarjson::ElementJSON* pJSON3 = createJSON3();
+	soarjson::ElementJSON* pJSON4 = createJSON4();
 	
-	pXML4->AddChild(pXML1);
-	pXML4->AddChild(pXML2);
-	pXML4->AddChild(pXML3);
+	pJSON4->AddChild(pJSON1);
+	pJSON4->AddChild(pJSON2);
+	pJSON4->AddChild(pJSON3);
 	
-	assertTrue(pXML4->GetNumberChildren() == 3);
+	assertTrue(pJSON4->GetNumberChildren() == 3);
 	
-	soarxml::ElementXML child0(NULL) ;
-	soarxml::ElementXML const* pChild0 = &child0 ;
+	soarjson::ElementJSON child0(NULL) ;
+	soarjson::ElementJSON const* pChild0 = &child0 ;
 	
-	assertTrue(pXML4->GetChild(&child0, 0));
+	assertTrue(pJSON4->GetChild(&child0, 0));
 	assertTrue(pChild0->GetTagName() != NULL);
 	assertTrue(std::string(pChild0->GetTagName()) == tag1);
 	assertTrue(pChild0->GetCharacterData() != NULL);
@@ -157,10 +154,10 @@ void ElementXMLTest::testChildren()
 	assertTrue(pChild0->GetNumberChildren() == 0);
 	
 	// Let's put this one on the heap so we can control when we delete it.
-	soarxml::ElementXML* pChild1Object = new soarxml::ElementXML(NULL);
-	soarxml::ElementXML const* pChild1 = pChild1Object;
+	soarjson::ElementJSON* pChild1Object = new soarjson::ElementJSON(NULL);
+	soarjson::ElementJSON const* pChild1 = pChild1Object;
 	
-	assertTrue(pXML4->GetChild(pChild1Object, 1));
+	assertTrue(pJSON4->GetChild(pChild1Object, 1));
 	assertTrue(pChild1->GetTagName() != NULL);
 	assertTrue(std::string(pChild1->GetTagName()) == tag2);
 	assertTrue(pChild1->GetCharacterData() != NULL);
@@ -172,30 +169,30 @@ void ElementXMLTest::testChildren()
 	//// This test is because I read online about looking up an element in an empty
 	//// map causing an exception.  Need to make sure that doesn't happen in our
 	//// attribute map implementation.
-	soarxml::ElementXML child2(NULL);
-	soarxml::ElementXML const* pChild2 = &child2;
-	assertTrue(pXML4->GetChild(&child2, 2));
+	soarjson::ElementJSON child2(NULL);
+	soarjson::ElementJSON const* pChild2 = &child2;
+	assertTrue(pJSON4->GetChild(&child2, 2));
 	assertTrue(pChild2->GetTagName() != NULL);
 	assertTrue(std::string(pChild2->GetTagName()) == tag3);
 	assertTrue(pChild2->GetAttribute("missing") == NULL);
 	
-	soarxml::ElementXML test;
-	assertTrue(pXML4->GetChild(&test, 3) == 0);
-	assertTrue(pXML4->GetChild(&test, -3) == 0);
+	soarjson::ElementJSON test;
+	assertTrue(pJSON4->GetChild(&test, 3) == 0);
+	assertTrue(pJSON4->GetChild(&test, -3) == 0);
 	
-	// Create an XML string and print it out
-	char* pStr = pXML4->GenerateXMLString(true);
+	// Create an JSON string and print it out
+	char* pStr = pJSON4->GenerateJSONString(true);
 	//printf(pStr) ;
 	//printf("\n") ;
-	pXML4->DeleteString(pStr);
+	pJSON4->DeleteString(pStr);
 	
 	// Let's play a game.
 	// Create another object pointing at the same internal handle
-	soarxml::ElementXML* pChild1Alt = new soarxml::ElementXML(pChild1->GetXMLHandle());
+	soarjson::ElementJSON* pChild1Alt = new soarjson::ElementJSON(pChild1->GetJSONHandle());
 	pChild1Alt->AddRefOnHandle();
 	
 	// Delete the entire tree, releasing refs on the children
-	delete pXML4;
+	delete pJSON4;
 	
 	// We have to delete this other reference into the tree or its
 	// not a proper test of pChild1Alt.  (If pChild1Object was on the stack
@@ -210,55 +207,53 @@ void ElementXMLTest::testChildren()
 	delete pChild1Alt;
 }
 
-void ElementXMLTest::testParse()
+void ElementJSONTest::testParse()
 {
-	soarxml::ElementXML* pXML1 = createXML1();
+	soarjson::ElementJSON* pJSON1 = createJSON1();
 	
-	char* pStr = pXML1->GenerateXMLString(true);
+	char* pStr = pJSON1->GenerateJSONString(true);
 	
-	soarxml::ElementXML* pXML2 = soarxml::ElementXML::ParseXMLFromString(pStr);
+	soarjson::ElementJSON* pJSON2 = soarjson::ElementJSON::ParseJSONFromString(pStr);
 	
-	assertTrue(pXML2 != NULL) ;
-	assertTrue(pXML2->GetNumberAttributes() == 2) ;
-	assertTrue(pXML2->GetAttribute(att11.c_str()) != NULL);
-	assertTrue(std::string(pXML2->GetAttribute(att11.c_str())) == val11) ;
-	assertTrue(pXML2->GetAttribute(att12.c_str()) != NULL);
-	assertTrue(std::string(pXML2->GetAttribute(att12.c_str())) == val12) ;
-	assertTrue(pXML2->GetAttribute("not att") == NULL) ;
-	assertTrue(pXML2->GetTagName() != NULL);
-	assertTrue(std::string(pXML2->GetTagName()) == tag1) ;
-	assertTrue(pXML2->GetCharacterData() != NULL);
-	assertTrue(std::string(pXML2->GetCharacterData()) == data1) ;
-	assertTrue(pXML2->GetUseCData() == false) ;
-	assertTrue(pXML2->GetComment() != NULL);
-	assertTrue(std::string(pXML2->GetComment()) == comment1) ;
+	assertTrue(pJSON2 != NULL) ;
+	assertTrue(pJSON2->GetNumberAttributes() == 2) ;
+	assertTrue(pJSON2->GetAttribute(att11.c_str()) != NULL);
+	assertTrue(std::string(pJSON2->GetAttribute(att11.c_str())) == val11) ;
+	assertTrue(pJSON2->GetAttribute(att12.c_str()) != NULL);
+	assertTrue(std::string(pJSON2->GetAttribute(att12.c_str())) == val12) ;
+	assertTrue(pJSON2->GetAttribute("not att") == NULL) ;
+	assertTrue(pJSON2->GetTagName() != NULL);
+	assertTrue(std::string(pJSON2->GetTagName()) == tag1) ;
+	assertTrue(pJSON2->GetCharacterData() != NULL);
+	assertTrue(std::string(pJSON2->GetCharacterData()) == data1) ;
+	assertTrue(pJSON2->GetUseCData() == false) ;
 	
-	soarxml::ElementXML::DeleteString(pStr) ;
+	soarjson::ElementJSON::DeleteString(pStr) ;
 	
-	delete pXML2;
-	delete pXML1;
+	delete pJSON2;
+	delete pJSON1;
 }
 
-void ElementXMLTest::testBinaryData()
+void ElementJSONTest::testBinaryData()
 {
-	soarxml::ElementXML* pXML1 = createXML1();
-	soarxml::ElementXML* pXML2 = createXML2();
-	soarxml::ElementXML* pXML4 = createXML4();
-	soarxml::ElementXML* pXML5 = createXML5();
+	soarjson::ElementJSON* pJSON1 = createJSON1();
+	soarjson::ElementJSON* pJSON2 = createJSON2();
+	soarjson::ElementJSON* pJSON4 = createJSON4();
+	soarjson::ElementJSON* pJSON5 = createJSON5();
 	
-	pXML4->AddChild(pXML1) ;
-	pXML4->AddChild(pXML2) ;
-	pXML4->AddChild(pXML5) ;
+	pJSON4->AddChild(pJSON1) ;
+	pJSON4->AddChild(pJSON2) ;
+	pJSON4->AddChild(pJSON5) ;
 	
-	char* pStr = pXML4->GenerateXMLString(true) ;
-	soarxml::ElementXML* pParsedXML = soarxml::ElementXML::ParseXMLFromString(pStr) ;
+	char* pStr = pJSON4->GenerateJSONString(true) ;
+	soarjson::ElementJSON* pParsedJSON = soarjson::ElementJSON::ParseJSONFromString(pStr) ;
 	
-	assertTrue(pParsedXML != NULL) ;
-	assertTrue(pParsedXML->GetNumberChildren() == 3) ;
+	assertTrue(pParsedJSON != NULL) ;
+	assertTrue(pParsedJSON->GetNumberChildren() == 3) ;
 	
-	soarxml::ElementXML child0(NULL) ;
-	soarxml::ElementXML const* pChild0 = &child0 ;
-	assertTrue(pParsedXML->GetChild(&child0, 0));
+	soarjson::ElementJSON child0(NULL) ;
+	soarjson::ElementJSON const* pChild0 = &child0 ;
+	assertTrue(pParsedJSON->GetChild(&child0, 0));
 	assertTrue(pChild0->GetTagName() != NULL);
 	assertTrue(std::string(pChild0->GetTagName()) == tag1) ;
 	assertTrue(pChild0->GetCharacterData() != NULL);
@@ -266,9 +261,9 @@ void ElementXMLTest::testBinaryData()
 	assertTrue(pChild0->GetNumberAttributes() == 2) ;
 	assertTrue(pChild0->GetNumberChildren() == 0) ;
 	
-	soarxml::ElementXML child1(NULL) ;
-	soarxml::ElementXML const* pChild1 = &child1 ;
-	assertTrue(pParsedXML->GetChild(&child1, 1)) ;
+	soarjson::ElementJSON child1(NULL) ;
+	soarjson::ElementJSON const* pChild1 = &child1 ;
+	assertTrue(pParsedJSON->GetChild(&child1, 1)) ;
 	assertTrue(pChild1->GetTagName() != NULL);
 	assertTrue(std::string(pChild1->GetTagName()) == tag2) ;
 	assertTrue(pChild1->GetCharacterData() != NULL);
@@ -277,9 +272,9 @@ void ElementXMLTest::testBinaryData()
 	assertTrue(pChild1->GetAttribute(att21.c_str()) != NULL);
 	assertTrue(std::string(pChild1->GetAttribute(att21.c_str())) == val21) ;
 	
-	soarxml::ElementXML child2(NULL) ;
-	soarxml::ElementXML const* pChild2 = &child2 ;
-	assertTrue(pParsedXML->GetChild(&child2, 2));
+	soarjson::ElementJSON child2(NULL) ;
+	soarjson::ElementJSON const* pChild2 = &child2 ;
+	assertTrue(pParsedJSON->GetChild(&child2, 2));
 	assertTrue(pChild2->IsCharacterDataBinary()) ;
 	
 	const char* pBuffer = pChild2->GetCharacterData() ;
@@ -288,15 +283,15 @@ void ElementXMLTest::testBinaryData()
 	assertTrue(bufferLen == BUFFER_LENGTH) ;
 	assertTrue(verifyBuffer(pBuffer)) ;
 	
-	soarxml::ElementXML::DeleteString(pStr) ;
+	soarjson::ElementJSON::DeleteString(pStr) ;
 	
-	delete pXML4 ;
-	delete pParsedXML ;
+	delete pJSON4 ;
+	delete pParsedJSON ;
 }
 
-void ElementXMLTest::testEquals()
+void ElementJSONTest::testEquals()
 {
-	soarxml::ElementXML* element = soarxml::ElementXML::ParseXMLFromString("<sml><result>=</result></sml>");
-	assertTrue_msg(soarxml::ElementXML::GetLastParseErrorDescription(), element != 0);
+	soarjson::ElementJSON* element = soarjson::ElementJSON::ParseJSONFromString("<sml><result>=</result></sml>");
+	assertTrue_msg(soarjson::ElementJSON::GetLastParseErrorDescription(), element != 0);
 	delete element;
 }

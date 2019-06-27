@@ -1,26 +1,26 @@
 #include "portability.h"
 
 /////////////////////////////////////////////////////////////////
-// ParseXMLFile class
+// ParseJSONFile class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
 //
-// This class is used to parse an XML document from a file/string and
-// create an ElementXML object that represents it.
+// This class is used to parse an JSON document from a file/string and
+// create an ElementJSON object that represents it.
 //
 // This class reads from a file.
 //
 /////////////////////////////////////////////////////////////////
 
-#include "ParseXMLFile.h"
-#include "ElementXMLImpl.h"
+#include "ParseJSONFile.h"
+#include "ElementJSONImpl.h"
 
 #include <cstdio>
 
-using namespace soarxml;
+using namespace soarjson;
 
-ParseXMLFile::ParseXMLFile(FILE* pInputFile)
+ParseJSONFile::ParseJSONFile(FILE* pInputFile)
 {
     m_pInputFile = pInputFile ;
     m_ReachedEOF = false ;
@@ -31,11 +31,11 @@ ParseXMLFile::ParseXMLFile(FILE* pInputFile)
     InitializeLexer() ;
 }
 
-ParseXMLFile::~ParseXMLFile(void)
+ParseJSONFile::~ParseJSONFile(void)
 {
 }
 
-void ParseXMLFile::ReadLine()
+void ParseJSONFile::ReadLine()
 {
     if (!m_pInputFile)
     {
@@ -68,7 +68,7 @@ void ParseXMLFile::ReadLine()
 * Read the next character from the input file.
 *
 *************************************************************************/
-void ParseXMLFile::GetNextChar()
+void ParseJSONFile::GetNextChar()
 {
     // When we're at the end of file, we're done.
     if (IsError() || IsEOF())

@@ -81,7 +81,8 @@ const char* soar_callback_names[] =
     stringify(PRINT_CALLBACK),
     stringify(LOG_CALLBACK),
     stringify(INPUT_WME_GARBAGE_COLLECTED_CALLBACK),
-    //NUMBER_OF_CALLBACKS
+		stringify(JSON_GENERATION_CALLBACK),
+		//NUMBER_OF_CALLBACKS
 };
 
 void soar_init_callbacks(agent* the_agent)

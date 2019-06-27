@@ -1,24 +1,25 @@
 //
-//  ElementXMLTest.hpp
+//  ElementJSONTest.hpp
 //  Soar-xcode
 //
 //  Created by Alex Turner on 6/26/15.
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.
 //
 
-#ifndef ElementXMLTest_cpp
-#define ElementXMLTest_cpp
+#ifndef ElementJSONTest_cpp
+#define ElementJSONTest_cpp
 
 #include "portability.h"
 
 #include <string>
+#include "json.h"
 #include "TestCategory.hpp"
 
-class ElementXMLTest : public TestCategory
+class ElementJSONTest : public TestCategory
 {
 	sml::Agent* agent;
 public:
-	TEST_CATEGORY(ElementXMLTest);
+	TEST_CATEGORY(ElementJSONTest);
 	
 	void before() { setUp(); }
 	void setUp();
@@ -42,15 +43,15 @@ public:
 	void testEquals();
 	
 private:
-	soarxml::ElementXML* createXML1();
-	soarxml::ElementXML* createXML2();
-	soarxml::ElementXML* createXML3();
-	soarxml::ElementXML* createXML4();
-	soarxml::ElementXML* createXML5();
+	soarjson::ElementJSON* createJSON1();
+	soarjson::ElementJSON* createJSON2();
+	soarjson::ElementJSON* createJSON3();
+	soarjson::ElementJSON* createJSON4();
+	soarjson::ElementJSON* createJSON5();
 	
 	bool verifyBuffer(const char* buffer) const;
 	
 	static const int BUFFER_LENGTH;
 	char buffer[10] ;
 };
-#endif /* ElementXMLTest_cpp */
+#endif /* ElementJSONTest_cpp */
