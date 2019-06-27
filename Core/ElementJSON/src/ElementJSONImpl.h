@@ -1,28 +1,28 @@
 /////////////////////////////////////////////////////////////////
-// ElementXMLImpl class
+// ElementJSONImpl class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : July 2004
 //
-// This library is responsible for representing an XML document as an object (actually a tree of objects).
+// This library is responsible for representing an JSON document as an object (actually a tree of objects).
 //
-// A client can send a stream of XML data which this class parses to create the object representation of the XML.
+// A client can send a stream of JSON data which this class parses to create the object representation of the JSON.
 // Or the client can call to this library directly, creating the object representation without ever producing the actual
-// XML output (this is just for improved efficiency when the client and the Soar kernel are embedded in the same process).
+// JSON output (this is just for improved efficiency when the client and the Soar kernel are embedded in the same process).
 //
-// This class will not support the full capabilities of XML which is now a complex language.
+// This class will not support the full capabilities of JSON which is now a complex language.
 // It will support just the subset that is necessary for SML (Soar Markup Language) which is intended to be its primary customer.
 //
-// This class is closely related to the "ElementXML" class that a client would use.
+// This class is closely related to the "ElementJSON" class that a client would use.
 // But the implementation of that class resides in this class, which is in a different DLL.
 // (Passing a pointer to an object between DLLs is dangerous--both DLLs would need to have been
 //  built at the same time, with the same class header file etc.  Passing a pointer to an object
-//  that is owned by a separate DLL is safe, because that single DLL (ElementXML.dll in this case)
+//  that is owned by a separate DLL is safe, because that single DLL (ElementJSON.dll in this case)
 //  is the only one that really access the data in the class).
 /////////////////////////////////////////////////////////////////
 
-#ifndef ELEMENTXML_IMPL_H
-#define ELEMENTXML_IMPL_H
+#ifndef ELEMENTJSON_IMPL_H
+#define ELEMENTJSON_IMPL_H
 
 // A null pointer
 #ifndef NULL
@@ -42,30 +42,30 @@
 #include <map>
 #include "Export.h"
 
-namespace soarxml
+namespace soarjson
 {
 
 // Forward declarations
-    class ElementXMLImpl ;
+    class ElementJSONImpl ;
     class MessageGenerator ;
     
-// Used to store a list of ElementXMLImpl nodes (use a vector for rapid index access)
-    typedef std::vector<ElementXMLImpl*>    xmlList ;
-    typedef xmlList::iterator           xmlListIter ;
-    typedef xmlList::const_iterator     xmlListConstIter ;
+// Used to store a list of ElementJSONImpl nodes (use a vector for rapid index access)
+    typedef std::vector<ElementJSONImpl*>    jsonList ;
+    typedef jsonList::iterator           jsonListIter ;
+    typedef jsonList::const_iterator     jsonListConstIter ;
     
 // I think we'll just use char* internally for strings, but having a typedef means we can
 // change this decision later with less typing.
-    typedef char*           xmlString ;
-    typedef char const*     xmlStringConst ;
+    typedef char*           jsonString ;
+    typedef char const*     jsonStringConst ;
     
 // Used to store a list of strings.  Switched to vector to improve performance (we only add one by one and then delete the lot)
-    typedef std::vector<xmlString>          xmlStringList ;
-    typedef xmlStringList::iterator         xmlStringListIter ;
-    typedef xmlStringList::const_iterator   xmlStringListConstIter ;
+    typedef std::vector<jsonString>          jsonStringList ;
+    typedef jsonStringList::iterator         jsonStringListIter ;
+    typedef jsonStringList::const_iterator   jsonStringListConstIter ;
     
 // We need a comparator to make the map we're about to define work with char*
-    struct strCompareElementXMLImpl
+    struct strCompareElementJSONImpl
     {
         inline bool operator()(const char* s1, const char* s2) const
         {
@@ -74,46 +74,45 @@ namespace soarxml
     };
     
 // Used to store a map from attribute name to attribute value
-    typedef std::map<xmlStringConst, xmlStringConst, strCompareElementXMLImpl>  xmlAttributeMap ;
-    typedef xmlAttributeMap::iterator                                       xmlAttributeMapIter ;
-    typedef xmlAttributeMap::const_iterator                                 xmlAttributeMapConstIter ;
+    typedef std::map<jsonStringConst, jsonStringConst, strCompareElementJSONImpl>  jsonAttributeMap ;
+    typedef jsonAttributeMap::iterator                                       jsonAttributeMapIter ;
+    typedef jsonAttributeMap::const_iterator                                 jsonAttributeMapConstIter ;
     
     /*************************************************************
-    * @brief The ElementXMLImpl class represents an element in an XML stream.
-    *        Through its children, it can represent an entire XML document.
+    * @brief The ElementJSONImpl class represents an element in an JSON stream.
+    *        Through its children, it can represent an entire JSON document.
     *************************************************************/
-    class EXPORT ElementXMLImpl
+    class EXPORT ElementJSONImpl
     {
             // Let MessageGenerator have access to Fast methods (which are protected because they take care to use correctly).
             friend class MessageGenerator ;
             
         protected:
             int             m_ErrorCode ;       // Used to report any errors.
-            bool            m_UseCData ;        // If true, should store character data in a CDATA section when encoding as XML.
-            xmlStringConst  m_TagName ;         // The tag name (e.g. in <name>...</name> the tag name is "name")
-            xmlString       m_CharacterData ;   // The character data (e.g. in <name>Albert Einstein</name> the char data is "Albert Einstein")
-            xmlAttributeMap m_AttributeMap ;    // Mapping from attribute-name to attribute-value (e.g. in <name first="Albert"> first is an attribute with value "Albert")
-            xmlList         m_Children ;        // List of children of this element
-            xmlString       m_Comment ;         // Used to attach a comment to this object.  It will appear ahead of the element when stored/retrieved.
+            bool            m_UseCData ;        // If true, should store character data in a CDATA section when encoding as JSON.
+            jsonStringConst  m_TagName ;         // The tag name (e.g. in <name>...</name> the tag name is "name")
+            jsonString       m_CharacterData ;   // The character data (e.g. in <name>Albert Einstein</name> the char data is "Albert Einstein")
+            jsonAttributeMap m_AttributeMap ;    // Mapping from attribute-name to attribute-value (e.g. in <name first="Albert"> first is an attribute with value "Albert")
+            jsonList         m_Children ;        // List of children of this element
             volatile long   m_RefCount ;        // Reference count.  Set to 1 on initialization.  When reaches 0 the object is deleted.
             bool            m_DataIsBinary ;    // If true, then the character data is treated as a binary buffer (can contain embedded nulls) and the binary length is needed
             int             m_BinaryDataLength ;// Gives the length of the character data buffer, when it's being treated as a binary buffer.  (only valid if m_IsDataBinary is true).
-            ElementXMLImpl* m_pParent ;         // The parent of this object (can be NULL)
+            ElementJSONImpl* m_pParent ;         // The parent of this object (can be NULL)
             
-            xmlStringList   m_StringsToDelete ; // List of strings we now own and should delete when we are destroyed.
+            jsonStringList   m_StringsToDelete ; // List of strings we now own and should delete when we are destroyed.
             
             /*************************************************************
             * @brief Destructor.  This is private so we are forced to
             *        use the release method, which supports ref-counting.
             *************************************************************/
         protected:
-            virtual ~ElementXMLImpl(void);
+            virtual ~ElementJSONImpl(void);
             
         public:
             /*************************************************************
-            * @brief XML ids can only contain letters, numbers, “.” “-“ and “_”.
+            * @brief JSON ids can only contain letters, numbers, “.” “-“ and “_”.
             *************************************************************/
-            static bool IsValidID(xmlStringConst str) ;
+            static bool IsValidID(jsonStringConst str) ;
             
         public:
             ////////////////////////////////////////////////////////////////
@@ -125,7 +124,7 @@ namespace soarxml
             /*************************************************************
             * @brief Default constructor.
             *************************************************************/
-            ElementXMLImpl(void);
+            ElementJSONImpl(void);
             
             /*************************************************************
             * @brief Release our reference to this object, possibly
@@ -204,8 +203,8 @@ namespace soarxml
             //
             // Child element functions.
             //
-            // These allow a single ElementXMLImpl object to represent a complete
-            // XML document through its children.
+            // These allow a single ElementJSONImpl object to represent a complete
+            // JSON document through its children.
             //
             ////////////////////////////////////////////////////////////////
             
@@ -214,7 +213,7 @@ namespace soarxml
             *
             * @param  pChild    The child to add.  Will be released when the parent is destroyed.
             *************************************************************/
-            void AddChild(ElementXMLImpl* pChild) ;
+            void AddChild(ElementJSONImpl* pChild) ;
             
             /*************************************************************
             * @brief Returns the number of children of this element.
@@ -231,7 +230,7 @@ namespace soarxml
             *
             * @param index  The 0-based index of the child to return.
             *************************************************************/
-            ElementXMLImpl const* GetChild(int index) const ;
+            ElementJSONImpl const* GetChild(int index) const ;
             
             /*************************************************************
             * @brief Returns the parent of this element.
@@ -241,7 +240,7 @@ namespace soarxml
             *
             * @returns NULL if has no parent.
             *************************************************************/
-            ElementXMLImpl const* GetParent() const ;
+            ElementJSONImpl const* GetParent() const ;
             
             /*************************************************************
             * @brief Returns a copy of this object.
@@ -250,7 +249,7 @@ namespace soarxml
             *
             *        Call ReleaseRef() on the returned object when you are done with it.
             *************************************************************/
-            ElementXMLImpl* MakeCopy() const ;
+            ElementJSONImpl* MakeCopy() const ;
             
             ////////////////////////////////////////////////////////////////
             //
@@ -309,27 +308,6 @@ namespace soarxml
             *************************************************************/
             const char* GetAttribute(const char* attName) const ;
             
-            /*************************************************************
-            * @brief Associate a comment with this XML element.
-            *        The comment is written in front of the element when stored/parsed.
-            *
-            * This type of commenting isn't completely general.  You can't have multiple
-            * comment blocks before an XML element, nor can you have trailing comment blocks
-            * where there is no XML element following the comment.  However, both of these are
-            * unusual situations and would require a significantly more complex API to support
-            * so it seems unnecessary.
-            *
-            * @param Comment    The comment string.
-            *************************************************************/
-            bool SetComment(const char* comment) ;
-            
-            /*************************************************************
-            * @brief Returns the comment for this element.
-            *
-            * @returns The comment string for this element (or zero-length string if there is none)
-            *************************************************************/
-            char const* GetComment() ;
-            
             ////////////////////////////////////////////////////////////////
             //
             // Character data functions (e.g the character data in <name>Albert Einstein</name> is "Albert Einstein")
@@ -343,8 +321,8 @@ namespace soarxml
             * It should be allocated with either allocateString() or copyString().
             *
             * @param characterData  The character data passed in should *not* replace special characters such as “<” and “&”
-            *                       with the XML escape sequences &lt; etc.
-            *                       These values will be converted when the XML stream is created.
+            *                       with the JSON escape sequences &lt; etc.
+            *                       These values will be converted when the JSON stream is created.
             * @param  copyData      If true, characterData will be copied.  If false, we take ownership of characterData
             *************************************************************/
             void SetCharacterData(char* characterData, bool copyData = true) ;
@@ -368,7 +346,7 @@ namespace soarxml
             * @brief Get the character data for this element.
             *
             * @returns   Returns the character data for this element.  If the element has no character data, returns zero-length string.
-            *            The character data returned will not include any XML escape sequences (e.g. &lt;).
+            *            The character data returned will not include any JSON escape sequences (e.g. &lt;).
             *            It will include the original special characters (e.g. "<").
             *************************************************************/
             char const* GetCharacterData() const ;
@@ -382,7 +360,7 @@ namespace soarxml
             /*************************************************************
             * @brief Converts a character data buffer into binary data.
             *
-            * If binary data is stored in an XML file it will encoded in
+            * If binary data is stored in an JSON file it will encoded in
             * some manner (e.g. as a string of hex digits).
             * When read back in, we may need to indicate that this particular
             * set of character data is encoded binary (converting it back from hex to binary).
@@ -401,7 +379,7 @@ namespace soarxml
             /*************************************************************
             * @brief Converts the stored binary data into a string of
             *        characters (hex for now, or base64 later)
-            *        which can be safely stored in XML text.
+            *        which can be safely stored in JSON text.
             *
             * @returns true if buffer is characters after conversion.
             *************************************************************/
@@ -426,7 +404,7 @@ namespace soarxml
             void SetUseCData(bool useCData) ;
             
             /*************************************************************
-            * @brief Returns true if this element's character data should be stored in a CDATA section when streamed to XML.
+            * @brief Returns true if this element's character data should be stored in a CDATA section when streamed to JSON.
             *************************************************************/
             bool GetUseCData() const ;
             
@@ -437,30 +415,30 @@ namespace soarxml
             ////////////////////////////////////////////////////////////////
             
             /*************************************************************
-            * @brief Converts the XML object to a string.
+            * @brief Converts the JSON object to a string.
             *
-            * @param includeChildren    Includes all children in the XML output.
+            * @param includeChildren    Includes all children in the JSON output.
             * @param insertNewlines     Add newlines to space out the tags to be more human-readable
             *
             * @returns The string form of the object.  Caller must delete with DeleteString().
             *************************************************************/
-            char* GenerateXMLString(bool includeChildren, bool insertNewLines) const ;
+            char* GenerateJSONString(bool includeChildren, bool insertNewLines) const ;
             
             /*************************************************************
             * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
             *
-            * @param depth              How deep we are into the XML tree (can be used for indedentation)
-            * @param includeChildren    Includes all children in the XML output.
+            * @param depth              How deep we are into the JSON tree (can be used for indedentation)
+            * @param includeChildren    Includes all children in the JSON output.
             * @param insertNewlines     Add newlines to space out the tags to be more human-readable
             *************************************************************/
-            int DetermineXMLStringLength(int depth, bool includeChildren, bool insertNewLines) const ;
+            int DetermineJSONStringLength(int depth, bool includeChildren, bool insertNewLines) const ;
             
             ////////////////////////////////////////////////////////////////
             //
             // String and memory functions
             //
-            // These operations allow a client to allocate memory that ElementXMLImpl will later release,
-            // or similarly, allow a client to release memory that ElementXMLImpl has allocated.
+            // These operations allow a client to allocate memory that ElementJSONImpl will later release,
+            // or similarly, allow a client to release memory that ElementJSONImpl has allocated.
             //
             // We may decide that a particular allocator will be used to do this (e.g. new[] and delete[]),
             // but in general it's safest to use these functions.
@@ -468,7 +446,7 @@ namespace soarxml
             ////////////////////////////////////////////////////////////////
             
             /*************************************************************
-            * @brief Utility function to allocate memory that the client will pass to the other ElementXMLImpl functions.
+            * @brief Utility function to allocate memory that the client will pass to the other ElementJSONImpl functions.
             *
             * @param length     The length is the number of characters in the string, so length+1 bytes will be allocated
             *                   (so that a trailing null is always included).  Thus passing length 0 is valid and will allocate a single byte.
@@ -478,7 +456,7 @@ namespace soarxml
                 // Switching to malloc and free (from new[] and delete[]), specifically so that we can use strdup() for CopyString
                 // which gets called a lot.  Using the library implementation (which should be in assembler) will
                 // be a lot faster than doing this manually.
-                xmlString str = (xmlString)malloc(length + 1) ;
+                jsonString str = (jsonString)malloc(length + 1) ;
                 str[0] = 0 ;
                 
                 return str ;
@@ -563,24 +541,24 @@ namespace soarxml
             
         protected:
             /*************************************************************
-            * @brief Converts the XML object to a string.
+            * @brief Converts the JSON object to a string.
             *
             * Note: maxLength is currently ignored for speed, but I'm leaving
             *       it in the list of params, so we can make this safe later
             *       if we wish (for security etc).
             *
-            * @param depth              How deep we are into the XML tree (can be used for indedentation)
-            * @param pStr               The XML object is stored in this string.
+            * @param depth              How deep we are into the JSON tree (can be used for indedentation)
+            * @param pStr               The JSON object is stored in this string.
             * @param maxLength          The max length of the string (not counting trailing null)
-            * @param includeChildren    Includes all children in the XML output.
+            * @param includeChildren    Includes all children in the JSON output.
             * @param insertNewlines     Add newlines to space out the tags to be more human-readable
             * @returns  Pointer to the end of the string.
             *************************************************************/
-            char* GenerateXMLString(int depth, char* pStr, int maxLength, bool includeChildren, bool insertNewLines) const ;
+            char* GenerateJSONString(int depth, char* pStr, int maxLength, bool includeChildren, bool insertNewLines) const ;
             
             
     };
     
-} // namespace soarxml
+} // namespace soarjson
 
-#endif // ElementXMLImpl_H
+#endif // ElementJSONImpl_H

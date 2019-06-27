@@ -1,24 +1,24 @@
 #include "portability.h"
 
 /////////////////////////////////////////////////////////////////
-// ParseXMLString class
+// ParseJSONString class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
 //
-// This class is used to parse an XML document from a file/string and
-// create an ElementXML object that represents it.
+// This class is used to parse an JSON document from a file/string and
+// create an ElementJSON object that represents it.
 //
 // This class reads from a string.
 //
 /////////////////////////////////////////////////////////////////
 
-#include "ParseXMLString.h"
-#include "ElementXMLImpl.h"
+#include "ParseJSONString.h"
+#include "ElementJSONImpl.h"
 
-using namespace soarxml;
+using namespace soarjson;
 
-ParseXMLString::ParseXMLString(char const* pInputLine, size_t startPos)
+ParseJSONString::ParseJSONString(char const* pInputLine, size_t startPos)
 {
     m_pInputLine = pInputLine ;
     m_Pos = startPos ;
@@ -28,11 +28,11 @@ ParseXMLString::ParseXMLString(char const* pInputLine, size_t startPos)
     InitializeLexer() ;
 }
 
-ParseXMLString::~ParseXMLString(void)
+ParseJSONString::~ParseJSONString(void)
 {
 }
 
-void ParseXMLString::ReadLine()
+void ParseJSONString::ReadLine()
 {
     if (!m_pInputLine)
     {

@@ -1,15 +1,15 @@
 #include "portability.h"
 
 /////////////////////////////////////////////////////////////////
-// ParseXML class
+// ParseJSON class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
 //
-// This class is used to parse an XML document from a file/string and
-// create an ElementXMLImpl object that represents it.
+// This class is used to parse an JSON document from a file/string and
+// create an ElementJSONImpl object that represents it.
 //
-// This class can't parse all XML, just the subset ElementXMLImpl supports.
+// This class can't parse all JSON, just the subset ElementJSONImpl supports.
 // Things we don't support include processing instructions, comments and DTDs.
 //
 // Also, this class looks for the special attribute "bin_encoding=hex".
@@ -22,20 +22,20 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include "ParseXML.h"
-#include "ElementXMLImpl.h"
+#include "ParseJSON.h"
+#include "ElementJSONImpl.h"
 
-using namespace soarxml;
+using namespace soarjson;
 
 // We use a special attribute "bin_encoding='hex'" to indicate
 // when binary data is stored in the character data stream.
 // Using this is not necessary, but without it the user of
-// this XML document needs to know which parts are binary and which not
+// this JSON document needs to know which parts are binary and which not
 // so it can decode them correctly.
 static char const* kEncodingAtt = "bin_encoding" ;
 //static char const* kEncodingVal = "hex" ;
 
-ParseXML::ParseXML(void)
+ParseJSON::ParseJSON(void)
 {
     m_Error = false ;
     m_ErrorMsg = "" ;
@@ -44,11 +44,11 @@ ParseXML::ParseXML(void)
     m_InCharData = false ;
 }
 
-ParseXML::~ParseXML(void)
+ParseJSON::~ParseJSON(void)
 {
 }
 
-void ParseXML::InitializeLexer()
+void ParseJSON::InitializeLexer()
 {
     // Prime the lexical analyser with initial values
     ReadLine() ;
@@ -58,7 +58,7 @@ void ParseXML::InitializeLexer()
 }
 
 // Converts from an escaped character (e.g. &lt; for <) to the original character
-char ParseXML::GetEscapeChar()
+char ParseJSON::GetEscapeChar()
 {
     std::stringstream escape ;
     
@@ -119,7 +119,7 @@ char ParseXML::GetEscapeChar()
 * token from the input stream (e.g. an identifier, or a symbol etc.)
 *
 *************************************************************************/
-void ParseXML::GetNextToken()
+void ParseJSON::GetNextToken()
 {
     // Used to store current char
     char ch = 0 ;
@@ -130,7 +130,7 @@ void ParseXML::GetNextToken()
         return ;
     }
     
-    // Record where this token starts (matters when we're doing a sequence of XML docs)
+    // Record where this token starts (matters when we're doing a sequence of JSON docs)
     StartingNewToken() ;
     
     // If we're already at EOF when we ask
@@ -177,39 +177,6 @@ void ParseXML::GetNextToken()
             GetNextChar();
             return;
         }
-        
-        // If this is the beginning of a comment <! then handle it differently from a regular symbol
-        else if (IsCommentStart(GetCurrentChar()))
-        {
-            std::stringstream comment ;
-            
-            // Consume the ! and the two leading dashes (BADBAD, I guess we should check that they are leading -- and report a better error if they're not)
-            GetNextChar() ;
-            GetNextChar() ;
-            GetNextChar() ;
-            
-            // Keep consuming until we find --> to end the comment.
-            bool done = false ;
-            while (!IsEOF() && !done)
-            {
-                char last = GetCurrentChar() ;
-                
-                // No need to escape contents within a comment as we read looking for one specific pattern ignoring the rest
-                //if (ch == kEscapeChar)
-                //ch = GetEscapeChar() ;
-                
-                comment << last ;
-                GetNextChar() ;
-                
-                // Check if we've reached --> which marks the end of the comment
-                int len = static_cast<int>(comment.str().size()) ;
-                done = (last == kCloseTagChar && len > 3 && comment.str().at(len - 3) == '-' && comment.str().at(len - 2) == '-' && comment.str().at(len - 1) == '>');
-            }
-            
-            // Store the comment (the part lying between <!-- and -->
-            SetCurrentToken(comment.str().substr(0, comment.str().size() - 3), kComment) ;
-        }
-        
         return ;
     }
     
@@ -286,7 +253,7 @@ void ParseXML::GetNextToken()
 
 /************************************************************************
 *
-* Parse an XML element and its children.  This is the main parsing
+* Parse an JSON element and its children.  This is the main parsing
 * function.  The lexical analyser contains a references to the input
 * stream being parsed.  The function calls itself recursively to
 * parse its children.
@@ -296,15 +263,8 @@ void ParseXML::GetNextToken()
 * @return The element that has just been read from the input stream.
 *
 *************************************************************************/
-ElementXMLImpl* ParseXML::ParseElement()
+ElementJSONImpl* ParseJSON::ParseElement()
 {
-    // Check if we're starting with a comment
-    while (Have(kComment))
-    {
-        SetLastComment(GetTokenValue()) ;
-        GetNextToken() ;
-    }
-    
     // We must start with an open tag marker
     MustBe(kOpenTagChar) ;
     
@@ -323,19 +283,13 @@ ElementXMLImpl* ParseXML::ParseElement()
     }
     
     // Create the object we'll be returning
-    ElementXMLImpl* pElement = new ElementXMLImpl() ;
+    ElementJSONImpl* pElement = new ElementJSONImpl() ;
     
     // Get the tag name
     ParseString tagName ;
     MustBe(kIdentifier, tagName) ;
     
     pElement->SetTagName(tagName.c_str()) ;
-    
-    if (HasLastComment())
-    {
-        pElement->SetComment(GetLastComment()) ;
-        SetLastComment("") ;
-    }
     
     // Used to record whether data is encoded binary
     bool dataIsEncoded = false ;
@@ -418,15 +372,6 @@ ElementXMLImpl* ParseXML::ParseElement()
             continue ;
         }
         
-        if (Have(kComment))
-        {
-            // We'll only allow comments before other XML elements.  That allows us to "hide" the comment within the existing ElementXML
-            // structure and allow the ultimate parser of the XML ignore comments completely.
-            SetLastComment(GetTokenValue()) ;
-            GetNextToken() ;
-            continue ;
-        }
-        
         // Check for the open tag, but don't consume it yet.
         // We consume this at the start of parsing the element.
         if (Have(kOpenTagChar, false))
@@ -434,7 +379,7 @@ ElementXMLImpl* ParseXML::ParseElement()
             SetInCharData(false) ;  // Out of the char data now.
             
             // Read the child element recursively.
-            ElementXMLImpl* pChild = ParseElement() ;
+            ElementJSONImpl* pChild = ParseElement() ;
             
             if (pChild)
             {

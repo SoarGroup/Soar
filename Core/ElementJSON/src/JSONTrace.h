@@ -1,8 +1,8 @@
-#ifndef SOARXML_XMLTRACE_H
-#define SOARXML_XMLTRACE_H
+#ifndef SOARJSON_JSONTRACE_H
+#define SOARJSON_JSONTRACE_H
 
 /////////////////////////////////////////////////////////////////
-// XMLTrace class
+// JSONTrace class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : April 2005
@@ -10,11 +10,11 @@
 // Represents a piece of structured trace information generated
 // during the course of a run.
 //
-// This class is related to the ClientTraceXML class.  This class
+// This class is related to the ClientTraceJSON class.  This class
 // is optimized for creating trace objects while the client class
 // supports reading the trace information.
 //
-// This XML structure is unusual because we want to add the same
+// This JSON structure is unusual because we want to add the same
 // attributes to potentially a number of different tags.
 // So we're looking for an API like this:
 //
@@ -27,60 +27,60 @@
 // where the "addAttribute" methods are working with the "current" object.
 //
 // JRV/RPM Update: The function definitions for this class' members are now included in the headers and there are no corresponding .cpp files.
-// The reason for this is that the code that uses them needs to have these classes defined in that compilation unit so that the ElementXML objects
-// these units create are done so on their heap, and the ElementXMLImpl objects that actually do the work are created on the heap in the ElementXML
+// The reason for this is that the code that uses them needs to have these classes defined in that compilation unit so that the ElementJSON objects
+// these units create are done so on their heap, and the ElementJSONImpl objects that actually do the work are created on the heap in the ElementJSON
 // DLL. This is the Pimpl pattern.
 //
 /////////////////////////////////////////////////////////////////
 
-#include "ElementXML.h"
+#include "ElementJSON.h"
 #include "soar_TraceNames.h"
 
 #include <assert.h>
 
-namespace soarxml
+namespace soarjson
 {
 
-    class XMLTrace
+    class JSONTrace
     {
         private:
-            // The root XML object
-            ElementXML* m_XML ;
+            // The root JSON object
+            ElementJSON* m_JSON ;
             
             // The tag we're currently building
-            ElementXML* m_pCurrentTag ;
+            ElementJSON* m_pCurrentTag ;
             
         public:
-            XMLTrace()
+            JSONTrace()
             {
-                m_XML = new ElementXML() ;
-                m_XML->SetTagName(soar_TraceNames::kTagTrace) ;
+                m_JSON = new ElementJSON() ;
+                m_JSON->SetTagName(soar_TraceNames::kTagTrace) ;
                 
-                m_pCurrentTag = new ElementXML(m_XML->GetXMLHandle()) ;
+                m_pCurrentTag = new ElementJSON(m_JSON->GetJSONHandle()) ;
                 m_pCurrentTag->AddRefOnHandle() ;
             }
             
             // Alternative constructor where we specify the base tag name
-            XMLTrace(char const* pTagName)
+            JSONTrace(char const* pTagName)
             {
-                m_XML = new ElementXML() ;
-                m_XML->SetTagName(pTagName) ;
+                m_JSON = new ElementJSON() ;
+                m_JSON->SetTagName(pTagName) ;
                 
-                m_pCurrentTag = new ElementXML(m_XML->GetXMLHandle()) ;
+                m_pCurrentTag = new ElementJSON(m_JSON->GetJSONHandle()) ;
                 m_pCurrentTag->AddRefOnHandle() ;
             }
             
-            virtual ~XMLTrace()
+            virtual ~JSONTrace()
             {
                 delete m_pCurrentTag ;
                 m_pCurrentTag = NULL ;
                 
-                delete m_XML ;
-                m_XML = NULL ;
+                delete m_JSON ;
+                m_JSON = NULL ;
             }
             
             /*************************************************************
-            * @brief    Reinitialize this XML trace object so we can
+            * @brief    Reinitialize this JSON trace object so we can
             *           re-use it.
             *************************************************************/
             void Reset()
@@ -88,13 +88,13 @@ namespace soarxml
                 delete m_pCurrentTag ;
                 m_pCurrentTag = NULL ;
                 
-                delete m_XML ;
-                m_XML = NULL ;
+                delete m_JSON ;
+                m_JSON = NULL ;
                 
-                m_XML = new ElementXML() ;
-                m_XML->SetTagName(soar_TraceNames::kTagTrace) ;
+                m_JSON = new ElementJSON() ;
+                m_JSON->SetTagName(soar_TraceNames::kTagTrace) ;
                 
-                m_pCurrentTag = new ElementXML(m_XML->GetXMLHandle()) ;
+                m_pCurrentTag = new ElementJSON(m_JSON->GetJSONHandle()) ;
                 m_pCurrentTag->AddRefOnHandle() ;
             }
             
@@ -104,7 +104,7 @@ namespace soarxml
             *************************************************************/
             bool IsEmpty()
             {
-                return (m_XML == NULL || m_XML->GetNumberChildren() == 0) ;
+                return (m_JSON == NULL || m_JSON->GetNumberChildren() == 0) ;
             }
             
             /*************************************************************
@@ -118,21 +118,21 @@ namespace soarxml
             *************************************************************/
             void BeginTag(char const* pTagName)
             {
-                ElementXML* pChild = new ElementXML() ;
+                ElementJSON* pChild = new ElementJSON() ;
                 pChild->SetTagNameFast(pTagName) ;
                 
-                ElementXML_Handle hChild = NULL ;
+                ElementJSON_Handle hChild = NULL ;
                 
                 // The new tag is created as a child of the current tag (if we have one)
                 // or the root if we don't.  Adding the child deletes the pChild object
                 // normally, so we have to create a second one.  Perhaps we should redesign AddChild?
                 //  if (m_pCurrentTag == NULL)
-                //      hChild = m_XML->AddChild(pChild) ;
+                //      hChild = m_JSON->AddChild(pChild) ;
                 //  else
                 hChild = m_pCurrentTag->AddChild(pChild) ;
                 
                 delete m_pCurrentTag ;
-                m_pCurrentTag = new ElementXML(hChild) ;
+                m_pCurrentTag = new ElementJSON(hChild) ;
                 m_pCurrentTag->AddRefOnHandle() ;
             }
             
@@ -181,7 +181,7 @@ namespace soarxml
             }
             
             /*************************************************************
-            * @brief Releases ownership of the underlying XML object.
+            * @brief Releases ownership of the underlying JSON object.
             *
             *        The caller must call releaseRef() on this handle
             *        when it is done with it.
@@ -189,40 +189,40 @@ namespace soarxml
             *       This should only be called when the message is actually
             *       being sent.  It shouldn't be used when building up the message.
             *
-            *       NOTE: After doing this the XMLTrace object should either be
+            *       NOTE: After doing this the JSONTrace object should either be
             *       deleted or Reset() should be called on it.
             *************************************************************/
-            ElementXML_Handle Detach()
+            ElementJSON_Handle Detach()
             {
-                ElementXML_Handle hXML = m_XML->Detach() ;
+                ElementJSON_Handle hJSON = m_JSON->Detach() ;
                 
                 delete m_pCurrentTag ;
                 m_pCurrentTag = NULL ;
                 
-                delete m_XML ;
-                m_XML = NULL ;
+                delete m_JSON ;
+                m_JSON = NULL ;
                 
-                return hXML ;
+                return hJSON ;
             }
             
             /*************************************************************
-            * @brief Releases ownership of the underlying XML object.
+            * @brief Releases ownership of the underlying JSON object.
             *
             * As for Detach() but returns an object rather than a handle.
             *************************************************************/
-            ElementXML* DetatchObject()
+            ElementJSON* DetatchObject()
             {
                 delete m_pCurrentTag ;
                 m_pCurrentTag = NULL ;
                 
-                ElementXML* pResult = m_XML ;
-                m_XML = NULL ;
+                ElementJSON* pResult = m_JSON ;
+                m_JSON = NULL ;
                 return pResult ;
             }
             
             /*************************************************************
             * @brief    Occassionally it's helpful to be able to back up
-            *           in the XML and add some extra elements.
+            *           in the JSON and add some extra elements.
             *
             *           These calls should only be used once a tag has been completed,
             *           so the sequence is something like:
@@ -274,4 +274,4 @@ namespace soarxml
     
 } // namespace
 
-#endif // SOARXML_XMLTRACE_H
+#endif // SOARJSON_JSONTRACE_H

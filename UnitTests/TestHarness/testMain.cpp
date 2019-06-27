@@ -24,6 +24,7 @@
 #include "BasicTests.hpp"
 #include "ChunkingTests.hpp"
 #include "ChunkingDemoTests.hpp"
+#include "ElementJSONTest.hpp"
 #include "ElementXMLTest.hpp"
 #include "EpMemFunctionalTests.hpp"
 #include "FullTests.hpp"
@@ -194,7 +195,8 @@ int main(int argc, char** argv)
     TEST_DECLARATION(ChunkingDemoTests);
     TEST_DECLARATION(ChunkingTests);
     TEST_DECLARATION(EpMemFunctionalTests);
-    TEST_DECLARATION(ElementXMLTest);
+		TEST_DECLARATION(ElementXMLTest);
+		TEST_DECLARATION(ElementJSONTest);
     TEST_DECLARATION(FullTests);
     TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
     TEST_DECLARATION(FullTestsClientThread);

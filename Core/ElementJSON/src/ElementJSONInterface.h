@@ -1,32 +1,32 @@
 /////////////////////////////////////////////////////////////////
-// ElementXMLInterface file.
+// ElementJSONInterface file.
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
 //
-// This file offers a C level interface to the ElementXML code.
-// The real functionality is within a C++ ElementXML class but it's easier to export
+// This file offers a C level interface to the ElementJSON code.
+// The real functionality is within a C++ ElementJSON class but it's easier to export
 // a C level interface than a C++ one.
 //
-// This ElementXML library is responsible for representing an XML document as an object (actually a tree of objects).
+// This ElementJSON library is responsible for representing an JSON document as an object (actually a tree of objects).
 //
-// A client can send a stream of XML data which this class parses to create the object representation of the XML.
+// A client can send a stream of JSON data which this class parses to create the object representation of the JSON.
 // Or the client can call to this library directly, creating the object representation without ever producing the actual
-// XML output (this is just for improved efficiency when the client and the Soar kernel are embedded in the same process).
+// JSON output (this is just for improved efficiency when the client and the Soar kernel are embedded in the same process).
 //
-// This class will not support the full capabilities of XML which is now a complex language.
+// This class will not support the full capabilities of JSON which is now a complex language.
 // It will support just the subset that is necessary for SML (Soar Markup Language) which is intended to be its primary customer.
 /////////////////////////////////////////////////////////////////
 
-#ifndef ELEMENTXMLINTERFACE_H
-#define ELEMENTXMLINTERFACE_H
+#ifndef ELEMENTJSONINTERFACE_H
+#define ELEMENTJSONINTERFACE_H
 
-#include "ElementXMLHandle.h"
+#include "ElementJSONHandle.h"
 
 // get definition of EXPORT
 #include "Export.h"
 
-//DJP: A quick test of statically linked version of ElementXML
+//DJP: A quick test of statically linked version of ElementJSON
 /*
 #define WIN_STATIC_LINK
 
@@ -35,7 +35,7 @@
 #ifdef WIN_STATIC_LINK
 #undef EXPORT
 #define EXPORT
-#pragma comment (lib, "E:/SoarMich/SoarIO/ElementXML/lib/ElementXML-static.lib")
+#pragma comment (lib, "E:/SoarMich/SoarIO/ElementJSON/lib/ElementJSON-static.lib")
 #endif
 */
 
@@ -52,7 +52,7 @@ extern "C" {
 /*************************************************************
 * @brief Default constructor.
 *************************************************************/
-EXPORT ElementXML_Handle soarxml_NewElementXML() ;
+EXPORT ElementJSON_Handle soarjson_NewElementJSON() ;
 
 /*************************************************************
 * @brief Release our reference to this object, possibly
@@ -60,7 +60,7 @@ EXPORT ElementXML_Handle soarxml_NewElementXML() ;
 *
 * @returns The new reference count (0 implies the object was deleted)
 *************************************************************/
-EXPORT int soarxml_ReleaseRef(ElementXML_Handle hXML) ;
+EXPORT int soarjson_ReleaseRef(ElementJSON_Handle hJSON) ;
 
 /*************************************************************
 * @brief Add a new reference to this object.
@@ -71,12 +71,12 @@ EXPORT int soarxml_ReleaseRef(ElementXML_Handle hXML) ;
 *
 * @returns The new reference count (will be at least 2).
 *************************************************************/
-EXPORT int soarxml_AddRef(ElementXML_Handle hXML) ;
+EXPORT int soarjson_AddRef(ElementJSON_Handle hJSON) ;
 
 /*************************************************************
 * @returns Reports the current reference count (must be > 0)
 *************************************************************/
-EXPORT int soarxml_GetRefCount(ElementXML_Handle hXML) ;
+EXPORT int soarjson_GetRefCount(ElementJSON_Handle hJSON) ;
 
 ////////////////////////////////////////////////////////////////
 //
@@ -91,48 +91,21 @@ EXPORT int soarxml_GetRefCount(ElementXML_Handle hXML) ;
 * @param  copyName  If true, tagName will be copied.  If false, we take ownership of tagName.
 * @returns  true if the tag name is valid.
 *************************************************************/
-EXPORT bool soarxml_SetTagName(ElementXML_Handle hXML, char* tagName, bool copyName) ;
+EXPORT bool soarjson_SetTagName(ElementJSON_Handle hJSON, char* tagName, bool copyName) ;
 
 /*************************************************************
 * @brief Gets the tag name for this element.
 *
 * @returns The tag name.
 *************************************************************/
-EXPORT char const* soarxml_GetTagName(ElementXML_Handle const hXML) ;
-
-////////////////////////////////////////////////////////////////
-//
-// Comment functions (<!-- .... --> marks the bounds of a comment)
-//
-////////////////////////////////////////////////////////////////
-
-/*************************************************************
-* @brief Associate a comment with this XML element.
-*        The comment is written in front of the element when stored/parsed.
-*
-* This type of commenting isn't completely general.  You can't have multiple
-* comment blocks before an XML element, nor can you have trailing comment blocks
-* where there is no XML element following the comment.  However, both of these are
-* unusual situations and would require a significantly more complex API to support
-* so it seems unnecessary.
-*
-* @param Comment    The comment string.
-*************************************************************/
-EXPORT bool soarxml_SetComment(ElementXML_Handle hXML, char const* pComment) ;
-
-/*************************************************************
-* @brief Returns the comment for this element.
-*
-* @returns The comment string for this element (or zero-length string if there is none)
-*************************************************************/
-EXPORT char const* soarxml_GetComment(ElementXML_Handle hXML) ;
+EXPORT char const* soarjson_GetTagName(ElementJSON_Handle const hJSON) ;
 
 ////////////////////////////////////////////////////////////////
 //
 // Child element functions.
 //
-// These allow a single ElementXML object to represent a complete
-// XML document through its children.
+// These allow a single ElementJSON object to represent a complete
+// JSON document through its children.
 //
 ////////////////////////////////////////////////////////////////
 
@@ -141,12 +114,12 @@ EXPORT char const* soarxml_GetComment(ElementXML_Handle hXML) ;
 *
 * @param  pChild    The child to add.  Will be released when the parent is destroyed.
 *************************************************************/
-EXPORT void soarxml_AddChild(ElementXML_Handle hXML, ElementXML_Handle hChild) ;
+EXPORT void soarjson_AddChild(ElementJSON_Handle hJSON, ElementJSON_Handle hChild) ;
 
 /*************************************************************
 * @brief Returns the number of children of this element.
 *************************************************************/
-EXPORT int soarxml_GetNumberChildren(ElementXML_Handle const hXML) ;
+EXPORT int soarjson_GetNumberChildren(ElementJSON_Handle const hJSON) ;
 
 /*************************************************************
 * @brief Returns the n-th child of this element.
@@ -162,7 +135,7 @@ EXPORT int soarxml_GetNumberChildren(ElementXML_Handle const hXML) ;
 *
 * @param index  The 0-based index of the child to return.
 *************************************************************/
-EXPORT ElementXML_Handle const soarxml_GetChild(ElementXML_Handle const hXML, int index) ;
+EXPORT ElementJSON_Handle const soarjson_GetChild(ElementJSON_Handle const hJSON, int index) ;
 
 /*************************************************************
 * @brief Returns the parent of this element.
@@ -172,7 +145,7 @@ EXPORT ElementXML_Handle const soarxml_GetChild(ElementXML_Handle const hXML, in
 *
 * @returns NULL if has no parent.
 *************************************************************/
-EXPORT ElementXML_Handle const soarxml_GetParent(ElementXML_Handle const hXML) ;
+EXPORT ElementJSON_Handle const soarjson_GetParent(ElementJSON_Handle const hJSON) ;
 
 /*************************************************************
 * @brief Returns a copy of this object.
@@ -181,7 +154,7 @@ EXPORT ElementXML_Handle const soarxml_GetParent(ElementXML_Handle const hXML) ;
 *
 *        Call ReleaseRef() on the returned object when you are done with it.
 *************************************************************/
-EXPORT ElementXML_Handle const soarxml_MakeCopy(ElementXML_Handle const hXML) ;
+EXPORT ElementJSON_Handle const soarjson_MakeCopy(ElementJSON_Handle const hJSON) ;
 
 ////////////////////////////////////////////////////////////////
 //
@@ -198,12 +171,12 @@ EXPORT ElementXML_Handle const soarxml_MakeCopy(ElementXML_Handle const hXML) ;
 * @param  copyValue     If true, atttributeName will be copied.  If false, we take ownership of attributeValue
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-EXPORT bool soarxml_AddAttribute(ElementXML_Handle hXML, char* attributeName, char* attributeValue, bool copyName, bool copyValue);
+EXPORT bool soarjson_AddAttribute(ElementJSON_Handle hJSON, char* attributeName, char* attributeValue, bool copyName, bool copyValue);
 
 /*************************************************************
 * @brief Get the number of attributes attached to this element.
 *************************************************************/
-EXPORT int soarxml_GetNumberAttributes(ElementXML_Handle const hXML) ;
+EXPORT int soarjson_GetNumberAttributes(ElementJSON_Handle const hJSON) ;
 
 /*************************************************************
 * @brief Get the name of the n-th attribute of this element.
@@ -211,14 +184,14 @@ EXPORT int soarxml_GetNumberAttributes(ElementXML_Handle const hXML) ;
 *
 * @param index  The 0-based index of the attribute to return.
 *************************************************************/
-EXPORT char const* soarxml_GetAttributeName(ElementXML_Handle const hXML, int index) ;
+EXPORT char const* soarjson_GetAttributeName(ElementJSON_Handle const hJSON, int index) ;
 
 /*************************************************************
 * @brief Get the value of the n-th attribute of this element.
 *
 * @param index  The 0-based index of the attribute to return.
 *************************************************************/
-EXPORT char const* soarxml_GetAttributeValue(ElementXML_Handle const hXML, int index) ;
+EXPORT char const* soarjson_GetAttributeValue(ElementJSON_Handle const hJSON, int index) ;
 
 /*************************************************************
 * @brief Get the value of the named attribute of this element.
@@ -226,7 +199,7 @@ EXPORT char const* soarxml_GetAttributeValue(ElementXML_Handle const hXML, int i
 * @param attName    The name of the attribute to look up.
 * @returns The value of the named attribute (or null if this attribute doesn't exist).
 *************************************************************/
-EXPORT char const* soarxml_GetAttribute(ElementXML_Handle const hXML, char const* attName) ;
+EXPORT char const* soarjson_GetAttribute(ElementJSON_Handle const hJSON, char const* attName) ;
 
 ////////////////////////////////////////////////////////////////
 //
@@ -241,11 +214,11 @@ EXPORT char const* soarxml_GetAttribute(ElementXML_Handle const hXML, char const
 * It should be allocated with either allocateString() or copyString().
 *
 * @param characterData  The character data passed in should *not* replace special characters such as “<” and “&”
-*                       with the XML escape sequences &lt; etc.
-*                       These values will be converted when the XML stream is created.
+*                       with the JSON escape sequences &lt; etc.
+*                       These values will be converted when the JSON stream is created.
 * @param  copyData      If true, characterData will be copied.  If false, we take ownership of characterData
 *************************************************************/
-EXPORT void soarxml_SetCharacterData(ElementXML_Handle hXML, char* characterData, bool copyData) ;
+EXPORT void soarjson_SetCharacterData(ElementJSON_Handle hJSON, char* characterData, bool copyData) ;
 
 /*************************************************************
 * @brief Setting the chracter data in this way indicates that this element’s character data should be treated as a binary buffer
@@ -260,27 +233,27 @@ EXPORT void soarxml_SetCharacterData(ElementXML_Handle hXML, char* characterData
 * @param length         The length of the buffer
 * @param copyData       If true, characterData will be copied.  If false, we take ownership of characterData
 *************************************************************/
-EXPORT void soarxml_SetBinaryCharacterData(ElementXML_Handle hXML, char* characterData, int length, bool copyData) ;
+EXPORT void soarjson_SetBinaryCharacterData(ElementJSON_Handle hJSON, char* characterData, int length, bool copyData) ;
 
 /*************************************************************
 * @brief Get the character data for this element.
 *
 * @returns  Returns the character data for this element.  If the element has no character data, returns zero-length string.
-*           The character data returned will not include any XML escape sequences (e.g. &lt;).
+*           The character data returned will not include any JSON escape sequences (e.g. &lt;).
 *           It will include the original special characters (e.g. "<").
 *************************************************************/
-EXPORT char const* soarxml_GetCharacterData(ElementXML_Handle const hXML) ;
+EXPORT char const* soarjson_GetCharacterData(ElementJSON_Handle const hJSON) ;
 
 /*************************************************************
 * @brief Returns true if the character data should be treated as a binary buffer
 *        rather than a null-terminated character string.
 *************************************************************/
-EXPORT bool soarxml_IsCharacterDataBinary(ElementXML_Handle const hXML) ;
+EXPORT bool soarjson_IsCharacterDataBinary(ElementJSON_Handle const hJSON) ;
 
 /*************************************************************
 * @brief Converts a character data buffer into binary data.
 *
-* If binary data is stored in an XML file it will encoded in
+* If binary data is stored in an JSON file it will encoded in
 * some manner (e.g. as a string of hex digits).
 * When read back in, we may need to indicate that this particular
 * set of character data is encoded binary (converting it back from hex to binary).
@@ -294,7 +267,7 @@ EXPORT bool soarxml_IsCharacterDataBinary(ElementXML_Handle const hXML) ;
 *
 * @returns True if buffer is binary after conversion.
 *************************************************************/
-EXPORT bool soarxml_ConvertCharacterDataToBinary(ElementXML_Handle hXML) ;
+EXPORT bool soarjson_ConvertCharacterDataToBinary(ElementJSON_Handle hJSON) ;
 
 /*************************************************************
 * @brief Returns the length of the character data.
@@ -302,7 +275,7 @@ EXPORT bool soarxml_ConvertCharacterDataToBinary(ElementXML_Handle hXML) ;
 * If the data is a binary buffer this is the size of that buffer.
 * If the data is a null terminated string this is the length of the string + 1 (for the null).
 *************************************************************/
-EXPORT int   soarxml_GetCharacterDataLength(ElementXML_Handle const hXML) ;
+EXPORT int   soarjson_GetCharacterDataLength(ElementJSON_Handle const hJSON) ;
 
 /*************************************************************
 * @brief Setting this value to true indicates that this element’s character data should be stored in a CDATA section.
@@ -312,12 +285,12 @@ EXPORT int   soarxml_GetCharacterDataLength(ElementXML_Handle const hXML) ;
 *
 * @param useCData   true if this element’s character data should be stored in a CDATA section.
 *************************************************************/
-EXPORT void soarxml_SetUseCData(ElementXML_Handle hXML, bool useCData) ;
+EXPORT void soarjson_SetUseCData(ElementJSON_Handle hJSON, bool useCData) ;
 
 /*************************************************************
-* @brief Returns true if this element's character data should be stored in a CDATA section when streamed to XML.
+* @brief Returns true if this element's character data should be stored in a CDATA section when streamed to JSON.
 *************************************************************/
-EXPORT bool soarxml_GetUseCData(ElementXML_Handle const hXML) ;
+EXPORT bool soarjson_GetUseCData(ElementJSON_Handle const hJSON) ;
 
 ////////////////////////////////////////////////////////////////
 //
@@ -326,29 +299,29 @@ EXPORT bool soarxml_GetUseCData(ElementXML_Handle const hXML) ;
 ////////////////////////////////////////////////////////////////
 
 /*************************************************************
-* @brief Converts the XML object to a string.
+* @brief Converts the JSON object to a string.
 *
-* @param includeChildren    Includes all children in the XML output.
+* @param includeChildren    Includes all children in the JSON output.
 * @param insertNewlines     Add newlines to space out the tags to be more human-readable
 *
 * @returns The string form of the object.  Caller must delete with DeleteString().
 *************************************************************/
-EXPORT char* soarxml_GenerateXMLString(ElementXML_Handle const hXML, bool includeChildren, bool insertNewLines) ;
+EXPORT char* soarjson_GenerateJSONString(ElementJSON_Handle const hJSON, bool includeChildren, bool insertNewLines) ;
 
 /*************************************************************
 * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
 *
-* @param includeChildren    Includes all children in the XML output.
+* @param includeChildren    Includes all children in the JSON output.
 * @param insertNewlines     Add newlines to space out the tags to be more human-readable
 *************************************************************/
-EXPORT int soarxml_DetermineXMLStringLength(ElementXML_Handle const hXML, bool includeChildren, bool insertNewLines) ;
+EXPORT int soarjson_DetermineJSONStringLength(ElementJSON_Handle const hJSON, bool includeChildren, bool insertNewLines) ;
 
 ////////////////////////////////////////////////////////////////
 //
 // String and memory functions
 //
-// These operations allow a client to allocate memory that ElementXML will later release,
-// or similarly, allow a client to release memory that ElementXML has allocated.
+// These operations allow a client to allocate memory that ElementJSON will later release,
+// or similarly, allow a client to release memory that ElementJSON has allocated.
 //
 // We may decide that a particular allocator will be used to do this (e.g. new[] and delete[]),
 // but in general it's safest to use these functions.
@@ -356,26 +329,26 @@ EXPORT int soarxml_DetermineXMLStringLength(ElementXML_Handle const hXML, bool i
 ////////////////////////////////////////////////////////////////
 
 /*************************************************************
-* @brief Utility function to allocate memory that the client will pass to the other ElementXML functions.
+* @brief Utility function to allocate memory that the client will pass to the other ElementJSON functions.
 *
 * @param length     The length is the number of characters in the string, so length+1 bytes will be allocated
 *                   (so that a trailing null is always included).  Thus passing length 0 is valid and will allocate a single byte.
 *************************************************************/
-EXPORT char* soarxml_AllocateString(int length) ;
+EXPORT char* soarjson_AllocateString(int length) ;
 
 /*************************************************************
 * @brief Utility function to release memory allocated by this element and returned to the caller.
 *
 * @param string     The string to release.  Passing NULL is valid and does nothing.
 *************************************************************/
-EXPORT void soarxml_DeleteString(char* pString) ;
+EXPORT void soarjson_DeleteString(char* pString) ;
 
 /*************************************************************
 * @brief    Performs an allocation and then copies the contents of the passed in string to the newly allocated string.
 *
 * @param string     The string to copy.  Passing NULL is valid and returns NULL.
 *************************************************************/
-EXPORT char* soarxml_CopyString(char const* original) ;
+EXPORT char* soarjson_CopyString(char const* original) ;
 
 /*************************************************************
 * @brief    Performs an allocation and then copies the contents of the passed in buffer to the newly allocated buffer.
@@ -384,7 +357,7 @@ EXPORT char* soarxml_CopyString(char const* original) ;
 * @param string     The buffer to copy.  Passing NULL is valid and returns NULL.
 * @param length     The length of the buffer to copy (this exact length will be allocated--no trailing NULL is added).
 *************************************************************/
-EXPORT char* soarxml_CopyBuffer(char const* original, int length) ;
+EXPORT char* soarjson_CopyBuffer(char const* original, int length) ;
 
 /*************************************************************
 * @brief Adds an attribute name-value pair.
@@ -397,7 +370,7 @@ EXPORT char* soarxml_CopyBuffer(char const* original, int length) ;
 * @param  copyValue     If true, atttributeName will be copied.  If false, we take ownership of attributeValue
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-EXPORT bool soarxml_AddAttributeFast(ElementXML_Handle hXML, char const* attributeName, char* attributeValue, bool copyValue);
+EXPORT bool soarjson_AddAttributeFast(ElementJSON_Handle hJSON, char const* attributeName, char* attributeValue, bool copyValue);
 
 /*************************************************************
 * @brief Adds an attribute name-value pair.
@@ -409,7 +382,7 @@ EXPORT bool soarxml_AddAttributeFast(ElementXML_Handle hXML, char const* attribu
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-EXPORT bool soarxml_AddAttributeFastFast(ElementXML_Handle hXML, char const* attributeName, char const* attributeValue);
+EXPORT bool soarjson_AddAttributeFastFast(ElementJSON_Handle hJSON, char const* attributeName, char const* attributeValue);
 
 /*************************************************************
 * @brief Set the tag name for this element.
@@ -421,16 +394,16 @@ EXPORT bool soarxml_AddAttributeFastFast(ElementXML_Handle hXML, char const* att
 * @param  tagName   Tag name can only contain letters, numbers, “.” “-“ and “_”.
 * @returns  true if the tag name is valid.
 *************************************************************/
-EXPORT bool soarxml_SetTagNameFast(ElementXML_Handle hXML, char const* tagName) ;
+EXPORT bool soarjson_SetTagNameFast(ElementJSON_Handle hJSON, char const* tagName) ;
 
 ////////////////////////////////////////////////////////////////
 //
 // Error reporting functions.
 //
 ////////////////////////////////////////////////////////////////
-EXPORT int soarxml_GetLastError(ElementXML_Handle hXML) ;
+EXPORT int soarjson_GetLastError(ElementJSON_Handle hJSON) ;
 
-EXPORT char const* soarxml_GetLastErrorDescription(ElementXML_Handle hXML) ;
+EXPORT char const* soarjson_GetLastErrorDescription(ElementJSON_Handle hJSON) ;
 
 ////////////////////////////////////////////////////////////////
 //
@@ -439,45 +412,45 @@ EXPORT char const* soarxml_GetLastErrorDescription(ElementXML_Handle hXML) ;
 ////////////////////////////////////////////////////////////////
 
 /*************************************************************
-* @brief Parse an XML document from a (long) string and return an ElementXML object
+* @brief Parse an JSON document from a (long) string and return an ElementJSON object
 *        for the document.
 *
-* @param  pString   The XML document stored in a string.
-* @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
+* @param  pString   The JSON document stored in a string.
+* @returns NULL if parsing failed, otherwise the ElementJSON representing JSON doc
 *************************************************************/
-EXPORT ElementXML_Handle soarxml_ParseXMLFromString(char const* pString) ;
+EXPORT ElementJSON_Handle soarjson_ParseJSONFromString(char const* pString) ;
 
 /*************************************************************
-* @brief Parse an XML document from a (long) string and return an ElementXML object
-*        for the document.  This version supports a sequence of XML strings which
+* @brief Parse an JSON document from a (long) string and return an ElementJSON object
+*        for the document.  This version supports a sequence of JSON strings which
 *        need to be parsed in order (rather than all being part of one document).
 *
-* @param  pString   The XML document stored in a string.
-* @param  startPos  We'll start parsing the current XML document from this position (0 == beginning of the string)
+* @param  pString   The JSON document stored in a string.
+* @param  startPos  We'll start parsing the current JSON document from this position (0 == beginning of the string)
 * @param  endPos    This value is filled in at the end of the parse and indicates where the parse ended. (if endPos == strlen(pString) we're done)
-* @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
+* @returns NULL if parsing failed, otherwise the ElementJSON representing JSON doc
 *************************************************************/
-EXPORT ElementXML_Handle soarxml_ParseXMLFromStringSequence(char const* pString, size_t startPos, size_t* endPos) ;
+EXPORT ElementJSON_Handle soarjson_ParseJSONFromStringSequence(char const* pString, size_t startPos, size_t* endPos) ;
 
 /*************************************************************
-* @brief Parse an XML document from a file and return an ElementXML object
+* @brief Parse an JSON document from a file and return an ElementJSON object
 *        for the document.
 *
 * @param  pFilename The file to load
-* @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
+* @returns NULL if parsing failed, otherwise the ElementJSON representing JSON doc
 *************************************************************/
-EXPORT ElementXML_Handle soarxml_ParseXMLFromFile(char const* pFilename) ;
+EXPORT ElementJSON_Handle soarjson_ParseJSONFromFile(char const* pFilename) ;
 
 /*************************************************************
 * @brief Returns an error message describing reason for error in last parse.
 *
 * Call here if the parsing functions return NULL to find out what went wrong.
 *************************************************************/
-EXPORT char const* soarxml_GetLastParseErrorDescription() ;
+EXPORT char const* soarjson_GetLastParseErrorDescription() ;
 
 
 #ifdef __cplusplus
 } // extern C
 #endif
 
-#endif  // ELEMENTXMLINTERFACE_H
+#endif  // ELEMENTJSONINTERFACE_H

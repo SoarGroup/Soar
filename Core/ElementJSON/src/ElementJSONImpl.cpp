@@ -1,29 +1,29 @@
 #include "portability.h"
 
 /////////////////////////////////////////////////////////////////
-// ElementXMLImpl class
+// ElementJSONImpl class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : July 2004
 //
-// This library is responsible for representing an XML document as an object (actually a tree of objects).
+// This library is responsible for representing an JSON document as an object (actually a tree of objects).
 //
-// A client can send a stream of XML data which this class parses to create the object representation of the XML.
+// A client can send a stream of JSON data which this class parses to create the object representation of the JSON.
 // Or the client can call to this library directly, creating the object representation without ever producing the actual
-// XML output (this is just for improved efficiency when the client and the Soar kernel are embedded in the same process).
+// JSON output (this is just for improved efficiency when the client and the Soar kernel are embedded in the same process).
 //
-// This class will not support the full capabilities of XML which is now a complex language.
+// This class will not support the full capabilities of JSON which is now a complex language.
 // It will support just the subset that is necessary for SML (Soar Markup Language) which is intended to be its primary customer.
 //
-// This class is closely related to the "ElementXML" class that a client would use.
+// This class is closely related to the "ElementJSON" class that a client would use.
 // But the implementation of that class resides in this class, which is in a different DLL.
 // (Passing a pointer to an object between DLLs is dangerous--both DLLs would need to have been
 //  built at the same time, with the same class header file etc.  Passing a pointer to an object
-//  that is owned by a separate DLL is safe, because that single DLL (ElementXML.dll in this case)
+//  that is owned by a separate DLL is safe, because that single DLL (ElementJSON.dll in this case)
 //  is the only one that really access the data in the class).
 /////////////////////////////////////////////////////////////////
 
-#include "ElementXMLImpl.h"
+#include "ElementJSONImpl.h"
 
 #include <algorithm>    // For "for_each"
 
@@ -53,7 +53,7 @@ size_t tickers[NUM_LOCKS];
 
 #endif // !HAVE_ATOMICS
 
-static inline void elementxml_atomic_init()
+static inline void elementjson_atomic_init()
 {
 #ifndef HAVE_ATOMICS
     if (!global_locks_initialized)
@@ -74,7 +74,7 @@ static inline void elementxml_atomic_init()
 #endif // !HAVE_ATOMICS
 }
 
-static inline long elementxml_atomic_inc(volatile long*  v)
+static inline long elementjson_atomic_inc(volatile long*  v)
 {
 #ifndef HAVE_ATOMICS
     uintptr_t i = reinterpret_cast<uintptr_t>(v);
@@ -119,7 +119,7 @@ static inline long elementxml_atomic_inc(volatile long*  v)
 #endif // !HAVE_ATOMICS
 }
 
-static inline long elementxml_atomic_dec(volatile long* v)
+static inline long elementjson_atomic_dec(volatile long* v)
 {
 #ifndef HAVE_ATOMICS
     uintptr_t i = reinterpret_cast<uintptr_t>(v);
@@ -155,7 +155,7 @@ static inline long elementxml_atomic_dec(volatile long* v)
 #endif // HAVE_ATOMICS
 }
 
-using namespace soarxml;
+using namespace soarjson;
 
 ////////////////////////////////////////////////////////////////
 //
@@ -180,9 +180,6 @@ static char const* kEndTagClose   = ">" ;
 static char const* kEquals        = "=" ;
 static char const* kSpace         = " " ;
 static char const* kQuote         = "\"" ;
-
-static char const* kCommentStartString  = "<!--" ;
-static char const* kCommentEndString    = "-->" ;
 
 static char const* kNewLine       = "\n" ;
 
@@ -209,9 +206,6 @@ static const int kLenSpace         = static_cast<int>(strlen(kSpace)) ;
 static const int kLenQuote         = static_cast<int>(strlen(kQuote)) ;
 
 static const int kLenEncodeHex     = static_cast<int>(strlen(kEncodeHex)) ;
-
-static const int kLenCommentStartString = static_cast<int>(strlen(kCommentStartString)) ;
-static const int kLenCommentEndString = static_cast<int>(strlen(kCommentEndString)) ;
 
 //inline static char const* ConvertSpecial(char base)
 //{
@@ -260,7 +254,7 @@ static char* BinaryToHexChars(char const* pBinaryBuffer, int length)
 {
     // The output will be exactly twice the length of the input
     // when we do simple hex conversion
-    char* pHexString = ElementXMLImpl::AllocateString(length * 2) ;
+    char* pHexString = ElementJSONImpl::AllocateString(length * 2) ;
     
     char* pHex = pHexString ;
     for (char const* pBinary = pBinaryBuffer ; length > 0 ; length--)
@@ -293,7 +287,7 @@ static void HexCharsToBinary(char const* pHexString, char*& pBinaryBuffer, int& 
     length = (stringLength + 1) / 2 ;
     
     // Create the buffer
-    pBinaryBuffer = ElementXMLImpl::AllocateString(length) ;
+    pBinaryBuffer = ElementJSONImpl::AllocateString(length) ;
     
     char* pBinary = pBinaryBuffer ;
     
@@ -306,10 +300,10 @@ static void HexCharsToBinary(char const* pHexString, char*& pBinaryBuffer, int& 
 
 /*************************************************************
 * @brief Counts how long a string will be when expanded as
-*        XML output.  That is allowing for replacing
+*        JSON output.  That is allowing for replacing
 *        "<" with &lt; etc.
 *************************************************************/
-inline static int CountXMLLength(xmlStringConst str)
+inline static int CountJSONLength(jsonStringConst str)
 {
     int len = 0 ;
     for (char const* p = str ; *p != 0 ; p++)
@@ -349,7 +343,7 @@ inline static char* AddString(char* pDest, char const* pAdd)
 *        Also, this version replaces special characters with
 *        their escape sequence.
 *************************************************************/
-inline static char* AddXMLString(char* pDest, char const* pAdd)
+inline static char* AddJSONString(char* pDest, char const* pAdd)
 {
     char ch = *pAdd++ ;
     while (ch != NUL)
@@ -383,9 +377,9 @@ inline static char* AddXMLString(char* pDest, char const* pAdd)
 
 
 /*************************************************************
-* @brief XML ids can only contain letters, numbers, . - and _.
+* @brief JSON ids can only contain letters, numbers, . - and _.
 *************************************************************/
-bool ElementXMLImpl::IsValidID(xmlStringConst str)
+bool ElementJSONImpl::IsValidID(jsonStringConst str)
 {
     for (char const* p = str ; *p != NUL ; p++)
     {
@@ -412,7 +406,7 @@ bool ElementXMLImpl::IsValidID(xmlStringConst str)
 /*************************************************************
 * @brief Default constructor.
 *************************************************************/
-ElementXMLImpl::ElementXMLImpl(void)
+ElementJSONImpl::ElementJSONImpl(void)
 {
     // Default to not using a CDATA section to store character data
     m_UseCData = false ;
@@ -423,7 +417,6 @@ ElementXMLImpl::ElementXMLImpl(void)
     
     m_TagName = NULL ;
     m_CharacterData = NULL ;
-    m_Comment = NULL ;
     m_ErrorCode = 0 ;
     m_pParent = NULL ;
     
@@ -434,23 +427,20 @@ ElementXMLImpl::ElementXMLImpl(void)
     // attributes substantially faster.
     m_StringsToDelete.reserve(20) ;
     
-    elementxml_atomic_init();
+    elementjson_atomic_init();
 }
 
 // Provide a static way to call release ref to get round an STL challenge.
-static inline void StaticReleaseRef(ElementXMLImpl* pXML)
+static inline void StaticReleaseRef(ElementJSONImpl* pJSON)
 {
-    pXML->ReleaseRef() ;
+    pJSON->ReleaseRef() ;
 }
 
 /*************************************************************
 * @brief Destructor.
 *************************************************************/
-ElementXMLImpl::~ElementXMLImpl(void)
+ElementJSONImpl::~ElementJSONImpl(void)
 {
-    // Delete the comment
-    DeleteString(m_Comment) ;
-    
     // Delete the character data
     DeleteString(m_CharacterData) ;
     
@@ -461,10 +451,10 @@ ElementXMLImpl::~ElementXMLImpl(void)
     
     // Replacing a simple walking of the list with a faster algorithmic method
     // for doing the same thing.
-    std::for_each(m_StringsToDelete.begin(), m_StringsToDelete.end(), &ElementXMLImpl::DeleteString) ;
+    std::for_each(m_StringsToDelete.begin(), m_StringsToDelete.end(), &ElementJSONImpl::DeleteString) ;
     
     /*
-    xmlStringListIter iter = m_StringsToDelete.begin() ;
+    jsonStringListIter iter = m_StringsToDelete.begin() ;
     
     while (iter != m_StringsToDelete.end())
     {
@@ -482,11 +472,11 @@ ElementXMLImpl::~ElementXMLImpl(void)
     // me how to use std::mem_fun_ref and friends to call directly to the member.
     std::for_each(m_Children.begin(), m_Children.end(), &StaticReleaseRef) ;
     /*
-    xmlListIter iterChildren = m_Children.begin() ;
+    jsonListIter iterChildren = m_Children.begin() ;
     
     while (iterChildren != m_Children.end())
     {
-        ElementXMLImpl* pChild = *iterChildren ;
+        ElementJSONImpl* pChild = *iterChildren ;
         iterChildren++ ;
     
         pChild->ReleaseRef() ;
@@ -501,9 +491,9 @@ ElementXMLImpl::~ElementXMLImpl(void)
 *
 *        Call ReleaseRef() on the returned object when you are done with it.
 *************************************************************/
-ElementXMLImpl* ElementXMLImpl::MakeCopy() const
+ElementJSONImpl* ElementJSONImpl::MakeCopy() const
 {
-    ElementXMLImpl* pCopy = new ElementXMLImpl() ;
+    ElementJSONImpl* pCopy = new ElementJSONImpl() ;
     
     pCopy->m_ErrorCode        = m_ErrorCode ;
     pCopy->m_UseCData         = m_UseCData ;
@@ -512,9 +502,6 @@ ElementXMLImpl* ElementXMLImpl::MakeCopy() const
     
     // Start with a null parent and override this later
     pCopy->m_pParent          = NULL ;
-    
-    // Copy the comment
-    pCopy->SetComment(m_Comment) ;
     
     // Copy the tag name
     pCopy->SetTagName(m_TagName) ;
@@ -530,19 +517,19 @@ ElementXMLImpl* ElementXMLImpl::MakeCopy() const
     }
     
     // Copy the attributes
-    for (xmlAttributeMapConstIter mapIter = m_AttributeMap.begin() ; mapIter != m_AttributeMap.end() ; mapIter++)
+    for (jsonAttributeMapConstIter mapIter = m_AttributeMap.begin() ; mapIter != m_AttributeMap.end() ; mapIter++)
     {
-        xmlStringConst att = mapIter->first ;
-        xmlStringConst val = mapIter->second ;
+        jsonStringConst att = mapIter->first ;
+        jsonStringConst val = mapIter->second ;
         
         pCopy->AddAttribute(att, val) ;
     }
     
     // Copy all of the children, overwriting the parent field for them so that everything connects up correctly.
-    for (xmlListConstIter iterChildren = m_Children.begin() ; iterChildren != m_Children.end() ; iterChildren++)
+    for (jsonListConstIter iterChildren = m_Children.begin() ; iterChildren != m_Children.end() ; iterChildren++)
     {
-        ElementXMLImpl* pChild = *iterChildren ;
-        ElementXMLImpl* pChildCopy = pChild->MakeCopy() ;
+        ElementJSONImpl* pChild = *iterChildren ;
+        ElementJSONImpl* pChildCopy = pChild->MakeCopy() ;
         pChildCopy->m_pParent = pCopy ;
         pCopy->AddChild(pChildCopy) ;
     }
@@ -554,10 +541,10 @@ ElementXMLImpl* ElementXMLImpl::MakeCopy() const
 * @brief Release our reference to this object, possibly
 *        causing it to be deleted.
 *************************************************************/
-int ElementXMLImpl::ReleaseRef()
+int ElementJSONImpl::ReleaseRef()
 {
     // Have to store this locally, before we call "delete this"
-    volatile long refCount = elementxml_atomic_dec(&m_RefCount);
+    volatile long refCount = elementjson_atomic_dec(&m_RefCount);
     
     if (refCount == 0)
     {
@@ -573,9 +560,9 @@ int ElementXMLImpl::ReleaseRef()
 *        releaseRef() one more time than addRef() has been
 *        called.
 *************************************************************/
-int ElementXMLImpl::AddRef()
+int ElementJSONImpl::AddRef()
 {
-    elementxml_atomic_inc(&m_RefCount);
+    elementjson_atomic_inc(&m_RefCount);
     
     return static_cast<int>(m_RefCount) ;
 }
@@ -583,7 +570,7 @@ int ElementXMLImpl::AddRef()
 /*************************************************************
 * @returns Reports the current reference count (must be > 0)
 *************************************************************/
-int ElementXMLImpl::GetRefCount()
+int ElementJSONImpl::GetRefCount()
 {
     return static_cast<int>(m_RefCount) ;
 }
@@ -597,13 +584,13 @@ int ElementXMLImpl::GetRefCount()
 /*************************************************************
 * @brief Set the tag name for this element.
 *
-* NOTE: The tagName becomes owned by this XML object and will be deleted
+* NOTE: The tagName becomes owned by this JSON object and will be deleted
 * when it is destroyed.  It should be allocated with either allocateString() or copyString().
 *
 * @param  tagName   Tag name can only contain letters, numbers, . - and _.
 * @returns  true if the tag name is valid.
 *************************************************************/
-bool ElementXMLImpl::SetTagName(char* tagName, bool copyName)
+bool ElementJSONImpl::SetTagName(char* tagName, bool copyName)
 {
     // Decide if we're taking ownership of this string or not.
     if (copyName)
@@ -627,7 +614,7 @@ bool ElementXMLImpl::SetTagName(char* tagName, bool copyName)
 * @param  tagName   Tag name can only contain letters, numbers, . - and _.
 * @returns  true if the tag name is valid.
 *************************************************************/
-bool ElementXMLImpl::SetTagNameFast(char const* tagName)
+bool ElementJSONImpl::SetTagNameFast(char const* tagName)
 {
 #ifdef DEBUG
     if (!IsValidID(tagName))
@@ -646,7 +633,7 @@ bool ElementXMLImpl::SetTagNameFast(char const* tagName)
 *
 * @returns The tag name.
 *************************************************************/
-char const* ElementXMLImpl::GetTagName() const
+char const* ElementJSONImpl::GetTagName() const
 {
     return m_TagName ;
 }
@@ -655,8 +642,8 @@ char const* ElementXMLImpl::GetTagName() const
 //
 // Child element functions.
 //
-// These allow a single ElementXMLImpl object to represent a complete
-// XML document through its children.
+// These allow a single ElementJSONImpl object to represent a complete
+// JSON document through its children.
 //
 ////////////////////////////////////////////////////////////////
 
@@ -665,7 +652,7 @@ char const* ElementXMLImpl::GetTagName() const
 *
 * @param  pChild    The child to add.  Will be released when the parent is destroyed.
 *************************************************************/
-void ElementXMLImpl::AddChild(ElementXMLImpl* pChild)
+void ElementJSONImpl::AddChild(ElementJSONImpl* pChild)
 {
     if (pChild == NULL)
     {
@@ -679,7 +666,7 @@ void ElementXMLImpl::AddChild(ElementXMLImpl* pChild)
 /*************************************************************
 * @brief Returns the number of children of this element.
 *************************************************************/
-int ElementXMLImpl::GetNumberChildren() const
+int ElementJSONImpl::GetNumberChildren() const
 {
     return static_cast<int>(this->m_Children.size()) ;
 }
@@ -692,7 +679,7 @@ int ElementXMLImpl::GetNumberChildren() const
 *
 * @param index  The 0-based index of the child to return.
 *************************************************************/
-ElementXMLImpl const* ElementXMLImpl::GetChild(int index) const
+ElementJSONImpl const* ElementJSONImpl::GetChild(int index) const
 {
     if (index < 0 || index >= static_cast<int>(m_Children.size()))
     {
@@ -710,7 +697,7 @@ ElementXMLImpl const* ElementXMLImpl::GetChild(int index) const
 *
 * @returns NULL if has no parent.
 *************************************************************/
-ElementXMLImpl const* ElementXMLImpl::GetParent() const
+ElementJSONImpl const* ElementJSONImpl::GetParent() const
 {
     return m_pParent ;
 }
@@ -734,7 +721,7 @@ ElementXMLImpl const* ElementXMLImpl::GetParent() const
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-bool ElementXMLImpl::AddAttribute(char* attributeName, char* attributeValue, bool copyName, bool copyValue)
+bool ElementJSONImpl::AddAttribute(char* attributeName, char* attributeValue, bool copyName, bool copyValue)
 {
     // Decide if we're taking ownership of this string or not.
     if (copyName)
@@ -762,7 +749,7 @@ bool ElementXMLImpl::AddAttribute(char* attributeName, char* attributeValue, boo
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-bool ElementXMLImpl::AddAttributeFast(char const* attributeName, char* attributeValue, bool copyValue)
+bool ElementJSONImpl::AddAttributeFast(char const* attributeName, char* attributeValue, bool copyValue)
 {
     // Decide if we're taking ownership of this string or not.
     if (copyValue)
@@ -797,7 +784,7 @@ bool ElementXMLImpl::AddAttributeFast(char const* attributeName, char* attribute
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-bool ElementXMLImpl::AddAttributeFastFast(char const* attributeName, char const* attributeValue)
+bool ElementJSONImpl::AddAttributeFastFast(char const* attributeName, char const* attributeValue)
 {
 #ifdef DEBUG
     // Run this test after we've added it to list of strings to delete,
@@ -816,7 +803,7 @@ bool ElementXMLImpl::AddAttributeFastFast(char const* attributeName, char const*
 /*************************************************************
 * @brief Get the number of attributes attached to this element.
 *************************************************************/
-int ElementXMLImpl::GetNumberAttributes() const
+int ElementJSONImpl::GetNumberAttributes() const
 {
     return static_cast<int>(m_AttributeMap.size()) ;
 }
@@ -828,15 +815,15 @@ int ElementXMLImpl::GetNumberAttributes() const
 * @param index  The 0-based index of the attribute to return.
 * @returns NULL if index is out of range.
 *************************************************************/
-const char* ElementXMLImpl::GetAttributeName(int index) const
+const char* ElementJSONImpl::GetAttributeName(int index) const
 {
-    xmlAttributeMapConstIter mapIter = m_AttributeMap.begin() ;
+    jsonAttributeMapConstIter mapIter = m_AttributeMap.begin() ;
     
     while (mapIter != m_AttributeMap.end())
     {
         if (index == 0)
         {
-            xmlStringConst att = mapIter->first ;
+            jsonStringConst att = mapIter->first ;
             
             return att ;
         }
@@ -853,15 +840,15 @@ const char* ElementXMLImpl::GetAttributeName(int index) const
 *
 * @param index  The 0-based index of the attribute to return.
 *************************************************************/
-const char* ElementXMLImpl::GetAttributeValue(int index) const
+const char* ElementJSONImpl::GetAttributeValue(int index) const
 {
-    xmlAttributeMapConstIter mapIter = m_AttributeMap.begin() ;
+    jsonAttributeMapConstIter mapIter = m_AttributeMap.begin() ;
     
     while (mapIter != m_AttributeMap.end())
     {
         if (index == 0)
         {
-            xmlStringConst val = mapIter->second ;
+            jsonStringConst val = mapIter->second ;
             
             return val ;
         }
@@ -879,14 +866,14 @@ const char* ElementXMLImpl::GetAttributeValue(int index) const
 * @param attName    The name of the attribute to look up.
 * @returns The value of the named attribute (or null if this attribute doesn't exist).
 *************************************************************/
-const char* ElementXMLImpl::GetAttribute(const char* attName) const
+const char* ElementJSONImpl::GetAttribute(const char* attName) const
 {
     // Note: We can't use the apparently simpler "return m_AttributeMap[attName]" for two reasons.
     // First, this will create an object in the map if one didn't exist before (which we don't want) and
     // Second, there is no const version of [] so we can't do this anyway (it's not const because of the first behavior...)
     
     // Use find to locate the object not [].
-    xmlAttributeMapConstIter iter = m_AttributeMap.find(attName) ;
+    jsonAttributeMapConstIter iter = m_AttributeMap.find(attName) ;
     
     if (iter == m_AttributeMap.end())
     {
@@ -894,38 +881,6 @@ const char* ElementXMLImpl::GetAttribute(const char* attName) const
     }
     
     return iter->second ;
-}
-
-/*************************************************************
-* @brief Associate a comment with this XML element.
-*        The comment is written in front of the element when stored/parsed.
-*
-* This type of commenting isn't completely general.  You can't have multiple
-* comment blocks before an XML element, nor can you have trailing comment blocks
-* where there is no XML element following the comment.  However, both of these are
-* unusual situations and would require a significantly more complex API to support
-* so it seems unnecessary.
-*
-* @param Comment    The comment string.
-*************************************************************/
-bool ElementXMLImpl::SetComment(const char* comment)
-{
-    m_Comment = CopyString(comment) ;
-    return true ;
-}
-
-/*************************************************************
-* @brief Returns the comment for this element.
-*
-* @returns The comment string for this element (or zero-length string if there is none)
-*************************************************************/
-char const* ElementXMLImpl::GetComment()
-{
-    if (m_Comment)
-    {
-        return m_Comment;
-    }
-    return "";
 }
 
 ////////////////////////////////////////////////////////////////
@@ -938,10 +893,10 @@ char const* ElementXMLImpl::GetComment()
 * @brief Set the character data for this element.
 *
 * @param characterData  The character data passed in should *not* replace special characters such as < and &
-*                       with the XML escape sequences &lt; etc.
-*                       These values will be converted when the XML stream is created.
+*                       with the JSON escape sequences &lt; etc.
+*                       These values will be converted when the JSON stream is created.
 *************************************************************/
-void ElementXMLImpl::SetCharacterData(char* characterData, bool copyData)
+void ElementJSONImpl::SetCharacterData(char* characterData, bool copyData)
 {
     // Decide if we're taking ownership of this string or not.
     if (copyData)
@@ -958,7 +913,7 @@ void ElementXMLImpl::SetCharacterData(char* characterData, bool copyData)
     this->m_DataIsBinary = false ;
 }
 
-void ElementXMLImpl::SetBinaryCharacterData(char* characterData, int length, bool copyData)
+void ElementJSONImpl::SetBinaryCharacterData(char* characterData, int length, bool copyData)
 {
     // Decide if we're taking ownership of this string or not.
     if (copyData)
@@ -980,10 +935,10 @@ void ElementXMLImpl::SetBinaryCharacterData(char* characterData, int length, boo
 * @brief Get the character data for this element.
 *
 * @returns  Returns the character data for this element.  If the element has no character data, returns zero-length string.
-*           The character data returned will not include any XML escape sequences (e.g. &lt;).
+*           The character data returned will not include any JSON escape sequences (e.g. &lt;).
 *           It will include the original special characters (e.g. "<").
 *************************************************************/
-char const* ElementXMLImpl::GetCharacterData() const
+char const* ElementJSONImpl::GetCharacterData() const
 {
     if (this->m_CharacterData)
     {
@@ -996,7 +951,7 @@ char const* ElementXMLImpl::GetCharacterData() const
 * @brief Returns true if the character data should be treated as a binary buffer
 *        rather than a null-terminated character string.
 *************************************************************/
-bool ElementXMLImpl::IsCharacterDataBinary() const
+bool ElementJSONImpl::IsCharacterDataBinary() const
 {
     return this->m_DataIsBinary ;
 }
@@ -1004,7 +959,7 @@ bool ElementXMLImpl::IsCharacterDataBinary() const
 /*************************************************************
 * @brief Converts a character data buffer into binary data.
 *
-* If binary data is stored in an XML file it will encoded in
+* If binary data is stored in an JSON file it will encoded in
 * some manner (e.g. as a string of hex digits).
 * When read back in, we may need to indicate that this particular
 * set of character data is encoded binary (converting it back from hex to binary).
@@ -1018,7 +973,7 @@ bool ElementXMLImpl::IsCharacterDataBinary() const
 *
 * @returns True if buffer is binary after conversion.
 *************************************************************/
-bool ElementXMLImpl::ConvertCharacterDataToBinary()
+bool ElementJSONImpl::ConvertCharacterDataToBinary()
 {
     if (!m_DataIsBinary && m_CharacterData)
     {
@@ -1037,9 +992,9 @@ bool ElementXMLImpl::ConvertCharacterDataToBinary()
 /*************************************************************
 * @brief Converts the stored binary data into a string of
 *        characters (hex for now, or base64 later)
-*        which can be safely stored in XML text.
+*        which can be safely stored in JSON text.
 *************************************************************/
-bool ElementXMLImpl::ConvertBinaryDataToCharacters()
+bool ElementJSONImpl::ConvertBinaryDataToCharacters()
 {
     if (m_DataIsBinary && m_CharacterData)
     {
@@ -1058,7 +1013,7 @@ bool ElementXMLImpl::ConvertBinaryDataToCharacters()
 * If the data is a binary buffer this is the size of that buffer.
 * If the data is a null terminated string this is the length of the string + 1 (for the null).
 *************************************************************/
-int  ElementXMLImpl::GetCharacterDataLength() const
+int  ElementJSONImpl::GetCharacterDataLength() const
 {
     if (!m_CharacterData)
     {
@@ -1081,15 +1036,15 @@ int  ElementXMLImpl::GetCharacterDataLength() const
 *
 * @param useCData   true if this elements character data should be stored in a CDATA section.
 *************************************************************/
-void ElementXMLImpl::SetUseCData(bool useCData)
+void ElementJSONImpl::SetUseCData(bool useCData)
 {
     this->m_UseCData = useCData ;
 }
 
 /*************************************************************
-* @brief Returns true if this element's character data should be stored in a CDATA section when streamed to XML.
+* @brief Returns true if this element's character data should be stored in a CDATA section when streamed to JSON.
 *************************************************************/
-bool ElementXMLImpl::GetUseCData() const
+bool ElementJSONImpl::GetUseCData() const
 {
     return this->m_UseCData ;
 }
@@ -1101,23 +1056,23 @@ bool ElementXMLImpl::GetUseCData() const
 ////////////////////////////////////////////////////////////////
 
 /*************************************************************
-* @brief Converts the XML object to a string.
+* @brief Converts the JSON object to a string.
 *
-* @param includeChildren    Includes all children in the XML output.
+* @param includeChildren    Includes all children in the JSON output.
 * @param insertNewlines     Add newlines to space out the tags to be more human-readable
 *
 * @returns The string form of the object.  Caller must delete with DeleteString().
 *************************************************************/
-char* ElementXMLImpl::GenerateXMLString(bool includeChildren, bool insertNewLines) const
+char* ElementJSONImpl::GenerateJSONString(bool includeChildren, bool insertNewLines) const
 {
     // Work out how much space we will need
-    int len = DetermineXMLStringLength(0, includeChildren, insertNewLines) ;
+    int len = DetermineJSONStringLength(0, includeChildren, insertNewLines) ;
     
     // Allocate a string that big
     char* pStr = AllocateString(len) ;
     
     // Fill it in
-    char* pEnd = GenerateXMLString(0, pStr, len, includeChildren, insertNewLines) ;
+    char* pEnd = GenerateJSONString(0, pStr, len, includeChildren, insertNewLines) ;
     
     // Terminate the string
     *pEnd = NUL ;
@@ -1129,19 +1084,13 @@ char* ElementXMLImpl::GenerateXMLString(bool includeChildren, bool insertNewLine
 /*************************************************************
 * @brief Returns the length of string needed to represent this object.
 *
-* @param depth              How deep into the XML tree we are (can be used to indent)
-* @param includeChildren    Includes all children in the XML output.
+* @param depth              How deep into the JSON tree we are (can be used to indent)
+* @param includeChildren    Includes all children in the JSON output.
 * @param insertNewlines     Add newlines to space out the tags to be more human-readable
 *************************************************************/
-int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bool insertNewLines) const
+int ElementJSONImpl::DetermineJSONStringLength(int depth, bool includeChildren, bool insertNewLines) const
 {
     int len = 0 ;
-    
-    // The comment
-    if (m_Comment)
-    {
-        len += kLenCommentStartString + static_cast<int>(strlen(m_Comment)) + kLenCommentEndString ;
-    }
     
     if (insertNewLines)
     {
@@ -1172,22 +1121,22 @@ int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bo
         }
         else
         {
-            len += CountXMLLength(m_CharacterData) ;
+            len += CountJSONLength(m_CharacterData) ;
         }
     }
     
-    xmlAttributeMapConstIter mapIter = m_AttributeMap.begin() ;
+    jsonAttributeMapConstIter mapIter = m_AttributeMap.begin() ;
     
     while (mapIter != m_AttributeMap.end())
     {
-        xmlStringConst att = mapIter->first ;
-        xmlStringConst val = mapIter->second ;
+        jsonStringConst att = mapIter->first ;
+        jsonStringConst val = mapIter->second ;
         
         // The attribute name is an identifier and can't contain special chars
         len += kLenSpace + static_cast<int>(strlen(att)) + kLenEquals ;
         
         // The value can contain special chars
-        len += kLenQuote + CountXMLLength(val) + kLenQuote ;
+        len += kLenQuote + CountJSONLength(val) + kLenQuote ;
         
         mapIter++ ;
     }
@@ -1206,12 +1155,12 @@ int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bo
     
     if (includeChildren)
     {
-        xmlListConstIter iter = m_Children.begin() ;
+        jsonListConstIter iter = m_Children.begin() ;
         
         while (iter != m_Children.end())
         {
-            ElementXMLImpl const* pChild = *iter ;
-            len += pChild->DetermineXMLStringLength(depth + 1, includeChildren, insertNewLines) ;
+            ElementJSONImpl const* pChild = *iter ;
+            len += pChild->DetermineJSONStringLength(depth + 1, includeChildren, insertNewLines) ;
             
             iter++ ;
         }
@@ -1238,29 +1187,21 @@ int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bo
 }
 
 /*************************************************************
-* @brief Converts the XML object to a string.
+* @brief Converts the JSON object to a string.
 *
-* @param depth              How deep we are into the XML tree
-* @param pStr               The XML object is stored in this string.
+* @param depth              How deep we are into the JSON tree
+* @param pStr               The JSON object is stored in this string.
 * @param maxLength          The max length of the string
-* @param includeChildren    Includes all children in the XML output.
+* @param includeChildren    Includes all children in the JSON output.
 * @param insertNewlines     Add newlines to space out the tags to be more human-readable
 * @returns Pointer to the end of the string.
 *************************************************************/
-char* ElementXMLImpl::GenerateXMLString(int depth, char* pStart, int maxLength, bool includeChildren, bool insertNewLines) const
+char* ElementJSONImpl::GenerateJSONString(int depth, char* pStart, int maxLength, bool includeChildren, bool insertNewLines) const
 {
     // It's useful for debugging to keep pStart around so we can
     // see the string being formed.
     // pStr will walk down the available memory.
     char* pStr = pStart ;
-    
-    // Add the comment
-    if (m_Comment)
-    {
-        pStr = AddString(pStr, kCommentStartString) ;
-        pStr = AddString(pStr, m_Comment) ;
-        pStr = AddString(pStr, kCommentEndString) ;
-    }
     
     if (insertNewLines)
     {
@@ -1280,12 +1221,12 @@ char* ElementXMLImpl::GenerateXMLString(int depth, char* pStart, int maxLength, 
     }
     
     // The attributes
-    xmlAttributeMapConstIter mapIter = m_AttributeMap.begin() ;
+    jsonAttributeMapConstIter mapIter = m_AttributeMap.begin() ;
     
     while (mapIter != m_AttributeMap.end())
     {
-        xmlStringConst att = mapIter->first ;
-        xmlStringConst val = mapIter->second ;
+        jsonStringConst att = mapIter->first ;
+        jsonStringConst val = mapIter->second ;
         
         // The attribute name is an identifier and can't contain special chars
         pStr = AddString(pStr, kSpace) ;
@@ -1294,14 +1235,14 @@ char* ElementXMLImpl::GenerateXMLString(int depth, char* pStart, int maxLength, 
         
         // The value can contain special chars
         pStr = AddString(pStr, kQuote) ;
-        pStr = AddXMLString(pStr, val) ;
+        pStr = AddJSONString(pStr, val) ;
         pStr = AddString(pStr, kQuote) ;
         
         mapIter++ ;
     }
     
     // We use a special attribute to show this character
-    // data is encoded binary data.  Alas there's no real XML standard for this.
+    // data is encoded binary data.  Alas there's no real JSON standard for this.
     if (m_DataIsBinary && m_CharacterData)
     {
         pStr = AddString(pStr, kSpace) ;
@@ -1329,7 +1270,7 @@ char* ElementXMLImpl::GenerateXMLString(int depth, char* pStart, int maxLength, 
         }
         else
         {
-            pStr = AddXMLString(pStr, m_CharacterData) ;
+            pStr = AddJSONString(pStr, m_CharacterData) ;
         }
     }
     
@@ -1347,12 +1288,12 @@ char* ElementXMLImpl::GenerateXMLString(int depth, char* pStart, int maxLength, 
     
     if (includeChildren)
     {
-        xmlListConstIter iter = m_Children.begin() ;
+        jsonListConstIter iter = m_Children.begin() ;
         
         while (iter != m_Children.end())
         {
-            ElementXMLImpl const* pChild = *iter ;
-            pStr = pChild->GenerateXMLString(depth + 1, pStr, maxLength, includeChildren, insertNewLines) ;
+            ElementJSONImpl const* pChild = *iter ;
+            pStr = pChild->GenerateJSONString(depth + 1, pStr, maxLength, includeChildren, insertNewLines) ;
             
             iter++ ;
         }
@@ -1391,7 +1332,7 @@ char* ElementXMLImpl::GenerateXMLString(int depth, char* pStart, int maxLength, 
 * @param string     The buffer to copy.  Passing NULL is valid and returns NULL.
 * @param length     The length of the buffer to copy (this exact length will be allocated--no trailing NULL is added).
 *************************************************************/
-char* ElementXMLImpl::CopyBuffer(char const* original, int length)
+char* ElementJSONImpl::CopyBuffer(char const* original, int length)
 {
     if (original == NULL || length <= 0)
     {
@@ -1399,7 +1340,7 @@ char* ElementXMLImpl::CopyBuffer(char const* original, int length)
     }
     
     // This will allocate length bytes
-    xmlString str = AllocateString(length - 1) ;
+    jsonString str = AllocateString(length - 1) ;
     
     char* q = str ;
     for (const char* p = original ; length > 0 ; length--)
