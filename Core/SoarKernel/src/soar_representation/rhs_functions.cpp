@@ -54,7 +54,7 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
-#include "json.h"
+#include "xml.h"
 #include "json.h"
 
 #include "ElementXMLInterface.h" // TODO: There was a comment in json.h that the Kernel shouldn't use soarjson functions. Not sure what other json parsing functions are available?
@@ -219,7 +219,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
             thisAgent->outputManager->printa(thisAgent, string);
         }
 
-				json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+        xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 				json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 
         free_growable_string(thisAgent, gs);
@@ -262,7 +262,7 @@ Symbol* trace_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
                 thisAgent->outputManager->printa(thisAgent, string);
             }
 
-						json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+            xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 						json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 
             free_growable_string(thisAgent, gs);
@@ -305,7 +305,7 @@ Symbol* log_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
                 thisAgent->outputManager->printa(thisAgent, string);
             }
 
-						json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+            xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 						json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 
             free_growable_string(thisAgent, gs);
@@ -993,27 +993,27 @@ Symbol* wait_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 /* --------------------------------------------------------------------
                                 Xml To WME
 
-	Auto converts json strings into WME structures
+	Auto converts xml strings into WME structures
 -------------------------------------------------------------------- */
 
 // Forward declare
-Symbol* jsontowme_from_json_internal(agent* thisAgent, ElementXML_Handle element, Symbol* targetId, LinkMap& linkMap, Links& links);
+Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, Symbol* targetId, LinkMap& linkMap, Links& links);
 
-Symbol* jsontowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap& linkMap, Links& links)
+Symbol* xmltowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap& linkMap, Links& links)
 {
 	Symbol* result = NULL;
 
-	const char* rawType = soarjson_GetAttribute(element, "type");
+	const char* rawType = soarxml_GetAttribute(element, "type");
 	std::string type = rawType == NULL ? std::string("") : std::string(rawType);
 
-	if (type.empty() && soarjson_GetNumberChildren(element) > 0)
+	if (type.empty() && soarxml_GetNumberChildren(element) > 0)
 	{
-		return jsontowme_from_json_internal(thisAgent, element, NULL, linkMap, links);
+		return xmltowme_from_xml_internal(thisAgent, element, NULL, linkMap, links);
 	}
 
-	const char* value = soarjson_GetAttribute(element, "value");
+	const char* value = soarxml_GetAttribute(element, "value");
 	if (value == NULL)
-		value = soarjson_GetCharacterData(element);
+		value = soarxml_GetCharacterData(element);
 
 	if (value == NULL)
 		result = thisAgent->symbolManager->make_str_constant("");
@@ -1050,20 +1050,20 @@ Symbol* jsontowme_get_value(agent* thisAgent, ElementXML_Handle element, LinkMap
 	return result;
 }
 
-Symbol* jsontowme_from_json_internal(agent* thisAgent, ElementXML_Handle element, Symbol* targetId, LinkMap& linkMap, Links& links)
+Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, Symbol* targetId, LinkMap& linkMap, Links& links)
 {
 	if (targetId == NULL)
 	{
-		const char* tag = soarjson_GetTagName(element);
+		const char* tag = soarxml_GetTagName(element);
 		targetId = thisAgent->symbolManager->make_new_identifier(*tag, 0, NIL);
 	}
 
-	int numChildren = soarjson_GetNumberChildren(element);
+	int numChildren = soarxml_GetNumberChildren(element);
 	for (int i = 0; i < numChildren; i++)
 	{
-		ElementXML_Handle child = soarjson_GetChild(element, i);
-		const char* linkTo = soarjson_GetAttribute(child, "link");
-		const char* tag = soarjson_GetTagName(child);
+		ElementXML_Handle child = soarxml_GetChild(element, i);
+		const char* linkTo = soarxml_GetAttribute(child, "link");
+		const char* tag = soarxml_GetTagName(child);
 
 		if (tag == NULL)
 			continue;	// Warning null tag on node
@@ -1072,11 +1072,11 @@ Symbol* jsontowme_from_json_internal(agent* thisAgent, ElementXML_Handle element
 
 		if (linkTo == NULL)
 		{
-			Symbol* value = jsontowme_get_value(thisAgent, child, linkMap, links);
+			Symbol* value = xmltowme_get_value(thisAgent, child, linkMap, links);
 
 			// add wme
 			wme* w = soar_module::add_module_wme(thisAgent, targetId, attribute, value, false);
-			const char* link = soarjson_GetAttribute(child, "link-id");
+			const char* link = soarxml_GetAttribute(child, "link-id");
 			if (link != NULL)
 			{
 				linkMap.insert(std::make_pair(std::string(link), value));
@@ -1096,11 +1096,11 @@ Symbol* jsontowme_from_json_internal(agent* thisAgent, ElementXML_Handle element
 	return targetId;
 }
 
-Symbol* jsontowme_from_json(agent* thisAgent, ElementXML_Handle element, Symbol* targetId)
+Symbol* xmltowme_from_xml(agent* thisAgent, ElementXML_Handle element, Symbol* targetId)
 {
 	LinkMap linkMap;
 	Links links;
-	Symbol* result = jsontowme_from_json_internal(thisAgent, element, targetId, linkMap, links);
+	Symbol* result = xmltowme_from_xml_internal(thisAgent, element, targetId, linkMap, links);
 
 	for (Link link : links)
 	{
@@ -1117,20 +1117,20 @@ Symbol* jsontowme_from_json(agent* thisAgent, ElementXML_Handle element, Symbol*
 	return result;
 }
 
-Symbol* jsontowme_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+Symbol* xmltowme_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
 	// No arguments
 	if (args == NIL)
 		return NIL;
 
-	Symbol* json = static_cast<Symbol*>(args->first);
-	ElementXML_Handle handle = soarjson_ParseXMLFromString(json->to_string());
+	Symbol* xml = static_cast<Symbol*>(args->first);
+	ElementXML_Handle handle = soarxml_ParseXMLFromString(xml->to_string());
 
 	// Failed to parse
 	if (handle == NULL)
 		return NIL;
 
-	return jsontowme_from_json(thisAgent, handle, NULL);
+	return xmltowme_from_xml(thisAgent, handle, NULL);
 }
 
 /* --------------------------------------------------------------------
@@ -1319,7 +1319,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
 
 		// TODO: Not sure about some of the final params in this call?
-		add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("from-st-json"), jsontowme_rhs_function_code, 1, true, false, 0, false);
+		add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("from-st-xml"), xmltowme_rhs_function_code, 1, true, false, 0, false);
 		add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("from-st-json"), jsontowme_rhs_function_code, 1, true, false, 0, false);
 
     /* EBC Manager caches these rhs functions since it may re-use them many times */
@@ -1353,8 +1353,8 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("accept"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("deep-copy"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("ifeq"));
+	remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("from-st-xml"));
 	remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("from-st-json"));
-
     remove_built_in_rhs_math_functions(thisAgent);
 
 }
