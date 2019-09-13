@@ -511,9 +511,10 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
             temp_el->forget_cycle = static_cast< wma_d_cycle >(-1);
 
             w->wma_decay_el = temp_el;
-            if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
-            {
-                thisAgent->SMem->smem_wmas->emplace(w->id->id->LTI_ID,temp_el);
+            if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID)
+            {//Quick hack edits to smem wma stuff. all about if the value of a wme is an instance of an LTI now. problem is, the power was blinking, so no time to debug before pushing because I want peter to test it before power is out for good today.
+                //Thunderstorms are fun.
+                thisAgent->SMem->smem_wmas->emplace(w->value->id->LTI_ID,temp_el);
             }
 
             if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
@@ -699,10 +700,10 @@ void wma_deactivate_element(agent* thisAgent, wme* w)
             }
 
             temp_el->just_removed = true;
-            if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
+            if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID)
             {
                 thisAgent->SMem->timers->spreading_wma_2->start();
-                auto wmas = thisAgent->SMem->smem_wmas->equal_range(w->id->id->LTI_ID);
+                auto wmas = thisAgent->SMem->smem_wmas->equal_range(w->value->id->LTI_ID);
                 for (auto wma = wmas.first; wma != wmas.second; ++wma)
                 {
                     if (wma->second == w->wma_decay_el)
