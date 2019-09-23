@@ -14,7 +14,7 @@
 #include "working_memory_activation.h"
 #include "working_memory.h"
 
-double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n, uint64_t activations_first)
+double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n, uint64_t activations_first, command_line_activation_metadata* acts)
 {
     double sum = 0.0;
     double d = settings->base_decay->get_value();
@@ -88,7 +88,33 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     if (recent_time != 0 && settings->base_inhibition->get_value() == on )// && smem_in_wmem->find(pLTI_ID) != smem_in_wmem->end())
     {
         inhibition_odds = pow(1.0+pow(recent_time/inhibition_time_scale,-inhibition_decay),-1.0);
+        if (acts != NULL)
+        {
+            if (sum > 0)
+            {
+                acts->recipient_decomposition_list.find(pLTI_ID)->second.base_level = log(sum/(1.0+sum));
+                acts->recipient_decomposition_list.find(pLTI_ID)->second.base_inhibition = log(inhibition_odds/(1.0+inhibition_odds));
+                acts->recipient_decomposition_list.find(pLTI_ID)->second.base_level_total = log(sum/(1.0+sum)) + log(inhibition_odds/(1.0+inhibition_odds));
+            }
+            else
+            {
+                acts->recipient_decomposition_list.find(pLTI_ID)->second.base_level = SMEM_ACT_LOW;
+                acts->recipient_decomposition_list.find(pLTI_ID)->second.base_inhibition = SMEM_ACT_LOW;
+            }
+        }
         return ((sum > 0) ? (log(sum/(1.0+sum)) + log(inhibition_odds/(1.0+inhibition_odds))) : (SMEM_ACT_LOW));
+    }
+    if (acts != NULL)
+    {
+        if (sum > 0)
+        {
+            acts->recipient_decomposition_list.find(pLTI_ID)->second.base_level = log(sum/(1.0+sum));
+            acts->recipient_decomposition_list.find(pLTI_ID)->second.base_level_total = log(sum/(1.0+sum));
+        }
+        else
+        {
+            acts->recipient_decomposition_list.find(pLTI_ID)->second.base_level = SMEM_ACT_LOW;
+        }
     }
     return ((sum > 0) ? (log(sum/(1.0+sum))) : (SMEM_ACT_LOW));//doing log prob instead of log odds.
 }
@@ -98,12 +124,15 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
 //       just when storing a new chunk (default is a
 //       big number that should never come up naturally
 //       and if it does, satisfies thresholding behavior).
-double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges, double touches, bool increment_timer)
+double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges, double touches, bool increment_timer, command_line_activation_metadata* acts)
 {
     ////////////////////////////////////////////////////////////////////////////
     timers->act->start();
     ////////////////////////////////////////////////////////////////////////////
-
+    if (acts!= NULL && acts->recipient_decomposition_list.find(pLTI_ID) == acts->recipient_decomposition_list.end())
+    {
+        acts->recipient_decomposition_list.emplace(std::make_pair(pLTI_ID,activation_decomposition{pLTI_ID}));
+    }
     int64_t time_now;
     bool prohibited = false;
 
@@ -261,7 +290,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                     SQL->history_add->execute(soar_module::op_reinit);
                 }
             }
-            new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (touches) : (0)), prev_access_1);
+            new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (touches) : (0)), prev_access_1, acts);
         }
         else
         {
@@ -273,7 +302,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                 SQL->history_push->execute(soar_module::op_reinit);
             }
 
-            new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + (add_access ? touches : 0), prev_access_1);
+            new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + (add_access ? touches : 0), prev_access_1, acts); // in hindsight, "acts" should be passed indirectly only as part of thisAgent and then modified when necessary. not as this kind of argument.
         }
     }
     else if (act_mode == smem_param_container::act_none)
@@ -330,6 +359,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     {
         new_base = new_activation;
     }
+
     if (already_in_spread_table)
     {
         double offset = settings->spreading_baseline->get_value()/baseline_denom;
@@ -776,7 +806,7 @@ inline soar_module::sqlite_statement* SMem_Manager::setup_manual_web_crawl(smem_
     return q;
 }
 
-void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set)
+void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set, command_line_activation_metadata* acts)
 {
 
     /*
@@ -1097,8 +1127,16 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         timers->spreading_7_2->start();
         ////////////////////////////////////////////////////////////////////////////
         calc_current_spread->bind_int(1,(*candidate));
+        if (acts!= NULL && acts->recipient_decomposition_list.find(*candidate) == acts->recipient_decomposition_list.end())
+        {
+            acts->recipient_decomposition_list.emplace(std::make_pair(*candidate,activation_decomposition{*candidate}));
+        }
         while (calc_current_spread->execute() == soar_module::row && calc_current_spread->column_double(2))
         {
+            if (acts != NULL)
+            {
+                acts->recipient_decomposition_list.find(*candidate)->second.contributing_sources.insert(calc_current_spread->column_int(4));
+            }
             //First, I need to get the existing info for this lti_id.
             bool already_in_spread_table = false;
 
@@ -1179,10 +1217,33 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 auto wmas = smem_wmas->equal_range(calc_current_spread->column_int(4));
                 double pre_logd_wma = 0;
                 bool used_wma = false;
+
+                //Within this code block, I will have access to WMA elements associated with a given LTI.
+                //The WMA decay elements themselves do have a pointer to the WME they are associated with. This means that I can identify the value (and accordingly the instance id of the LTI)
+                //from these WME decay elements. Here, I can create a map that logs the touch history associated with each instance. This will only be done if the arguments passed to this
+                //function indicate that we are in a "smem -q" command. (too slow).
+                bool has_before = false;
+                std::set<Symbol*> visited_set;
+                if (acts != NULL)
+                {
+                    has_before = acts->contributing_sources_to_instances.find(calc_current_spread->column_int(4)) != acts->contributing_sources_to_instances.end();
+                }
                 if (thisAgent->SMem->settings->spreading_wma_source->get_value() == true)
                 {
                     for (auto wma = wmas.first; wma != wmas.second; ++wma)
                     {
+                        if (acts != NULL)
+                        {
+                            if (!has_before)
+                            {
+                                if (visited_set.find(wma->second->this_wme->value->id) == visited_set.end())
+                                {
+                                    acts->contributing_sources_to_instances.insert({calc_current_spread->column_int(4) , wma->second->this_wme->value->id});
+                                    visited_set.insert(wma->second->this_wme->value->id);
+                                }
+                                acts->instances_to_WMA_decay_elements.insert({wma->second->this_wme->value->id , wma->second});
+                            }
+                        }
                         used_wma = true;
                         // Now that we have a wma decay element, we loop over its history and increment all of the fields for our fake decay element.
                         total_element.num_references += wma->second->touches.total_references;
@@ -1230,6 +1291,14 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     }
                 }
                 {
+                    if (acts != NULL)
+                    {
+                        if (acts->contributing_sources_to_WMA_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_WMA_factors.end())
+                        {
+                            acts->contributing_sources_to_WMA_factors[calc_current_spread->column_int(4)] = wma_multiplicative_factor;
+                        }
+                        acts->recipient_decomposition_list.find(*candidate)->second.source_to_network_factor.emplace(std::make_pair(calc_current_spread->column_int(4),((double)(calc_current_spread->column_double(2))/(calc_current_spread->column_double(1)))));
+                    }
                     raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));
                 }
                 //offset = (settings->spreading_baseline->get_value())/(calc_spread->column_double(1));
@@ -1247,7 +1316,12 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 uint64_t num_edges = SQL->act_lti_child_ct_get->column_int(0);
 
                 SQL->act_lti_child_ct_get->reinitialize();
+
                 double modified_spread = (log(spread)-log(offset));
+                if (acts != NULL)
+                {
+                    acts->recipient_decomposition_list.find(*candidate)->second.spread_total = modified_spread;
+                }
                 double new_base;
                 if (static_cast<double>(prev_base)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(prev_base) == 0)
                 {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.

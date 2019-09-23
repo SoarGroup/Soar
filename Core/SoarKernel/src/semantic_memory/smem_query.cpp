@@ -392,7 +392,7 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
     return result;
 }
 
-uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type, std::list<double>* acts)
+uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type, command_line_activation_metadata* acts)
 {
     //Under the philosophy that activation only matters in the service of a query, we defer processing prohibits until now..
     id_set::iterator prohibited_lti_p;
@@ -537,7 +537,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
                 std::set<uint64_t> to_update;
                 int num_answers = 0;
                 while (q->execute() == soar_module::row && num_answers < 400)
-                {//TODO: The 400 there should actually reflect the size of the context's recipients.
+                {//TODO: The 400 there should actually reflect the size of the context's recipients. It's a measure of which is more constraining.
                     num_answers++;
                     to_update.insert(q->column_int(0));
                 }
@@ -545,12 +545,14 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
                 timers->spreading->stop();
                 if (num_answers >= 400)
                 {
-                    calc_spread(&to_update, true, &cand_set);
-                }
+                    calc_spread(&to_update, true, &cand_set, acts);
+                    //calc_spread(&to_update, true, &cand_set);
+                }//Add another argument here which contains the activation metadata to keep track of passed through process_query from command line queries (if it's not null).
                 else if (num_answers > 1)
                 {
-                    calc_spread(&to_update, false);
-                }
+                    calc_spread(&to_update, false, NULL, acts);
+                    //calc_spread(&to_update, false);
+                }//Add the same argument here. will have to set cand_set to null.
             }
 
             timers->query->start();
@@ -582,7 +584,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
 
                     for (std::set< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
                     {
-                        lti_activate((*it), false);
+                        lti_activate((*it), false, SMEM_ACT_MAX,1,true,acts);// will also pass acts here for tracking activation.
                     }
 
                     q->reinitialize();
@@ -741,7 +743,12 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
                             match_ids->push_back(cand);
                             if (acts != NIL)
                             {
-                                acts->push_back(cand_act);
+                                if (acts->recipient_decomposition_list.find(cand) == acts->recipient_decomposition_list.end())
+                                {
+                                    acts->recipient_decomposition_list.emplace(std::make_pair(cand,activation_decomposition{cand}));
+                                }
+                                //acts->push_back(cand_act);
+                                acts->recipient_decomposition_list.find(cand)->second.activation_total = cand_act;
                             }
                             all_king_ids.insert(std::make_pair(cand_act,cand));
                             prohibit->insert(cand);

@@ -381,24 +381,86 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         (*result_message) = new std::string();
 
         std::list<uint64_t> match_ids;
-        std::list<double> acts;
+        command_line_activation_metadata acts;
 
         process_query(NIL, root_cue_id_list, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install, &(acts));
+        //This function is being modified to make it easier to debug spreading activation. Currently, it is difficult to inspect what are the different contributions to a retrieved node's activation.
+        //"acts", the final argument of this function/method, was previously only a list of activation doubles. Now, it is a complex struct. It contains activation data that is broken into constituent parts.
+        //The difficulty is that this struct must also be passed into the functions that update activations for use in process_query. In other words, I have to pass this again so that the activation data can be "record-kept"
+        //a whole 'nother function deep.
 
+        //What gets reported here after the results is a complicated list of activation data beyond what was previously only a list of activation values.
         if (!match_ids.empty())
         {
             for (std::list<uint64_t>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
             {
-               print_LTM((*id), 1, *result_message); //"1" is the depth.
+                print_LTM((*id), 1, *result_message); //"1" is the depth.
+                std::string temp_act;
+                //(*result_message)->append(temp_act);
+                (*result_message)->append("[Total Activation: ");
+                to_string(acts.recipient_decomposition_list.find(*id)->second.activation_total, temp_act);
+                (*result_message)->append(temp_act);
+                (*result_message)->append(", Base-level total: ");
+                to_string(acts.recipient_decomposition_list.find(*id)->second.base_level_total, temp_act);
+                (*result_message)->append(temp_act);
+                (*result_message)->append(", Base-level inhibition: ");
+                to_string(acts.recipient_decomposition_list.find(*id)->second.base_inhibition, temp_act);
+                (*result_message)->append(temp_act);
+                (*result_message)->append(", Base-level: ");
+                to_string(acts.recipient_decomposition_list.find(*id)->second.base_level, temp_act);
+                (*result_message)->append(temp_act);
+                (*result_message)->append(", Spreading Total: ");
+                to_string(acts.recipient_decomposition_list.find(*id)->second.spread_total, temp_act);
+                (*result_message)->append(temp_act);
+                (*result_message)->append("]\n");
+                (*result_message)->append("[Sources of Spread: ");
+                //loop over all sources. for each source, give network and wma.
+                std::set<uint64_t>::iterator source_it;
+                std::set<uint64_t>::iterator source_begin = acts.recipient_decomposition_list.find(*id)->second.contributing_sources.begin();
+                std::set<uint64_t>::iterator source_end = acts.recipient_decomposition_list.find(*id)->second.contributing_sources.end();
+                uint64_t source;
+                for (source_it = source_begin; source_it != source_end; ++source_it)
+                {
+                    source = *source_it;
+
+                    (*result_message)->append("LTI ");
+                    to_string(source,temp_act);
+                    (*result_message)->append(temp_act);
+                    (*result_message)->append(", network factor ");
+                    to_string(acts.recipient_decomposition_list.find(*id)->second.source_to_network_factor.find(source)->second, temp_act);
+                    (*result_message)->append(temp_act);
+                    (*result_message)->append(", WMA factor ");
+                    to_string(acts.contributing_sources_to_WMA_factors.find(source)->second, temp_act);
+                    (*result_message)->append(temp_act);
+                    (*result_message)->append(";");
+                }
+                (*result_message)->append("]\n");
+                //Now, for each source, we also find each instance and compute here its wma.
             }
-            (*result_message)->append("Activation values");
+            /*(*result_message)->append("Activation values");
             for (std::list<double>::const_iterator act = acts.begin(), end = acts.end(); act != end; ++act)
             {
                 (*result_message)->append(", ");
                 std::string temp_act;
                 to_string(*act, temp_act);
                 (*result_message)->append(temp_act);
-            }
+            }*/
+            /*
+             *
+             *
+             *
+             * activation
+             *
+             *
+             *
+             *
+             *
+             * stuff
+             *
+             *
+             *
+             *
+             */
         }
         else
         {
