@@ -13,6 +13,7 @@
 #include "symbol.h"
 #include "working_memory_activation.h"
 #include "xml.h"
+#include "smem_timers.h"
 
 #include <stdlib.h>
 
@@ -251,7 +252,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     {//Instead of relying on existing code for managing wma_decay_elements, I can instead just here delete from smem the record of the decay element
         w = (wme_struct*)(c->first);
         #ifdef SPREADING_ACTIVATION_ENABLED
-        if (thisAgent->SMem->settings->spreading_wma_source->get_value() == true && w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID)
+        if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID)
         {
             thisAgent->SMem->timers->spreading_wma_2->start();
             auto wmas = thisAgent->SMem->smem_wmas->equal_range(w->value->id->LTI_ID);
