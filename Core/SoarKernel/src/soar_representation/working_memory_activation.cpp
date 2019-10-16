@@ -699,21 +699,21 @@ void wma_deactivate_element(agent* thisAgent, wme* w)
                 wma_forgetting_remove_from_p_queue(thisAgent, temp_el);
             }
 
-            temp_el->just_removed = true;
-            if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID)
-            {
-                thisAgent->SMem->timers->spreading_wma_2->start();
-                auto wmas = thisAgent->SMem->smem_wmas->equal_range(w->value->id->LTI_ID);
-                for (auto wma = wmas.first; wma != wmas.second; ++wma)
-                {
-                    if (wma->second == w->wma_decay_el)
-                    {
-                        thisAgent->SMem->smem_wmas->erase(wma);
-                        break;
-                    }
-                }
-                thisAgent->SMem->timers->spreading_wma_2->stop();
-            }
+            temp_el->just_removed = true;//std::unordered_multimap<uint64_t,wma_decay_element*> is the type of smem_wmas
+//            if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID)
+//            {
+//                thisAgent->SMem->timers->spreading_wma_2->start();
+//                auto wmas = thisAgent->SMem->smem_wmas->equal_range(w->value->id->LTI_ID);
+//                for (auto wma = wmas.first; wma != wmas.second; ++wma) //The equal_range gives a lower bound and upper bound iterator pair.
+//                {//The iterator itself is a pair for the key and the value. The value is the wma decay element pointer.
+//                    if (wma->second == w->wma_decay_el)
+//                    {
+//                        thisAgent->SMem->smem_wmas->erase(wma);//erase accepts an iterator to indicate what is to be erased.
+//                        break;
+//                    }
+//                }
+//                thisAgent->SMem->timers->spreading_wma_2->stop();
+//            }
         }
     }
 }

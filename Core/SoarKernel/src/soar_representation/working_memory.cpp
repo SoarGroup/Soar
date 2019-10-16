@@ -248,9 +248,23 @@ void do_buffered_wm_changes(agent* thisAgent)
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
-    {
+    {//Instead of relying on existing code for managing wma_decay_elements, I can instead just here delete from smem the record of the decay element
         w = (wme_struct*)(c->first);
         #ifdef SPREADING_ACTIVATION_ENABLED
+        if (thisAgent->SMem->settings->spreading_wma_source->get_value() == true && w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID)
+        {
+            thisAgent->SMem->timers->spreading_wma_2->start();
+            auto wmas = thisAgent->SMem->smem_wmas->equal_range(w->value->id->LTI_ID);
+            for (auto wma = wmas.first; wma != wmas.second; ++wma) //The equal_range gives a lower bound and upper bound iterator pair.
+            {//The iterator itself is a pair for the key and the value. The value is the wma decay element pointer.
+                if (wma->second == w->wma_decay_el)
+                {
+                    thisAgent->SMem->smem_wmas->erase(wma);//erase accepts an iterator to indicate what is to be erased.
+                    break;
+                }
+            }
+            thisAgent->SMem->timers->spreading_wma_2->stop();
+        }
         if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {
             if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_in_wmem->end())

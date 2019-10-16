@@ -398,22 +398,22 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
                 std::string temp_act;
                 //(*result_message)->append(temp_act);
                 (*result_message)->append("[Total Activation: ");
-                to_string(acts.recipient_decomposition_list.find(*id)->second.activation_total, temp_act);
+                to_string(acts.recipient_decomposition_list.find(*id)->second.activation_total, temp_act,4,true);
                 (*result_message)->append(temp_act);
                 (*result_message)->append(", Base-level total: ");
-                to_string(acts.recipient_decomposition_list.find(*id)->second.base_level_total, temp_act);
+                to_string(acts.recipient_decomposition_list.find(*id)->second.base_level_total, temp_act,4,true);
                 (*result_message)->append(temp_act);
                 (*result_message)->append(", Base-level inhibition: ");
-                to_string(acts.recipient_decomposition_list.find(*id)->second.base_inhibition, temp_act);
+                to_string(acts.recipient_decomposition_list.find(*id)->second.base_inhibition, temp_act,4,true);
                 (*result_message)->append(temp_act);
                 (*result_message)->append(", Base-level: ");
-                to_string(acts.recipient_decomposition_list.find(*id)->second.base_level, temp_act);
+                to_string(acts.recipient_decomposition_list.find(*id)->second.base_level, temp_act,4,true);
                 (*result_message)->append(temp_act);
                 (*result_message)->append(", Spreading Total: ");
-                to_string(acts.recipient_decomposition_list.find(*id)->second.spread_total, temp_act);
+                to_string(acts.recipient_decomposition_list.find(*id)->second.spread_total, temp_act,4,true);
                 (*result_message)->append(temp_act);
                 (*result_message)->append("]\n");
-                (*result_message)->append("[Sources of Spread: ");
+                (*result_message)->append("[Sources of Spread:");
                 //loop over all sources. for each source, give network and wma.
                 std::set<uint64_t>::iterator source_it;
                 std::set<uint64_t>::iterator source_begin = acts.recipient_decomposition_list.find(*id)->second.contributing_sources.begin();
@@ -423,14 +423,14 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
                 {
                     source = *source_it;
 
-                    (*result_message)->append("LTI ");
+                    (*result_message)->append(" LTI ");
                     to_string(source,temp_act);
                     (*result_message)->append(temp_act);
                     (*result_message)->append(", network factor ");
-                    to_string(acts.recipient_decomposition_list.find(*id)->second.source_to_network_factor.find(source)->second, temp_act);
+                    to_string(acts.recipient_decomposition_list.find(*id)->second.source_to_network_factor.find(source)->second, temp_act,4,true);
                     (*result_message)->append(temp_act);
                     (*result_message)->append(", WMA factor ");
-                    to_string(acts.contributing_sources_to_WMA_factors.find(source)->second, temp_act);
+                    to_string(acts.contributing_sources_to_WMA_factors.find(source)->second, temp_act,4,true);
                     (*result_message)->append(temp_act);
                     (*result_message)->append(";");
                 }
