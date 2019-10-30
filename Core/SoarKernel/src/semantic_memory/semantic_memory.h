@@ -71,7 +71,7 @@ class SMem_Manager
 
         void        calc_spread_trajectories();
         void        invalidate_trajectories(uint64_t lti_parent_id, std::map<uint64_t, int64_t>* delta_children);
-        void        calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set=NULL, command_line_activation_metadata* acts = NULL);
+        void        calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set=NULL, command_line_activation_metadata* acts = NULL, Symbol* attention = NULL);
         uint64_t    spread_size();
 
         void        set_id_counter(uint64_t counter_value);
@@ -99,7 +99,7 @@ class SMem_Manager
 
         bool        edge_updating_on();
 
-        smem_timer_container*           timers; /* The following remains public because used in run_soar.cpp */
+        smem_timer_container*           timers; /* The following remains public because used in run_soar.cpp */ //Some/all of these could be "methodized" to maintain object abstraction.
         std::map<uint64_t, uint64_t>* smem_in_wmem;
         smem_wma_map* smem_wmas;
         std::unordered_map<uint64_t, int64_t>* smem_spreaded_to;
@@ -185,7 +185,7 @@ class SMem_Manager
 
         /* Methods for queries */
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
-        uint64_t                        process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install, command_line_activation_metadata* acts = NIL);
+        uint64_t                        process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install, command_line_activation_metadata* acts = NIL, Symbol* attention = NIL);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
         soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);
         soar_module::sqlite_statement*  setup_web_crawl_without_spread(smem_weighted_cue_element* el);

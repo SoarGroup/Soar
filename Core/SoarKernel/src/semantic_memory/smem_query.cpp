@@ -392,7 +392,7 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
     return result;
 }
 
-uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type, command_line_activation_metadata* acts)
+uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type, command_line_activation_metadata* acts, Symbol* attention)
 {
     //Under the philosophy that activation only matters in the service of a query, we defer processing prohibits until now..
     id_set::iterator prohibited_lti_p;
@@ -545,12 +545,12 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
                 timers->spreading->stop();
                 if (num_answers >= 400)
                 {
-                    calc_spread(&to_update, true, &cand_set, acts);
+                    calc_spread(&to_update, true, &cand_set, acts, attention);
                     //calc_spread(&to_update, true, &cand_set);
                 }//Add another argument here which contains the activation metadata to keep track of passed through process_query from command line queries (if it's not null).
                 else if (num_answers > 1)
                 {
-                    calc_spread(&to_update, false, NULL, acts);
+                    calc_spread(&to_update, false, NULL, acts, attention);
                     //calc_spread(&to_update, false);
                 }//Add the same argument here. will have to set cand_set to null.
             }

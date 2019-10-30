@@ -13,6 +13,7 @@
 #include "smem_timers.h"
 #include "working_memory_activation.h"
 #include "working_memory.h"
+#include "slot.h"
 
 double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n, uint64_t activations_first, command_line_activation_metadata* acts)
 {
@@ -806,7 +807,7 @@ inline soar_module::sqlite_statement* SMem_Manager::setup_manual_web_crawl(smem_
     return q;
 }
 
-void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set, command_line_activation_metadata* acts)
+void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set, command_line_activation_metadata* acts, Symbol* attention_root)
 {
 
     /*
@@ -1098,6 +1099,68 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     ////////////////////////////////////////////////////////////////////////////
     timers->spreading_7->start();
     ////////////////////////////////////////////////////////////////////////////
+    //Here, we add in Peter's attention multiplicatively to the wma_multiplicative_factor. This is done by a loop-avoiding breadth-first traversal. The traversal is managed by a traditional Queue (FIFO) (as a DLL).
+    // Each element in the queue is a trajectory so that loops can be avoided by inspecting if an element already exists in the trajectory. Before appending to the trajectory and adding that appended trajectory to the queue, the new "end" of the
+    // new child will have its value (for attention) incremented by the right value. the length of the trajectory determines the amount added. Strictly decay, no loops, no fan. I assume that SMem has recorded what
+    // "^attention" augmentation exists, if any. If such an augmentation does not exist, this is not performed.
+    std::map<uint64_t,double> attention_tally;
+    if (attention_root)//attention augmentation test.
+    {
+        double decay_val = thisAgent->SMem->settings->spreading_attention_decay->get_value();
+
+        // attention_root is literally an instance, a symbol, in the WMem graph. We can breadth-first its actual children.
+        //Symbol* attention_root; // It was passed as arg to smem cmd link and we already checked that it was an lti instance.
+        //attention_root->id->id->slots; //For each slot, for each WME, check the LTI_ID-ness of the child.
+
+        slot* s;
+        wme* w;
+        std::list<std::pair<Symbol*,std::set<Symbol*>*>> traversals; //we keep track of the previous elements and the last element.
+        std::set<Symbol*>* initial_visited_set = new std::set<Symbol*>();
+        initial_visited_set->insert(attention_root);
+
+        std::set<Symbol*>* temp_visited_set;
+
+        traversals.emplace_back(std::make_pair(attention_root,initial_visited_set));
+
+        while(!traversals.empty())
+        {//Currently only bounded in wm size.
+            Symbol* current_parent = traversals.begin()->first;
+
+            for (s = attention_root->id->id->slots; s != NIL; s = s->next)
+            {
+                for (w = s->wmes; w != NIL; w = w->next)
+                { //w->value->id->LTI_ID
+                    if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID && traversals.begin()->second->find(w->value) != traversals.begin()->second->end())
+                    {// we have a link to another lti instance that hasn't already been visited this traversal.
+                        //We make a new set by copying the existing set. We then append the new value.
+                        temp_visited_set = new std::set<Symbol*>(*(traversals.begin()->second));
+                        temp_visited_set->insert(w->value);
+                        traversals.emplace_back(std::make_pair(w->value, temp_visited_set));
+                        //We also log the increment to attention for the value.
+                        if (attention_tally.find(w->value->id->LTI_ID) == attention_tally.end())
+                        {
+                            attention_tally[w->value->id->LTI_ID] = pow(decay_val,traversals.begin()->second->size());
+                        }
+                        else
+                        {
+                            attention_tally[w->value->id->LTI_ID] = attention_tally[w->value->id->LTI_ID] + pow(decay_val,traversals.begin()->second->size());
+                        }
+                    }
+
+                }
+
+//                        for (w = s->acceptable_preference_wmes; w != NIL; w = w->next) // assuming that we don't have operators that are themselves LTI instances. - could be wrong.
+//                        {
+//                            return_val->push_back(w);
+//                        }
+            }
+            //We delete the old visited set. We remove the traversal from the queue/list.
+            delete traversals.begin()->second;
+            traversals.pop_front();
+        }
+        // At this point we've deleted all the sets we've made as we've removed them from the BFS queue. We've also tallied all the attention.
+    }
+
     for (std::set<uint64_t>::iterator candidate = actual_candidates->begin(); candidate != actual_candidates->end(); ++candidate)//for every sink that has some spread, we calculate
     {
         ////////////////////////////////////////////////////////////////////////////
@@ -1131,7 +1194,8 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         {
             acts->recipient_decomposition_list.emplace(std::make_pair(*candidate,activation_decomposition{*candidate}));
         }
-        while (calc_current_spread->execute() == soar_module::row && calc_current_spread->column_double(2))
+        // A new test for the below loop is for whether or not the source of spread that would contribute to a recipient itself actually had any attention. (test itself conditioned on whether or not attention augmentation present.)
+        while (calc_current_spread->execute() == soar_module::row && calc_current_spread->column_double(2) && (!attention_root || attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end()))
         {
             if (acts != NULL)
             {
@@ -1289,6 +1353,11 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     {
                         wma_multiplicative_factor = 1.0;
                     }
+                }
+
+                if (attention_root)
+                {
+                    wma_multiplicative_factor = wma_multiplicative_factor * attention_tally[calc_current_spread->column_int(4)];
                 }
                 {
                     if (acts != NULL)

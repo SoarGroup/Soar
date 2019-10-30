@@ -702,6 +702,7 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.smem_sym_link_to_ltm = make_str_constant("link-to-ltm");
     soarSymbols.smem_sym_retrieve = make_str_constant("retrieve");
     soarSymbols.smem_sym_query = make_str_constant("query");
+    soarSymbols.smem_sym_attention = make_str_constant("attention");
     soarSymbols.smem_sym_negquery = make_str_constant("neg-query");
     soarSymbols.smem_sym_prohibit = make_str_constant("prohibit");
     soarSymbols.smem_sym_store = make_str_constant("store");
@@ -881,6 +882,7 @@ void Symbol_Manager::release_predefined_symbols()
 
     symbol_remove_ref(&(soarSymbols.smem_sym_retrieve));
     symbol_remove_ref(&(soarSymbols.smem_sym_query));
+    symbol_remove_ref(&(soarSymbols.smem_sym_attention));
     symbol_remove_ref(&(soarSymbols.smem_sym_negquery));
     symbol_remove_ref(&(soarSymbols.smem_sym_prohibit));
     symbol_remove_ref(&(soarSymbols.smem_sym_store));

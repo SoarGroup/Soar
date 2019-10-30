@@ -110,6 +110,7 @@ typedef struct predefined_sym_struct {
 
         Symbol*             smem_sym_retrieve;
         Symbol*             smem_sym_query;
+        Symbol*             smem_sym_attention;
         Symbol*             smem_sym_negquery;
         Symbol*             smem_sym_prohibit;
         Symbol*             smem_sym_store;
