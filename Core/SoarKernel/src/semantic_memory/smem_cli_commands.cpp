@@ -383,7 +383,28 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         std::list<uint64_t> match_ids;
         command_line_activation_metadata acts;
 
-        process_query(NIL, root_cue_id_list, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install, &(acts));
+        //adding stuff to support attention here. Ideally, this would actually be another parameter/argument passed through smem -q command. However,
+        // for now I'm implementing this by having the command (here) instead inspect the state for an ^attention command and just using that.
+        //thisAgent->bottom_goal->id->smem_info->cmd_wme->value->
+        Symbol* attention_root = NIL;
+        slot* smem_cmd_slots = thisAgent->bottom_goal->id->smem_info->cmd_wme->value->id->slots;
+        while (smem_cmd_slots != NIL)
+        {
+            if (strcmp(smem_cmd_slots->attr->sc->name,"attention"))
+            {
+                smem_cmd_slots = smem_cmd_slots->next;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if (smem_cmd_slots != NIL)
+        {
+            attention_root = smem_cmd_slots->wmes->value;
+        }
+
+        process_query(NIL, root_cue_id_list, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install, &(acts), attention_root);
         //This function is being modified to make it easier to debug spreading activation. Currently, it is difficult to inspect what are the different contributions to a retrieved node's activation.
         //"acts", the final argument of this function/method, was previously only a list of activation doubles. Now, it is a complex struct. It contains activation data that is broken into constituent parts.
         //The difficulty is that this struct must also be passed into the functions that update activations for use in process_query. In other words, I have to pass this again so that the activation data can be "record-kept"

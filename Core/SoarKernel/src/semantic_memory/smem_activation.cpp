@@ -1117,6 +1117,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         std::list<std::pair<Symbol*,std::set<Symbol*>*>> traversals; //we keep track of the previous elements and the last element.
         std::set<Symbol*>* initial_visited_set = new std::set<Symbol*>();
         initial_visited_set->insert(attention_root);
+        attention_tally[attention_root->id->id->LTI_ID] = 1.0;
 
         std::set<Symbol*>* temp_visited_set;
 
