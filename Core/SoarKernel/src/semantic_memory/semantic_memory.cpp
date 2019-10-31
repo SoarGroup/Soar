@@ -417,6 +417,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_attention)
                     {
                         attention = (*w_p)->value;
+                        //path = cmd_query;
                     }
                     else
                     {

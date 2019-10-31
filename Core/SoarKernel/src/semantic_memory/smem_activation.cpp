@@ -1195,7 +1195,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
             acts->recipient_decomposition_list.emplace(std::make_pair(*candidate,activation_decomposition{*candidate}));
         }
         // A new test for the below loop is for whether or not the source of spread that would contribute to a recipient itself actually had any attention. (test itself conditioned on whether or not attention augmentation present.)
-        while (calc_current_spread->execute() == soar_module::row && calc_current_spread->column_double(2) && (!attention_root || attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end()))
+        while (calc_current_spread->execute() == soar_module::row && calc_current_spread->column_double(2))// && (!attention_root || attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end()))
         {
             if (acts != NULL)
             {
@@ -1355,9 +1355,9 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     }
                 }
 
-                if (attention_root)
+                if (attention_root && attention_tally->find(calc_current_spread->column_int(4)) != attention_tally->end())
                 {
-                    wma_multiplicative_factor = wma_multiplicative_factor * attention_tally[calc_current_spread->column_int(4)];
+                    wma_multiplicative_factor = wma_multiplicative_factor + attention_tally[calc_current_spread->column_int(4)];
                 }
                 {
                     if (acts != NULL)
