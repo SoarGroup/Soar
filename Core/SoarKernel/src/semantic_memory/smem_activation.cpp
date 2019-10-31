@@ -1355,7 +1355,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     }
                 }
 
-                if (attention_root && attention_tally->find(calc_current_spread->column_int(4)) != attention_tally->end())
+                if (attention_root && attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end())
                 {
                     wma_multiplicative_factor = wma_multiplicative_factor + attention_tally[calc_current_spread->column_int(4)];
                 }
