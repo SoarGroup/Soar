@@ -52,6 +52,9 @@ class smem_param_container: public soar_module::param_container
         soar_module::integer_param* spreading_limit;
         soar_module::integer_param* spreading_depth_limit;
         soar_module::decimal_param* spreading_baseline;
+        soar_module::decimal_param* spreading_a;
+        soar_module::decimal_param* spreading_b;
+        soar_module::decimal_param* spreading_c;
         soar_module::decimal_param* spreading_continue_probability;
         soar_module::boolean_param* spreading_loop_avoidance;
         soar_module::boolean_param* spreading_edge_updating;

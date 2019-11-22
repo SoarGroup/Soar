@@ -122,6 +122,17 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading_baseline = new soar_module::decimal_param("spreading-baseline", 0.0001, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(spreading_baseline);
 
+    //for linear combination of activations
+    //weight for base-level
+    spreading_a = new soar_module::decimal_param("spreading-a", 1.0, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_a);
+    //weight for spread
+    spreading_b = new soar_module::decimal_param("spreading-b", 1.0, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_b);
+    //total constant offset.
+    spreading_c = new soar_module::decimal_param("spreading-c", 0.0, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_c);
+
     // spreading continue probability - determines the decay over edge distances when edge weights are not present.
     spreading_continue_probability = new soar_module::decimal_param("spreading-continue-probability", 0.9, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(spreading_continue_probability);
@@ -370,6 +381,9 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-limit", spreading_limit->get_string(), 55).c_str(), "integer > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-depth-limit", spreading_depth_limit->get_string(), 55).c_str(), "integer > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-baseline", spreading_baseline->get_string(), 55).c_str(), "1 > decimal > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-a", spreading_a->get_string(), 55).c_str(), "> 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-b", spreading_b->get_string(), 55).c_str(), "> 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-c", spreading_c->get_string(), 55).c_str(), "> 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-continue-probability", spreading_continue_probability->get_string(), 55).c_str(), "1 > decimal > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-loop-avoidance", spreading_loop_avoidance->get_string(), 55).c_str(), "on, off");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-edge-updating", spreading_edge_updating->get_string(), 55).c_str(), "on, off");
