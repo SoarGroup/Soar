@@ -1820,6 +1820,93 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
     return thisAgent->symbolManager->make_float_constant(ret);
 }
 
+/*
+ * A right hand side function that can count the members of a set.
+ * 
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *   want counted (second parameter).
+ * 
+ * It returns a symbol with the count or a -1 if there is an error in the parameters
+ */
+Symbol* set_count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    cons* c = args;
+    Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
+    
+    if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
+        idSymbol* set_id = param_set_id_sym->id;
+                       c = c->rest;
+        
+        if (c != NIL) { 
+            long count = 0;
+            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);    
+            //return thisAgent->symbolManager->make_int_constant(reinterpret_cast<long>(set_id->slots));
+
+            // Find the slot that matches the attr_name_sym
+            for(struct slot_struct* slot = set_id->slots; slot != NIL; slot = slot->next) {
+                Symbol* attr_name_sim = slot->attr;
+                if (param_attr_name_sym == attr_name_sim) {
+                    for (wme* wme_to_count = slot->wmes; wme_to_count != NIL; wme_to_count = wme_to_count->next) {
+                        count++;
+                    }
+                    return thisAgent->symbolManager->make_int_constant(count); 
+                }
+            }
+        }
+        return thisAgent->symbolManager->make_int_constant(0);
+    } else {
+        return thisAgent->symbolManager->make_str_constant("WrongParameters");
+    }
+}
+
+/*
+ * A right hand side function that sum the members of a set.
+ * 
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *   want summed (second parameter).
+ * 
+ * It returns a symbol with the sum or NaN if an attribute in the set is not a number
+ */
+Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    cons* c = args;
+    Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
+    
+    if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
+        idSymbol* set_id = param_set_id_sym->id;
+                       c = c->rest;
+        
+        if (c != NIL) { 
+            double sum = 0.0;
+            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);    
+            //return thisAgent->symbolManager->make_int_constant(reinterpret_cast<long>(set_id->slots));
+
+            // Find the slot that matches the attr_name_sym
+            for(struct slot_struct* slot = set_id->slots; slot != NIL; slot = slot->next) {
+                Symbol* attr_name_sim = slot->attr;
+                if (param_attr_name_sym == attr_name_sim) {
+                    for (wme* wme_to_sum = slot->wmes; wme_to_sum != NIL; wme_to_sum = wme_to_sum->next) {
+                        Symbol* wme_val = wme_to_sum->value;
+                        if (wme_val != NIL) {
+                            if (wme_val->is_float()) {
+                                sum += wme_val->fc->value;
+                            } else if (wme_val->is_int()) {
+                                sum += wme_val->ic->value;
+                            } else {
+                                return thisAgent->symbolManager->make_str_constant("NaN");
+                            }
+                        }
+                    }
+                    return thisAgent->symbolManager->make_float_constant(sum); 
+                }
+            }
+        }
+        return thisAgent->symbolManager->make_float_constant(0.0);
+    } else {
+        return thisAgent->symbolManager->make_str_constant("WrongParameters");
+    }
+}
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Math Functions
@@ -1841,6 +1928,10 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("mod"), mod_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("min"), min_rhs_function_code, -1, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("max"), max_rhs_function_code, -1, true, false, 0, true);
+
+    /* RHS set functions */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-count"), set_count_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-sum"), set_sum_rhs_function_code, 2, true, false, 0, true);
 
     /* RHS trigonometry functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"), sin_rhs_function_code, 1, true, false, 0, true);
@@ -1878,6 +1969,9 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("mod"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("min"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("max"));
+
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-count"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-sum"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sin"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("cos"));
