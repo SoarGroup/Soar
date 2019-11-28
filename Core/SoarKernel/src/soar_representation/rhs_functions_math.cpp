@@ -1821,6 +1821,63 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
 }
 
 /*
+ * Helper for set-based processes.  This calls the given fn for each wme in the set being processed.
+ * 
+ * The return value is only not NIL if the fn returns an error symbol.
+ */
+Symbol* set_reduce(agent* thisAgent, cons* args, Symbol* (*fn)(agent*, wme*, void*), void* data) {
+    cons* c = args;
+    Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
+    
+    if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
+        idSymbol* set_id = param_set_id_sym->id;
+                       c = c->rest;
+                    
+        if (c != NIL) { 
+            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);    
+            //return thisAgent->symbolManager->make_int_constant(reinterpret_cast<long>(set_id->slots));
+
+            // Find the slot that matches the attr_name_sym
+            for(struct slot_struct* slot = set_id->slots; slot != NIL; slot = slot->next) {
+                Symbol* attr_name_sim = slot->attr;
+                if (param_attr_name_sym == attr_name_sim) {
+                    for (wme* wme_to_process = slot->wmes; wme_to_process != NIL; wme_to_process = wme_to_process->next) {
+                        Symbol* error = fn(thisAgent, wme_to_process, data);
+                        if (error != NIL) {
+                            return error;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return NIL;
+}
+
+// Simply counts wmes
+Symbol* count_wme(agent* thisAgent, wme* wme_to_count, void* data) {
+    long* cur_count = static_cast<long*>(data);
+    *cur_count = (*cur_count) + 1;
+    return NIL;
+};
+
+// Adds the value of wmes
+Symbol* add_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
+    double* sum = static_cast<double*>(data);
+    Symbol* wme_val = wme_to_sum->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            *sum = (*sum) + wme_val->fc->value;
+        } else if (wme_val->is_int()) {
+            *sum = (*sum) + wme_val->ic->value;
+        } else {
+            return thisAgent->symbolManager->make_str_constant("NaN");
+        }
+    }
+    return NIL;
+};
+
+/*
  * A right hand side function that can count the members of a set.
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
@@ -1830,33 +1887,9 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
  */
 Symbol* set_count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
-    cons* c = args;
-    Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
-    
-    if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
-        idSymbol* set_id = param_set_id_sym->id;
-                       c = c->rest;
-        
-        if (c != NIL) { 
-            long count = 0;
-            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);    
-            //return thisAgent->symbolManager->make_int_constant(reinterpret_cast<long>(set_id->slots));
-
-            // Find the slot that matches the attr_name_sym
-            for(struct slot_struct* slot = set_id->slots; slot != NIL; slot = slot->next) {
-                Symbol* attr_name_sim = slot->attr;
-                if (param_attr_name_sym == attr_name_sim) {
-                    for (wme* wme_to_count = slot->wmes; wme_to_count != NIL; wme_to_count = wme_to_count->next) {
-                        count++;
-                    }
-                    return thisAgent->symbolManager->make_int_constant(count); 
-                }
-            }
-        }
-        return thisAgent->symbolManager->make_int_constant(0);
-    } else {
-        return thisAgent->symbolManager->make_str_constant("WrongParameters");
-    }
+    long count = 0;
+    set_reduce(thisAgent, args, count_wme, &count);
+    return thisAgent->symbolManager->make_int_constant(count);
 }
 
 /*
@@ -1869,42 +1902,46 @@ Symbol* set_count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
  */
 Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
-    cons* c = args;
-    Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
-    
-    if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
-        idSymbol* set_id = param_set_id_sym->id;
-                       c = c->rest;
-        
-        if (c != NIL) { 
-            double sum = 0.0;
-            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);    
-            //return thisAgent->symbolManager->make_int_constant(reinterpret_cast<long>(set_id->slots));
+    double sum = 0;
+    Symbol* error = set_reduce(thisAgent, args, add_wme, &sum);
+    return (error == NIL)? thisAgent->symbolManager->make_int_constant(sum): error;
 
-            // Find the slot that matches the attr_name_sym
-            for(struct slot_struct* slot = set_id->slots; slot != NIL; slot = slot->next) {
-                Symbol* attr_name_sim = slot->attr;
-                if (param_attr_name_sym == attr_name_sim) {
-                    for (wme* wme_to_sum = slot->wmes; wme_to_sum != NIL; wme_to_sum = wme_to_sum->next) {
-                        Symbol* wme_val = wme_to_sum->value;
-                        if (wme_val != NIL) {
-                            if (wme_val->is_float()) {
-                                sum += wme_val->fc->value;
-                            } else if (wme_val->is_int()) {
-                                sum += wme_val->ic->value;
-                            } else {
-                                return thisAgent->symbolManager->make_str_constant("NaN");
-                            }
-                        }
-                    }
-                    return thisAgent->symbolManager->make_float_constant(sum); 
-                }
-            }
-        }
-        return thisAgent->symbolManager->make_float_constant(0.0);
-    } else {
-        return thisAgent->symbolManager->make_str_constant("WrongParameters");
-    }
+    // cons* c = args;
+    // Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
+    
+    // if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
+    //     idSymbol* set_id = param_set_id_sym->id;
+    //                    c = c->rest;
+        
+    //     if (c != NIL) { 
+    //         double sum = 0.0;
+    //         Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);    
+    //         //return thisAgent->symbolManager->make_int_constant(reinterpret_cast<long>(set_id->slots));
+
+    //         // Find the slot that matches the attr_name_sym
+    //         for(struct slot_struct* slot = set_id->slots; slot != NIL; slot = slot->next) {
+    //             Symbol* attr_name_sim = slot->attr;
+    //             if (param_attr_name_sym == attr_name_sim) {
+    //                 for (wme* wme_to_sum = slot->wmes; wme_to_sum != NIL; wme_to_sum = wme_to_sum->next) {
+    //                     Symbol* wme_val = wme_to_sum->value;
+    //                     if (wme_val != NIL) {
+    //                         if (wme_val->is_float()) {
+    //                             sum += wme_val->fc->value;
+    //                         } else if (wme_val->is_int()) {
+    //                             sum += wme_val->ic->value;
+    //                         } else {
+    //                             return thisAgent->symbolManager->make_str_constant("NaN");
+    //                         }
+    //                     }
+    //                 }
+    //                 return thisAgent->symbolManager->make_float_constant(sum); 
+    //             }
+    //         }
+    //     }
+    //     return thisAgent->symbolManager->make_float_constant(0.0);
+    // } else {
+    //     return thisAgent->symbolManager->make_str_constant("WrongParameters");
+    // }
 }
 
 /* ====================================================================
