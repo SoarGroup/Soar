@@ -20,6 +20,7 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
+#include "float.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -1870,9 +1871,47 @@ Symbol* add_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
             *sum = (*sum) + wme_val->fc->value;
         } else if (wme_val->is_int()) {
             *sum = (*sum) + wme_val->ic->value;
-        } else {
-            return thisAgent->symbolManager->make_str_constant("NaN");
-        }
+        } 
+    }
+    return NIL;
+};
+
+// Replaces data with the minimum the value of wmes
+Symbol* min_wme(agent* thisAgent, wme* wme_to_min, void* data) {
+    double* cur_min = static_cast<double*>(data);
+    Symbol* wme_val = wme_to_min->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            double new_val = wme_val->fc->value;
+            if (new_val < *cur_min) {
+                *cur_min = new_val;
+            }
+        } else if (wme_val->is_int()) {
+            double new_val = wme_val->ic->value;
+            if (new_val < *cur_min) {
+                *cur_min = new_val;
+            }
+        } 
+    }
+    return NIL;
+};
+
+// Replaces data with the maximum the value of wmes
+Symbol* max_wme(agent* thisAgent, wme* wme_to_max, void* data) {
+    double* cur_max = static_cast<double*>(data);
+    Symbol* wme_val = wme_to_max->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            double new_val = wme_val->fc->value;
+            if (new_val > *cur_max) {
+                *cur_max = new_val;
+            }
+        } else if (wme_val->is_int()) {
+            double new_val = wme_val->ic->value;
+            if (new_val > *cur_max) {
+                *cur_max = new_val;
+            }
+        } 
     }
     return NIL;
 };
@@ -1904,44 +1943,37 @@ Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
 {
     double sum = 0;
     Symbol* error = set_reduce(thisAgent, args, add_wme, &sum);
-    return (error == NIL)? thisAgent->symbolManager->make_int_constant(sum): error;
+    return (error == NIL)? thisAgent->symbolManager->make_float_constant(sum): error;
+}
 
-    // cons* c = args;
-    // Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
-    
-    // if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
-    //     idSymbol* set_id = param_set_id_sym->id;
-    //                    c = c->rest;
-        
-    //     if (c != NIL) { 
-    //         double sum = 0.0;
-    //         Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);    
-    //         //return thisAgent->symbolManager->make_int_constant(reinterpret_cast<long>(set_id->slots));
+/*
+ * A right hand side function that sum the members of a set.
+ * 
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *   want summed (second parameter).
+ * 
+ * It returns a symbol with the sum or NaN if an attribute in the set is not a number
+ */
+Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    double min = DBL_MAX;
+    Symbol* error = set_reduce(thisAgent, args, min_wme, &min);
+    return (error == NIL)? thisAgent->symbolManager->make_float_constant(min): error;
+}
 
-    //         // Find the slot that matches the attr_name_sym
-    //         for(struct slot_struct* slot = set_id->slots; slot != NIL; slot = slot->next) {
-    //             Symbol* attr_name_sim = slot->attr;
-    //             if (param_attr_name_sym == attr_name_sim) {
-    //                 for (wme* wme_to_sum = slot->wmes; wme_to_sum != NIL; wme_to_sum = wme_to_sum->next) {
-    //                     Symbol* wme_val = wme_to_sum->value;
-    //                     if (wme_val != NIL) {
-    //                         if (wme_val->is_float()) {
-    //                             sum += wme_val->fc->value;
-    //                         } else if (wme_val->is_int()) {
-    //                             sum += wme_val->ic->value;
-    //                         } else {
-    //                             return thisAgent->symbolManager->make_str_constant("NaN");
-    //                         }
-    //                     }
-    //                 }
-    //                 return thisAgent->symbolManager->make_float_constant(sum); 
-    //             }
-    //         }
-    //     }
-    //     return thisAgent->symbolManager->make_float_constant(0.0);
-    // } else {
-    //     return thisAgent->symbolManager->make_str_constant("WrongParameters");
-    // }
+/*
+ * A right hand side function that sum the members of a set.
+ * 
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *   want summed (second parameter).
+ * 
+ * It returns a symbol with the sum or NaN if an attribute in the set is not a number
+ */
+Symbol* set_max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    double max = -DBL_MAX;
+    Symbol* error = set_reduce(thisAgent, args, max_wme, &max);
+    return (error == NIL)? thisAgent->symbolManager->make_float_constant(max): error;
 }
 
 /* ====================================================================
@@ -1969,6 +2001,8 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     /* RHS set functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-count"), set_count_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-sum"), set_sum_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-min"), set_min_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-max"), set_max_rhs_function_code, 2, true, false, 0, true);
 
     /* RHS trigonometry functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"), sin_rhs_function_code, 1, true, false, 0, true);
@@ -2009,6 +2043,8 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-count"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-sum"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-min"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-max"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sin"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("cos"));
