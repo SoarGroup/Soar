@@ -1916,6 +1916,26 @@ Symbol* max_wme(agent* thisAgent, wme* wme_to_max, void* data) {
     return NIL;
 };
 
+struct wme_val_stats {
+    long   count;
+    double sum;
+};
+
+Symbol* stats_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
+    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+    Symbol* wme_val = wme_to_sum->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            stats->sum = stats->sum + wme_val->fc->value;
+            stats->count++;
+        } else if (wme_val->is_int()) {
+            stats->sum = stats->sum + wme_val->ic->value;
+            stats->count++;
+        } 
+    }
+    return NIL;
+};
+
 /*
  * A right hand side function that can count the members of a set.
  * 
@@ -1937,7 +1957,7 @@ Symbol* set_count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want summed (second parameter).
  * 
- * It returns a symbol with the sum or NaN if an attribute in the set is not a number
+ * Non-numeric attributes are ignored
  */
 Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -1947,12 +1967,12 @@ Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
 }
 
 /*
- * A right hand side function that sum the members of a set.
+ * A right hand side function that finds the minimum of a set.
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
- *   want summed (second parameter).
+ *   want min of (second parameter).
  * 
- * It returns a symbol with the sum or NaN if an attribute in the set is not a number
+ * Non-numeric attributes are ignored
  */
 Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -1962,18 +1982,44 @@ Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
 }
 
 /*
- * A right hand side function that sum the members of a set.
+ * A right hand side function that finds the maximum of a set.
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
- *   want summed (second parameter).
+ *   want max of (second parameter).
  * 
- * It returns a symbol with the sum or NaN if an attribute in the set is not a number
+ * Non-numeric attributes are ignored
  */
 Symbol* set_max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     double max = -DBL_MAX;
     Symbol* error = set_reduce(thisAgent, args, max_wme, &max);
     return (error == NIL)? thisAgent->symbolManager->make_float_constant(max): error;
+}
+
+/*
+ * A right hand side function that finds the maximum of a set.
+ * 
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *   want max of (second parameter).
+ * 
+ * Non-numeric attributes are ignored
+ */
+Symbol* set_mean_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    stats.sum = 0.0;
+    stats.count = 0;
+    Symbol* error = set_reduce(thisAgent, args, stats_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    if (stats.count > 0) {
+        return thisAgent->symbolManager->make_float_constant(stats.sum / (double) stats.count);
+    } else {
+        return thisAgent->symbolManager->make_str_constant("NaN");
+    }
+    
 }
 
 /* ====================================================================
@@ -2003,6 +2049,7 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-sum"), set_sum_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-min"), set_min_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-max"), set_max_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mean"), set_mean_rhs_function_code, 2, true, false, 0, true);
 
     /* RHS trigonometry functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"), sin_rhs_function_code, 1, true, false, 0, true);
@@ -2045,6 +2092,7 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-sum"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-min"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-max"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-mean"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sin"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("cos"));
