@@ -1870,7 +1870,7 @@ Symbol* add_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
         if (wme_val->is_float()) {
             *sum = (*sum) + wme_val->fc->value;
         } else if (wme_val->is_int()) {
-            *sum = (*sum) + wme_val->ic->value;
+            *sum = (*sum) + (double)wme_val->ic->value;
         } 
     }
     return NIL;
@@ -1919,6 +1919,8 @@ Symbol* max_wme(agent* thisAgent, wme* wme_to_max, void* data) {
 struct wme_val_stats {
     long   count;
     double sum;
+    double mean;
+    double sum_square;
 };
 
 Symbol* stats_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
@@ -1929,8 +1931,23 @@ Symbol* stats_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
             stats->sum = stats->sum + wme_val->fc->value;
             stats->count++;
         } else if (wme_val->is_int()) {
-            stats->sum = stats->sum + wme_val->ic->value;
+            stats->sum = stats->sum + (double)wme_val->ic->value;
             stats->count++;
+        } 
+    }
+    return NIL;
+};
+
+Symbol* stdev_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
+    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+    Symbol* wme_val = wme_to_sum->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            double diff = wme_val->fc->value - stats->mean;
+            stats->sum_square = stats->sum_square + (diff * diff);
+        } else if (wme_val->is_int()) {
+            double diff = (double)wme_val->ic->value - stats->mean;
+            stats->sum_square = stats->sum_square + (diff * diff);
         } 
     }
     return NIL;
@@ -1997,10 +2014,10 @@ Symbol* set_max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
 }
 
 /*
- * A right hand side function that finds the maximum of a set.
+ * A right hand side function that finds the mean value of a set.
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
- *   want max of (second parameter).
+ *   want the mean of (second parameter).
  * 
  * Non-numeric attributes are ignored
  */
@@ -2016,6 +2033,36 @@ Symbol* set_mean_rhs_function_code(agent* thisAgent, cons* args, void* /*user_da
 
     if (stats.count > 0) {
         return thisAgent->symbolManager->make_float_constant(stats.sum / (double) stats.count);
+    } else {
+        return thisAgent->symbolManager->make_str_constant("NaN");
+    }
+    
+}
+
+/*
+ * A right hand side function that finds the mean value of a set.
+ * 
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *   want the mean of (second parameter).
+ * 
+ * Non-numeric attributes are ignored
+ */
+Symbol* set_stdev_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    stats.sum = 0.0;
+    stats.count = 0;
+    stats.mean = 0.0;
+    stats.sum_square = 0.0;
+    Symbol* error = set_reduce(thisAgent, args, stats_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    if (stats.count > 0) {
+        stats.mean = stats.sum / stats.count;
+        Symbol* error = set_reduce(thisAgent, args, stdev_wme, &stats);
+        return (error == NIL)? thisAgent->symbolManager->make_float_constant(sqrt(stats.sum_square / (double) stats.count)): error;
     } else {
         return thisAgent->symbolManager->make_str_constant("NaN");
     }
@@ -2050,6 +2097,7 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-min"), set_min_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-max"), set_max_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mean"), set_mean_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-stdev"), set_stdev_rhs_function_code, 2, true, false, 0, true);
 
     /* RHS trigonometry functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"), sin_rhs_function_code, 1, true, false, 0, true);
@@ -2093,6 +2141,7 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-min"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-max"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-mean"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-stdev"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sin"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("cos"));
