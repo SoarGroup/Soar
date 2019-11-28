@@ -1862,11 +1862,10 @@ struct wme_val_stats {
     double product;
     double min;
     double max;
-    double range;
     double mean;
     double sum_square;
 
-    wme_val_stats(): count(0), sum(0.0), product(1.0), mean(0.0), sum_square(0.0), min(DBL_MAX), max(-DBL_MAX), range(0.0) { }
+    wme_val_stats(): count(0), sum(0.0), product(1.0), mean(0.0), sum_square(0.0), min(DBL_MAX), max(-DBL_MAX) { }
 };
 
 // Simply counts wmes
@@ -1909,45 +1908,23 @@ Symbol* multiply_wme(agent* thisAgent, wme* wme_to_mult, void* data) {
 };
 
 // Replaces data with the minimum the value of wmes
-Symbol* min_wme(agent* thisAgent, wme* wme_to_min, void* data) {
+Symbol* min_max_wme(agent* thisAgent, wme* wme_to_min, void* data) {
     struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
     Symbol* wme_val = wme_to_min->value;
     if (wme_val != NIL) {
-        if (wme_val->is_float()) {
-            double new_val = wme_val->fc->value;
-            if (new_val < stats->min) {
-                stats->min = new_val;
-            }
-            stats->count++;
-        } else if (wme_val->is_int()) {
-            double new_val = wme_val->ic->value;
-            if (new_val < stats->min) {
-                stats->min = new_val;
-                stats->count++;
-            }
-        } 
-    }
-    return NIL;
-};
-
-// Replaces data with the maximum the value of wmes
-Symbol* max_wme(agent* thisAgent, wme* wme_to_max, void* data) {
-    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
-    Symbol* wme_val = wme_to_max->value;
-    if (wme_val != NIL) {
-        if (wme_val->is_float()) {
-            double new_val = wme_val->fc->value;
-            if (new_val > stats->max) {
-                stats->max = new_val;
-            }
-            stats->count++;
-        } else if (wme_val->is_int()) {
-            double new_val = wme_val->ic->value;
-            if (new_val > stats->max) {
-                stats->max = new_val;
-            }
-            stats->count++;
-        } 
+        double new_val;
+        if (wme_val->is_float()) 
+            new_val = wme_val->fc->value;
+        else if (wme_val->is_int())
+            new_val = wme_val->ic->value;
+        else
+            return NIL;
+       
+        if (new_val < stats->min) 
+            stats->min = new_val;
+        if (new_val > stats->max)
+            stats->max = new_val;
+        stats->count++;
     }
     return NIL;
 };
@@ -2050,7 +2027,7 @@ Symbol* set_multiply_rhs_function_code(agent* thisAgent, cons* args, void* /*use
 Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     struct wme_val_stats stats;
-    Symbol* error = set_reduce(thisAgent, args, min_wme, &stats);
+    Symbol* error = set_reduce(thisAgent, args, min_max_wme, &stats);
 
     if (error != NIL)
         return error;
@@ -2071,13 +2048,36 @@ Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
 Symbol* set_max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     struct wme_val_stats stats;
-    Symbol* error = set_reduce(thisAgent, args, max_wme, &stats);
+    Symbol* error = set_reduce(thisAgent, args, min_max_wme, &stats);
 
     if (error != NIL)
         return error;
 
     return (stats.count > 0)? 
                     thisAgent->symbolManager->make_float_constant(stats.max):
+                    thisAgent->symbolManager->make_str_constant("NaN");
+
+    
+}
+
+/*
+ * A right hand side function that finds the range of a set.
+ * 
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *   want range of (second parameter).
+ * 
+ * Non-numeric attributes are ignored
+ */
+Symbol* set_range_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, min_max_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    return (stats.count > 0)? 
+                    thisAgent->symbolManager->make_float_constant(stats.max - stats.min):
                     thisAgent->symbolManager->make_str_constant("NaN");
 
     
@@ -2161,6 +2161,7 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-multiply"), set_multiply_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-min"), set_min_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-max"), set_max_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-range"), set_range_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mean"), set_mean_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-stdev"), set_stdev_rhs_function_code, 2, true, false, 0, true);
 
@@ -2206,6 +2207,7 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-multiply"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-min"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-max"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-range"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-mean"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-stdev"));
 
