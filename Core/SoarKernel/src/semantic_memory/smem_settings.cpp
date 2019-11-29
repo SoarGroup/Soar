@@ -12,6 +12,7 @@
 #include "smem_db.h"
 #include "smem_stats.h"
 #include "soar_module.h"
+#include <limits.h>
 
 smem_param_container::smem_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
@@ -124,13 +125,13 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
 
     //for linear combination of activations
     //weight for base-level
-    spreading_a = new soar_module::decimal_param("spreading-a", 1.0, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    spreading_a = new soar_module::decimal_param("spreading-a", 1.0, new  soar_module::gt_predicate<double>(0, true), new soar_module::f_predicate<double>());
     add(spreading_a);
     //weight for spread
-    spreading_b = new soar_module::decimal_param("spreading-b", 1.0, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    spreading_b = new soar_module::decimal_param("spreading-b", 1.0, new  soar_module::gt_predicate<double>(0, true), new soar_module::f_predicate<double>());
     add(spreading_b);
     //total constant offset.
-    spreading_c = new soar_module::decimal_param("spreading-c", 0.0, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    spreading_c = new soar_module::decimal_param("spreading-c", 0.0, new  soar_module::gt_predicate<double>(std::numeric_limits<double>::lowest(), false), new soar_module::f_predicate<double>());
     add(spreading_c);
 
     // spreading continue probability - determines the decay over edge distances when edge weights are not present.
