@@ -361,6 +361,11 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         new_base = new_activation;
     }
 
+
+    double a = thisAgent->SMem->settings->spreading_a->get_value();
+    double b = thisAgent->SMem->settings->spreading_b->get_value();
+    double c = thisAgent->SMem->settings->spreading_c->get_value();
+
     if (already_in_spread_table)
     {
         double offset = settings->spreading_baseline->get_value()/baseline_denom;
@@ -373,11 +378,11 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         SQL->act_lti_fake_set->bind_double(2, spread);
         if (act_mode == smem_param_container::act_none)
         {
-            SQL->act_lti_fake_set->bind_double(3, modified_spread);
+            SQL->act_lti_fake_set->bind_double(3, b*modified_spread + c);
         }
-        else
+        else //b*modified_spread+c : a*new_base+b*modified_spread+c
         {
-            SQL->act_lti_fake_set->bind_double(3, new_base + modified_spread);
+            SQL->act_lti_fake_set->bind_double(3, a*new_base + b*modified_spread +c);
         }
         SQL->act_lti_fake_set->bind_int(4,pLTI_ID);
         SQL->act_lti_fake_set->execute(soar_module::op_reinit);
@@ -389,7 +394,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     {
         SQL->act_lti_set->bind_double(1, new_activation);
         SQL->act_lti_set->bind_double(2, 0.0);
-        SQL->act_lti_set->bind_double(3, new_base);
+        SQL->act_lti_set->bind_double(3, a*new_base+c);
         SQL->act_lti_set->bind_int(4, pLTI_ID);
         SQL->act_lti_set->execute(soar_module::op_reinit);
     }
@@ -397,11 +402,11 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     {
         if (act_mode == smem_param_container::act_none)
         {
-            SQL->act_set->bind_double(1, modified_spread);
+            SQL->act_set->bind_double(1, b*modified_spread+c);
         }
         else
         {
-            SQL->act_set->bind_double(1, new_base+modified_spread);
+            SQL->act_set->bind_double(1, a*new_base+b*modified_spread+c);
         }
         SQL->act_set->bind_int(2, pLTI_ID);
         SQL->act_set->execute(soar_module::op_reinit);
@@ -423,7 +428,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     timers->act->stop();
     ////////////////////////////////////////////////////////////////////////////
 
-    return (act_mode == smem_param_container::act_none ? modified_spread : new_base+modified_spread);
+    return (act_mode == smem_param_container::act_none ? b*modified_spread+c : a*new_base+b*modified_spread+c);
 }
 
 void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<std::pair<uint64_t,double>>*>& lti_trajectories, int depth = 10)
