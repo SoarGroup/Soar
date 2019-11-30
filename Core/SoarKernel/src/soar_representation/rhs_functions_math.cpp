@@ -1821,6 +1821,19 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
     return thisAgent->symbolManager->make_float_constant(ret);
 }
 
+/* Helper for processing more complex RHS functions */
+wme* get_wmes_for_named_slot(Symbol* idSym, Symbol* nameSym) {
+    if (idSym->is_sti()) {
+        idSymbol* id = idSym->id;  // get the id part of the union
+        for(struct slot_struct* slot = id->slots; slot != NIL; slot = slot->next) {
+            Symbol* attr_name = slot->attr;
+            if (nameSym == attr_name) {
+                return slot->wmes;
+            }
+        }
+    }
+    return NIL;
+}
 /*
  * Helper for set-based processes.  This calls the given fn for each wme in the set being processed.
  * 
@@ -1835,17 +1848,35 @@ Symbol* set_reduce(agent* thisAgent, cons* args, Symbol* (*fn)(agent*, wme*, voi
                        c = c->rest;
                     
         if (c != NIL) { 
-            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);    
-            //return thisAgent->symbolManager->make_int_constant(reinterpret_cast<long>(set_id->slots));
+            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);
+            Symbol* param_level_2       = NIL;
+            Symbol* param_level_3       = NIL;
+            
+            // Optional nesting
+            c = c->rest;
+            if (c != NIL) { 
+                param_level_2 = static_cast<symbol_struct*>(c->first); 
+                c = c->rest;
+                if (c != NIL) 
+                    param_level_3 = static_cast<symbol_struct*>(c->first);
+            }
 
-            // Find the slot that matches the attr_name_sym
-            for(struct slot_struct* slot = set_id->slots; slot != NIL; slot = slot->next) {
-                Symbol* attr_name_sim = slot->attr;
-                if (param_attr_name_sym == attr_name_sim) {
-                    for (wme* wme_to_process = slot->wmes; wme_to_process != NIL; wme_to_process = wme_to_process->next) {
-                        Symbol* error = fn(thisAgent, wme_to_process, data);
-                        if (error != NIL) {
-                            return error;
+            for (wme* cwme = get_wmes_for_named_slot(set_id, param_attr_name_sym); cwme != NIL; cwme = cwme->next) {
+                // The following if statement handles nested values inside of a structure up to two levels.
+                // It can handle multi-valued attributes at all levels
+                if (!param_level_2) {
+                    Symbol* error = fn(thisAgent, cwme, data);    
+                    if (error != NIL) { return error; }
+                } else {
+                    for(wme* cwme2 = get_wmes_for_named_slot(cwme->value, param_level_2); cwme2 != NIL; cwme2 = cwme2->next) {
+                        if(!param_level_3) {
+                            Symbol* error = fn(thisAgent, cwme2, data);    
+                            if (error != NIL) { return error; }
+                        } else {
+                            for(wme* cwme3 = get_wmes_for_named_slot(cwme2->value, param_level_3); cwme3 != NIL; cwme3 = cwme3->next) {
+                                Symbol* error = fn(thisAgent, cwme3, data);    
+                                if (error != NIL) { return error; }
+                            }
                         }
                     }
                 }
@@ -1854,6 +1885,8 @@ Symbol* set_reduce(agent* thisAgent, cons* args, Symbol* (*fn)(agent*, wme*, voi
     }
     return NIL;
 }
+
+
 
 struct wme_val_stats {
 
@@ -2156,14 +2189,14 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("max"), max_rhs_function_code, -1, true, false, 0, true);
 
     /* RHS set functions */
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-count"), set_count_rhs_function_code, 2, true, false, 0, true);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-sum"), set_sum_rhs_function_code, 2, true, false, 0, true);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-multiply"), set_multiply_rhs_function_code, 2, true, false, 0, true);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-min"), set_min_rhs_function_code, 2, true, false, 0, true);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-max"), set_max_rhs_function_code, 2, true, false, 0, true);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-range"), set_range_rhs_function_code, 2, true, false, 0, true);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mean"), set_mean_rhs_function_code, 2, true, false, 0, true);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-stdev"), set_stdev_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-count"), set_count_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-sum"), set_sum_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-multiply"), set_multiply_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-min"), set_min_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-max"), set_max_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-range"), set_range_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mean"), set_mean_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-stdev"), set_stdev_rhs_function_code, -1, true, false, 0, true);
 
     /* RHS trigonometry functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"), sin_rhs_function_code, 1, true, false, 0, true);
