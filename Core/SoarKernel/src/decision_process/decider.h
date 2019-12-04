@@ -25,6 +25,8 @@ class SoarDecider
         SoarDecider(agent* myAgent);
         ~SoarDecider() {};
 
+        void before_run();
+        void get_run_result_string(std::string &runResultStr);
         void clean_up_for_agent_deletion();
 
         /* Settings and cli command related functions */
@@ -35,6 +37,9 @@ class SoarDecider
 
         agent*                      thisAgent;
         Output_Manager*             outputManager;
+        uint64_t					last_dc;
+        uint64_t					last_fc;
+        uint64_t					last_cl;
 
         void get_enabled_module_strings(std::string &enabledStr, std::string &disabledStr);
         int get_state_stack_string(std::string &stateStackStr);

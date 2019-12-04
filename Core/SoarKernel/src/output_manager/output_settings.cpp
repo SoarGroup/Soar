@@ -160,7 +160,7 @@ const std::string OM_Parameters::get_agent_channel_string(agent* thisAgent)
                         tempStringStream << ", " << (i+1);
                     }
                 } else {
-                    tempStringStream << i;
+                    tempStringStream << (i+1);
                     isFirst = false;
                 }
             }
@@ -187,14 +187,14 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
     outputManager->printa(thisAgent, "=======================================================\n");
     outputManager->printa(thisAgent, "-           Output Sub-Commands and Options           -\n");
     outputManager->printa(thisAgent, "=======================================================\n");
-    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output", "[? | help]", 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output ?", " ", 55).c_str());
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("enabled",enabled->get_string(), 55).c_str(), "Globally turn off all output");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("console", stdout_enabled->get_string(), 55).c_str(), "Send output to std::out for debugging");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("callbacks", callback_enabled->get_string(), 55).c_str(), "Send output to standard agent print callback");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output enabled",enabled->get_string(), 55).c_str(), "Globally turn off all output");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output console", stdout_enabled->get_string(), 55).c_str(), "Send output to std::out for debugging");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output callbacks", callback_enabled->get_string(), 55).c_str(), "Send output to standard agent print callback");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "%s   %-Controls whether agent trace channel prints\n", concatJustified("agent-logs", "<channel-number> [on | off]", 55).c_str());
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("agent-writes", agent_writes->get_string(), 55).c_str(), "Print output from RHS (write) function");
+    outputManager->printa_sf(thisAgent, "%s   %-Controls whether agent trace channel prints\n", concatJustified("output agent-logs", "<channel-number> [on | off]", 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output agent-writes", agent_writes->get_string(), 55).c_str(), "Print output from RHS (write) function");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output log", "[--append | -A] <filename>", 55).c_str(), "Log all output to file");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output log", "--add <string>", 55).c_str());
@@ -202,9 +202,9 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output command-to-file", "[-a] <file> <cmd> [args]", 55).c_str(), "Log execution of single command");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("echo-commands", echo_commands->get_string(), 55).c_str(), "Echo commands to debugger");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("print-depth", print_depth->get_string(), 55).c_str(), "Default print depth for 'print'");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("warnings", warnings->get_string(), 55).c_str(), "Print all warnings");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output echo-commands", echo_commands->get_string(), 55).c_str(), "Echo commands to debugger");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output print-depth", print_depth->get_string(), 55).c_str(), "Default print depth for 'print'");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output warnings", warnings->get_string(), 55).c_str(), "Print all warnings");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n\n");
     outputManager->printa_sf(thisAgent, "To view/change a setting: %-%- output <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%- help output\n");

@@ -28,7 +28,6 @@
 
 #include "kernel.h"
 
-#include "debug_inventories.h"
 #include "mem.h"
 
 typedef char* rhs_value;
@@ -36,14 +35,10 @@ typedef struct rhs_struct
 {
     Symbol*             referent;
     uint64_t            inst_identity;          /* instantiation identity ID */
+    uint64_t            cv_id;
     Identity*           identity;
     uint64_t            identity_id_unjoined;   /* cached value only used for the explainer */
     bool                was_unbound_var;        /* used by re-orderer */
-
-    #ifdef DEBUG_RHS_SYMBOL_INVENTORY
-    uint64_t            r_id;
-    #endif
-
 } rhs_info;
 typedef rhs_info* rhs_symbol;
 
@@ -86,9 +81,6 @@ typedef struct action_struct
     rhs_value               value;   /* for FUNCALL_ACTION's, this holds the funcall */
     rhs_value               referent;
     SupportType             support;
-    #ifdef DEBUG_RHS_SYMBOL_INVENTORY
-    uint64_t                a_id;
-    #endif
     struct action_struct*   next;
 } action;
 
@@ -102,8 +94,8 @@ typedef struct binding_structure
 /* -- RHS Methods-- */
 action*     make_action(agent* thisAgent);
 action*     copy_action(agent* thisAgent, action* pAction);
-rhs_value   allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pInstIdentity, Identity* pIdentity = NULL_IDENTITY_SET, bool pWasUnbound = false);
-rhs_value   allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pInstIdentity, Identity* pIdentity = NULL_IDENTITY_SET, bool pWasUnbound = false);
+rhs_value   allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pInstIdentity, uint64_t pChunkIdentity, Identity* pIdentity = NULL_IDENTITY_SET, bool pWasUnbound = false);
+rhs_value   allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pInstIdentity, uint64_t pChunkIdentity, Identity* pIdentity = NULL_IDENTITY_SET, bool pWasUnbound = false);
 rhs_value   create_RHS_value(agent* thisAgent, rhs_value rv, condition* cond, char first_letter, ExplainTraceType ebcTraceType = WM_Trace);
 action*     create_RHS_action_list(agent* thisAgent, action* actions, condition* cond, ExplainTraceType ebcTraceType = WM_Trace);
 void        deallocate_rhs_value(agent* thisAgent, rhs_value rv);

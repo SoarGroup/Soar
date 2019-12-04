@@ -8,8 +8,6 @@
 #include "symbol_manager.h"
 
 #include "agent.h"
-#include "debug_inventories.h"
-#include "dprint.h"
 #include "mem.h"
 #include "output_manager.h"
 #include "production.h"
@@ -622,7 +620,7 @@ void Symbol_Manager::create_predefined_symbols()
 
     // NLD 11/11
     soarSymbols.non_numeric_count_symbol = make_str_constant("non-numeric-count");
-
+    soarSymbols.constant_symbol = make_str_constant("constant");
     soarSymbols.conflict_symbol = make_str_constant("conflict");
     soarSymbols.tie_symbol = make_str_constant("tie");
     soarSymbols.item_symbol = make_str_constant("item");
@@ -786,6 +784,7 @@ void Symbol_Manager::release_predefined_symbols()
 {
     symbol_remove_ref(&(soarSymbols.crlf_symbol));
     symbol_remove_ref(&(soarSymbols.at_symbol));
+    symbol_remove_ref(&(soarSymbols.constant_symbol));
     symbol_remove_ref(&(soarSymbols.problem_space_symbol));
     symbol_remove_ref(&(soarSymbols.state_symbol));
     symbol_remove_ref(&(soarSymbols.operator_symbol));
@@ -903,38 +902,6 @@ void Symbol_Manager::release_predefined_symbols()
 
 void Symbol_Manager::deallocate_symbol(Symbol*& sym)
 {
-
-    #ifdef DEBUG_TRACE_REFCOUNT_FOR
-        std::string strName(sym->to_string());
-        if (strName == DEBUG_TRACE_REFCOUNT_FOR)
-        {
-            std::string caller_string;
-            get_stacktrace(caller_string);
-            //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
-            if (is_DT_mode_enabled(DT_ID_LEAKING))
-            {
-                std::cout << "DA | " << strName.c_str() << " |" << sym->reference_count << " | " << caller_string.c_str() << "\n";
-            }
-        }
-    #else
-        dprint(DT_DEALLOCATE_SYMBOL, "DEALLOCATE symbol %y\n", sym);
-
-        /* If you need to print out deallocations after agent is deleted */
-        //if (is_DT_mode_enabled(DT_DEALLOCATE_SYMBOL))
-        //{
-        //    char msg[256];
-        //    /* ensure null termination */
-        //    msg[0] = 0;
-        //    msg[255] = 0;
-        //    SNPRINTF(msg, 256, "DEALLOCATE symbol %s\n", sym->to_string());
-        //    thisAgent->outputManager->print(msg);
-        //}
-
-        /* If you need to print out the stack trace when a deallocations happens */
-        //std::string caller_string;
-        //get_stacktrace(caller_string);
-        //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
-    #endif
     switch (sym->symbol_type)
     {
         case VARIABLE_SYMBOL_TYPE:

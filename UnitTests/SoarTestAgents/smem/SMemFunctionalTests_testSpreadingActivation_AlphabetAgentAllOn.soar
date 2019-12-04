@@ -1,10 +1,10 @@
 wma --set forget-wme lti
-
+wma --set forgetting on
 wma --set activation on
 smem --set base-unused-age-offset 500
 smem --set activation-mode base-level
 smem --set base-update-policy naive
-smem --set spreading-depth-limit 2
+smem --set spreading-depth-limit 1
 smem --set spreading-loop-avoidance on
 
 smem --set spreading-limit 1000
@@ -18,7 +18,7 @@ smem --set spreading on
 
 chunk never
 
-smem -a {(<lti> ^fake-letter <something>)}
+smem -a {(@9000 ^fake-letter @90001)}
 
 sp {success
     (state <s> ^mode recall
@@ -931,7 +931,22 @@ sp {apply*initialize-alphabet
 sp {propose*retrieve-by-letter
 (state <s> ^superstate nil
           -^current-letter-lti <lti>
-           ^current-letter <alpha>)
+           ^current-letter <alpha>
+          -^previous-letter-lti <any>)
+-->
+(<s> ^operator <o> +)
+(<o> ^name retrieve-current-letter
+     ^current-letter <alpha>)
+(write | Retrieving by current letter | <alpha> |.|)
+}
+
+sp {propose*retrieve-by-letter2
+(state <s> ^superstate nil
+          -^current-letter-lti <lti>
+           ^current-letter <alpha>
+           ^previous-letter-lti <different-lti>)
+(<different-lti> ^letter <some-letter>
+                -^used <asdf>)
 -->
 (<s> ^operator <o> +)
 (<o> ^name retrieve-current-letter
@@ -942,10 +957,23 @@ sp {propose*retrieve-by-letter
 sp {propose*do-retrieve
 (state <s> ^superstate.operator.name retrieve-current-letter
            ^smem.command <cmd>
-           ^superstate.operator.current-letter <alpha>)
+           ^superstate.operator.current-letter <alpha>
+          -^superstate.previous-letter-lti.letter <some-letter>)
 (<cmd>    -^query <cue>)
 -->
 (<s>       ^operator <o> +)
+(<o>       ^name do-retrieve)
+}
+
+sp {propose*do-retrieve2
+(state <s> ^superstate.operator.name retrieve-current-letter
+           ^smem.command <cmd>
+           ^superstate.operator.current-letter <alpha>
+           ^superstate.previous-letter-lti <some-lti>)
+(<some-lti> ^letter <aletter> -^used <whateverstuff>)
+(<cmd>    -^query <cue>)
+-->
+(<s>       ^operator <o> + >)
 (<o>       ^name do-retrieve)
 }
 
