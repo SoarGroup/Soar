@@ -131,7 +131,8 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading_b = new soar_module::decimal_param("spreading-b", 1.0, new  soar_module::gt_predicate<double>(0, true), new soar_module::f_predicate<double>());
     add(spreading_b);
     //total constant offset.
-    spreading_c = new soar_module::decimal_param("spreading-c", 0.0, new  soar_module::gt_predicate<double>(std::numeric_limits<double>::lowest(), false), new soar_module::f_predicate<double>());
+    spreading_c = new soar_module::decimal_param("spreading-c", 0.0, new  soar_module::btw_predicate<double>(-100.0, 100.0, false), new soar_module::f_predicate<double>());
+    // hard-coded range is a practical limitation for traditionally-reported spread values. THE CORRECT IMPLEMENTATION USES THE FORMAL LIMITS OF DOUBLE THERE.
     add(spreading_c);
 
     // spreading continue probability - determines the decay over edge distances when edge weights are not present.
@@ -384,7 +385,7 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-baseline", spreading_baseline->get_string(), 55).c_str(), "1 > decimal > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-a", spreading_a->get_string(), 55).c_str(), "> 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-b", spreading_b->get_string(), 55).c_str(), "> 0");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-c", spreading_c->get_string(), 55).c_str(), "> 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-c", spreading_c->get_string(), 55).c_str(), "-100 < decimal < 100 (temporarily hard-coded limits)");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-continue-probability", spreading_continue_probability->get_string(), 55).c_str(), "1 > decimal > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-loop-avoidance", spreading_loop_avoidance->get_string(), 55).c_str(), "on, off");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-edge-updating", spreading_edge_updating->get_string(), 55).c_str(), "on, off");
