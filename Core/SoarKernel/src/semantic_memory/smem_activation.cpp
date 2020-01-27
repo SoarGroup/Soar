@@ -1389,7 +1389,13 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                         acts->recipient_decomposition_list.find(*candidate)->second.source_to_network_factor.emplace(std::make_pair(calc_current_spread->column_int(4),((double)(calc_current_spread->column_double(2))/(calc_current_spread->column_double(1)))));
                     }
                     //This should likely be removed in favor of the better-integrated version implemented within the RAT_testing_development_branch, but for now Peter wanted to have a "no-fan" option for spreading.
-                    raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));
+                    if (settings->spreading_remove_fan->get_value() == true) {
+                        raw_prob = wma_multiplicative_factor*((double)(calc_current_spread->column_double(2)));
+                    }
+                    else
+                    {
+                        raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));
+                    }
                 }
                 //offset = (settings->spreading_baseline->get_value())/(calc_spread->column_double(1));
                 offset = (settings->spreading_baseline->get_value())/baseline_denom;//(settings->spreading_limit->get_value());

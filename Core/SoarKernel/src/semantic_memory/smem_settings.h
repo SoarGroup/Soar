@@ -64,6 +64,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::decimal_param* inhibition_scale;
         soar_module::decimal_param* inhibition_decay;
         soar_module::decimal_param* spreading_attention_decay;
+        soar_module::boolean_param* spreading_remove_fan;
 
         void print_settings(agent* thisAgent);
         void print_summary(agent* thisAgent);

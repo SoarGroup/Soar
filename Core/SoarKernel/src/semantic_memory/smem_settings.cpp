@@ -177,6 +177,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // using attention augmentation as an additional spread source modification
     spreading_attention_decay = new soar_module::decimal_param("spreading-attention-decay", 0.9, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(spreading_attention_decay);
+
+    // using association strengths without fan
+    spreading_remove_fan = new soar_module::boolean_param("spreading-remove-fan", off, new soar_module::f_predicate<boolean>());
+    add(spreading_remove_fan);
 }
 
 //
@@ -392,6 +396,7 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-wma-source", spreading_wma_source->get_string(), 55).c_str(), "on, off");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-edge-update-factor", spreading_edge_update_factor->get_string(), 55).c_str(), "1 > decimal > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-attention-decay", spreading_attention_decay->get_string(), 55).c_str(), "1 > decimal > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-remove-fan", spreading_remove_fan->get_string(), 55).c_str(), "on, off (on removes fan)");
     outputManager->printa(thisAgent, "------------- Database Optimization Settings ----------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("lazy-commit", lazy_commit->get_string(), 55).c_str(), "Delay writing semantic store until exit");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("optimization", opt->get_string(), 55).c_str(), "safety, performance");
