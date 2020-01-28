@@ -364,7 +364,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
     double a = thisAgent->SMem->settings->spreading_a->get_value();
     double b = thisAgent->SMem->settings->spreading_b->get_value();
-    double c = thisAgent->SMem->settings->spreading_c->get_value();
+    double c = -thisAgent->SMem->settings->spreading_c->get_value();
 
     if (already_in_spread_table)
     {
@@ -1002,7 +1002,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
             recipient_end = recipient_set->end();
             double a = thisAgent->SMem->settings->spreading_a->get_value();
                 double b = thisAgent->SMem->settings->spreading_b->get_value();
-                double c = thisAgent->SMem->settings->spreading_c->get_value();
+                double c = -thisAgent->SMem->settings->spreading_c->get_value();
             for (recipient_it = recipient_begin; recipient_it != recipient_end; ++recipient_it)
             {//We need to decrement the number of sources that lead to each recipient for each recipient from this source.
                 assert(smem_recipient->find((*recipient_it)) != smem_recipient->end());
@@ -1179,7 +1179,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         {
             double a = thisAgent->SMem->settings->spreading_a->get_value();
                 double b = thisAgent->SMem->settings->spreading_b->get_value();
-                double c = thisAgent->SMem->settings->spreading_c->get_value();
+                double c = -thisAgent->SMem->settings->spreading_c->get_value();
             SQL->act_lti_fake_get->bind_int(1,*candidate);
             SQL->act_lti_fake_get->execute();
             double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
@@ -1439,7 +1439,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 //SQL->add_committed_fingerprint->execute(soar_module::op_reinit);
                 double a = thisAgent->SMem->settings->spreading_a->get_value();
                 double b = thisAgent->SMem->settings->spreading_b->get_value();
-                double c = thisAgent->SMem->settings->spreading_c->get_value();
+                double c = -thisAgent->SMem->settings->spreading_c->get_value();
 
                 if (already_in_spread_table)
                 {
