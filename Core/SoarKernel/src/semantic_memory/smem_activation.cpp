@@ -1125,7 +1125,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         std::list<std::pair<Symbol*,std::set<Symbol*>*>> traversals; //we keep track of the previous elements and the last element.
         std::set<Symbol*>* initial_visited_set = new std::set<Symbol*>();
         initial_visited_set->insert(attention_root);
-        attention_tally[attention_root->id->id->LTI_ID] = 1.0;
+        attention_tally[attention_root->id->LTI_ID] = 1.0;
 
         std::set<Symbol*>* temp_visited_set;
 
@@ -1133,9 +1133,9 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
 
         while(!traversals.empty())
         {//Currently only bounded in wm size.
-            Symbol* current_parent = traversals.begin()->first;
+            Symbol* current_parent = traversals.begin()->first;//The traversal dllfifoqueue has elements of pairs. the first of the pair is the most recently added element to the traversal.
 
-            for (s = attention_root->id->id->slots; s != NIL; s = s->next)
+            for (s = attention_root->id->slots; s != NIL; s = s->next)
             {
                 for (w = s->wmes; w != NIL; w = w->next)
                 { //w->value->id->LTI_ID
@@ -1155,9 +1155,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                             attention_tally[w->value->id->LTI_ID] = attention_tally[w->value->id->LTI_ID] + pow(decay_val,traversals.begin()->second->size());
                         }
                     }
-
                 }
-
 //                        for (w = s->acceptable_preference_wmes; w != NIL; w = w->next) // commented because i'm assuming that we don't have operators that are themselves LTI instances. - could be wrong.
 //                        {
 //                            return_val->push_back(w);
@@ -1366,26 +1364,47 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                         wma_multiplicative_factor = 1.0;
                     }
                 }
+                if (acts != NULL)
+                {
+                    if (acts->contributing_sources_to_WMA_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_WMA_factors.end())
+                    {
+                        acts->contributing_sources_to_WMA_factors[calc_current_spread->column_int(4)] = wma_multiplicative_factor;
+                    }
+                }
 
                 if (thisAgent->SMem->settings->spreading_wma_source->get_value())
                 {
                     if (attention_root && attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end())
                     {
                         wma_multiplicative_factor = wma_multiplicative_factor + attention_tally[calc_current_spread->column_int(4)];
+                        if (acts != NULL)
+                        {
+                            if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
+                            {
+                                acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = attention_tally[calc_current_spread->column_int(4)];
+                            }
+                        }
                     }
                 } else { //from sjj - peter, this lets you use attention even if WMA is off.
                     if (attention_root && attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end())
                     {
                         wma_multiplicative_factor = attention_tally[calc_current_spread->column_int(4)];
+                        if (acts != NULL)
+                        {
+                            if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
+                            {
+                                acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = attention_tally[calc_current_spread->column_int(4)];
+                            }
+                        }
                     }
                 }
                 {
                     if (acts != NULL)
                     {
-                        if (acts->contributing_sources_to_WMA_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_WMA_factors.end())
+                        /*if (acts->contributing_sources_to_WMA_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_WMA_factors.end())
                         {
                             acts->contributing_sources_to_WMA_factors[calc_current_spread->column_int(4)] = wma_multiplicative_factor;
-                        }
+                        }*/
                         acts->recipient_decomposition_list.find(*candidate)->second.source_to_network_factor.emplace(std::make_pair(calc_current_spread->column_int(4),((double)(calc_current_spread->column_double(2))/(calc_current_spread->column_double(1)))));
                     }
                     //This should likely be removed in favor of the better-integrated version implemented within the RAT_testing_development_branch, but for now Peter wanted to have a "no-fan" option for spreading.

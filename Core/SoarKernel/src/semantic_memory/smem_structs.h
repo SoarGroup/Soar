@@ -128,6 +128,7 @@ struct command_line_activation_metadata
 
     std::map<uint64_t,activation_decomposition> recipient_decomposition_list;
     std::map<uint64_t,double> contributing_sources_to_WMA_factors;
+    std::map<uint64_t,double> contributing_sources_to_Attention_factors;
     std::multimap<uint64_t,Symbol*> contributing_sources_to_instances;
     std::multimap<Symbol*,wma_decay_element*> instances_to_WMA_decay_elements;
     //std::map<std::pair<uint64_t,uint64_t>,double> source_and_recipient_to_network_factors;

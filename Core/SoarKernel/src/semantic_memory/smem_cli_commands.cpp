@@ -453,6 +453,9 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
                     (*result_message)->append(", WMA factor ");
                     to_string(acts.contributing_sources_to_WMA_factors.find(source)->second, temp_act,4,true);
                     (*result_message)->append(temp_act);
+                    (*result_message)->append(", Attention factor ");
+                    to_string(acts.contributing_sources_to_Attention_factors.find(source)->second, temp_act,4,true);
+                    (*result_message)->append(temp_act);
                     (*result_message)->append(";");
                 }
                 (*result_message)->append("]\n");
