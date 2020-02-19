@@ -1135,7 +1135,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         {//Currently only bounded in wm size.
             Symbol* current_parent = traversals.begin()->first;//The traversal dllfifoqueue has elements of pairs. the first of the pair is the most recently added element to the traversal.
 
-            for (s = attention_root->id->slots; s != NIL; s = s->next)
+            for (s = current_parent->id->slots; s != NIL; s = s->next)
             {
                 for (w = s->wmes; w != NIL; w = w->next)
                 { //w->value->id->LTI_ID
