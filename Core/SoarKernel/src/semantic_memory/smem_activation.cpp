@@ -1107,7 +1107,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     ////////////////////////////////////////////////////////////////////////////
     timers->spreading_7->start();
     ////////////////////////////////////////////////////////////////////////////
-    //Here, we add in Peter's attention multiplicatively to the wma_multiplicative_factor. This is done by a loop-avoiding breadth-first traversal. The traversal is managed by a traditional Queue (FIFO) (as a DLL).
+    //Here, we add in Peter's attention to the wma_multiplicative_factor. This is done by a loop-avoiding breadth-first traversal. The traversal is managed by a traditional Queue (FIFO) (as a DLL).
     // Each element in the queue is a trajectory so that loops can be avoided by inspecting if an element already exists in the trajectory. Before appending to the trajectory and adding that appended trajectory to the queue, the new "end" of the
     // new child will have its value (for attention) incremented by the right value. the length of the trajectory determines the amount added. Strictly decay, no loops, no fan. I assume that SMem has recorded what
     // "^attention" augmentation exists, if any. If such an augmentation does not exist, this is not performed.
@@ -1139,7 +1139,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
             {
                 for (w = s->wmes; w != NIL; w = w->next)
                 { //w->value->id->LTI_ID
-                    if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID && traversals.begin()->second->find(w->value) != traversals.begin()->second->end())
+                    if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID && traversals.begin()->second->find(w->value) == traversals.begin()->second->end())
                     {// we have a link to another lti instance that hasn't already been visited this traversal.
                         //We make a new set by copying the existing set. We then append the new value.
                         temp_visited_set = new std::set<Symbol*>(*(traversals.begin()->second));
@@ -1158,7 +1158,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
 
                 }
 
-//                        for (w = s->acceptable_preference_wmes; w != NIL; w = w->next) // assuming that we don't have operators that are themselves LTI instances. - could be wrong.
+//                        for (w = s->acceptable_preference_wmes; w != NIL; w = w->next) // commented because i'm assuming that we don't have operators that are themselves LTI instances. - could be wrong.
 //                        {
 //                            return_val->push_back(w);
 //                        }
