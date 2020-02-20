@@ -1149,10 +1149,18 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                         if (attention_tally.find(w->value->id->LTI_ID) == attention_tally.end())
                         {
                             attention_tally[w->value->id->LTI_ID] = pow(decay_val,traversals.begin()->second->size());
+                            if (attention_root->id->LTI_ID == w->value->id->LTI_ID)
+                            {
+                                std::cout << "this happened." << std::endl;
+                            }
                         }
                         else
                         {
                             attention_tally[w->value->id->LTI_ID] = attention_tally[w->value->id->LTI_ID] + pow(decay_val,traversals.begin()->second->size());
+                            if (attention_root->id->LTI_ID == w->value->id->LTI_ID)
+                            {
+                                std::cout << "actually, this happened." << std::endl;
+                            }
                         }
                     }
                 }
