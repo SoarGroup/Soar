@@ -802,9 +802,9 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
         if (king_id != NIL)
         {
             // success!
-            Symbol* act_sym = thisAgent->symbolManager->make_float_constant(cand_act);
+            Symbol* act_sym = thisAgent->symbolManager->make_float_constant(cand_act);//I need a list of cand_act values. ACTUALLY, that's already within all_king_ids.
             add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_act, act_sym);
-            thisAgent->symbolManager->symbol_remove_ref(&act_sym);
+            thisAgent->symbolManager->symbol_remove_ref(&act_sym);//For Peter's purposes, this has to change and instead be done later. I can wrap this here with an "if" based on the number to retrieve and then later just also do it (with the corresponding "else" as another if).
 
             add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, *(query.begin()));
             if (negquery)
@@ -820,8 +820,9 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
                 install_memory(state, king_id, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
             }
             else
-            {
+            {//Basically, for Peter's desired option to retrieve multiple results, I can loop over this. Instead of the below indexing into the first element of all_king_ids, I'd go through multiple up to a limit.
                 install_memory(state, (*(all_king_ids.rbegin())).second, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+                //Following the above iteration, I then create an additional structure that independently is a reference in order to the retrieved elements and their activations.
             }
         }
         else
