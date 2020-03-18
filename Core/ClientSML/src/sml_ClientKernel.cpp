@@ -134,7 +134,7 @@ void Kernel::InitEvents()
     RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
 
     // Register for load-library events (local client only)
-    if (!this->GetConnection()->IsRemoteConnection())
+    if (!GetConnection()->IsRemoteConnection())
     {
         RegisterForStringEvent(smlEVENT_LOAD_LIBRARY, &LoadLibraryHandler, NULL);
         RegisterForStringEvent(smlEVENT_TCL_LIBRARY_MESSAGE, &TclLibraryMessageHandler, NULL);
@@ -461,7 +461,7 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
             if (strcmp(sml_Names::kCommand_Event, pCommandName) == 0)
             {
                 // This is an event that is not agent specific
-                this->ReceivedEvent(&msg, pResponse) ;
+                ReceivedEvent(&msg, pResponse) ;
             }
         }
     }

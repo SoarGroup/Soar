@@ -220,7 +220,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
         }
 
         xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
-				json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+				//NORB json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 
         free_growable_string(thisAgent, gs);
     }
@@ -263,7 +263,7 @@ Symbol* trace_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
             }
 
             xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
-						json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+						//NORB json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 
             free_growable_string(thisAgent, gs);
         }
@@ -306,7 +306,7 @@ Symbol* log_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
             }
 
             xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
-						json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+						//NORB json_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
 
             free_growable_string(thisAgent, gs);
         }
