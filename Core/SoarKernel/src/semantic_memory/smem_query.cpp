@@ -821,7 +821,13 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
             }
             else
             {//Basically, for Peter's desired option to retrieve multiple results, I can loop over this. Instead of the below indexing into the first element of all_king_ids, I'd go through multiple up to a limit.
-                install_memory(state, (*(all_king_ids.rbegin())).second, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+            	std::set<std::pair<double,uint64_t>>::reverse_iterator first_result_it = all_king_ids.rbegin();
+            	std::set<std::pair<double,uint64_t>>::reverse_iterator last_result_it = all_king_ids.rend();
+            	std::set<std::pair<double,uint64_t>>::reverse_iterator result_it;
+            	for (result_it = first_result_it; result_it != last_result_it; ++result_it) {
+            		install_memory(state, (*(result_it)).second, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+            	}
+
                 //Following the above iteration, I then create an additional structure that independently is a reference in order to the retrieved elements and their activations.
             }
         }

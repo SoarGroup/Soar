@@ -126,6 +126,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     Symbol* retrieve;
     Symbol* math;
     uint64_t depth;
+    uint64_t breadth;
     bool update_LTI_Links = false;
     bool link_to_ltm = true;
     symbol_list prohibit;
@@ -253,6 +254,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             prohibit.clear();
             path = blank_slate;
             depth = 1;
+            breadth = 1;
             attention = NIL;
 
             // process top-level symbols
@@ -414,6 +416,17 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                             path = cmd_bad;
                         }
                     }
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_breadth)
+					{
+						if ((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						{
+							breadth = ((*w_p)->value->ic->value > 0) ? (*w_p)->value->ic->value : 1;
+						}
+						else
+						{
+							path = cmd_bad;
+						}
+					}
                     else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_attention)
                     {
                         attention = (*w_p)->value;
@@ -479,7 +492,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
-                    process_query(state, orquery, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install, NIL, attention);
+                    process_query(state, orquery, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, breadth, NIL, depth, wm_install, NIL, attention);
 
                     // add one to the cbr stat
                     thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);

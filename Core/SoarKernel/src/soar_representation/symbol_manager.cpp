@@ -697,6 +697,7 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.smem_sym_failure = make_str_constant("failure");
     soarSymbols.smem_sym_bad_cmd = make_str_constant("bad-cmd");
     soarSymbols.smem_sym_depth = make_str_constant("depth");
+    soarSymbols.smem_sym_breadth = make_str_constant("breadth");
     soarSymbols.smem_sym_store_new = make_str_constant("store-new");
     soarSymbols.smem_sym_overwrite = make_str_constant("link-to-new-ltm");
     soarSymbols.smem_sym_link_to_ltm = make_str_constant("link-to-ltm");
@@ -876,6 +877,7 @@ void Symbol_Manager::release_predefined_symbols()
     symbol_remove_ref(&(soarSymbols.smem_sym_failure));
     symbol_remove_ref(&(soarSymbols.smem_sym_bad_cmd));
     symbol_remove_ref(&(soarSymbols.smem_sym_depth));
+    symbol_remove_ref(&(soarSymbols.smem_sym_breadth));
     symbol_remove_ref(&(soarSymbols.smem_sym_store_new));
     symbol_remove_ref(&(soarSymbols.smem_sym_overwrite));
     symbol_remove_ref(&(soarSymbols.smem_sym_link_to_ltm));
