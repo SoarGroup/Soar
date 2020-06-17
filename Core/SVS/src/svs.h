@@ -13,6 +13,7 @@
 class command;
 class scene;
 class drawer;
+class image;
 
 /* working memory scene graph object - mediates between wmes and scene graph nodes */
 class sgwme : public sgnode_listener
@@ -129,6 +130,7 @@ class svs_state : public cliproxy
         svs_state*      parent;
         scene*          scn;
         sgwme*          root;
+        image*          img;
         soar_interface* si;
         
         Symbol* state;

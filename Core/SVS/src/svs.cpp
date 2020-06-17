@@ -13,6 +13,7 @@
 #include "sgnode.h"
 #include "soar_interface.h"
 #include "scene.h"
+#include "image.h"
 #include "common.h"
 #include "filter_table.h"
 #include "command_table.h"
@@ -167,7 +168,8 @@ void sgwme::delete_tag(const string& tag_name)
 
 svs_state::svs_state(svs* svsp, Symbol* state, soar_interface* si, scene* scn)
     : svsp(svsp), parent(NULL), state(state), si(si), level(0),
-      scene_num(-1), scene_num_wme(NULL), scn(scn), scene_link(NULL)
+      scene_num(-1), scene_num_wme(NULL), scn(scn), img(NULL),
+      scene_link(NULL)
 {
     assert(state->is_top_state());
     state->get_id_name(name);
@@ -177,7 +179,8 @@ svs_state::svs_state(svs* svsp, Symbol* state, soar_interface* si, scene* scn)
 svs_state::svs_state(Symbol* state, svs_state* parent)
     : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
       level(parent->level + 1), scene_num(-1),
-      scene_num_wme(NULL), scn(NULL), scene_link(NULL)
+      scene_num_wme(NULL), scn(NULL), img(NULL),
+      scene_link(NULL)
 {
     assert(state->get_parent_state() == parent->state);
     init();
@@ -220,6 +223,13 @@ void svs_state::init()
             scn->set_draw(true);
         }
     }
+    if (!img) {
+        img = new image();
+        if (parent) {
+            img->copy_from(parent->img);
+        }
+    }
+
     scn->refresh_draw();
     root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 }
