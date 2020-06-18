@@ -245,7 +245,7 @@ if compiler == 'g++':
         if GetOption('static'):
             cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 
-        # Hack by Lizie XXX
+        # XXX: How to add these only if needed and on linux?
         libs += ['roscpp', 'libpcl_common']
 
 elif compiler == 'msvc':
