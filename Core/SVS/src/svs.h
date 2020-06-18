@@ -103,6 +103,10 @@ class svs_state : public cliproxy
         {
             return scn;
         }
+        image*         get_image() const
+        {
+            return img;
+        }
         Symbol*        get_state()
         {
             return state;
@@ -157,6 +161,7 @@ class svs : public svs_interface, public cliproxy
         void state_deletion_callback(Symbol* goal);
         void output_callback();
         void input_callback();
+        void image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_img);
         void add_input(const std::string& in);
         std::string svs_query(const std::string& query);
         

@@ -246,7 +246,7 @@ if compiler == 'g++':
             cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 
         # Hack by Lizie XXX
-        libs += ['roscpp', 'rostime', 'rosconsole']
+        libs += ['roscpp', 'libpcl_common']
 
 elif compiler == 'msvc':
     cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj', '/nowarn:4503']

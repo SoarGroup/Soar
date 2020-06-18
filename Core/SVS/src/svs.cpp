@@ -374,7 +374,7 @@ svs::svs(agent* a)
     draw = new drawer();
 
     ros_interface::init_ros();
-    ri = new ros_interface();
+    ri = new ros_interface(this);
     ros_interface::start_ros();
 }
 
@@ -489,6 +489,16 @@ void svs::input_callback()
     }
 
     svs::filter_dirty_bit = false;
+}
+
+void svs::image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_img)
+{
+    vector<svs_state*>::iterator i;
+
+    for (i = state_stack.begin(); i != state_stack.end(); ++i)
+    {
+        (**i).get_image()->update_image(new_img);
+    }
 }
 
 /*

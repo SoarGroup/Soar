@@ -7,9 +7,11 @@
 #include "gazebo_msgs/ModelStates.h"
 #include "sensor_msgs/JointState.h"
 
+class svs;
+
 class ros_interface {
 public:
-    ros_interface();
+    ros_interface(svs* sp);
     ~ros_interface();
     static void init_ros();
     static void start_ros();
@@ -19,11 +21,15 @@ private:
     void set_up_subscribers();
     void objects_callback(const gazebo_msgs::ModelStates::ConstPtr& msg);
     void joints_callback(const sensor_msgs::JointState::ConstPtr & msg);
+    void pc_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& msg);
 
     ros::NodeHandle n;
     ros::Subscriber objects_sub;
     ros::Subscriber joints_sub;
+    ros::Subscriber pc_sub;
     static ros::AsyncSpinner* spinner;
+
+    svs* svs_ptr;
 };
 
 #endif
