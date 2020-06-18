@@ -224,7 +224,7 @@ if compiler == 'g++':
         # check if the compiler supports -fvisibility=hidden (GCC >= 4)
         if gcc_ver[0] > 3:
             env.Append(CPPFLAGS='-fvisibility=hidden')
-            
+
             config = Configure(env)
             if config.TryCompile('', '.cpp'):
                 cflags.append('-fvisibility=hidden')
@@ -244,6 +244,9 @@ if compiler == 'g++':
 
         if GetOption('static'):
             cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
+
+        # Hack by Lizie XXX
+        libs += ['roscpp', 'rostime', 'rosconsole']
 
 elif compiler == 'msvc':
     cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj', '/nowarn:4503']

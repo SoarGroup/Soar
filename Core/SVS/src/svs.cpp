@@ -372,6 +372,10 @@ svs::svs(agent* a)
 {
     si = new soar_interface(a);
     draw = new drawer();
+
+    ros_interface::init_ros();
+    ri = new ros_interface();
+    ros_interface::start_ros();
 }
 
 bool svs::filter_dirty_bit = true;

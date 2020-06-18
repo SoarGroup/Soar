@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include "soar_interface.h"
+#include "ros_interface.h"
 #include "sgnode.h"
 #include "common.h"
 #include "svs_interface.h"
@@ -205,6 +206,7 @@ class svs : public svs_interface, public cliproxy
         void cli_disconnect_viewer(const std::vector<std::string>& args, std::ostream& os);
         
         soar_interface*           si;
+        ros_interface*            ri;
         std::vector<svs_state*>   state_stack;
         std::vector<std::string>  env_inputs;
         std::string               env_output;
