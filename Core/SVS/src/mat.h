@@ -433,6 +433,9 @@ class transform3
         transform3(char type, const vec3& v);
         transform3(const vec3& p, const vec3& r, const vec3& s);
         void to_prs(vec3& p, vec4& r, vec3& s) const;
+        void position(vec3& p) const;
+        void rotation(vec4& r) const;
+        void rotation(Eigen::Quaterniond& r) const;
         
         vec3 operator()(const vec3& v) const
         {

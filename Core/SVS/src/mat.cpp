@@ -476,17 +476,43 @@ transform3::transform3(const vec3& p, const vec3& r, const vec3& s)
 void transform3::to_prs(vec3& p, vec4& r, vec3& s) const
 {
     Eigen::Matrix3d rm, sm;
-    
+
     p = trans.translation();
     trans.computeRotationScaling(&rm, &sm);
-    
+
     Eigen::Quaterniond q(rm);
     r(0) = q.x();
     r(1) = q.y();
     r(2) = q.z();
     r(3) = q.w();
-    
+
     s(0) = sm(0, 0);
     s(1) = sm(1, 1);
     s(2) = sm(2, 2);
+}
+
+void transform3::position(vec3& p) const
+{
+    p = trans.translation();
+}
+
+void transform3::rotation(vec4& r) const
+{
+    Eigen::Matrix3d rm, sm;
+    trans.computeRotationScaling(&rm, &sm);
+
+    Eigen::Quaterniond q(rm);
+    r(0) = q.x();
+    r(1) = q.y();
+    r(2) = q.z();
+    r(3) = q.w();
+}
+
+void transform3::rotation(Eigen::Quaterniond& r) const
+{
+    Eigen::Matrix3d rm, sm;
+    trans.computeRotationScaling(&rm, &sm);
+
+    Eigen::Quaterniond q(rm);
+    r = q;
 }

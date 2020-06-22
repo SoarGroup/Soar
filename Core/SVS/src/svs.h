@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <boost/thread.hpp>
 #include "soar_interface.h"
 #include "ros_interface.h"
 #include "sgnode.h"
@@ -214,6 +215,7 @@ class svs : public svs_interface, public cliproxy
         ros_interface*            ri;
         std::vector<svs_state*>   state_stack;
         std::vector<std::string>  env_inputs;
+        boost::mutex              input_mtx;
         std::string               env_output;
         mutable drawer*           draw;
         scene*                    scn_cache;      // temporarily holds top-state scene during init

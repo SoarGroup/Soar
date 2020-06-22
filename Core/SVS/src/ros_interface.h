@@ -1,11 +1,14 @@
 #ifndef ROS_INTERFACE_H
 #define ROS_INTERFACE_H
 
+#include <map>
 #include <ros/ros.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
 #include "gazebo_msgs/ModelStates.h"
 #include "sensor_msgs/JointState.h"
+
+#include "mat.h"
 
 class svs;
 
@@ -18,6 +21,11 @@ public:
     static void stop_ros();
 
 private:
+    static const double POS_THRESH;
+    static const double ROT_THRESH;
+    bool t_diff(vec3& p1, vec3& p2);
+    bool t_diff(Eigen::Quaterniond& q1, Eigen::Quaterniond& q2);
+
     void set_up_subscribers();
     void objects_callback(const gazebo_msgs::ModelStates::ConstPtr& msg);
     void joints_callback(const sensor_msgs::JointState::ConstPtr & msg);
@@ -30,6 +38,7 @@ private:
     static ros::AsyncSpinner* spinner;
 
     svs* svs_ptr;
+    std::map<std::string, transform3> last_objs;
 };
 
 #endif

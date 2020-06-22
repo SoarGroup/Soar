@@ -435,6 +435,7 @@ void svs::state_deletion_callback(Symbol* state)
 
 void svs::proc_input(svs_state* s)
 {
+    boost::lock_guard<boost::mutex> guard(input_mtx);
     for (size_t i = 0; i < env_inputs.size(); ++i)
     {
         strip(env_inputs[i], " \t");
@@ -505,9 +506,12 @@ void svs::image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_
  This is a naive implementation. If this method is called concurrently
  with proc_input, the env_inputs vector will probably become
  inconsistent. This eventually needs to be replaced by a thread-safe FIFO.
+ XXX: Lizzie used a mutex to lock the the env_inputs structure since
+      ROS will update from a separate thread.
 */
 void svs::add_input(const string& in)
 {
+    boost::lock_guard<boost::mutex> guard(input_mtx);
     split(in, "\n", env_inputs);
 }
 
