@@ -16,6 +16,7 @@ class command;
 class scene;
 class drawer;
 class image;
+class image_descriptor;
 
 /* working memory scene graph object - mediates between wmes and scene graph nodes */
 class sgwme : public sgnode_listener
@@ -129,7 +130,7 @@ class svs_state : public cliproxy
         
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         void cli_out(const std::vector<std::string>& args, std::ostream& os);
-        
+
         std::string     name;
         svs*            svsp;
         int             level;
@@ -137,11 +138,13 @@ class svs_state : public cliproxy
         scene*          scn;
         sgwme*          root;
         image*          img;
+        image_descriptor* imwme;
         soar_interface* si;
-        
+
         Symbol* state;
         Symbol* svs_link;
         Symbol* scene_link;
+        Symbol* img_link;
         Symbol* cmd_link;
         
         int scene_num;

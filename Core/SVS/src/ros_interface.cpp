@@ -7,12 +7,11 @@
 
 #include "svs.h"
 
-ros::AsyncSpinner* ros_interface::spinner = 0;
 const double ros_interface::POS_THRESH = 0.001; // 1 mm
 const double ros_interface::ROT_THRESH = 0.017; // approx 1 deg
 
 
-ros_interface::ros_interface(svs* sp) {
+ros_interface::ros_interface(svs* sp) : image_source("none") {
     svs_ptr = sp;
     set_up_subscribers();
 }
@@ -37,6 +36,7 @@ void ros_interface::start_ros() {
 
 void ros_interface::stop_ros() {
     if (spinner) spinner->stop();
+    image_source = "none";
 }
 
 bool ros_interface::t_diff(vec3& p1, vec3& p2) {
@@ -58,6 +58,7 @@ void ros_interface::set_up_subscribers() {
     joints_sub = n.subscribe("joint_states", 5, &ros_interface::joints_callback, this);
 
     pc_sub = n.subscribe("head_camera/depth_registered/points", 5, &ros_interface::pc_callback, this);
+    image_source = "fetch";
 }
 
 // when a new world state is received

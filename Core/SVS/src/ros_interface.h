@@ -17,8 +17,10 @@ public:
     ros_interface(svs* sp);
     ~ros_interface();
     static void init_ros();
-    static void start_ros();
-    static void stop_ros();
+    void start_ros();
+    void stop_ros();
+
+    std::string get_image_source() { return image_source; }
 
 private:
     static const double POS_THRESH;
@@ -35,7 +37,8 @@ private:
     ros::Subscriber objects_sub;
     ros::Subscriber joints_sub;
     ros::Subscriber pc_sub;
-    static ros::AsyncSpinner* spinner;
+    std::string image_source;
+    ros::AsyncSpinner* spinner;
 
     svs* svs_ptr;
     std::map<std::string, transform3> last_objs;

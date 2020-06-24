@@ -36,7 +36,7 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
 {
     node->listen(this);
     id_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_id());
-    
+
     if (node->is_group())
     {
         group_node* g = node->as_group();
@@ -210,6 +210,8 @@ void svs_state::init()
     svs_link = si->get_wme_val(si->make_svs_wme(state));
     cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
     scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
+    img_link = si->get_wme_val(si->make_id_wme(svs_link, cs.image));
+
     if (!scn)
     {
         if (parent)
@@ -232,6 +234,7 @@ void svs_state::init()
 
     scn->refresh_draw();
     root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
+    imwme = new image_descriptor(si, img_link, img);
 }
 
 void svs_state::update_scene_num()
@@ -375,7 +378,7 @@ svs::svs(agent* a)
 
     ros_interface::init_ros();
     ri = new ros_interface(this);
-    ros_interface::start_ros();
+    ri->start_ros();
 }
 
 bool svs::filter_dirty_bit = true;
@@ -390,7 +393,7 @@ svs::~svs()
     {
         delete scn_cache;
     }
-    
+
     delete si;
     delete draw;
 }
@@ -494,11 +497,14 @@ void svs::input_callback()
 
 void svs::image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_img)
 {
-    vector<svs_state*>::iterator i;
+    if (!enabled) return;
+    if (!state_stack.front()->get_image()) return;
 
-    for (i = state_stack.begin(); i != state_stack.end(); ++i)
-    {
-        (**i).get_image()->update_image(new_img);
+    // Updates only the top state image for now.
+    state_stack.front()->get_image()->update_image(new_img);
+
+    if (ri->get_image_source() != state_stack.front()->get_image()->get_source()) {
+        state_stack.front()->get_image()->set_source(ri->get_image_source());
     }
 }
 
