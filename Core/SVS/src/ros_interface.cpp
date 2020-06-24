@@ -7,6 +7,7 @@
 
 #include "svs.h"
 
+// Thresholds for determining when to update the scene graph
 const double ros_interface::POS_THRESH = 0.001; // 1 mm
 const double ros_interface::ROT_THRESH = 0.017; // approx 1 deg
 
@@ -20,6 +21,10 @@ ros_interface::~ros_interface() {
     stop_ros();
 }
 
+// Static funtion to simply call ros::init, which MUST be called
+// before creating the first NodeHandle. The NodeHandle is created
+// in the class constructor, hence the need for this to be available
+// without a class instance.
 void ros_interface::init_ros() {
     int argc = 0;
     char* argv;
@@ -39,14 +44,22 @@ void ros_interface::stop_ros() {
     image_source = "none";
 }
 
+// Thresholded difference between two vectors. Allows us to not
+// update the scene graph minor object movements that are below
+// the threshold.
 bool ros_interface::t_diff(vec3& p1, vec3& p2) {
+    // Euclidean distance
     if (sqrt(pow(p1.x() - p2.x(), 2) +
              pow(p1.y() - p2.y(), 2) +
              pow(p1.z() - p2.z(), 2)) > POS_THRESH) return true;
     return false;
 }
 
+// Thresholded difference between two quaterions. Allows us to not
+// update the scene graph minor object rotations that are below
+// the threshold.
 bool ros_interface::t_diff(Eigen::Quaterniond& q1, Eigen::Quaterniond& q2) {
+    // Calculating the angle between to quaternions
     double a = 2 * acos(q1.dot(q2));
     if (a > ROT_THRESH) return true;
     return false;
@@ -61,8 +74,10 @@ void ros_interface::set_up_subscribers() {
     image_source = "fetch";
 }
 
-// when a new world state is received
+// Adds relevant commands to the input list in the main SVS class
+// when a new world state is received from Gazebo
 void ros_interface::objects_callback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
+    // First translate the message into a map of object names->xforms
     std::map<std::string, transform3> current_objs;
 
     for (int i = 0; i <  msg->name.size(); i++) {
@@ -83,10 +98,17 @@ void ros_interface::objects_callback(const gazebo_msgs::ModelStates::ConstPtr& m
         current_objs.insert(std::pair<std::string, transform3>(n, t));
     }
 
+    // XXX: Eventually want to use the map to directly update the scene graph
+    //      instead of going through SGEL. Will require threadsafe scene
+    //      graphs.
+
+    // Build up a string of commands in the stringsream
     std::stringstream cmds;
+    // But only bother sending the update to SVS if something changed
     bool objs_changed = false;
 
-    // Add commands
+    // ADD commands for NEW objects that are present in the current msg
+    // but are not present in SVS's scene graph
     for (std::map<std::string, transform3>::iterator i = current_objs.begin();
          i != current_objs.end(); i++) {
         if (last_objs.count(i->first) == 0) {
@@ -98,6 +120,7 @@ void ros_interface::objects_callback(const gazebo_msgs::ModelStates::ConstPtr& m
             i->second.rotation(rq);
             vec3 cur_rot = rq.toRotationMatrix().eulerAngles(0, 1, 2);
 
+            // SGEL
             cmds << "add " << n << " world ";
             cmds << "p " << cur_pose.x() << " " << cur_pose.y() << " " << cur_pose.z();
             cmds << " r " << cur_rot.x() << " " << cur_rot.y() << " " << cur_rot.z();
@@ -107,14 +130,18 @@ void ros_interface::objects_callback(const gazebo_msgs::ModelStates::ConstPtr& m
 
     for (std::map<std::string, transform3>::iterator i = last_objs.begin();
          i != last_objs.end(); i++) {
-        // Delete commands
+        // DELETE commands for objects that are NOT present in the msg but
+        // are still present in SVS's scene graph
         if (current_objs.count(i->first) == 0) {
             objs_changed = true;
+
+            // SGEL
             cmds << "delete " << i->first << " " << std::endl;
             continue;
         }
 
-        // Change commands
+        // CHANGE commands for objects that are present in both the msg and
+        // SVS scene graph but have changed position or rotation
         std::string n = i->first;
         vec3 last_pose;
         i->second.position(last_pose);
@@ -125,8 +152,11 @@ void ros_interface::objects_callback(const gazebo_msgs::ModelStates::ConstPtr& m
         Eigen::Quaterniond cur_rot;
         current_objs[n].rotation(cur_rot);
 
+        // Check that at least one of the differences is above the thresholds
         if (t_diff(last_pose, cur_pose) || t_diff(last_rot, cur_rot)) {
             objs_changed = true;
+
+            // SGEL
             cmds << "change " << n;
             if (t_diff(last_pose, cur_pose)) {
                 cmds << " p " << cur_pose.x() << " " << cur_pose.y() << " " << cur_pose.z();
@@ -141,6 +171,7 @@ void ros_interface::objects_callback(const gazebo_msgs::ModelStates::ConstPtr& m
 
     last_objs = current_objs;
     if (objs_changed) {
+        // Send the compiled commands to the SVS input processor
         svs_ptr->add_input(cmds.str());
     }
 }

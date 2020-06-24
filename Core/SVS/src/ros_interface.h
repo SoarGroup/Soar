@@ -12,6 +12,20 @@
 
 class svs;
 
+/*
+ * ros_interface class
+ *
+ * Provides the necessary boilerplate to make SVS into a ROS
+ * node, such as the NodeHandle, init functionality, and subscribers.
+ * Includes callback functions that take ROS input and put point
+ * cloud data into the image holders and update the scene graph from
+ * Gazebo objects.
+ *
+ * XXX: Need to add the option to turn off the image updating and the
+ *      object updating so that we could use one or the other.
+ *
+ */
+
 class ros_interface {
 public:
     ros_interface(svs* sp);
