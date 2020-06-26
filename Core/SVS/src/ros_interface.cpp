@@ -12,9 +12,10 @@ const double ros_interface::POS_THRESH = 0.001; // 1 mm
 const double ros_interface::ROT_THRESH = 0.017; // approx 1 deg
 
 
-ros_interface::ros_interface(svs* sp) : image_source("none") {
+ros_interface::ros_interface(svs* sp)
+    : image_source("none"), update_image(false), update_sg(false) {
     svs_ptr = sp;
-    set_up_subscribers();
+    set_help("Control connections to ROS topics.");
 }
 
 ros_interface::~ros_interface() {
@@ -65,13 +66,38 @@ bool ros_interface::t_diff(Eigen::Quaterniond& q1, Eigen::Quaterniond& q2) {
     return false;
 }
 
-// Subscribes to the necessary ROS topics
-void ros_interface::set_up_subscribers() {
-    objects_sub = n.subscribe("gazebo/model_states", 5, &ros_interface::objects_callback, this);
-    joints_sub = n.subscribe("joint_states", 5, &ros_interface::joints_callback, this);
-
+// Subscribes to the Fetch's point cloud topic
+void ros_interface::subscribe_image() {
     pc_sub = n.subscribe("head_camera/depth_registered/points", 5, &ros_interface::pc_callback, this);
     image_source = "fetch";
+    update_image = true;
+}
+
+// Unsubscribes from the point cloud topic and updates Soar with
+// an empty image
+void ros_interface::unsubscribe_image() {
+    pc_sub.shutdown();
+    update_image = false;
+    image_source = "none";
+    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr empty(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pc_callback(empty);
+}
+
+// Subscribes to the Gazebo object models and the Fetch's joint states
+void ros_interface::subscribe_sg() {
+    objects_sub = n.subscribe("gazebo/model_states", 5, &ros_interface::objects_callback, this);
+    joints_sub = n.subscribe("joint_states", 5, &ros_interface::joints_callback, this);
+    update_sg = true;
+}
+
+// Unsubscribes from Gazebo models and joint state and updates Soar
+// with an empty scene graph
+void ros_interface::unsubscribe_sg() {
+    objects_sub.shutdown();
+    joints_sub.shutdown();
+    update_sg = false;
+    gazebo_msgs::ModelStates::ConstPtr empty(new gazebo_msgs::ModelStates);
+    objects_callback(empty);
 }
 
 // Adds relevant commands to the input list in the main SVS class
@@ -184,4 +210,66 @@ void ros_interface::joints_callback(const sensor_msgs::JointState::ConstPtr& msg
 // Updates the images in SVS states when a new point cloud is received
 void ros_interface::pc_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& msg) {
     svs_ptr->image_callback(msg);
+}
+
+void ros_interface::proxy_get_children(std::map<std::string, cliproxy*>& c) {
+    c["enable_all"] = new memfunc_proxy<ros_interface>(this, &ros_interface::enable_all);
+    c["disable_all"] = new memfunc_proxy<ros_interface>(this, &ros_interface::disable_all);
+
+    c["enable_image"] = new memfunc_proxy<ros_interface>(this, &ros_interface::enable_image);
+    c["disable_image"] = new memfunc_proxy<ros_interface>(this, &ros_interface::disable_image);
+
+    c["enable_sg"] = new memfunc_proxy<ros_interface>(this, &ros_interface::enable_sg);
+    c["disable_sg"] = new memfunc_proxy<ros_interface>(this, &ros_interface::disable_sg);
+}
+
+void ros_interface::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os) {
+    os << "=========== ROS INPUTS ===========" << std::endl;
+    os << "Image: ";
+    if (update_image) {
+        os << "enabled";
+    } else {
+        os << "disabled";
+    }
+    os << std::endl;
+    os << "Scene Graph: ";
+    if (update_sg) {
+        os << "enabled";
+    } else {
+        os << "disabled";
+    }
+    os << std::endl;
+    os << "==================================" << std::endl;
+}
+
+void ros_interface::enable_all(const std::vector<std::string>& args, std::ostream& os) {
+    if (!update_image) subscribe_image();
+    if (!update_sg) subscribe_sg();
+    os << "All ROS inputs enabled." << std::endl;
+}
+
+void ros_interface::disable_all(const std::vector<std::string>& args, std::ostream& os) {
+    if (update_image) unsubscribe_image();
+    if (update_sg) unsubscribe_sg();
+    os << "All ROS inputs disabled." << std::endl;
+}
+
+void ros_interface::enable_image(const std::vector<std::string>& args, std::ostream& os) {
+    if (!update_image) subscribe_image();
+    os << "ROS image input enabled." << std::endl;
+}
+
+void ros_interface::disable_image(const std::vector<std::string>& args, std::ostream& os) {
+    if (update_image) unsubscribe_image();
+    os << "ROS image input disabled." << std::endl;
+}
+
+void ros_interface::enable_sg(const std::vector<std::string>& args, std::ostream& os) {
+    if (!update_sg) subscribe_sg();
+    os << "ROS scene graph input enabled." << std::endl;
+}
+
+void ros_interface::disable_sg(const std::vector<std::string>& args, std::ostream& os) {
+    if (update_sg) unsubscribe_sg();
+    os << "ROS scene graph input disabled." << std::endl;
 }

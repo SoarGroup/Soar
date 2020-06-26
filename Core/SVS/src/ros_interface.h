@@ -9,6 +9,7 @@
 #include "sensor_msgs/JointState.h"
 
 #include "mat.h"
+#include "cliproxy.h"
 
 class svs;
 
@@ -21,12 +22,20 @@ class svs;
  * cloud data into the image holders and update the scene graph from
  * Gazebo objects.
  *
- * XXX: Need to add the option to turn off the image updating and the
- *      object updating so that we could use one or the other.
+ * CLI USAGE:
  *
+ * svs ros - Prints all inputs and whether they're enabled or disabled
+ * svs ros.enable_all - Enables all inputs
+ * svs ros.disable_all - Disables all inputs
+ * svs ros.enable_image - Enables the image input
+ * svs ros.disable_image - Disables the image input
+ * svs ros.enable_sg - Enables the scene graph input
+ * svs ros.disable_sg - Disables the scene graph input
+ *
+ * XXX: Update interface so that the input name is an argument.
  */
 
-class ros_interface {
+class ros_interface : public cliproxy {
 public:
     ros_interface(svs* sp);
     ~ros_interface();
@@ -42,12 +51,25 @@ private:
     bool t_diff(vec3& p1, vec3& p2);
     bool t_diff(Eigen::Quaterniond& q1, Eigen::Quaterniond& q2);
 
-    void set_up_subscribers();
+    void subscribe_image();
+    void unsubscribe_image();
+    void subscribe_sg();
+    void unsubscribe_sg();
     void objects_callback(const gazebo_msgs::ModelStates::ConstPtr& msg);
     void joints_callback(const sensor_msgs::JointState::ConstPtr & msg);
     void pc_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& msg);
 
+    void proxy_get_children(std::map<std::string, cliproxy*>& c);
+    void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os);
+    void enable_all(const std::vector<std::string>& args, std::ostream& os);
+    void disable_all(const std::vector<std::string>& args, std::ostream& os);
+    void enable_image(const std::vector<std::string>& args, std::ostream& os);
+    void disable_image(const std::vector<std::string>& args, std::ostream& os);
+    void enable_sg(const std::vector<std::string>& args, std::ostream& os);
+    void disable_sg(const std::vector<std::string>& args, std::ostream& os);
+
     ros::NodeHandle n;
+    bool update_image, update_sg;
     ros::Subscriber objects_sub;
     ros::Subscriber joints_sub;
     ros::Subscriber pc_sub;

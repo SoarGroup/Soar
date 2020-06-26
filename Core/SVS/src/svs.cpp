@@ -542,7 +542,9 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
     
     c["filters"]           = &get_filter_table();
     c["commands"]          = &get_command_table();
-    
+
+    c["ros"] = ri;
+
     for (size_t j = 0, jend = state_stack.size(); j < jend; ++j)
     {
         c[state_stack[j]->get_name()] = state_stack[j];
