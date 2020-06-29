@@ -28,7 +28,7 @@ void image::copy_from(image* other) {
     pc.sensor_orientation_ = other->pc.sensor_orientation_;
     pc.sensor_origin_ = other->pc.sensor_origin_;
     pc.points = other->pc.points;
-    source = other->source;
+    source = "copy";
 }
 
 // Sets the source string and notifies any listening image_descriptors
@@ -81,6 +81,7 @@ image_descriptor::image_descriptor(soar_interface* si, Symbol* ln, image* im)
     empty_wme = si->make_wme(link,
                              empty_tag,
                              empty);
+    update_desc();
 }
 
 // Updates the wmes if something has changed in image that this
