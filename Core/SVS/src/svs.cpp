@@ -226,7 +226,11 @@ void svs_state::init()
         }
     }
     if (!img) {
+#ifdef ENABLE_ROS
         img = new pcl_image();
+#else
+        img = new basic_image();
+#endif
         if (parent) {
             img->copy_from(parent->img);
         }
@@ -376,9 +380,11 @@ svs::svs(agent* a)
     si = new soar_interface(a);
     draw = new drawer();
 
+#ifdef ENABLE_ROS
     ros_interface::init_ros();
     ri = new ros_interface(this);
     ri->start_ros();
+#endif
 }
 
 bool svs::filter_dirty_bit = true;
@@ -438,7 +444,10 @@ void svs::state_deletion_callback(Symbol* state)
 
 void svs::proc_input(svs_state* s)
 {
+#ifdef ENABLE_ROS
     boost::lock_guard<boost::mutex> guard(input_mtx);
+#endif
+
     for (size_t i = 0; i < env_inputs.size(); ++i)
     {
         strip(env_inputs[i], " \t");
@@ -495,6 +504,7 @@ void svs::input_callback()
     svs::filter_dirty_bit = false;
 }
 
+#ifdef ENABLE_ROS
 void svs::image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_img)
 {
     if (!enabled) return;
@@ -507,6 +517,7 @@ void svs::image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_
         state_stack.front()->get_image()->set_source(ri->get_image_source());
     }
 }
+#endif
 
 /*
  This is a naive implementation. If this method is called concurrently
@@ -517,7 +528,10 @@ void svs::image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_
 */
 void svs::add_input(const string& in)
 {
+#ifdef ENABLE_ROS
     boost::lock_guard<boost::mutex> guard(input_mtx);
+#endif
+
     split(in, "\n", env_inputs);
 }
 
@@ -543,7 +557,9 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
     c["filters"]           = &get_filter_table();
     c["commands"]          = &get_command_table();
 
+#ifdef ENABLE_ROS
     c["ros"] = ri;
+#endif
 
     for (size_t j = 0, jend = state_stack.size(); j < jend; ++j)
     {

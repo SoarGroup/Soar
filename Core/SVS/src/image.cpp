@@ -35,6 +35,7 @@ void basic_image::update_image(std::vector<std::vector<pixel> >& new_img) {
 
 void basic_image::copy_from(basic_image* other) {
     img_array = other->img_array;
+    source = "copy";
 }
 
 int basic_image::get_width() {
@@ -47,10 +48,12 @@ int basic_image::get_height() {
 }
 
 bool basic_image::is_empty() {
-    if (img_array.size() > 0 && img_array[0].size() > 0) return true;
+    if (img_array.empty()) return true;
+    if (img_array[0].empty()) return true;
     return false;
 }
 
+#ifdef ENABLE_ROS
 pcl_image::pcl_image() { source = "none"; }
 
 // Copies a point cloud ROS message into this image container.
@@ -84,7 +87,7 @@ void pcl_image::copy_from(pcl_image* other) {
 bool pcl_image::is_empty() {
     return (pc.width == 0 && pc.height == 0);
 }
-
+#endif
 
 // These are the names of the attributes of an image descriptor in WM
 const std::string image_descriptor::source_tag = "source";

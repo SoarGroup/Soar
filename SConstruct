@@ -38,7 +38,8 @@ print "Custom Settings available:                                              *
 print "   Build Type:        --dbg, --opt*, --static"
 print "   Custom Paths:      --out, --build, --tcl"
 print "   Compilation time:  --no-svs, --scu*, --no-scu, --no-scu-kernel, --no-scu-cli"
-print "   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags, --verbose,"
+print "   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags, --verbose"
+print "   Dependencies:      --use-ros"
 print "================================================================================"
 
 def execute(cmd):
@@ -150,6 +151,7 @@ AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Enable 
 AddOption('--opt', action='store_false', dest='dbg', default=False, help='Enable optimized build.  Enables compiler optimizations, removes debugging symbols, debug trace statements and assertions')
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Build Soar without SVS functionality')
+AddOption('--use-ros', action='store_true', dest='useros', default=False, help='Enable ROS SVS interface. Requires ROS and PCL dependencies.')
 
 msvc_version = "12.0"
 cl_target_architecture = ''
@@ -213,6 +215,8 @@ if compiler == 'g++':
     libs += [ 'pthread', 'dl', 'm' ]
     if GetOption('nosvs'):
         cflags.append('-DNO_SVS')
+    if GetOption('useros'):
+        cflags.append('-DENABLE_ROS')
     if GetOption('defflags'):
         cflags.append('-Wreturn-type')
         if GetOption('dbg'):

@@ -1,6 +1,8 @@
 #ifndef ROS_INTERFACE_H
 #define ROS_INTERFACE_H
 
+#ifdef ENABLE_ROS
+
 #include <functional>
 #include <map>
 #include <ros/ros.h>
@@ -82,4 +84,5 @@ private:
     std::map<std::string, transform3> last_objs;
 };
 
+#endif
 #endif

@@ -1,8 +1,11 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#ifdef ENABLE_ROS
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#endif
+
 #include <list>
 
 #include "soar_interface.h"
@@ -80,6 +83,7 @@ private:
  *
  */
 
+#ifdef ENABLE_ROS
 class pcl_image : public image_base
 {
 public:
@@ -95,6 +99,7 @@ public:
 private:
     pcl::PointCloud<pcl::PointXYZRGB> pc;
 };
+#endif
 
 /*
  * image_descriptor class

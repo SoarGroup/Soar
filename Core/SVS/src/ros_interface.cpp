@@ -1,3 +1,5 @@
+#ifdef ENABLE_ROS
+
 #include "ros_interface.h"
 
 #include <iostream>
@@ -322,3 +324,5 @@ void ros_interface::disable(const std::vector<std::string>& args, std::ostream& 
     if (update_inputs[args[0]]) disable_fxns[args[0]]();
     os << args[0] << " ROS input disabled" << std::endl;
 }
+
+#endif

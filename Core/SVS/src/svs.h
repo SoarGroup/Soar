@@ -4,19 +4,27 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <boost/thread.hpp>
 #include "soar_interface.h"
-#include "ros_interface.h"
 #include "sgnode.h"
 #include "common.h"
 #include "svs_interface.h"
 #include "cliproxy.h"
 
+#ifdef ENABLE_ROS
+#include <boost/thread.hpp>
+#include "ros_interface.h"
+#endif
+
 class command;
 class scene;
 class drawer;
-class pcl_image;
 class image_descriptor;
+
+#ifdef ENABLE_ROS
+class pcl_image;
+#else
+class basic_image;
+#endif
 
 /* working memory scene graph object - mediates between wmes and scene graph nodes */
 class sgwme : public sgnode_listener
@@ -105,7 +113,11 @@ class svs_state : public cliproxy
         {
             return scn;
         }
+#ifdef ENABLE_ROS
         pcl_image*         get_image() const
+#else
+        basic_image*       get_image() const
+#endif
         {
             return img;
         }
@@ -137,9 +149,13 @@ class svs_state : public cliproxy
         svs_state*      parent;
         scene*          scn;
         sgwme*          root;
-        pcl_image*      img;
         image_descriptor* imwme;
         soar_interface* si;
+#ifdef ENABLE_ROS
+        pcl_image*      img;
+#else
+        basic_image*    img;
+#endif
 
         Symbol* state;
         Symbol* svs_link;
@@ -165,10 +181,13 @@ class svs : public svs_interface, public cliproxy
         void state_deletion_callback(Symbol* goal);
         void output_callback();
         void input_callback();
-        void image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_img);
         void add_input(const std::string& in);
         std::string svs_query(const std::string& query);
-        
+
+#ifdef ENABLE_ROS
+        void image_callback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_img);
+#endif
+
         soar_interface* get_soar_interface()
         {
             return si;
@@ -213,12 +232,15 @@ class svs : public svs_interface, public cliproxy
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         void cli_connect_viewer(const std::vector<std::string>& args, std::ostream& os);
         void cli_disconnect_viewer(const std::vector<std::string>& args, std::ostream& os);
-        
-        soar_interface*           si;
+
+#ifdef ENABLE_ROS
         ros_interface*            ri;
+        boost::mutex              input_mtx;
+#endif
+
+        soar_interface*           si;
         std::vector<svs_state*>   state_stack;
         std::vector<std::string>  env_inputs;
-        boost::mutex              input_mtx;
         std::string               env_output;
         mutable drawer*           draw;
         scene*                    scn_cache;      // temporarily holds top-state scene during init
