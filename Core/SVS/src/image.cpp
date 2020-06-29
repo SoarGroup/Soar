@@ -1,11 +1,60 @@
 #include "image.h"
 #include <iostream>
 
-image::image() : source("none") {
+// Sets the source string and notifies any listening image_descriptors
+// of the change so that it will be reflected in the image wme
+void image_base::set_source(std::string src) {
+    source = src;
+    notify_listeners();
 }
 
+// Makes the given image descriptor respond to updates in this image
+void image_base::add_listener(image_descriptor* id) {
+    listeners.push_back(id);
+}
+
+// Stops the given image descriptor from responding to updates in this image
+void image_base::remove_listener(image_descriptor* id) {
+    listeners.remove(id);
+}
+
+// Calls the update function in all of the image_descriptors listening
+// to this image
+void image_base::notify_listeners() {
+    for (std::list<image_descriptor*>::iterator i = listeners.begin();
+         i != listeners.end(); i++) {
+        (*i)->update_desc();
+    }
+}
+
+basic_image::basic_image() { source = "none"; }
+
+void basic_image::update_image(std::vector<std::vector<pixel> >& new_img) {
+    img_array = new_img;
+}
+
+void basic_image::copy_from(basic_image* other) {
+    img_array = other->img_array;
+}
+
+int basic_image::get_width() {
+    return img_array.size();
+}
+
+int basic_image::get_height() {
+    if (img_array.size() == 0) return 0;
+    return img_array[0].size();
+}
+
+bool basic_image::is_empty() {
+    if (img_array.size() > 0 && img_array[0].size() > 0) return true;
+    return false;
+}
+
+pcl_image::pcl_image() { source = "none"; }
+
 // Copies a point cloud ROS message into this image container.
-void image::update_image(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_img) {
+void pcl_image::update_image(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_img) {
     bool prev_empty = is_empty();
 
     pc.header = new_img->header;
@@ -20,7 +69,7 @@ void image::update_image(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& new_
 }
 
 // Copies the point cloud from another image into this image container.
-void image::copy_from(image* other) {
+void pcl_image::copy_from(pcl_image* other) {
     pc.header = other->pc.header;
     pc.width = other->pc.width;
     pc.height = other->pc.height;
@@ -31,35 +80,11 @@ void image::copy_from(image* other) {
     source = "copy";
 }
 
-// Sets the source string and notifies any listening image_descriptors
-// of the change so that it will be reflected in the image wme
-void image::set_source(std::string src) {
-    source = src;
-    notify_listeners();
-}
 
-// Makes the given image descriptor respond to updates in this image
-void image::add_listener(image_descriptor* id) {
-    listeners.push_back(id);
-}
-
-// Stops the given image descriptor from responding to updates in this image
-void image::remove_listener(image_descriptor* id) {
-    listeners.remove(id);
-}
-
-bool image::is_empty() {
+bool pcl_image::is_empty() {
     return (pc.width == 0 && pc.height == 0);
 }
 
-// Calls the update function in all of the image_descriptors listening
-// to this image
-void image::notify_listeners() {
-    for (std::list<image_descriptor*>::iterator i = listeners.begin();
-         i != listeners.end(); i++) {
-        (*i)->update_desc();
-    }
-}
 
 // These are the names of the attributes of an image descriptor in WM
 const std::string image_descriptor::source_tag = "source";
@@ -68,7 +93,7 @@ const std::string image_descriptor::empty_tag = "empty";
 // Constructor requires a pointer to the soar_interface to be able to
 // add/delete WMEs, the image link symbol that will serve as the root for
 // the image info, and an image to listen to
-image_descriptor::image_descriptor(soar_interface* si, Symbol* ln, image* im)
+image_descriptor::image_descriptor(soar_interface* si, Symbol* ln, image_base* im)
     : img(im), link(ln), si(si), source("none"), empty("true")
 {
     img->add_listener(this);

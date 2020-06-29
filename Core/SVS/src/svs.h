@@ -15,7 +15,7 @@
 class command;
 class scene;
 class drawer;
-class image;
+class pcl_image;
 class image_descriptor;
 
 /* working memory scene graph object - mediates between wmes and scene graph nodes */
@@ -105,7 +105,7 @@ class svs_state : public cliproxy
         {
             return scn;
         }
-        image*         get_image() const
+        pcl_image*         get_image() const
         {
             return img;
         }
@@ -137,7 +137,7 @@ class svs_state : public cliproxy
         svs_state*      parent;
         scene*          scn;
         sgwme*          root;
-        image*          img;
+        pcl_image*      img;
         image_descriptor* imwme;
         soar_interface* si;
 

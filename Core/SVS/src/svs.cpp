@@ -226,7 +226,7 @@ void svs_state::init()
         }
     }
     if (!img) {
-        img = new image();
+        img = new pcl_image();
         if (parent) {
             img->copy_from(parent->img);
         }
