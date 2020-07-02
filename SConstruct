@@ -217,6 +217,7 @@ if compiler == 'g++':
         cflags.append('-DNO_SVS')
     if GetOption('useros'):
         cflags.append('-DENABLE_ROS')
+        libs += ['roscpp', 'libpcl_common']
     if GetOption('defflags'):
         cflags.append('-Wreturn-type')
         if GetOption('dbg'):
@@ -249,15 +250,13 @@ if compiler == 'g++':
         if GetOption('static'):
             cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 
-        # XXX: How to add these only if needed and on linux?
-        libs += ['roscpp', 'libpcl_common']
-
 elif compiler == 'msvc':
     cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj', '/nowarn:4503']
     if GetOption('nosvs'):
         cflags.extend(' /D NO_SVS'.split())
     if GetOption('useros'):
         cflags.extend(' /D ENABLE_ROS'.split())
+        libs += ['roscpp', 'libpcl_common']
     if GetOption('defflags'):
         if GetOption('dbg'):
             cflags.extend(' /MDd /Z7 /DEBUG'.split())
