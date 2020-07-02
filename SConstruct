@@ -256,6 +256,8 @@ elif compiler == 'msvc':
     cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj', '/nowarn:4503']
     if GetOption('nosvs'):
         cflags.extend(' /D NO_SVS'.split())
+    if GetOption('useros'):
+        cflags.extend(' /D ENABLE_ROS'.split())
     if GetOption('defflags'):
         if GetOption('dbg'):
             cflags.extend(' /MDd /Z7 /DEBUG'.split())
