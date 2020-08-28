@@ -9,7 +9,7 @@
 #
 
 #
-# Copyright (c) 2001 - 2016 The SCons Foundation
+# Copyright (c) 2001 - 2019 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -29,10 +29,9 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from __future__ import division
-from __future__ import nested_scopes
+from __future__ import division, print_function
 
-__revision__ = "src/script/scons-time.py rel_2.5.0:3543:937e55cd78f7 2016/04/09 11:29:54 bdbaddog"
+__revision__ = "src/script/scons-time.py bee7caf9defd6e108fc2998a2520ddb36a967691 2019-12-17 02:07:09 bdeegan"
 
 import getopt
 import glob
@@ -42,32 +41,18 @@ import shutil
 import sys
 import tempfile
 import time
-
-def make_temp_file(**kw):
-    try:
-        result = tempfile.mktemp(**kw)
-        result = os.path.realpath(result)
-    except TypeError:
-        try:
-            save_template = tempfile.template
-            prefix = kw['prefix']
-            del kw['prefix']
-            tempfile.template = prefix
-            result = tempfile.mktemp(**kw)
-        finally:
-            tempfile.template = save_template
-    return result
+import subprocess
 
 def HACK_for_exec(cmd, *args):
-    '''
+    """
     For some reason, Python won't allow an exec() within a function
     that also declares an internal function (including lambda functions).
     This function is a hack that calls exec() in a function with no
     internal functions.
-    '''
+    """
     if not args:          exec(cmd)
-    elif len(args) == 1:  exec cmd in args[0]
-    else:                 exec cmd in args[0], args[1]
+    elif len(args) == 1:  exec(cmd, args[0])
+    else:                 exec(cmd, args[0], args[1])
 
 class Plotter(object):
     def increment_size(self, largest):
@@ -103,7 +88,7 @@ class Line(object):
 
     def print_label(self, inx, x, y):
         if self.label:
-            print 'set label %s "%s" at %s,%s right' % (inx, self.label, x, y)
+            print('set label %s "%s" at %0.1f,%0.1f right' % (inx, self.label, x, y))
 
     def plot_string(self):
         if self.title:
@@ -116,15 +101,15 @@ class Line(object):
         if fmt is None:
             fmt = self.fmt
         if self.comment:
-            print '# %s' % self.comment
+            print('# %s' % self.comment)
         for x, y in self.points:
             # If y is None, it usually represents some kind of break
             # in the line's index number.  We might want to represent
             # this some way rather than just drawing the line straight
             # between the two points on either side.
-            if not y is None:
-                print fmt % (x, y)
-        print 'e'
+            if y is not None:
+                print(fmt % (x, y))
+        print('e')
 
     def get_x_values(self):
         return [ p[0] for p in self.points ]
@@ -148,7 +133,7 @@ class Gnuplotter(Plotter):
         return line.plot_string()
 
     def vertical_bar(self, x, type, label, comment):
-        if self.get_min_x() <= x and x <= self.get_max_x():
+        if self.get_min_x() <= x <= self.get_max_x():
             points = [(x, 0), (x, self.max_graph_value(self.get_max_y()))]
             self.line(points, type, label, comment)
 
@@ -156,13 +141,13 @@ class Gnuplotter(Plotter):
         result = []
         for line in self.lines:
             result.extend(line.get_x_values())
-        return [r for r in result if not r is None]
+        return [r for r in result if r is not None]
 
     def get_all_y_values(self):
         result = []
         for line in self.lines:
             result.extend(line.get_y_values())
-        return [r for r in result if not r is None]
+        return [r for r in result if r is not None]
 
     def get_min_x(self):
         try:
@@ -210,8 +195,8 @@ class Gnuplotter(Plotter):
             return
 
         if self.title:
-            print 'set title "%s"' % self.title
-        print 'set key %s' % self.key_location
+            print('set title "%s"' % self.title)
+        print('set key %s' % self.key_location)
 
         min_y = self.get_min_y()
         max_y = self.max_graph_value(self.get_max_y())
@@ -226,7 +211,7 @@ class Gnuplotter(Plotter):
             inx += 1
 
         plot_strings = [ self.plot_string(l) for l in self.lines ]
-        print 'plot ' + ', \\\n     '.join(plot_strings)
+        print('plot ' + ', \\\n     '.join(plot_strings))
 
         for line in self.lines:
             line.print_points()
@@ -249,14 +234,16 @@ def unzip(fname):
             os.makedirs(dir)
         except:
             pass
-        open(name, 'w').write(zf.read(name))
+        with open(name, 'wb') as f:
+            f.write(zf.read(name))
 
 def read_tree(dir):
     for dirpath, dirnames, filenames in os.walk(dir):
         for fn in filenames:
             fn = os.path.join(dirpath, fn)
             if os.path.isfile(fn):
-                open(fn, 'rb').read()
+                with open(fn, 'rb') as f:
+                    f.read()
 
 def redirect_to_file(command, log):
     return '%s > %s 2>&1' % (command, log)
@@ -265,7 +252,7 @@ def tee_to_file(command, log):
     return '%s 2>&1 | tee %s' % (command, log)
 
 
-    
+
 class SConsTimer(object):
     """
     Usage: scons-time SUBCOMMAND [ARGUMENTS]
@@ -287,8 +274,6 @@ class SConsTimer(object):
         return kw
 
     default_settings = makedict(
-        aegis               = 'aegis',
-        aegis_project       = None,
         chdir               = None,
         config_file         = None,
         initial_commands    = [],
@@ -361,7 +346,7 @@ class SConsTimer(object):
         'SCons'         : 'Total SCons execution time',
         'commands'      : 'Total command execution time',
     }
-    
+
     time_string_all = 'Total .* time'
 
     #
@@ -457,12 +442,20 @@ class SConsTimer(object):
 
     def log_execute(self, command, log):
         command = self.subst(command, self.__dict__)
-        output = os.popen(command).read()
+        p = os.popen(command)
+        output = p.read()
+        p.close()
+        #TODO: convert to subrocess, os.popen is obsolete. This didn't work:
+        #process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        #output = process.stdout.read()
+        #process.stdout.close()
+        #process.wait()
         if self.verbose:
             sys.stdout.write(output)
-        open(log, 'wb').write(output)
-
-    #
+        # TODO: Figure out
+        # Not sure we need to write binary here
+        with open(log, 'w') as f:
+            f.write(str(output))
 
     def archive_splitext(self, path):
         """
@@ -497,7 +490,7 @@ class SConsTimer(object):
         header_fmt = ' '.join(['%12s'] * len(columns))
         line_fmt = header_fmt + '    %s'
 
-        print header_fmt % columns
+        print(header_fmt % columns)
 
         for file in files:
             t = line_function(file, *args, **kw)
@@ -507,7 +500,7 @@ class SConsTimer(object):
             if diff > 0:
                 t += [''] * diff
             t.append(file_function(file))
-            print line_fmt % tuple(t)
+            print(line_fmt % tuple(t))
 
     def collect_results(self, files, function, *args, **kw):
         results = {}
@@ -627,13 +620,14 @@ class SConsTimer(object):
             search_string = self.time_string_all
         else:
             search_string = time_string
-        contents = open(file).read()
+        with open(file) as f:
+            contents = f.read()
         if not contents:
             sys.stderr.write('file %s has no contents!\n' % repr(file))
             return None
         result = re.findall(r'%s: ([\d\.]*)' % search_string, contents)[-4:]
         result = [ float(r) for r in result ]
-        if not time_string is None:
+        if time_string is not None:
             try:
                 result = result[0]
             except IndexError:
@@ -647,7 +641,7 @@ class SConsTimer(object):
         """
         try:
             import pstats
-        except ImportError, e:
+        except ImportError as e:
             sys.stderr.write('%s: func: %s\n' % (self.name, e))
             sys.stderr.write('%s  This version of Python is missing the profiler.\n' % self.name_spaces)
             sys.stderr.write('%s  Cannot use the "func" subcommand.\n' % self.name_spaces)
@@ -672,7 +666,8 @@ class SConsTimer(object):
             search_string = self.memory_string_all
         else:
             search_string = memory_string
-        lines = open(file).readlines()
+        with open(file) as f:
+            lines = f.readlines()
         lines = [ l for l in lines if l.startswith(search_string) ][-4:]
         result = [ int(l.split()[-1]) for l in lines[-4:] ]
         if len(result) == 1:
@@ -684,14 +679,14 @@ class SConsTimer(object):
         Returns the counts of the specified object_name.
         """
         object_string = ' ' + object_name + '\n'
-        lines = open(file).readlines()
+        with open(file) as f:
+            lines = f.readlines()
         line = [ l for l in lines if l.endswith(object_string) ][0]
         result = [ int(field) for field in line.split()[:4] ]
         if index is not None:
             result = result[index]
         return result
 
-    #
 
     command_alias = {}
 
@@ -708,7 +703,7 @@ class SConsTimer(object):
             return self.default(argv)
         try:
             return func(argv)
-        except TypeError, e:
+        except TypeError as e:
             sys.stderr.write("%s %s: %s\n" % (self.name, cmdName, e))
             import traceback
             traceback.print_exc(file=sys.stderr)
@@ -813,7 +808,9 @@ class SConsTimer(object):
                 self.title = a
 
         if self.config_file:
-            exec open(self.config_file, 'rU').read() in self.__dict__
+            with open(self.config_file, 'r') as f:
+                config = f.read()
+            exec(config, self.__dict__)
 
         if self.chdir:
             os.chdir(self.chdir)
@@ -846,13 +843,13 @@ class SConsTimer(object):
                 try:
                     f, line, func, time = \
                             self.get_function_profile(file, function_name)
-                except ValueError, e:
+                except ValueError as e:
                     sys.stderr.write("%s: func: %s: %s\n" %
                                      (self.name, file, e))
                 else:
                     if f.startswith(cwd_):
                         f = f[len(cwd_):]
-                    print "%.3f %s:%d(%s)" % (time, f, line, func)
+                    print("%.3f %s:%d(%s)" % (time, f, line, func))
 
         elif format == 'gnuplot':
 
@@ -922,7 +919,7 @@ class SConsTimer(object):
             elif o in ('-p', '--prefix'):
                 self.prefix = a
             elif o in ('--stage',):
-                if not a in self.stages:
+                if a not in self.stages:
                     sys.stderr.write('%s: mem: Unrecognized stage "%s".\n' % (self.name, a))
                     sys.exit(1)
                 stage = a
@@ -932,7 +929,9 @@ class SConsTimer(object):
                 self.title = a
 
         if self.config_file:
-            HACK_for_exec(open(self.config_file, 'rU').read(), self.__dict__)
+            with open(self.config_file, 'r') as f:
+                config = f.read()
+            HACK_for_exec(config, self.__dict__)
 
         if self.chdir:
             os.chdir(self.chdir)
@@ -1034,7 +1033,7 @@ class SConsTimer(object):
             elif o in ('-p', '--prefix'):
                 self.prefix = a
             elif o in ('--stage',):
-                if not a in self.stages:
+                if a not in self.stages:
                     sys.stderr.write('%s: obj: Unrecognized stage "%s".\n' % (self.name, a))
                     sys.stderr.write('%s       Type "%s help obj" for help.\n' % (self.name_spaces, self.name))
                     sys.exit(1)
@@ -1052,7 +1051,9 @@ class SConsTimer(object):
         object_name = args.pop(0)
 
         if self.config_file:
-            HACK_for_exec(open(self.config_file, 'rU').read(), self.__dict__)
+            with open(self.config_file, 'r') as f:
+                config = f.read()
+            HACK_for_exec(config, self.__dict__)
 
         if self.chdir:
             os.chdir(self.chdir)
@@ -1110,7 +1111,6 @@ class SConsTimer(object):
         help = """\
         Usage: scons-time run [OPTIONS] [FILE ...]
 
-          --aegis=PROJECT               Use SCons from the Aegis PROJECT
           --chdir=DIR                   Name of unpacked directory for chdir
           -f FILE, --file=FILE          Read configuration from specified FILE
           -h, --help                    Print this help and exit
@@ -1135,7 +1135,6 @@ class SConsTimer(object):
         short_opts = '?f:hnp:qs:v'
 
         long_opts = [
-            'aegis=',
             'file=',
             'help',
             'no-exec',
@@ -1154,9 +1153,7 @@ class SConsTimer(object):
         opts, args = getopt.getopt(argv[1:], short_opts, long_opts)
 
         for o, a in opts:
-            if o in ('--aegis',):
-                self.aegis_project = a
-            elif o in ('-f', '--file'):
+            if o in ('-f', '--file'):
                 self.config_file = a
             elif o in ('-?', '-h', '--help'):
                 self.do_help(['help', 'run'])
@@ -1190,7 +1187,9 @@ class SConsTimer(object):
             sys.exit(1)
 
         if self.config_file:
-            exec open(self.config_file, 'rU').read() in self.__dict__
+            with open(self.config_file, 'r') as f:
+                config = f.read()
+            exec(config, self.__dict__)
 
         if args:
             self.archive_list = args
@@ -1206,8 +1205,6 @@ class SConsTimer(object):
         prepare = None
         if self.subversion_url:
             prepare = self.prep_subversion_run
-        elif self.aegis_project:
-            prepare = self.prep_aegis_run
 
         for run_number in run_number_list:
             self.individual_run(run_number, self.archive_list, prepare)
@@ -1229,30 +1226,14 @@ class SConsTimer(object):
     def scons_lib_dir_path(self, dir):
         return os.path.join(dir, 'src', 'engine')
 
-    def prep_aegis_run(self, commands, removals):
-        self.aegis_tmpdir = make_temp_file(prefix = self.name + '-aegis-')
-        removals.append((shutil.rmtree, 'rm -rf %%s', self.aegis_tmpdir))
-
-        self.aegis_parent_project = os.path.splitext(self.aegis_project)[0]
-        self.scons = self.scons_path(self.aegis_tmpdir)
-        self.scons_lib_dir = self.scons_lib_dir_path(self.aegis_tmpdir)
-
-        commands.extend([
-            'mkdir %(aegis_tmpdir)s',
-            (lambda: os.chdir(self.aegis_tmpdir), 'cd %(aegis_tmpdir)s'),
-            '%(aegis)s -cp -ind -p %(aegis_parent_project)s .',
-            '%(aegis)s -cp -ind -p %(aegis_project)s -delta %(run_number)s .',
-        ])
-
     def prep_subversion_run(self, commands, removals):
-        self.svn_tmpdir = make_temp_file(prefix = self.name + '-svn-')
+        self.svn_tmpdir = tempfile.mkdtemp(prefix=self.name + '-svn-')
         removals.append((shutil.rmtree, 'rm -rf %%s', self.svn_tmpdir))
 
         self.scons = self.scons_path(self.svn_tmpdir)
         self.scons_lib_dir = self.scons_lib_dir_path(self.svn_tmpdir)
 
         commands.extend([
-            'mkdir %(svn_tmpdir)s',
             '%(svn)s co %(svn_co_flag)s -r %(run_number)s %(subversion_url)s %(svn_tmpdir)s',
         ])
 
@@ -1299,11 +1280,9 @@ class SConsTimer(object):
         if self.targets2 is None:
             self.targets2 = self.targets
 
-        self.tmpdir = make_temp_file(prefix = self.name + '-')
+        self.tmpdir = tempfile.mkdtemp(prefix=self.name + '-')
 
         commands.extend([
-            'mkdir %(tmpdir)s',
-
             (os.chdir, 'cd %%s', self.tmpdir),
         ])
 
@@ -1356,7 +1335,6 @@ class SConsTimer(object):
 
         if not os.environ.get('PRESERVE'):
             commands.extend(removals)
-
             commands.append((shutil.rmtree, 'rm -rf %%s', self.tmpdir))
 
         self.run_command_list(commands, self.__dict__)
@@ -1423,14 +1401,16 @@ class SConsTimer(object):
             elif o in ('--title',):
                 self.title = a
             elif o in ('--which',):
-                if not a in self.time_strings.keys():
+                if a not in list(self.time_strings.keys()):
                     sys.stderr.write('%s: time: Unrecognized timer "%s".\n' % (self.name, a))
                     sys.stderr.write('%s  Type "%s help time" for help.\n' % (self.name_spaces, self.name))
                     sys.exit(1)
                 which = a
 
         if self.config_file:
-            HACK_for_exec(open(self.config_file, 'rU').read(), self.__dict__)
+            with open(self.config_file, 'r') as f:
+                config = f.read()
+            HACK_for_exec(config, self.__dict__)
 
         if self.chdir:
             os.chdir(self.chdir)
