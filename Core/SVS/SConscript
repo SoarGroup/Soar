@@ -67,7 +67,7 @@ if not missing_libs:
 	viewer_prog = viewer_env.Program('svs_viewer', viewer_src)
 	viewer_install = viewer_env.Alias('svs_viewer', viewer_env.Install('$OUT_DIR', viewer_prog))
 else:
-	print 'Cannot find %s, not building svs_viewer' % ', '.join(missing_libs)
+	print('Cannot find %s, not building svs_viewer' % ', '.join(missing_libs))
 
 # svs library objects
 svs_env = env.Clone()

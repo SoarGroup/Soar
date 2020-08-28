@@ -12,6 +12,8 @@ depjars = [
 ]
 
 swt_jars = {
+	('linux', 32) : 'gtk32',
+	('linux', 64) : 'gtk64',
 	('linux2', 32) : 'gtk32',
 	('linux2', 64) : 'gtk64',
 	('darwin', 32) : 'osx32',

@@ -2,6 +2,9 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
+
+from __future__ import print_function
+
 import os
 import sys
 import itertools
@@ -20,7 +23,7 @@ def ConfigureJNI(env):
                 base = p.stdout.readline().split()[-1]
                 p.wait()
             except OSError:
-                print >>sys.stderr, 'Error running /usr/libexec/java_home to get java home'
+                print('Error running /usr/libexec/java_home to get java home', file=sys.stderr)
                 Exit(1)
             if (not os.path.exists(base)):
                 base = '/System/Library/Frameworks/JavaVM.framework'
@@ -35,7 +38,7 @@ def ConfigureJNI(env):
             base = os.path.split(jcdir)[0]
 
     if sys.platform == 'darwin':
-        print 'Looking for Mac headers at ', os.path.join(base, 'include')
+        print('Looking for Mac headers at ', os.path.join(base, 'include'))
         if os.path.exists(os.path.join(base, 'include')):
             # JDK 7+
             headers = [os.path.join(base, 'include')]
@@ -64,9 +67,9 @@ def get_headers(d):
 Import('env', 'compiler')
 config = ConfigureJNI(env)
 if config == None:
-    print "Could not configure Java. If you know where java is on your system,"
-    print "set environment variable JAVA_HOME to point to the directory containing"
-    print "the Java include, bin, and lib directories."
+    print("Could not configure Java. If you know where java is on your system,")
+    print("set environment variable JAVA_HOME to point to the directory containing")
+    print("the Java include, bin, and lib directories.")
     Return()
 
 clone = env.Clone()

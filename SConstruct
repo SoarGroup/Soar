@@ -2,6 +2,7 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 
+from __future__ import print_function
 
 import os
 import sys
@@ -20,40 +21,40 @@ join = os.path.join
 SOAR_VERSION = "9.6.0"
 
 soarversionFile = open('soarversion', 'w')
-print >> soarversionFile, SOAR_VERSION
+print(SOAR_VERSION, file=soarversionFile)
 soarversionFile.close()
 
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
 DEF_TARGETS = 'kernel cli sml_java debugger headers scripts'.split()
 
-print "================================================================================"
-print "Building Soar", SOAR_VERSION, "                      * will be built if no target specified"
-print "Targets available:"
-print "   Core:              kernel* cli* scripts*"
-print "   Testing:           performance_tests tests"
-print "   SWIG:              sml_python sml_tcl sml_java*"
-print "   Extras:            debugger* headers* tclsoarlib"
-print "Custom Settings available:                                              *default"
-print "   Build Type:        --dbg, --opt*, --static"
-print "   Custom Paths:      --out, --build, --tcl"
-print "   Compilation time:  --no-svs, --scu*, --no-scu, --no-scu-kernel, --no-scu-cli"
-print "   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags, --verbose,"
-print "================================================================================"
+print("================================================================================")
+print("Building Soar", SOAR_VERSION, "                      * will be built if no target specified")
+print("Targets available:")
+print("   Core:              kernel* cli* scripts*")
+print("   Testing:           performance_tests tests")
+print("   SWIG:              sml_python sml_tcl sml_java*")
+print("   Extras:            debugger* headers* tclsoarlib")
+print("Custom Settings available:                                              *default")
+print("   Build Type:        --dbg, --opt*, --static")
+print("   Custom Paths:      --out, --build, --tcl")
+print("   Compilation time:  --no-svs, --scu*, --no-scu, --no-scu-kernel, --no-scu-cli")
+print("   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags, --verbose,")
+print("================================================================================")
 
 def execute(cmd):
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     except OSError:
-        print cmd[0], ' not in path'
+        print(cmd[0], ' not in path')
         Exit(1)
 
     out = p.communicate()[0]
     if p.returncode != 0:
-        print 'error executing ', cmd
+        print('error executing ', cmd)
         Exit(1)
     else:
-        return out
+        return out.decode()
 
 def gcc_version(cc):
     version_info = execute(cc.split() + ['--version'])
@@ -64,26 +65,26 @@ def gcc_version(cc):
     if 'clang' in version_info or 'LLVM' in version_info:
         return [42, 42, 42]
 
-    print 'cannot identify compiler version'
+    print('cannot identify compiler version')
     Exit(1)
 
 def vc_version():
     try:
         p = subprocess.Popen(['link.exe'], stdout=subprocess.PIPE, bufsize=1)
     except WindowsError as e:
-        print "error running link.exe: {0}".format(e.strerror)
-        print 'make sure Microsoft Visual C++ is installed and you are using the Visual Studio Command Prompt'
+        print("error running link.exe: {0}".format(e.strerror))
+        print('make sure Microsoft Visual C++ is installed and you are using the Visual Studio Command Prompt')
         Exit(1)
     line = p.stdout.readline()
     # for line in iter(p.stdout.readline, b''):
-    #     print line,
+    #     print(line,)
     p.communicate()
     m = re.search(r'Version ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', line)
     if m:
         t = tuple(int(n) for n in m.groups())
         return str(t[0]) + '.' + str(t[1])
 
-    print 'cannot identify compiler version'
+    print('cannot identify compiler version')
     Exit(1)
 
 # run cl (MSVC compiler) and return the target architecture (x64 or x86)
@@ -127,7 +128,7 @@ def InstallDLLs(env):
     if not os.path.exists(outdir):
         os.mkdir(outdir)
     for dll in indlls:
-      # print 'copy "' + dll.rstr() + '" "' + outdir + '"'
+      # print('copy "' + dll.rstr() + '" "' + outdir + '"')
       shutil.copy(dll.rstr(), outdir)
 
 Export('InstallDir')
@@ -156,7 +157,7 @@ cl_target_architecture = ''
 if sys.platform == 'win32':
     msvc_version = vc_version()
     cl_target_architecture = cl_target_arch()
-    print "MSVC compiler target architecture is", cl_target_architecture
+    print("MSVC compiler target architecture is", cl_target_architecture)
 
 env = Environment(
     MSVC_VERSION=msvc_version,
@@ -168,6 +169,7 @@ env = Environment(
     OUT_DIR=os.path.realpath(GetOption('outdir')),
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
+	JAVAVERSION='1.6',
 )
 
 # This creates a file for cli_version.cpp to source.  For optimized builds, this guarantees
@@ -177,12 +179,12 @@ env = Environment(
 
 if ((GetOption('dbg') == None) or (GetOption('dbg') == False) or (FindFile('build_time_date.h', 'Core/shared/') == None)):
     cli_version_dep = open('Core/shared/build_time_date.h', 'w')
-    print >> cli_version_dep, "const char* kTimestamp = __TIME__;"
-    print >> cli_version_dep, "const char* kDatestamp = __DATE__;"
-    print >> cli_version_dep, "//* Last build of Soar " + SOAR_VERSION + " occurred at " + time.ctime(time.time()) + " *//"
+    print("const char* kTimestamp = __TIME__;", file=cli_version_dep)
+    print("const char* kDatestamp = __DATE__;", file=cli_version_dep)
+    print("//* Last build of Soar " + SOAR_VERSION + " occurred at " + time.ctime(time.time()) + " *//", file=cli_version_dep)
     cli_version_dep.close()
 else:
-    print "Build time stamp file was not built because this is a debug build."
+    print("Build time stamp file was not built because this is a debug build.")
     
 if GetOption('cc') != None:
     env.Replace(CC=GetOption('cc'))
@@ -193,8 +195,8 @@ if GetOption('cxx') != None:
 elif sys.platform == 'darwin':
     env.Replace(CXX='clang++')
 
-print "Building intermediates to", env['BUILD_DIR']
-print "Installing targets to", env['OUT_DIR']
+print("Building intermediates to", env['BUILD_DIR'])
+print("Installing targets to", env['OUT_DIR'])
 
 if 'g++' in env['CXX']:
     compiler = 'g++'
@@ -353,7 +355,7 @@ env.Alias('all', default_ans.keys())
 all_aliases = default_ans.keys()
 
 if COMMAND_LINE_TARGETS == ['list']:
-    print '\n'.join(sorted(all_aliases))
+    print('\n'.join(sorted(all_aliases)))
     Exit()
 
 # Set default targets

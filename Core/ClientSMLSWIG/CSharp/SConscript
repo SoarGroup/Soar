@@ -12,7 +12,7 @@ def get_headers(d):
 
 Import("env", "compiler")
 if env.WhereIs('csc') == None:
-	print 'C# compiler not found, not building C# SML wrappers'
+	print('C# compiler not found, not building C# SML wrappers')
 	Return()
 
 clone = env.Clone()
@@ -30,7 +30,7 @@ fake_target = '#fake-csharp-target'
 # adapted from http://scons.org/wiki/DynamicSourceGenerator
 def late_csharp_builder(target, source, env):
 	if not os.path.isdir(srcdir):
-		print 'source directory does not exist'
+		print('source directory does not exist')
 		sys.exit(1)
 
 	cs_srcs = [ os.path.join(srcdir, f) for f in os.listdir(srcdir) ]
