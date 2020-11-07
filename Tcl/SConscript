@@ -90,7 +90,7 @@ if sys.platform == 'darwin':
   install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'TclSoarLib' + env['SHLIBSUFFIX'])
   clone.Append(LINKFLAGS = ['-install_name', install_name])
   clone.Append(LINKFLAGS = ['-framework', tcl_lib])
-elif sys.platform == 'linux2':
+elif sys.platform.startswith('linux'):
   clone.Append(CPPFLAGS = ['-fPIC'])
   clone.Append(LIBS = [tcl_lib, 'Soar'])
   # Currently requires Tcl 8.6 b/c it supports multiple threads without manual compilation.  The following line

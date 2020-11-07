@@ -237,7 +237,7 @@ if compiler == 'g++':
                 env['CPPFLAGS'] = []
             config.Finish()
 
-        if sys.platform == 'linux2':
+        if sys.platform.startswith('linux'):
             lnflags.append(env.Literal(r'-Wl,-rpath,$ORIGIN'))
             libs.append('rt')
         elif 'freebsd' in sys.platform:
