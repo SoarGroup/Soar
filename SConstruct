@@ -290,7 +290,6 @@ env.Replace(
     ],
     LIBS=libs,
     LIBPATH=[os.path.realpath(GetOption('outdir'))],
-	RPATH=[os.path.realpath(GetOption('outdir'))],
 )
 
 if sys.platform == 'win32':
