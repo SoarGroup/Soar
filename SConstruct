@@ -169,7 +169,7 @@ env = Environment(
     OUT_DIR=os.path.realpath(GetOption('outdir')),
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
-	JAVAVERSION='1.6',
+	JAVAVERSION='1.8',
 )
 
 # This creates a file for cli_version.cpp to source.  For optimized builds, this guarantees
