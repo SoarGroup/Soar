@@ -305,7 +305,8 @@ else:
 if sys.platform != 'win32':
     env.Append(CXXFLAGS='-std=c++11')
 
-env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
+if not sys.platform == 'darwin':
+    env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
 
 # Setting *COMSTR will replace long commands with a short message "Making <something>"
 if not GetOption('verbose'):

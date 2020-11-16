@@ -20,7 +20,7 @@ def ConfigureJNI(env):
             # /urs/libexec/java_home will give us 
             try:
                 p = subprocess.Popen(['/usr/libexec/java_home'], stdout = subprocess.PIPE)
-                base = p.stdout.readline().split()[-1]
+                base = p.stdout.readline().split()[-1].decode()
                 p.wait()
             except OSError:
                 print('Error running /usr/libexec/java_home to get java home', file=sys.stderr)
@@ -97,7 +97,7 @@ fake_java_target = '#fake_java_target'
 if sys.platform == 'darwin':
     install_name = os.path.join('@loader_path', name + '.jnilib')
     clone.Append(SHLINKFLAGS = ' -install_name ' + install_name)
-    clone.Append(SHLINKFLAGS = ' -framework JavaVM')
+#     clone.Append(SHLINKFLAGS = ' -framework JavaVM')
 
 # This builder will insert extra dependencies during the COMPILATION stage
 # adapted from http://scons.org/wiki/DynamicSourceGenerator
