@@ -79,7 +79,7 @@ def vc_version():
     # for line in iter(p.stdout.readline, b''):
     #     print(line,)
     p.communicate()
-    m = re.search(r'Version ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', line)
+    m = re.search(r'Version ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', line.decode())
     if m:
         t = tuple(int(n) for n in m.groups())
         return str(t[0]) + '.' + str(t[1])
@@ -91,7 +91,7 @@ def vc_version():
 def cl_target_arch():
     cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
     for line in cl.stdout:
-        if re.search('x64', line):
+        if re.search('x64', line.decode()):
             return 'x64'
     return 'x86'
 
@@ -248,7 +248,7 @@ if compiler == 'g++':
             cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 
 elif compiler == 'msvc':
-    cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj', '/nowarn:4503']
+    cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
     if GetOption('nosvs'):
         cflags.extend(' /D NO_SVS'.split())
     if GetOption('defflags'):
@@ -293,14 +293,16 @@ env.Replace(
 )
 
 if sys.platform == 'win32':
-    sys_lib_path = filter(None, os.environ.get('PATH', '').split(';'))
-    sys_inc_path = filter(None, os.environ.get('INCLUDE', '').split(';'))
+    sys_lib_path = list(filter(None, os.environ.get('PATH', '').split(';')))
+    sys_inc_path = list(filter(None, os.environ.get('INCLUDE', '').split(';')))
 elif sys.platform == 'darwin':
-    sys_lib_path = filter(None, os.environ.get('DYLD_LIBRARY_PATH', '').split(':'))
-    sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
+    sys_lib_path = list(filter(None, os.environ.get('DYLD_LIBRARY_PATH', '').split(':')))
+    sys_inc_path = list(filter(None, os.environ.get('CPATH', '').split(':')))
 else:
-    sys_lib_path = filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':'))
-    sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
+    sys_lib_path = list(filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':')))
+    sys_inc_path = list(filter(None, os.environ.get('CPATH', '').split(':')))
+
+print("test2", list(sys_inc_path), list(sys_lib_path))
 
 if sys.platform != 'win32':
     env.Append(CXXFLAGS='-std=c++11')
