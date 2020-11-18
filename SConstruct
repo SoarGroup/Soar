@@ -302,8 +302,6 @@ else:
     sys_lib_path = list(filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':')))
     sys_inc_path = list(filter(None, os.environ.get('CPATH', '').split(':')))
 
-print("test2", list(sys_inc_path), list(sys_lib_path))
-
 if sys.platform != 'win32':
     env.Append(CXXFLAGS='-std=c++11')
 

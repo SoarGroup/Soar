@@ -29,8 +29,6 @@ if not exist user-env.bat (
 	call user-env.bat
 )
 
-
-
 echo PYTHON_HOME=%PYTHON_HOME%
 echo JAVA_HOME=%JAVA_HOME%
 echo SWIG_HOME=%SWIG_HOME%
@@ -41,7 +39,6 @@ if not exist !PYTHON_HOME!\python.exe (
 )
 
 set PATH=!PYTHON_HOME!;%JAVA_HOME%\bin;%SWIG_HOME%;%PATH%
-echo %PATH%
 "%PYTHON_HOME%\python.exe" scons\scons.py -Q %*
 exit /B
 
