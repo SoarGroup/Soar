@@ -27,8 +27,8 @@ if sys.platform == 'win32':
     tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))
     tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'include'))
     tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
-    tcl_libname = 'tcl86.lib'
-    tcl_lib = 'tcl86'
+    tcl_libname = 'tcl86t.lib'
+    tcl_lib = 'tcl86t'
     tcl_shname = 'tclsh86'
     tcl_pkgindex_name = 'pkgIndex_win.tcl'
 elif sys.platform == 'darwin':
@@ -65,10 +65,10 @@ else:
 if ((not tcl_libs.exists()) or (not tcl_headers.exists()) or
     (not File(os.path.join(tcl_headers.abspath, 'tcl.h')).exists()) or
     (not File(os.path.join(tcl_libs.abspath, tcl_libname)).exists())) :
-    print 'Tcl headers and libraries not found at ' + tcl_platform_dir + ', not building Tcl SML wrappers.'
+    print('Tcl headers and libraries not found at ' + tcl_platform_dir + ', not building Tcl SML wrappers.')
     Return()
 else:
-    print 'Tcl SML wrappers are buildable.'
+    print('Tcl SML wrappers are buildable.')
 
 # dirs
 lib_install_dir = clone.Dir('$OUT_DIR')
@@ -122,7 +122,7 @@ if sys.platform == 'darwin':
   # including the -bundle flag with -flat_namespace now gives an error, so we removed it
   clone.Append(SHLINKFLAGS=Split('$LINKFLAGS -flat_namespace -undefined suppress'))
   clone.Append(LINKFLAGS=['-framework', tcl_lib])
-elif sys.platform == 'linux2':
+elif sys.platform.startswith('linux'):
   clone.Append(CPPFLAGS = ['-fPIC'])
   clone.Append(LIBS = [tcl_lib])
 else:
