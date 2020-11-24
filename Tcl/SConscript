@@ -56,10 +56,10 @@ else:
 if ((not tcl_libs.exists()) or (not tcl_headers.exists()) or
     (not File(os.path.join(tcl_headers.abspath, 'tcl.h')).exists()) or
     (not File(os.path.join(tcl_libs.abspath, tcl_libname)).exists())) :
-    print 'Tcl headers and libraries not found at ' + tcl_platform_dir + ', not building TclSoarLib.'
+    print('Tcl headers and libraries not found at ' + tcl_platform_dir + ', not building TclSoarLib.')
     Return()
 else:
-    print 'TclSoarLib is buildable.'
+    print('TclSoarLib is buildable.')
 
 # A better way?
 #
@@ -90,7 +90,7 @@ if sys.platform == 'darwin':
   install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'TclSoarLib' + env['SHLIBSUFFIX'])
   clone.Append(LINKFLAGS = ['-install_name', install_name])
   clone.Append(LINKFLAGS = ['-framework', tcl_lib])
-elif sys.platform == 'linux2':
+elif sys.platform.startswith('linux'):
   clone.Append(CPPFLAGS = ['-fPIC'])
   clone.Append(LIBS = [tcl_lib, 'Soar'])
   # Currently requires Tcl 8.6 b/c it supports multiple threads without manual compilation.  The following line
