@@ -1,7 +1,6 @@
 #include "working_memory.h"
 
 #include "agent.h"
-#include "debug_inventories.h"
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"
@@ -16,7 +15,6 @@
 #include "xml.h"
 
 #include <stdlib.h>
-#include "dprint.h"
 
 using namespace soar_TraceNames;
 
@@ -132,8 +130,6 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
 
-    WDI_add(thisAgent, w);
-
     return w;
 }
 
@@ -141,45 +137,26 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
-    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     push(thisAgent, w, thisAgent->wmes_to_add);
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and value %y.\n", w->id, w->value);
         post_link_addition(thisAgent, w->id, w->value);
         if (w->id->is_state() && (w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol))
         {
             w->value->id->isa_operator++;
         }
     }
-
-    #ifdef DEBUG_ATTR_AS_LINKS
-    if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-    {
-        dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", w->id, w->attr);
-        post_link_addition(thisAgent, w->id, w->attr);
-    }
-    #endif
 }
 
 void remove_wme_from_wm(agent* thisAgent, wme* w)
 {
-    dprint(DT_WME_CHANGES, "Removing wme %w by adding to wmes_to_remove list...\n", w);
 
     push(thisAgent, w, thisAgent->wmes_to_remove);
 
     if (w->value->is_sti())
     {
-        dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
         post_link_removal(thisAgent, w->id, w->value);
-#ifdef DEBUG_ATTR_AS_LINKS
-        if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-        {
-            dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);
-            post_link_removal(thisAgent, w->id, w->attr);
-        }
-#endif
         if (w->id->is_state() && w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
         {
             w->value->id->isa_operator--;
@@ -191,15 +168,10 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
     if (w->gds)
     {
         fast_remove_from_dll(w->gds->wmes_in_gds, w, wme, gds_next, gds_prev);
-        /* printf("\nRemoving WME on some GDS"); */
 
         if (!w->gds->wmes_in_gds)
         {
-            if (w->gds->goal)
-            {
-                w->gds->goal->id->gds = NIL;
-            }
-            GDI_remove(thisAgent, w->gds);
+            if (w->gds->goal) w->gds->goal->id->gds = NIL;
             thisAgent->memoryManager->free_with_pool(MP_gds, w->gds);
         }
     }
@@ -216,7 +188,6 @@ void remove_wme_list_from_wm(agent* thisAgent, wme* w, bool updateWmeMap)
         if (updateWmeMap)
         {
             soar_invoke_callbacks(thisAgent, INPUT_WME_GARBAGE_COLLECTED_CALLBACK, static_cast< soar_call_data >(w));
-            //remove_wme_from_wmeMap (thisAgent, w);
         }
         remove_wme_from_wm(thisAgent, w);
 
@@ -228,47 +199,34 @@ void do_buffered_wm_changes(agent* thisAgent)
 {
     cons* c, *next_c, *cr;
     wme* w;
-    /*
-    void filtered_print_wme_add(wme *w), filtered_print_wme_remove(wme *w);
-    */
 
-    dprint(DT_WME_CHANGES, "Doing buffered WM changes...\n");
-
-#ifndef NO_TIMING_STUFF
-#ifdef DETAILED_TIMING_STATS
+    #ifndef NO_TIMING_STUFF
+    #ifdef DETAILED_TIMING_STATS
     soar_timer local_timer;
     local_timer.set_enabled(&(thisAgent->timers_enabled));
-#endif
-#endif
+    #endif
+    #endif
 
     /* --- if no wme changes are buffered, do nothing --- */
-    if (!thisAgent->wmes_to_add && !thisAgent->wmes_to_remove)
-    {
-        dprint(DT_WME_CHANGES, "...nothing to do.\n");
-        return;
-    }
+    if (!thisAgent->wmes_to_add && !thisAgent->wmes_to_remove) return;
 
     /* --- call output module in case any changes are output link changes --- */
-    dprint(DT_WME_CHANGES, "...informing output code of wm changes.\n");
-    inform_output_module_of_wm_changes(thisAgent, thisAgent->wmes_to_add,
-                                       thisAgent->wmes_to_remove);
+    inform_output_module_of_wm_changes(thisAgent, thisAgent->wmes_to_add, thisAgent->wmes_to_remove);
 
     /* --- invoke callback routine.  wmes_to_add and wmes_to_remove can   --- */
     /* --- be fetched from the agent structure.                           --- */
-    dprint(DT_WME_CHANGES, "...invoking wm changes callbacks.\n");
     soar_invoke_callbacks(thisAgent, WM_CHANGES_CALLBACK, 0);
 
     /* --- stuff wme changes through the rete net --- */
-#ifndef NO_TIMING_STUFF
-#ifdef DETAILED_TIMING_STATS
+    #ifndef NO_TIMING_STUFF
+    #ifdef DETAILED_TIMING_STATS
     local_timer.start();
-#endif
-#endif
-    dprint(DT_WME_CHANGES, "...adding wmes_to_add to rete.\n");
+    #endif
+    #endif
     for (c = thisAgent->wmes_to_add; c != NIL; c = c->rest)
     {
         w = (wme_struct*)(c->first);
-#ifdef SPREADING_ACTIVATION_ENABLED
+        #ifdef SPREADING_ACTIVATION_ENABLED
         if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {//We attempt to keep track of ltis currently in wmem.
             if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) == thisAgent->SMem->smem_in_wmem->end())
@@ -286,15 +244,13 @@ void do_buffered_wm_changes(agent* thisAgent)
                 (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] = (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] + 1;
             }
         }
-#endif
-        dprint(DT_WME_CHANGES, "...adding %w to rete\n", static_cast<wme_struct*>(c->first));
+        #endif
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
-    dprint(DT_WME_CHANGES, "...removing wmes_to_remove from rete.\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
     {
         w = (wme_struct*)(c->first);
-#ifdef SPREADING_ACTIVATION_ENABLED
+        #ifdef SPREADING_ACTIVATION_ENABLED
         if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {
             if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_in_wmem->end())
@@ -317,17 +273,15 @@ void do_buffered_wm_changes(agent* thisAgent)
                 }
             }
         }
-#endif
-        dprint(DT_WME_CHANGES, "...removing %w from rete.\n", static_cast<wme_struct*>(c->first));
+        #endif
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
-#ifndef NO_TIMING_STUFF
-#ifdef DETAILED_TIMING_STATS
+    #ifndef NO_TIMING_STUFF
+    #ifdef DETAILED_TIMING_STATS
     local_timer.stop();
     thisAgent->timers_match_cpu_time[thisAgent->current_phase].update(local_timer);
-#endif
-#endif
-    dprint(DT_WME_CHANGES, "...looking for wmes added and removed in same phase.\n");
+    #endif
+    #endif
     /* --- warn if watching wmes and same wme was added and removed -- */
     if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
     {
@@ -340,7 +294,6 @@ void do_buffered_wm_changes(agent* thisAgent)
                 next_c = cr->rest;
                 if (w == cr->first)
                 {
-                    dprint(DT_WME_CHANGES, "...found wme added and removed in same phase!\n");
                     const char* const kWarningMessage = "WARNING: WME added and removed in same phase : ";
                     thisAgent->outputManager->printa(thisAgent,  const_cast< char* >(kWarningMessage));
                     xml_begin_tag(thisAgent, kTagWarning);
@@ -352,8 +305,6 @@ void do_buffered_wm_changes(agent* thisAgent)
         }
     }
 
-
-    dprint(DT_WME_CHANGES, "...WMEs to add:\n");
     /* --- do tracing and cleanup stuff --- */
     for (c = thisAgent->wmes_to_add; c != NIL; c = next_c)
     {
@@ -361,49 +312,33 @@ void do_buffered_wm_changes(agent* thisAgent)
         w = static_cast<wme_struct*>(c->first);
         if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
         {
-            /* print ("=>WM: ");
-             * print_wme (w);
-             */
-            filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
+            filtered_print_wme_add(thisAgent, w);
         }
 
-        dprint(DT_WME_CHANGES, "      %w:\n",w);
         wme_add_ref(w, true);
         free_cons(thisAgent, c);
         thisAgent->wme_addition_count++;
     }
-    dprint(DT_WME_CHANGES, "...WMEs to remove:\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = next_c)
     {
         next_c = c->rest;
         w = static_cast<wme_struct*>(c->first);
         if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
         {
-            /* print ("<=WM: ");
-             * print_wme (thisAgent, w);
-             */
-            filtered_print_wme_remove(thisAgent, w);   /* kjh(CUSP-B2) begin */
+            filtered_print_wme_remove(thisAgent, w);
         }
 
-        dprint(DT_WME_CHANGES, "      %w:\n",w);
         wme_remove_ref(thisAgent, w);
         free_cons(thisAgent, c);
         thisAgent->wme_removal_count++;
     }
-    dprint(DT_WME_CHANGES, "Finished doing buffered WM changes\n");
     thisAgent->wmes_to_add = NIL;
     thisAgent->wmes_to_remove = NIL;
 }
 
 void deallocate_wme(agent* thisAgent, wme* w)
 {
-    dprint(DT_WME_CHANGES, "Deallocating wme %w\n", w);
-    WDI_remove(thisAgent, w);
-
-    if (wma_enabled(thisAgent))
-    {
-        wma_remove_decay_element(thisAgent, w);
-    }
+    if (wma_enabled(thisAgent)) wma_remove_decay_element(thisAgent, w);
 
     if (w->local_singleton_value_identity_set)
     {
@@ -413,28 +348,16 @@ void deallocate_wme(agent* thisAgent, wme* w)
     thisAgent->symbolManager->symbol_remove_ref(&w->id);
     thisAgent->symbolManager->symbol_remove_ref(&w->attr);
     thisAgent->symbolManager->symbol_remove_ref(&w->value);
-
     thisAgent->memoryManager->free_with_pool(MP_wme, w);
     thisAgent->num_existing_wmes--;
 }
 
 Symbol* find_name_of_object(agent* thisAgent, Symbol* object)
 {
-    slot* s;
-
-    if (object->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-    {
-        return NIL;
-    }
-    s = find_slot(object, thisAgent->symbolManager->soarSymbols.name_symbol);
-    if (! s)
-    {
-        return NIL;
-    }
-    if (! s->wmes)
-    {
-        return NIL;
-    }
+    if (object->symbol_type != IDENTIFIER_SYMBOL_TYPE) return NIL;
+    slot* s = find_slot(object, thisAgent->symbolManager->soarSymbols.name_symbol);
+    if (! s) return NIL;
+    if (! s->wmes) return NIL;
     return s->wmes->value;
 }
 

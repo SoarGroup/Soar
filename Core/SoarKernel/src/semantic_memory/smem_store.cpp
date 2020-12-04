@@ -607,8 +607,6 @@ void SMem_Manager::update(Symbol* pSTI, smem_storage_type store_type, tc_number 
 
 void SMem_Manager::STM_to_LTM(Symbol* pSTI, smem_storage_type store_type, bool use_lookup, bool pOverwriteOldLinkToLTM, tc_number tc)
 {
-
-    dprint(DT_SMEM_INSTANCE, "STM_to_LTM adding %y (%u), %s and %soverwriting old LTI links if they exist\n", pSTI, pSTI->id->LTI_ID, use_lookup ? "using look-up table" : "using existing LTI IDs", pOverwriteOldLinkToLTM ? " " : "not ");
     // transitive closure only matters for recursive storage
     if ((store_type == store_recursive) && (tc == NIL))
     {
@@ -667,6 +665,7 @@ void SMem_Manager::STM_to_LTM(Symbol* pSTI, smem_storage_type store_type, bool u
                 }
 
                 v->val_lti.val_value = (*c);
+                v->val_lti.edge_weight = 0.0;
             }
 
             // add value to slot

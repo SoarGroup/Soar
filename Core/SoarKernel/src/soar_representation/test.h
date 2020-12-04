@@ -18,7 +18,6 @@
 
 #include "kernel.h"
 #include "stl_typedefs.h"
-#include "debug_inventories.h"
 
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
@@ -38,10 +37,10 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_p
 
 typedef struct test_struct
 {
-    TestType        type;                  /* see definitions in enums.h */
+    TestType        type;               /* see definitions in enums.h */
     union test_info_union
     {
-        Symbol*     referent;         /* for relational tests */
+        Symbol*     referent;           /* for relational tests */
         cons*       disjunction_list;   /* for disjunction tests */
         cons*       conjunct_list;      /* for conjunctive tests */
     } data;
@@ -51,11 +50,6 @@ typedef struct test_struct
     uint64_t        inst_identity;
     uint64_t        chunk_inst_identity;
     Identity*       identity;
-    
-    #ifdef DEBUG_TEST_INVENTORY
-    uint64_t        t_id;
-    #endif
-
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is

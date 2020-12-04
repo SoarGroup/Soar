@@ -86,25 +86,6 @@ class EXPORT Symbol_Manager {
 
         inline void symbol_add_ref(Symbol* x)
         {
-//            if (is_DT_mode_enabled(DT_REFCOUNT_ADDS))
-//            {
-//                std::cout << "ADD-REF " << x->to_string() << "->" <<  (x->reference_count + 1) << "\n";
-//            }
-
-        #ifdef DEBUG_TRACE_REFCOUNT_FOR
-            std::string strName(x->to_string());
-            if (strName == DEBUG_TRACE_REFCOUNT_FOR)
-            {
-                std::string caller_string;
-                get_stacktrace(caller_string);
-        //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
-                if (is_DT_mode_enabled(DT_ID_LEAKING))
-                {
-                    std::cout << "++ | " << strName.c_str() << " | " << (x->reference_count+1) << " | " << caller_string.c_str() << "\n";
-                }
-            }
-        #endif
-
             (x)->reference_count++;
         }
 
@@ -112,26 +93,7 @@ class EXPORT Symbol_Manager {
 
         inline void symbol_remove_ref(Symbol** x)
         {
-//            if (is_DT_mode_enabled(DT_REFCOUNT_REMS))
-//            {
-//                std::cout << "REMOVE-REF " << (*x)->to_string() << "->" <<  ((*x)->reference_count - 1) << "\n";
-//            }
             (*x)->reference_count--;
-
-        #ifdef DEBUG_TRACE_REFCOUNT_FOR
-            std::string strName((*x)->to_string());
-            if (strName == DEBUG_TRACE_REFCOUNT_FOR)
-            {
-                std::string caller_string;
-                get_stacktrace(caller_string);
-        //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s--\n", strName.c_str(), (*x)->reference_count, caller_string.c_str());
-                if (is_DT_mode_enabled(DT_ID_LEAKING))
-                {
-                    std::cout << "-- | " << strName.c_str() << " | " << (*x)->reference_count << " | " << caller_string.c_str() << "\n";
-                }
-            }
-        #endif
-
             if ((*x)->reference_count == 0)
             {
                 deallocate_symbol(*x);

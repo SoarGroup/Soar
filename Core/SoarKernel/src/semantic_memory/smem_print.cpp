@@ -8,7 +8,6 @@
 #include "semantic_memory.h"
 #include "smem_db.h"
 
-#include "dprint.h"
 #include "output_manager.h"
 #include "lexer.h"
 
@@ -360,7 +359,7 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
     id_set next;
     id_set::iterator next_it;
 
-    soar_module::sqlite_statement* act_q = thisAgent->SMem->SQL->vis_lti_act;
+    soar_module::sqlite_statement* act_q;// = thisAgent->SMem->SQL->vis_lti_act;
     soar_module::sqlite_statement* hist_q = thisAgent->SMem->SQL->history_get;
     soar_module::sqlite_statement* lti_access_q = thisAgent->SMem->SQL->lti_access_get;
     unsigned int i;
@@ -383,6 +382,15 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
 
         // get lti info
         {
+            std::unordered_map<uint64_t, int64_t>* spreaded_to = smem_spreaded_to;
+            if (settings->spreading->get_value() == on && spreaded_to->find(pLTI_ID) != spreaded_to->end() && (*spreaded_to)[pLTI_ID] != 0)
+            {
+                act_q = thisAgent->SMem->SQL->vis_lti_spread_act;
+            }
+            else
+            {
+                act_q = thisAgent->SMem->SQL->vis_lti_act;
+            }
             act_q->bind_int(1, c.first);
             act_q->execute();
 

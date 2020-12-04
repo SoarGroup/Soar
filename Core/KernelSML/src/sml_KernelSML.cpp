@@ -28,9 +28,6 @@
 #include "thread_Thread.h"
 #include "symbol.h"
 #include "working_memory.h"
-#ifdef DEBUG_INCOMING_SML
-#include "dprint.h"
-#endif
 
 #include <iostream>
 #include <fstream>
@@ -619,7 +616,7 @@ soarxml::ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, soar
     // For debugging, it's helpful to be able to look at the incoming message as an XML string.  Enable in kernel.h
     #ifdef DEBUG_INCOMING_SML
         char* pIncomingXML = pIncomingMsg->GenerateXMLString(true) ;
-        dprint(DT_DEBUG, "Processing incoming message %s", pIncomingXML);
+        fprintf(stderr, "Processing incoming message %s", pIncomingXML);
     #endif
     
     soarxml::ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;

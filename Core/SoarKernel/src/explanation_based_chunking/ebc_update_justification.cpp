@@ -2,7 +2,6 @@
 #include "ebc_identity.h"
 
 #include "agent.h"
-#include "dprint.h"
 #include "condition.h"
 #include "preference.h"
 #include "symbol_manager.h"
@@ -30,7 +29,7 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (!result->rhs_func_inst_identities.id)
     {
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  result->inst_identities.id, result->identities.id, result->was_unbound_vars.id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  result->chunk_inst_identities.id, result->inst_identities.id, NULL, result->was_unbound_vars.id);
     } else {
         result->rhs_func_chunk_inst_identities.id = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.id, false, true);
         a->id = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.id);
@@ -46,7 +45,7 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (!result->rhs_func_inst_identities.attr)
     {
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr,  result->inst_identities.attr, result->identities.attr, result->was_unbound_vars.attr);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->chunk_inst_identities.attr, result->inst_identities.attr, NULL, result->was_unbound_vars.attr);
     } else {
         result->rhs_func_chunk_inst_identities.attr = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.attr, false, true);
         a->attr = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.attr);
@@ -62,7 +61,7 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (!result->rhs_func_inst_identities.value)
     {
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value,  result->inst_identities.value, result->identities.value, result->was_unbound_vars.value);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value,  result->chunk_inst_identities.value, result->inst_identities.value, NULL, result->was_unbound_vars.value);
     } else {
         result->rhs_func_chunk_inst_identities.value = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.value, false, true);
         a->value = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.value);
@@ -79,20 +78,18 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
         if (!result->rhs_func_inst_identities.referent)
         {
-            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent,  result->inst_identities.referent, result->identities.referent, result->was_unbound_vars.referent);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, result->chunk_inst_identities.referent, result->inst_identities.referent, NULL, result->was_unbound_vars.referent);
         } else {
             result->rhs_func_chunk_inst_identities.referent = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.referent, false, true);
             a->referent = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.referent);
         }
     }
 
-    dprint(DT_RHS_VARIABLIZATION, "Converted result: %a\n", a);
     return a;
 }
 
 action* Explanation_Based_Chunker::convert_results_into_actions()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before conversion: \n%6", NULL, m_results);
 
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;
@@ -108,7 +105,6 @@ action* Explanation_Based_Chunker::convert_results_into_actions()
         lLastAction = lAction;
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Actions after conversion: \n%2", returnAction);
     return returnAction;
 }
 
@@ -118,7 +114,6 @@ bool Explanation_Based_Chunker::update_identities_in_test_by_lookup(test t, bool
 
     if (t->identity)
     {
-        dprint(DT_LHS_VARIABLIZATION, "Updating identity by lookup %t %g...with %u\n", t, t, t->identity->get_clone_identity());
         if (!t->identity->literalized() && t->identity->get_clone_identity())
         {
             t->inst_identity = t->identity->get_clone_identity();
@@ -127,7 +122,6 @@ bool Explanation_Based_Chunker::update_identities_in_test_by_lookup(test t, bool
         }
         t->chunk_inst_identity = t->identity->get_identity();
         clear_test_identity(thisAgent, t);
-        dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
     }
     else
     {
@@ -169,7 +163,6 @@ void Explanation_Based_Chunker::update_identities_in_tests_by_lookup(test t, boo
             }
             c = c->rest;
         }
-        dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
     }
     else
     {
@@ -186,7 +179,6 @@ void Explanation_Based_Chunker::update_identities_in_equality_tests(test pTest)
     {
         if (pTest->eq_test->identity)
         {
-            dprint(DT_LHS_VARIABLIZATION, "Updating equality test %t %g in %t %g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
             if (!pTest->eq_test->identity->literalized())
             {
                 pTest->eq_test->inst_identity = pTest->eq_test->identity->update_clone_id();
@@ -196,77 +188,49 @@ void Explanation_Based_Chunker::update_identities_in_equality_tests(test pTest)
                 pTest->eq_test->chunk_inst_identity = LITERAL_VALUE;
             }
             clear_test_identity(thisAgent, pTest->eq_test);
-            dprint(DT_LHS_VARIABLIZATION, "...to produce %t %g [%u]\n", pTest->eq_test, pTest->eq_test, pTest->eq_test->chunk_inst_identity);
         } else {
-            dprint(DT_LHS_VARIABLIZATION, "Updating equality test %t in %t with no identity \n", pTest->eq_test, pTest);
             pTest->eq_test->inst_identity = LITERAL_VALUE;
             pTest->eq_test->chunk_inst_identity = LITERAL_VALUE;
-            dprint(DT_LHS_VARIABLIZATION, "...to produce %t 0 [0]\n", pTest->eq_test);
         }
     }
 }
 
 void Explanation_Based_Chunker::update_identities_in_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
-    dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Updating identities in justification's LHS condition list:\n");
-
-    dprint(DT_LHS_VARIABLIZATION, "Pass 1: Updating equality tests in positive conditions...\n");
-
     if (!pInNegativeCondition)
     {
         for (condition* cond = top_cond; cond != NIL; cond = cond->next)
         {
             if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
-                dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Updating equality test in LHS positive condition: %l\n", cond);
                 update_identities_in_equality_tests(cond->data.tests.id_test);
                 update_identities_in_equality_tests(cond->data.tests.attr_test);
                 update_identities_in_equality_tests(cond->data.tests.value_test);
-                dprint(DT_LHS_VARIABLIZATION, "-->Updated equalities in condition: %l\n", cond);
             }
         }
     }
-    dprint(DT_LHS_VARIABLIZATION, "Pass 2: Updating all other LHS tests via lookup only:\n");
     for (condition* cond = top_cond; cond != NIL; cond = cond->next)
     {
         if (cond->type == POSITIVE_CONDITION)
         {
-            dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Updating LHS positive non-equality tests in: %l\n", cond);
             if ((cond->data.tests.id_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
                 update_identities_in_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
             if ((cond->data.tests.attr_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
                 update_identities_in_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
             if ((cond->data.tests.value_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
                 update_identities_in_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
-            dprint(DT_LHS_VARIABLIZATION, "-->Updated condition: %l\n", cond);
-            #ifdef EBC_SANITY_CHECK_RULES
-            sanity_justification_test(cond->data.tests.id_test, pInNegativeCondition);
-            sanity_justification_test(cond->data.tests.attr_test, pInNegativeCondition);
-            sanity_justification_test(cond->data.tests.value_test, pInNegativeCondition);
-            #endif
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
-            dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Updating LHS negative condition: %l\n", cond);
             update_identities_in_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
             update_identities_in_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
             update_identities_in_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
-            dprint(DT_LHS_VARIABLIZATION, "-->Updated negative condition: %l\n", cond);
-            #ifdef EBC_SANITY_CHECK_RULES
-            sanity_justification_test(cond->data.tests.id_test, pInNegativeCondition);
-            sanity_justification_test(cond->data.tests.attr_test, pInNegativeCondition);
-            sanity_justification_test(cond->data.tests.value_test, pInNegativeCondition);
-            #endif
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            dprint_header(DT_NCC_VARIABLIZATION, PrintBefore, "Updating LHS negative conjunctive condition:\n");
-            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
             update_identities_in_condition_list(cond->data.ncc.top, true);
-            dprint(DT_LHS_VARIABLIZATION, "-->Updated NCC: %l\n", cond);
         }
     }
-    dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done updating LHS condition list.\n");
 }
 
 void Explanation_Based_Chunker::update_identities_in_rhs_value(const rhs_value pRhs_val)
@@ -281,27 +245,21 @@ void Explanation_Based_Chunker::update_identities_in_rhs_value(const rhs_value p
     else
     {
         rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
-        uint64_t lID;
+        uint64_t lID = LITERAL_VALUE;
 
-        dprint(DT_RHS_VARIABLIZATION, "Updating %y [v%u/s%u].\n", rs->referent, rs->inst_identity, rs->identity ? rs->identity->get_identity() : 0);
-
-        if (rs->identity)
-        {
-            lID = rs->identity->get_clone_identity();
-            if (!lID)
-                rs->identity = NULL_IDENTITY_SET;
-//                lID = rs->identity->get_identity();
-        }
-        else lID = rs->inst_identity;
+        if (rs->identity) lID = rs->identity->get_clone_identity();
+        if (!lID) lID = rs->inst_identity;
+        if (!lID) lID = rs->cv_id;
 
         if (lID)
         {
             rs->identity = thisAgent->explanationBasedChunker->get_identity_for_id(lID);
+            rs->cv_id = rs->inst_identity;
+            rs->inst_identity = lID;
         } else {
             rs->identity = NULL_IDENTITY_SET;
             rs->inst_identity = LITERAL_VALUE;
+            rs->cv_id = LITERAL_VALUE;
         }
-
-        dprint(DT_RHS_VARIABLIZATION, "...RHS value is now %y [v%u/s%u].\n", rs->referent, rs->inst_identity, rs->identity ? rs->identity->get_identity() : 0);
     }
 }

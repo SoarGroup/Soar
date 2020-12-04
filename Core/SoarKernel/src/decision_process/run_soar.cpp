@@ -289,7 +289,6 @@ void reset_statistics(agent* thisAgent)
 
     thisAgent->WM->wma_timers->reset();
     thisAgent->EpMem->epmem_timers->reset();
-    thisAgent->explanationBasedChunker->ebc_timers->reset();
     thisAgent->SMem->timers->reset();
 
     thisAgent->WM->wma_d_cycle_count = 0;
@@ -999,20 +998,6 @@ void do_one_top_level_phase(agent* thisAgent)
             thisAgent->current_phase = INPUT_PHASE;
             thisAgent->d_cycle_count++;
             thisAgent->WM->wma_d_cycle_count++;
-            #ifdef DEBUG_ONLY_AFTER_DC
-            if (thisAgent->d_cycle_count == DEBUG_ONLY_AFTER_DC)
-            {
-                dprint(DT_DEBUG, "Turning on debug tracing now that DC %u has reached DEBUG_ONLY_AFTER_DC.\n", thisAgent->d_cycle_count);
-                debug_trace_on();
-            }
-            #endif
-            #ifdef DEBUG_ONLY_BEFORE_DC
-            if (thisAgent->d_cycle_count == (DEBUG_ONLY_BEFORE_DC + 1))
-            {
-                dprint(DT_DEBUG, "Turning off debug tracing now that DC %u has reached DEBUG_ONLY_BEFORE_DC.\n", thisAgent->d_cycle_count);
-                debug_trace_off();
-            }
-            #endif
             break;
 
         /////////////////////////////////////////////////////////////////////////////////
