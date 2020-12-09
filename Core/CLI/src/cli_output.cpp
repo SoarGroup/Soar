@@ -51,10 +51,6 @@ bool CommandLineInterface::DoRedirectedOutputCommand(std::vector<std::string>& a
     {
         argv.erase(argv.begin());
         had_error = !ParseCTF(argv);
-        if (!had_error)
-        {
-            thisAgent->outputManager->printa(thisAgent, "Output of command successfully written to file.\n");
-        }
         return true;
     }
     return false;
