@@ -17,7 +17,7 @@ libname = 'Tcl_sml_ClientInterface'
 # Make sure tcl header file exists before proceeding
 
 if sys.platform == 'win32':
-    tcl_platform_dir = os.path.join('C:/Tcl')
+    tcl_platform_dir = os.path.join('C:/ActiveTcl')
 
     tcl_user_platform_dir = GetOption('tcl')
 
@@ -29,7 +29,7 @@ if sys.platform == 'win32':
     tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
     tcl_libname = 'tcl86t.lib'
     tcl_lib = 'tcl86t'
-    tcl_shname = 'tclsh86'
+    tcl_shname = 'tclsh86t'
     tcl_pkgindex_name = 'pkgIndex_win.tcl'
 elif sys.platform == 'darwin':
     tcl_platform_dir = os.path.join('/Library/Frameworks/Tcl.framework/Versions/Current')
