@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install requirements
-        run: brew install swig --cask tcl
+        run: brew install --cask tcl; brew install swig
       - name: Build everything
         run: python scons/scons.py all
       - name: Run tests 
