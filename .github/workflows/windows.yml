@@ -1,0 +1,35 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the development branch
+  push:
+    branches: [ development ]
+  pull_request:
+    branches: [ development ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install requirements
+        run: choco install activetcl swig
+      - name: Build everything
+        run: build all
+      - name: Run tests 
+        run: |
+          cd out
+          ./UnitTests
