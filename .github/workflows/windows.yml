@@ -26,10 +26,18 @@ jobs:
           python-version: 3.8
       - uses: ilammy/msvc-dev-cmd@v1
       
+      # install dependencies
+      # refresh env vars so can find tcl on the path
+      # find tclsh, which will be in something like c:\<tcllocation>\bin\tclsh.exe
+      # get the parent parent directory to get c:\<tcllocation>, and create a symlink to make that
+      # appear at c:\Tcl, which is where the scons script expects it on windows
       - name: Install requirements
         run: |
-            choco install magicsplat-tcl-tk --no-progress --install-args="'TARGETDIR="C:\Tcl" /qb'"
+            choco install magicsplat-tcl-tk --no-progress
             choco install swig --no-progress
+            refreshenv
+            $tclPath = split-path (split-path (get-command tclsh).Path)
+            cmd /c mklink /d c:\Tcl $tclPath
       - name: Build everything
         run: ./build.bat all
       - name: Run tests 
