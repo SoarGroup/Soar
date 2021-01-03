@@ -28,7 +28,7 @@ jobs:
       
       - name: Install requirements
         run: |
-            choco install magicsplat-tcl-tk --no-progress --install-args="'/i "msi path" TARGETDIR="C:\Tcl" /qb'"
+            choco install magicsplat-tcl-tk --no-progress --install-args="'TARGETDIR="C:\Tcl" /qb'"
             choco install swig --no-progress
       - name: Build everything
         run: ./build.bat all
