@@ -27,7 +27,9 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
       
       - name: Install requirements
-        run: choco install magicsplat-tcl-tk swig --limit-output --params="'/i "msi path" TARGETDIR="C:\Tcl" /qb'"
+        run: |
+            choco install magicsplat-tcl-tk --no-progress --install-args="'/i "msi path" TARGETDIR="C:\Tcl" /qb'"
+            choco install swig --no-progress
       - name: Build everything
         run: ./build.bat all
       - name: Run tests 
