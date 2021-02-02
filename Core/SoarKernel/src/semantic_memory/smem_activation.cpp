@@ -1148,12 +1148,12 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                         //We also log the increment to attention for the value.
                         if (attention_tally.find(w->value->id->LTI_ID) == attention_tally.end())
                         {
-                            attention_tally[w->value->id->LTI_ID] = pow(decay_val,traversals.begin()->second->size());
+                            attention_tally[w->value->id->LTI_ID] = pow(decay_val,traversals.begin()->second->size());//An inefficient way to implement Peter's depth-based attention factor.
                         }
-                        else
-                        {
-                            attention_tally[w->value->id->LTI_ID] = attention_tally[w->value->id->LTI_ID] + pow(decay_val,traversals.begin()->second->size());
-                        }
+                        //else
+                        //{
+                            //attention_tally[w->value->id->LTI_ID] = attention_tally[w->value->id->LTI_ID] + pow(decay_val,traversals.begin()->second->size());
+                        //}
                     }
                 }
 //                        for (w = s->acceptable_preference_wmes; w != NIL; w = w->next) // commented because i'm assuming that we don't have operators that are themselves LTI instances. - could be wrong.
