@@ -1386,14 +1386,28 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                         }
                     }
                 } else { //from sjj - peter, this lets you use attention even if WMA is off.
-                    if (attention_root && attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end())
+                    if (attention_root )//&& attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end())
                     {
-                        wma_multiplicative_factor = attention_tally[calc_current_spread->column_int(4)];
-                        if (acts != NULL)
+                        if (attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end())
                         {
-                            if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
+                            wma_multiplicative_factor = attention_tally[calc_current_spread->column_int(4)];
+                            if (acts != NULL)
                             {
-                                acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = attention_tally[calc_current_spread->column_int(4)];
+                                if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
+                                {
+                                    acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = attention_tally[calc_current_spread->column_int(4)];
+                                }
+                            }
+                        }
+                        else
+                        {
+                            wma_multiplicative_factor = 0;
+                            if (acts != NULL)
+                            {
+                                if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
+                                {
+                                    acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = 0;
+                                }
                             }
                         }
                     }
