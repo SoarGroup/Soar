@@ -125,10 +125,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
 
     //for linear combination of activations
     //weight for base-level
-    spreading_a = new soar_module::decimal_param("spreading-a", 1.0, new  soar_module::gt_predicate<double>(0, true), new soar_module::f_predicate<double>());
+    spreading_a = new soar_module::decimal_param("spreading-a", 0.5, new  soar_module::gt_predicate<double>(0, true), new soar_module::f_predicate<double>());
     add(spreading_a);
     //weight for WMA
-    spreading_b = new soar_module::decimal_param("spreading-b", 1.0, new  soar_module::gt_predicate<double>(0, true), new soar_module::f_predicate<double>());
+    spreading_b = new soar_module::decimal_param("spreading-b", 0.5, new  soar_module::gt_predicate<double>(0, true), new soar_module::f_predicate<double>());
     add(spreading_b);//Repurposed -- This is now used to weight between WMA for determining the magnitude of spread from a source and attention for determining the magnitude of spread from a source.
     //total constant offset.
     //spreading_c = new soar_module::decimal_param("spreading-c", 0.0, new  soar_module::gt_predicate<double>(0, true), new soar_module::f_predicate<double>());
