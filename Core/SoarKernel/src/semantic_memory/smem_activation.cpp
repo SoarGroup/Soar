@@ -363,8 +363,8 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
 
     double a = thisAgent->SMem->settings->spreading_a->get_value();
-    double b = thisAgent->SMem->settings->spreading_b->get_value();
-    double c = -thisAgent->SMem->settings->spreading_c->get_value();
+    //double b = thisAgent->SMem->settings->spreading_b->get_value();
+    //double c = -thisAgent->SMem->settings->spreading_c->get_value();
 
     if (already_in_spread_table)
     {
@@ -378,11 +378,11 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         SQL->act_lti_fake_set->bind_double(2, spread);
         if (act_mode == smem_param_container::act_none)
         {
-            SQL->act_lti_fake_set->bind_double(3, b*modified_spread + c);
+            SQL->act_lti_fake_set->bind_double(3, (1.0-a)*modified_spread);
         }
         else //b*modified_spread+c : a*new_base+b*modified_spread+c
         {
-            SQL->act_lti_fake_set->bind_double(3, a*new_base + b*modified_spread +c);
+            SQL->act_lti_fake_set->bind_double(3, a*new_base + (1.0-a)*modified_spread);
         }
         SQL->act_lti_fake_set->bind_int(4,pLTI_ID);
         SQL->act_lti_fake_set->execute(soar_module::op_reinit);
@@ -394,7 +394,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     {
         SQL->act_lti_set->bind_double(1, new_activation);
         SQL->act_lti_set->bind_double(2, 0.0);
-        SQL->act_lti_set->bind_double(3, a*new_base+c);
+        SQL->act_lti_set->bind_double(3, a*new_base);
         SQL->act_lti_set->bind_int(4, pLTI_ID);
         SQL->act_lti_set->execute(soar_module::op_reinit);
     }
@@ -402,11 +402,11 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     {
         if (act_mode == smem_param_container::act_none)
         {
-            SQL->act_set->bind_double(1, b*modified_spread+c);
+            SQL->act_set->bind_double(1, (1.0-a)*modified_spread);
         }
         else
         {
-            SQL->act_set->bind_double(1, a*new_base+b*modified_spread+c);
+            SQL->act_set->bind_double(1, a*new_base+(1.0-a)*modified_spread);
         }
         SQL->act_set->bind_int(2, pLTI_ID);
         SQL->act_set->execute(soar_module::op_reinit);
@@ -428,7 +428,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     timers->act->stop();
     ////////////////////////////////////////////////////////////////////////////
 
-    return (act_mode == smem_param_container::act_none ? b*modified_spread+c : a*new_base+b*modified_spread+c);
+    return (act_mode == smem_param_container::act_none ? (1.0-a)*modified_spread : a*new_base+(1.0-a)*modified_spread);
 }
 
 void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<std::pair<uint64_t,double>>*>& lti_trajectories, int depth = 10)
@@ -1001,8 +1001,8 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
             recipient_begin = recipient_set->begin();
             recipient_end = recipient_set->end();
             double a = thisAgent->SMem->settings->spreading_a->get_value();
-                double b = thisAgent->SMem->settings->spreading_b->get_value();
-                double c = -thisAgent->SMem->settings->spreading_c->get_value();
+            //    double b = thisAgent->SMem->settings->spreading_b->get_value();
+            //    double c = -thisAgent->SMem->settings->spreading_c->get_value();
             for (recipient_it = recipient_begin; recipient_it != recipient_end; ++recipient_it)
             {//We need to decrement the number of sources that lead to each recipient for each recipient from this source.
                 assert(smem_recipient->find((*recipient_it)) != smem_recipient->end());
@@ -1023,7 +1023,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                         SQL->act_lti_fake_delete->execute(soar_module::op_reinit);
                         SQL->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                         SQL->act_lti_set->bind_double(2, 0);
-                        SQL->act_lti_set->bind_double(3, a*prev_base+c);
+                        SQL->act_lti_set->bind_double(3, a*prev_base);
                         SQL->act_lti_set->bind_int(4, *recipient_it);
                         SQL->act_lti_set->execute(soar_module::op_reinit);
                         spreaded_to->erase(*recipient_it);
@@ -1141,8 +1141,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 { //w->value->id->LTI_ID
                     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID && traversals.begin()->second->find(w->value) == traversals.begin()->second->end())
                     {// we have a link to another lti instance that hasn't already been visited this traversal.
-                        //We make a new set by copying the existing set. We then append the new value.
-                        temp_visited_set = new std::set<Symbol*>(*(traversals.begin()->second));
+ d                         temp_visited_set = new std::set<Symbol*>(*(traversals.begin()->second));
                         temp_visited_set->insert(w->value);
                         traversals.emplace_back(std::make_pair(w->value, temp_visited_set));
                         //We also log the increment to attention for the value.
@@ -1176,8 +1175,8 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         if (spreaded_to->find(*candidate) != spreaded_to->end())
         {
             double a = thisAgent->SMem->settings->spreading_a->get_value();
-                double b = thisAgent->SMem->settings->spreading_b->get_value();
-                double c = -thisAgent->SMem->settings->spreading_c->get_value();
+            //    double b = thisAgent->SMem->settings->spreading_b->get_value();
+            //    double c = -thisAgent->SMem->settings->spreading_c->get_value();
             SQL->act_lti_fake_get->bind_int(1,*candidate);
             SQL->act_lti_fake_get->execute();
             double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
@@ -1187,7 +1186,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
             SQL->act_lti_fake_delete->execute(soar_module::op_reinit);
             SQL->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
             SQL->act_lti_set->bind_double(2, 0);
-            SQL->act_lti_set->bind_double(3, a*prev_base+c);
+            SQL->act_lti_set->bind_double(3, a*prev_base);
             SQL->act_lti_set->bind_int(4, *candidate);
             SQL->act_lti_set->execute(soar_module::op_reinit);
             //SQL->act_lti_fake_get->reinitialize();
@@ -1374,14 +1373,28 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
 
                 if (thisAgent->SMem->settings->spreading_wma_source->get_value())
                 {
-                    if (attention_root && attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end())
+                    if (attention_root)
                     {
-                        wma_multiplicative_factor = wma_multiplicative_factor + attention_tally[calc_current_spread->column_int(4)];
-                        if (acts != NULL)
+                        double b = thisAgent->SMem->settings->spreading_b->get_value();
+                        if(attention_tally.find(calc_current_spread->column_int(4)) != attention_tally.end())
                         {
-                            if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
+
+                            wma_multiplicative_factor = b*wma_multiplicative_factor + (1.0-b)*attention_tally[calc_current_spread->column_int(4)];
+                            if (acts != NULL)
                             {
-                                acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = attention_tally[calc_current_spread->column_int(4)];
+                                if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
+                                {
+                                    acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = attention_tally[calc_current_spread->column_int(4)];
+                                }
+                            }
+                        } else {
+                            wma_multiplicative_factor = b*wma_multiplicative_factor;
+                            if (acts != NULL)
+                            {
+                                if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
+                                {
+                                    acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = 0;//attention_tally[calc_current_spread->column_int(4)];
+                                }
                             }
                         }
                     }
@@ -1406,7 +1419,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                             {
                                 if (acts->contributing_sources_to_Attention_factors.find(calc_current_spread->column_int(4)) == acts->contributing_sources_to_Attention_factors.end())
                                 {
-                                    acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = 0;
+                                    acts->contributing_sources_to_Attention_factors[calc_current_spread->column_int(4)] = 0.0;
                                 }
                             }
                         }
@@ -1471,8 +1484,8 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 //SQL->add_committed_fingerprint->bind_int(4,(calc_current_spread->column_int(4)));
                 //SQL->add_committed_fingerprint->execute(soar_module::op_reinit);
                 double a = thisAgent->SMem->settings->spreading_a->get_value();
-                double b = thisAgent->SMem->settings->spreading_b->get_value();
-                double c = -thisAgent->SMem->settings->spreading_c->get_value();
+                //double b = thisAgent->SMem->settings->spreading_b->get_value();
+                //double c = -thisAgent->SMem->settings->spreading_c->get_value();
 
                 if (already_in_spread_table)
                 {
@@ -1481,7 +1494,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     ////////////////////////////////////////////////////////////////////////////
                     SQL->act_lti_fake_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     SQL->act_lti_fake_set->bind_double(2, spread);
-                    SQL->act_lti_fake_set->bind_double(3, (settings->activation_mode->get_value() == smem_param_container::act_none ? b*modified_spread+c : a*new_base+b*modified_spread+c));//modified_spread+ new_base);
+                    SQL->act_lti_fake_set->bind_double(3, (settings->activation_mode->get_value() == smem_param_container::act_none ? (1.0-a)*modified_spread : a*new_base+(1.0-a)*modified_spread));//modified_spread+ new_base);
                     SQL->act_lti_fake_set->bind_int(4, *candidate);
                     SQL->act_lti_fake_set->execute(soar_module::op_reinit);
                     ////////////////////////////////////////////////////////////////////////////
@@ -1496,7 +1509,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     SQL->act_lti_fake_insert->bind_int(1, *candidate);
                     SQL->act_lti_fake_insert->bind_double(2, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     SQL->act_lti_fake_insert->bind_double(3, spread);
-                    SQL->act_lti_fake_insert->bind_double(4, (settings->activation_mode->get_value() == smem_param_container::act_none ? b*modified_spread+c : a*new_base+b*modified_spread+c));//modified_spread+ new_base);
+                    SQL->act_lti_fake_insert->bind_double(4, (settings->activation_mode->get_value() == smem_param_container::act_none ? (1.0-a)*modified_spread : a*new_base+(1.0-a)*modified_spread));//modified_spread+ new_base);
                     SQL->act_lti_fake_insert->execute(soar_module::op_reinit);
 
                     //In order to prevent the activation from the augmentations table from coming into play after this has been given spread, we set the augmentations bla to be smemactlow
