@@ -1141,7 +1141,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 { //w->value->id->LTI_ID
                     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->LTI_ID && traversals.begin()->second->find(w->value) == traversals.begin()->second->end())
                     {// we have a link to another lti instance that hasn't already been visited this traversal.
- d                         temp_visited_set = new std::set<Symbol*>(*(traversals.begin()->second));
+                        temp_visited_set = new std::set<Symbol*>(*(traversals.begin()->second));
                         temp_visited_set->insert(w->value);
                         traversals.emplace_back(std::make_pair(w->value, temp_visited_set));
                         //We also log the increment to attention for the value.
