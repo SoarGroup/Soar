@@ -6,7 +6,7 @@ import sys
 Import('env', 'g_msvs_variant')
 soarcli_env = env.Clone()
 
-if sys.platform == 'linux2':
+if sys.platform.startswith('linux'):
     # Following flag fixes a bux in Unbuntu 13.10 that prevents it from
     # properly linking to the pthread and dl libraries needed by TestCLI
     soarcli_env.Append(LINKFLAGS = [r'-Wl,--no-as-needed'])

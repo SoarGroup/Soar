@@ -2,12 +2,12 @@
 setlocal EnableDelayedExpansion
 
 if not exist user-env.bat (
+
 	call :findexe python.exe
 	if not "!retval!"=="fail" (
 		set PYTHON_HOME=!retval!
-		echo python.exe found
 	)
-	
+
 	call :findexe javac.exe
 	if not "!retval!"=="fail" (
 		set JAVA_HOME=!retval:\bin=!
@@ -33,13 +33,13 @@ echo PYTHON_HOME=%PYTHON_HOME%
 echo JAVA_HOME=%JAVA_HOME%
 echo SWIG_HOME=%SWIG_HOME%
 
-if not exist %PYTHON_HOME%\python.exe (
+if not exist !PYTHON_HOME!\python.exe (
 	echo cannot locate python executable
 	exit /B
 )
 
-set PATH=%PYTHON_HOME%;%JAVA_HOME%\bin;%SWIG_HOME%;%PATH%
-%PYTHON_HOME%\python.exe scons\scons.py -Q %*
+set PATH=!PYTHON_HOME!;%JAVA_HOME%\bin;%SWIG_HOME%;%PATH%
+"%PYTHON_HOME%\python.exe" scons\scons.py -Q %*
 exit /B
 
 rem a "function" that tries to find an executable
@@ -67,9 +67,15 @@ goto :EOF
 rem Search for python in registry
 :findpython
 	set retval=fail
-	for /F "tokens=1,2,*" %%i in ('reg query HKLM\SOFTWARE\Python\PythonCore /s') do (
-		if exist %%k\python.exe set retval=%%k
-	)
+
+	FOR /f "usebackq tokens=*" %%p in (`where python`) do (
+		echo python.exe found at %%p
+		if "!retval!"=="fail" SET PYTHON_HOME=%%~dpp
+    )
+
+	REM for /F "tokens=1,2,*" %%i in ('reg query HKLM\SOFTWARE\Python\PythonCore /s') do (
+	REM	if exist %%k\python.exe set retval=%%k
+	REM )
 goto :EOF
 
 rem Search for java in registry

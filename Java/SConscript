@@ -25,7 +25,8 @@ if not java_env.WhereIs('java') or not java_env.WhereIs('swig'):
 
 try:
     p = sub.Popen(['java', '-version'], stderr = sub.PIPE)
-    ver_str = p.stderr.readline().split()[-1].strip('"')
+    line = p.stderr.readline().decode()
+    ver_str = line.split()[-1].strip('"')
     p.wait()
 except OSError:
     print >>sys.stderr, 'Error running java'
