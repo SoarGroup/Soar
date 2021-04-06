@@ -1058,7 +1058,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     ////////////////////////////////////////////////////////////////////////////
     smem_context_removals->clear();
     double prev_base;
-    double raw_prob;
+    double raw_prob = 0.0;
     double additional;
     double offset;
     bool still_exists;
@@ -1445,7 +1445,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 }
                 //offset = (settings->spreading_baseline->get_value())/(calc_spread->column_double(1));
                 offset = (settings->spreading_baseline->get_value())/baseline_denom;//(settings->spreading_limit->get_value());
-                additional = (raw_prob > offset ? raw_prob : offset);//(log(raw_prob)-log(offset));//This is a hack to prevent bad values for low wma spread.//additional = (raw_prob > offset ? raw_prob : offset+offset*.1);//(log(raw_prob)-log(offset));//This is a hack to prevent bad values for low wma spread.
+                additional = raw_prob;//(raw_prob > offset ? raw_prob : 0.0);//offset);//(log(raw_prob)-log(offset));//This is a hack to prevent bad values for low wma spread.//additional = (raw_prob > offset ? raw_prob : offset+offset*.1);//(log(raw_prob)-log(offset));//This is a hack to prevent bad values for low wma spread.
                 spread = (spread == 0 ? additional : additional+spread);//Now, we've adjusted the activation according to this new addition.
                 ////////////////////////////////////////////////////////////////////////////
                 timers->spreading_7_2_5->stop();
@@ -1459,7 +1459,8 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
 
                 SQL->act_lti_child_ct_get->reinitialize();
 
-                double modified_spread = (log(spread)-log(offset));
+		//one idea -- just make modified_spread = 0 when spread = 0, kinda the point of the offset term, right?
+                double modified_spread = (spread >=offset ? (log(spread)-log(offset) : 0.0);//the problem is that log(0) is -inf. The thing I was doing above, where I made the minimum value offset -- that's fine, but it should be for total spread, not on a per-element basis. That means keeping track of the which is the last source to modify the spread for a given recipient.
                 if (acts != NULL)
                 {
                     acts->recipient_decomposition_list.find(*candidate)->second.spread_total = modified_spread;
