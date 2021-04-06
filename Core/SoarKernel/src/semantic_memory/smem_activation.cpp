@@ -1460,7 +1460,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 SQL->act_lti_child_ct_get->reinitialize();
 
 		//one idea -- just make modified_spread = 0 when spread = 0, kinda the point of the offset term, right?
-                double modified_spread = (spread >=offset ? (log(spread)-log(offset) : 0.0);//the problem is that log(0) is -inf. The thing I was doing above, where I made the minimum value offset -- that's fine, but it should be for total spread, not on a per-element basis. That means keeping track of the which is the last source to modify the spread for a given recipient.
+                double modified_spread = (spread >=offset ? (log(spread)-log(offset)) : 0.0);//the problem is that log(0) is -inf. The thing I was doing above, where I made the minimum value offset -- that's fine, but it should be for total spread, not on a per-element basis. That means keeping track of the which is the last source to modify the spread for a given recipient.
                 if (acts != NULL)
                 {
                     acts->recipient_decomposition_list.find(*candidate)->second.spread_total = modified_spread;
