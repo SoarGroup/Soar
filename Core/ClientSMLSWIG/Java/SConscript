@@ -2,6 +2,9 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
+
+from __future__ import print_function
+
 import os
 import sys
 import itertools
@@ -17,10 +20,10 @@ def ConfigureJNI(env):
             # /urs/libexec/java_home will give us 
             try:
                 p = subprocess.Popen(['/usr/libexec/java_home'], stdout = subprocess.PIPE)
-                base = p.stdout.readline().split()[-1]
+                base = p.stdout.readline().split()[-1].decode()
                 p.wait()
             except OSError:
-                print >>sys.stderr, 'Error running /usr/libexec/java_home to get java home'
+                print('Error running /usr/libexec/java_home to get java home', file=sys.stderr)
                 Exit(1)
             if (not os.path.exists(base)):
                 base = '/System/Library/Frameworks/JavaVM.framework'
@@ -35,7 +38,7 @@ def ConfigureJNI(env):
             base = os.path.split(jcdir)[0]
 
     if sys.platform == 'darwin':
-        print 'Looking for Mac headers at ', os.path.join(base, 'include')
+        print('Looking for Mac headers at ', os.path.join(base, 'include'))
         if os.path.exists(os.path.join(base, 'include')):
             # JDK 7+
             headers = [os.path.join(base, 'include')]
@@ -64,9 +67,9 @@ def get_headers(d):
 Import('env', 'compiler')
 config = ConfigureJNI(env)
 if config == None:
-    print "Could not configure Java. If you know where java is on your system,"
-    print "set environment variable JAVA_HOME to point to the directory containing"
-    print "the Java include, bin, and lib directories."
+    print("Could not configure Java. If you know where java is on your system,")
+    print("set environment variable JAVA_HOME to point to the directory containing")
+    print("the Java include, bin, and lib directories.")
     Return()
 
 clone = env.Clone()
@@ -94,7 +97,8 @@ fake_java_target = '#fake_java_target'
 if sys.platform == 'darwin':
     install_name = os.path.join('@loader_path', name + '.jnilib')
     clone.Append(SHLINKFLAGS = ' -install_name ' + install_name)
-    clone.Append(SHLINKFLAGS = ' -framework JavaVM')
+    # Specifying the framework prevents linking in OSX on 11/16/20.  Removing seems to fix.
+#     clone.Append(SHLINKFLAGS = ' -framework JavaVM')
 
 # This builder will insert extra dependencies during the COMPILATION stage
 # adapted from http://scons.org/wiki/DynamicSourceGenerator

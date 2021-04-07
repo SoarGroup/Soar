@@ -620,7 +620,7 @@ void Symbol_Manager::create_predefined_symbols()
 
     // NLD 11/11
     soarSymbols.non_numeric_count_symbol = make_str_constant("non-numeric-count");
-
+    soarSymbols.constant_symbol = make_str_constant("constant");
     soarSymbols.conflict_symbol = make_str_constant("conflict");
     soarSymbols.tie_symbol = make_str_constant("tie");
     soarSymbols.item_symbol = make_str_constant("item");
@@ -786,6 +786,7 @@ void Symbol_Manager::release_predefined_symbols()
 {
     symbol_remove_ref(&(soarSymbols.crlf_symbol));
     symbol_remove_ref(&(soarSymbols.at_symbol));
+    symbol_remove_ref(&(soarSymbols.constant_symbol));
     symbol_remove_ref(&(soarSymbols.problem_space_symbol));
     symbol_remove_ref(&(soarSymbols.state_symbol));
     symbol_remove_ref(&(soarSymbols.operator_symbol));

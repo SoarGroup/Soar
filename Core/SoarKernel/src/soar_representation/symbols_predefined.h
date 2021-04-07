@@ -20,6 +20,7 @@ typedef struct predefined_sym_struct {
         Symbol*             choices_symbol;
         Symbol*             conflict_symbol;
         Symbol*             constraint_failure_symbol;
+        Symbol*             constant_symbol;
         Symbol*             goal_symbol;
         Symbol*             impasse_symbol;
         Symbol*             io_symbol;
