@@ -2,7 +2,7 @@
 #
 # SCons - a Software Constructor
 #
-# Copyright (c) 2001 - 2020 The SCons Foundation
+# Copyright (c) 2001 - 2021 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -23,15 +23,15 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "scripts/scons.py c289977f8b34786ab6c334311e232886da7e8df1 2020-07-17 01:50:03 bdbaddog"
+__revision__ = "scripts/scons.py 215860fd4f6bea67896c145660a035fad20cc41c 2021-01-19 19:32:22 bdbaddog"
 
-__version__ = "4.0.1"
+__version__ = "4.1.0"
 
-__build__ = "c289977f8b34786ab6c334311e232886da7e8df1"
+__build__ = "215860fd4f6bea67896c145660a035fad20cc41c"
 
 __buildsys__ = "ProDog2020"
 
-__date__ = "2020-07-17 01:50:03"
+__date__ = "2021-01-19 19:32:22"
 
 __developer__ = "bdbaddog"
 
