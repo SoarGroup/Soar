@@ -206,14 +206,14 @@ const std::string Explanation_Based_Chunker::add_new_singleton(singleton_element
 {
     std::string returnVal;
 
-    if ((attrSym == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
+    if ((id_type == ebc_state) && ((attrSym == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.superstate_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.smem_sym) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.type_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.impasse_symbol) ||
-        (attrSym == thisAgent->symbolManager->soarSymbols.epmem_sym))
+        (attrSym == thisAgent->symbolManager->soarSymbols.epmem_sym)))
     {
-        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Soar cannot override the architectural singleton for %y.  Ignoring.", attrSym);
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Soar cannot override the architectural singleton for (%s ^%y %s).  Ignoring.", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
         return returnVal;
     }
 
