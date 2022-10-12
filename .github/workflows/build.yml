@@ -1,0 +1,66 @@
+name: Build/Test
+on: [push, pull_request]
+
+jobs:
+  # depends on pre-installed software: https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
+  Linux:
+    name: build-linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: install dependencies
+        run: sudo apt-get install build-essential swig openjdk-11-jdk-headless python-all-dev
+      - name: build
+        run: python3 scons/scons.py
+      - name: compress artifacts
+        uses: vimtor/action-zip@v1
+        with:
+          files: out/
+          dest: build.zip
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Soar-linux
+          path: ./build.zip
+
+  # depends on lots of pre-installed software: https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+  Mac-OSX:
+    name: build-macosx
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+    # already installed
+    # - name: setup xcode
+    #   uses: maxim-lobanov/setup-xcode@v1
+    #   with:
+    #     xcode-version: latest-stable
+    # already installed
+    # - name: setup Java
+    #   uses: actions/setup-java@v3
+    #   with:
+    #     distribution: 'zulu' # See 'Supported distributions' for available options
+    #     java-version: '11'
+    # swig pre-installed, too
+    # python pre-installed, too
+    # homebrew should be pre-installed
+    # TODO: install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
+      - name: build
+        run: python3 scons/scons.py
+      - name: compress artifacts
+        uses: vimtor/action-zip@v1
+        with:
+          files: out/
+          dest: build.zip
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Soar-macosx
+          path: ./build.zip
+
+  # depends on pre-installed software: https://github.com/actions/runner-images/blob/main/images/win/Windows2022-Readme.md
+  # Windows:
+  # TODO
