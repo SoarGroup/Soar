@@ -37,6 +37,7 @@ jobs:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
       - name: unit tests
+        continue-on-error: true
         working-directory: ./out
         run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
       # TODO: run Python SML test
@@ -76,6 +77,11 @@ jobs:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: ./build.bat --scu --opt --verbose all
+      - name: unit tests
+        continue-on-error: true
+        working-directory: ./out
+        run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
+
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
