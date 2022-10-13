@@ -79,5 +79,35 @@ jobs:
           path: ./build.zip
 
   # depends on pre-installed software: https://github.com/actions/runner-images/blob/main/images/win/Windows2022-Readme.md
-  # Windows:
-  # TODO
+  Windows:
+    name: build-windows
+    runs-on: [windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      # This does not install MSVC or Visual Studio! We rely on the software installed already on the
+      # GH action runner, and this step just prepares the environment. We pin the VS version here because
+      # the error messages are much more helpful than the mess we get from SCons, which automatically
+      # falls back on a combo of Mingw with MSVC libs and then fails to build.
+      - name: switch to VS command prompt
+        uses: ilammy/msvc-dev-cmd@v1
+      # TODO: build `all` target
+      - name: build
+        run: ./build.bat all
+      - name: compress artifacts
+        uses: vimtor/action-zip@v1
+        with:
+          files: out/
+          dest: build.zip
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Soar-linux
+          path: ./build.zip
