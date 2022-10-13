@@ -1,18 +1,26 @@
+# Build, test and upload executables to GitHub
+# depends on pre-installed software; see image definitions:
+#  - https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
+#  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+# We use these tools from the runner images: git, gcc/XCode/MSVC, python, swig
+
+# TODO: build svs_viewer ('Cannot find GL, GLU, not building svs_viewer') and
+# TCL SML; need to install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
+# TODO: pin more dependency versions (python, swig, gcc/XCode/MSVC, etc.)
+
 name: Build/Test
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  # depends on pre-installed software: https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
-  Linux:
-    name: build-linux
-    runs-on: ubuntu-latest
-
+  "Starnix":
+    name: build-*nix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: install dependencies
-        run: sudo apt-get install build-essential swig python-all-dev
-      # separte install step so we can manage the version more easily
       - name: setup Java
         uses: actions/setup-java@v3
         with:
@@ -23,9 +31,13 @@ jobs:
         with:
           dotnet-version: '6.0.X'
 
-      # TODO: build `all` target
       - name: build
         run: python3 scons/scons.py --scu --opt --verbose all
+      - name: unit tests
+        working-directory: ./out
+        run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
+      # TODO: run Python SML test
+
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -34,51 +46,9 @@ jobs:
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: Soar-linux
+          name: Soar-${{ matrix.os }}
           path: ./build.zip
 
-  # depends on lots of pre-installed software: https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-  Mac-OSX:
-    name: build-macosx
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
-    # already installed
-    # - name: setup xcode
-    #   uses: maxim-lobanov/setup-xcode@v1
-    #   with:
-    #     xcode-version: latest-stable
-      - name: setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '6.0.X'
-
-      # swig pre-installed, too
-      # python pre-installed, too
-      # homebrew should be pre-installed
-      # TODO: install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
-      # TODO: build `all` target
-      - name: build
-        run: python3 scons/scons.py --scu --opt --verbose all
-      - name: compress artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: out/
-          dest: build.zip
-      - name: upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Soar-macosx
-          path: ./build.zip
-
-  # depends on pre-installed software: https://github.com/actions/runner-images/blob/main/images/win/Windows2022-Readme.md
   Windows:
     name: build-windows
     runs-on: [windows-latest]
@@ -98,7 +68,6 @@ jobs:
       # falls back on a combo of Mingw with MSVC libs and then fails to build.
       - name: switch to VS command prompt
         uses: ilammy/msvc-dev-cmd@v1
-      # TODO: build `all` target
       - name: build
         run: ./build.bat --scu --opt --verbose all
       - name: compress artifacts
