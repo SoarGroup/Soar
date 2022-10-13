@@ -1,5 +1,5 @@
 name: Build/Test
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   # depends on pre-installed software: https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
