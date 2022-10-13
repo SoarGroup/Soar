@@ -9,6 +9,13 @@
 // that SWIG can't auto generate.
 //
 
+// __stcall calling convention only applicable to 32-bit Windows
+#if defined(_WIN32) && !defined(_WIN64)
+#define STDCALL __stdcall
+#else
+#define STDCALL
+#endif
+
 typedef int agentPtr ;
 typedef int CallbackDataPtr ;
 typedef int kernelPtr ;
@@ -133,7 +140,7 @@ static CSharpCallbackData* CreateCSharpCallbackDataKernel(kernelPtr jkernel, int
 // typedef void (*RunEventHandler)(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase);
 
 // The C# callback equivalent that we'll eventually call
-typedef void (__stdcall* RunEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, int phase) ;
+typedef void (STDCALL* RunEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, int phase) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
@@ -203,7 +210,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForRunEvent(void* jarg1, int 
 // typedef void (*OutputNotificationHandler)(void* pUserData, Agent* pAgent) ;
 
 // The C# callback equivalent that we'll eventually call
-typedef void (__stdcall* OutputNotificationCallback)(CallbackDataPtr callbackData, agentPtr jagent) ;
+typedef void (STDCALL* OutputNotificationCallback)(CallbackDataPtr callbackData, agentPtr jagent) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
@@ -273,7 +280,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForOutputNotification(void* j
 // typedef void (*OutputEventHandler)(void* pUserData, Agent* pAgent, char const* pCommandName, WMElement* pOutputWme) ;
 
 // The C# callback equivalent that we'll eventually call
-typedef void (__stdcall* OutputEventCallback)(CallbackDataPtr callbackData, agentPtr jagent, char const* pCommandName, unsigned int outputWME) ;
+typedef void (STDCALL* OutputEventCallback)(CallbackDataPtr callbackData, agentPtr jagent, char const* pCommandName, unsigned int outputWME) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
@@ -356,7 +363,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_RemoveOutputHandler(void* jarg1, int ja
 // typedef void (*XMLEventHandler)(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML) ;
 
 // The C# callback equivalent that we'll eventually call
-typedef void (__stdcall* XMLEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, unsigned int pXML) ;
+typedef void (STDCALL* XMLEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, unsigned int pXML) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
@@ -433,7 +440,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForXMLEvent(void* jarg1, int 
 // typedef void (*ProductionEventHandler)(smlProductionEventId id, void* pUserData, Agent* pAgent, char const* pProdName, char const* pInstantion) ;
 
 // The C# callback equivalent that we'll eventually call
-typedef void (__stdcall* ProductionEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, char* prodName, char* instantiation) ;
+typedef void (STDCALL* ProductionEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, char* prodName, char* instantiation) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
@@ -506,7 +513,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForProductionEvent(void* jarg
 //typedef void (*PrintEventHandler)(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage) ;
 
 // The C# callback equivalent that we'll eventually call
-typedef void (__stdcall* PrintEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, char* pMessage) ;
+typedef void (STDCALL* PrintEventCallback)(int eventID, CallbackDataPtr callbackData, agentPtr jagent, char* pMessage) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
@@ -578,7 +585,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForPrintEvent(void* jarg1, in
 // typedef void (*SystemEventHandler)(smlSystemEventId id, void* pUserData, Kernel* pKernel) ;
 
 // The C# callback equivalent that we'll eventually call
-typedef void (__stdcall* SystemEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel) ;
+typedef void (STDCALL* SystemEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
@@ -647,7 +654,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForSystemEvent(void* jarg1, 
 // typedef void (*UpdateEventHandler)(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags) ;
 
 // The C# callback equivalent that we'll eventually call
-typedef void (__stdcall* UpdateEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, int runFlags) ;
+typedef void (STDCALL* UpdateEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, int runFlags) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
@@ -715,7 +722,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForUpdateEvent(void* jarg1, 
 // typedef void (*StringEventHandler)(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pString) ;
 
 // The C# callback equivalent that we'll eventually call
-typedef char const* (__stdcall* StringEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* pString) ;
+typedef char const* (STDCALL* StringEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* pString) ;
 
 // This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
 // exposed in a DLL with C naming (not C++ mangled names).  However, StringEventHandler (below) returns a std::string
@@ -808,8 +815,8 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForStringEvent(void* jarg1, 
 //typedef std::string (*ClientMessageHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pClientName, char const* pMessage) ;
 
 // The C# callback equivalent that we'll eventually call (we pass back the name of the agent so we don't have to locate the C# Agent object)
-typedef char const* (__stdcall* RhsFunction)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const* pFunctionName, char const* pArgument) ;
-typedef char const* (__stdcall* ClientMessageCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const* pClientName, char const* pMessage) ;
+typedef char const* (STDCALL* RhsFunction)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const* pFunctionName, char const* pArgument) ;
+typedef char const* (STDCALL* ClientMessageCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const* pClientName, char const* pMessage) ;
 
 // This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
 // exposed in a DLL with C naming (not C++ mangled names).  However, RhsEventHandler (below) returns a std::string
@@ -960,7 +967,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForClientMessageEvent(void* 
 //typedef void (*AgentEventHandler)(smlAgentEventId id, void* pUserData, Agent* pAgent) ;
 
 // The C# callback equivalent that we'll eventually call (we pass back the name of the agent so we don't have to locate the C# Agent object)
-typedef void (__stdcall* AgentEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char* agentName) ;
+typedef void (STDCALL* AgentEventCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char* agentName) ;
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
