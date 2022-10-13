@@ -25,7 +25,7 @@ jobs:
 
       # TODO: build `all` target
       - name: build
-        run: python3 scons/scons.py all
+        run: python3 scons/scons.py --scu --opt --verbose all
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -66,7 +66,7 @@ jobs:
       # TODO: install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
       # TODO: build `all` target
       - name: build
-        run: python3 scons/scons.py all
+        run: python3 scons/scons.py --scu --opt --verbose all
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -100,7 +100,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
       # TODO: build `all` target
       - name: build
-        run: ./build.bat all
+        run: ./build.bat --scu --opt --verbose all
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
