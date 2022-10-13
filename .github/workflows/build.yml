@@ -18,9 +18,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.X'
 
+      # TODO: build `all` target
       - name: build
-        run: python3 scons/scons.py
+        run: python3 scons/scons.py all
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -50,12 +55,18 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
-    # swig pre-installed, too
-    # python pre-installed, too
-    # homebrew should be pre-installed
-    # TODO: install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.X'
+
+      # swig pre-installed, too
+      # python pre-installed, too
+      # homebrew should be pre-installed
+      # TODO: install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
+      # TODO: build `all` target
       - name: build
-        run: python3 scons/scons.py
+        run: python3 scons/scons.py all
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
