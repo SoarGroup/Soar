@@ -39,6 +39,8 @@
    number, must be prime */
 #define DEFAULT_BLOCK_SIZE 0x7FF0   /* about 32K bytes per block */
 
+#define POOL_NAME_ERR_MSG_LENGTH = 64 + 2 * MAX_POOL_NAME_LENGTH
+
 Memory_Manager::Memory_Manager()
 {
     memory_for_usage_overhead = memory_for_usage + STATS_OVERHEAD_MEM_USAGE;
@@ -93,9 +95,10 @@ void Memory_Manager::init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item
     memory_pools_in_use = pThisPool;
     if (strlen(name) > MAX_POOL_NAME_LENGTH)
     {
-        char msg[2 * MAX_POOL_NAME_LENGTH];
-        SNPRINTF(msg, 2 * MAX_POOL_NAME_LENGTH, "mem.c: Internal error: memory pool name too long: %s\n", name);
-        msg[2 * MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
+        const unsigned int msg_size = 64 + 2 * MAX_POOL_NAME_LENGTH;
+        char msg[msg_size];
+        SNPRINTF(msg, msg_size, "memory_manager.cpp: Internal error: memory pool name too long: %s\n", name);
+        msg[msg_size - 1] = 0; /* ensure null termination */
         abort_with_fatal_error_noagent(msg);
     }
     strncpy(pThisPool->name, name, MAX_POOL_NAME_LENGTH);
