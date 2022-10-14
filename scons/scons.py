@@ -2,7 +2,9 @@
 #
 # SCons - a Software Constructor
 #
-# Copyright (c) 2001 - 2021 The SCons Foundation
+# MIT License
+#
+# Copyright The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,17 +23,17 @@
 # NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
-__revision__ = "scripts/scons.py 215860fd4f6bea67896c145660a035fad20cc41c 2021-01-19 19:32:22 bdbaddog"
+__revision__ = "scripts/scons.py e353c45d68cf4144d396a66ecef58be064ef439f Tue, 01 Nov 2022 14:22:18 -0400 bdbaddog"
 
-__version__ = "4.1.0"
+__version__ = "4.4.0"
 
-__build__ = "215860fd4f6bea67896c145660a035fad20cc41c"
+__build__ = "e353c45d68cf4144d396a66ecef58be064ef439f"
 
-__buildsys__ = "ProDog2020"
+__buildsys__ = "M1DOG2021"
 
-__date__ = "2021-01-19 19:32:22"
+__date__ = "Tue, 01 Nov 2022 14:22:18 -0400"
 
 __developer__ = "bdbaddog"
 
@@ -39,9 +41,8 @@ __developer__ = "bdbaddog"
 import os
 import sys
 
-
 # Python compatibility check
-if sys.version_info < (3, 5, 0):
+if sys.version_info < (3, 6, 0):
     msg = "scons: *** SCons version %s does not run under Python version %s.\n\
 Python >= 3.5 is required.\n"
     sys.stderr.write(msg % (__version__, sys.version.split()[0]))
