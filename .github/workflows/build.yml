@@ -12,7 +12,7 @@ name: Build/Test
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  "Starnix":
+  "Posix":
     name: build-*nix
     runs-on: ${{ matrix.os }}
     strategy:
@@ -32,10 +32,10 @@ jobs:
           dotnet-version: '6.0.X'
 
       - name: build
-        run: python3 scons/scons.py --scu --opt --verbose all
         env:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
+        run: python3 scons/scons.py --scu --opt --verbose all
       - name: unit tests
         continue-on-error: true
         working-directory: ./out
