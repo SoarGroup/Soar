@@ -31,6 +31,10 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.X'
+      # TODO: install on other platforms, too
+      - name: Setup tcl (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install tcl-dev
 
       - name: build
         env:
