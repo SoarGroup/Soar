@@ -4,8 +4,8 @@
 #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
 # We use these tools from the runner images: git, gcc/XCode/MSVC, python, swig
 
-# TODO: build svs_viewer ('Cannot find GL, GLU, not building svs_viewer' and 'Cannot find opengl32, glu32, not building svs_viewer') and
-# TCL SML; need to install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
+# TODO: not building svs_viewer ('Cannot find GL, GLU, not building svs_viewer' and 'Cannot find opengl32, glu32, not building svs_viewer')
+# TODO: not building with TCL support; need to install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
 # TODO: pin more dependency versions (python, swig, gcc/XCode/MSVC, etc.)
 
 name: Build/Test
@@ -16,6 +16,7 @@ jobs:
     name: build-*nix
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
@@ -36,11 +37,6 @@ jobs:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: python3 scons/scons.py --scu --opt --verbose all
-      - name: unit tests
-        continue-on-error: true
-        working-directory: ./out
-        run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
-      # TODO: run Python SML test
 
       - name: compress artifacts
         uses: vimtor/action-zip@v1
@@ -52,6 +48,11 @@ jobs:
         with:
           name: Soar-${{ matrix.os }}
           path: ./build.zip
+
+      - name: unit tests
+        working-directory: ./out
+        run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
+      # TODO: run Python SML test
 
   Windows:
     name: build-windows
@@ -77,10 +78,6 @@ jobs:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: ./build.bat --scu --opt --verbose all
-      - name: unit tests
-        continue-on-error: true
-        working-directory: ./out
-        run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
 
       - name: compress artifacts
         uses: vimtor/action-zip@v1
@@ -92,3 +89,8 @@ jobs:
         with:
           name: Soar-linux
           path: ./build.zip
+
+      - name: unit tests
+        working-directory: ./out
+        run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
+      # TODO: run Python SML test
