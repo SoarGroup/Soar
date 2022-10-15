@@ -1,5 +1,7 @@
 # Soar
 
+[![Build/Test](https://github.com/SoarGroup/Soar/actions/workflows/build.yml/badge.svg)](https://github.com/SoarGroup/Soar/actions/workflows/build.yml)
+
 This is the code base for Soar, a cognitive architecture for developing systems that exhibit intelligent behavior. For more information about this project, please visit:
 
 * [The Soar home page](http://soar.eecs.umich.edu/)
@@ -10,8 +12,8 @@ This is the code base for Soar, a cognitive architecture for developing systems 
 For binary builds of Soar you can get them in two places:
 
 * [Official Releases](http://soar.eecs.umich.edu/articles/downloads/soar-suite)
-* [Latest Successful Development Build](http://soar-jenkins.eecs.umich.edu/Nightlies/)
-  * Note: If there isn't a build for your platform or if the 7zip archive is older than the others, the build failed.  You can check [here](https://github.com/SoarGroup/Soar/branches) to see if it successfully built on all platforms.
+* [Latest Successful Development Build](https://github.com/SoarGroup/Soar/actions/workflows/build.yml?query=branch%3Adevelopment): click the latest run and scroll down to "Artifacts".
+  - Note: if the download for your platform isn't there, the build failed. You'll need to download the result of an earlier build.
 
 # Soar Performance
 
