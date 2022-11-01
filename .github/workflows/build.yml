@@ -1,0 +1,100 @@
+# Build, test and upload executables to GitHub
+# depends on pre-installed software; see image definitions:
+#  - https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
+#  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+# We use these tools from the runner images: git, gcc/XCode/MSVC, python, swig
+
+# TODO: not building svs_viewer ('Cannot find GL, GLU, not building svs_viewer' and 'Cannot find opengl32, glu32, not building svs_viewer')
+# TODO: not building with TCL support; need to install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
+# TODO: pin more dependency versions (python, swig, gcc/XCode/MSVC, etc.)
+
+name: Build/Test
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  "Posix":
+    name: build-*nix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.X'
+      # TODO: install on other platforms, too
+      - name: Setup tcl (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install tcl-dev
+
+      - name: build
+        env:
+          # instructs SCons to print debug statements to stdout
+          SCONS_MSCOMMON_DEBUG: '-'
+        run: python3 scons/scons.py --scu --opt --verbose all
+
+      - name: compress artifacts
+        uses: vimtor/action-zip@v1
+        with:
+          files: out/
+          dest: build.zip
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Soar-${{ matrix.os }}
+          path: ./build.zip
+
+      - name: unit tests
+        working-directory: ./out
+        run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
+      # TODO: run Python SML test
+
+  Windows:
+    name: build-windows
+    runs-on: [windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      # This does not install MSVC or Visual Studio! We rely on the software installed already on the
+      # GH action runner, and this step just prepares the environment. We pin the VS version here because
+      # the error messages are much more helpful than the mess we get from SCons, which automatically
+      # falls back on a combo of Mingw with MSVC libs and then fails to build.
+      - name: switch to VS command prompt
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: build
+        env:
+          # instructs SCons to print debug statements to stdout
+          SCONS_MSCOMMON_DEBUG: '-'
+        run: ./build.bat --scu --opt --verbose all
+
+      - name: compress artifacts
+        uses: vimtor/action-zip@v1
+        with:
+          files: out/
+          dest: build.zip
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Soar-linux
+          path: ./build.zip
+
+      - name: unit tests
+        working-directory: ./out
+        run: ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic && junit TestResults.xml
+      # TODO: run Python SML test

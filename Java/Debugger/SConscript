@@ -37,15 +37,13 @@ clone = java_env.Clone()
 libs1 = [clone.File(j) for j in depjars]
 libs1.append(clone.File(swt))
 libs2 = [java_env['SML'], api_jar]
+classpath = libs1 + libs2
 
-cp = clone['SEP'].join([l.srcnode().abspath for l in libs1] + \
-              [l.abspath for l in libs2])
-
-clone['JAVACLASSPATH'] = cp
+clone['JAVACLASSPATH'] = classpath
 
 classes = clone.Java(target = 'classes', source='src')
 
-clone.Depends(classes, libs1 + libs2)
+clone.Depends(classes, classpath)
 temp = clone.Jar(
 	target   = 'temp.jar',
 	source   = ['classes', 'manifest1'],

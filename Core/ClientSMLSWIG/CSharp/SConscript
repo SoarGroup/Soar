@@ -34,7 +34,7 @@ def late_csharp_builder(target, source, env):
 		sys.exit(1)
 
 	cs_srcs = [ os.path.join(srcdir, f) for f in os.listdir(srcdir) ]
-	a = env.Command(env.File(assembly), cs_srcs, 'csc /target:library /out:%s %s\*.cs' % (assembly, srcdir))
+	a = env.Command(env.File(assembly), cs_srcs, 'csc /target:library /out:%s %s/*.cs' % (assembly, srcdir))
 	env.Depends(a, fake_target)
 	install = env.Install(env['OUT_DIR'], a)
 	Alias(sml_csharp_target, install)
