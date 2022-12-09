@@ -9,8 +9,6 @@ smem --set initial-variable-id 999000
 chunk only
 chunk bottom-only off
 chunk add-osk off
-chunk lhs-repair on
-chunk rhs-repair on
 chunk allow-local-negations on
 chunk add-ltm-links off
 chunk max-chunks 1000

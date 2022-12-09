@@ -4,8 +4,6 @@ chunk always
 #chunk only
 chunk bottom-only off
 chunk add-osk on
-chunk lhs-repair on
-chunk rhs-repair on
 chunk allow-local-negations on
 chunk add-ltm-links on
 chunk max-chunks 50

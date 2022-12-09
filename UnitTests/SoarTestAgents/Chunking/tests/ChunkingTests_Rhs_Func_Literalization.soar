@@ -3,8 +3,6 @@
 chunk always
 chunk bottom-only off
 chunk add-osk off
-chunk lhs-repair on
-chunk rhs-repair on
 chunk allow-local-negations on
 chunk add-ltm-links on
 chunk max-chunks 50

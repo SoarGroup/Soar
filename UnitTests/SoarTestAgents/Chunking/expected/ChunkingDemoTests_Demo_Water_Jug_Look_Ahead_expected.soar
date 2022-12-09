@@ -1,5 +1,5 @@
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t398-3
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^operator <o2> +
           ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
@@ -15,7 +15,7 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t398-3
 }
 
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t398-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^operator <o2> + ^jug <i1>
           ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
     (<o1> ^name fill ^jug <j1>)
@@ -31,7 +31,7 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t398-2
 }
 
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t393-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^operator <o2> + ^jug <i1>
           ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
     (<o1> ^name fill ^jug <j1>)
@@ -47,7 +47,7 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t393-2
 }
 
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t393-1
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^operator <o2> +
           ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
@@ -63,7 +63,7 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t393-1
 }
 
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t380-3
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^operator <o2> + ^jug <i1>
           ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
     (<o1> ^name fill ^jug <j1>)
@@ -79,7 +79,7 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t380-3
 }
 
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t380-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^operator <o2> +
           ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
@@ -95,7 +95,7 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t380-2
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t374-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^problem-space <p1>
           ^desired <d1> ^jug <j1> ^jug <j2>)
     (<o1> ^name fill ^jug <j1>)
@@ -109,26 +109,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t374-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name fill ^jug <j1>)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <j1> ^jug <j2>)
+    (<s4> ^name water-jug ^jug <j1> ^jug <j2>)
     (<j1> ^volume 5 ^contents <c1>)
     (<j2> ^contents 0 ^volume 3)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j3>)
     (<j3> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t365-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^problem-space <p1>
           ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
@@ -142,26 +141,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t365-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <i1> ^jug <j1>)
+    (<s4> ^name water-jug ^jug <i1> ^jug <j1>)
     (<j1> ^contents 5 ^volume 5)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t326-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^problem-space <p1>
           ^desired <d1> ^jug <j1> ^jug <j2>)
     (<o1> ^name empty ^jug <j2>)
@@ -175,26 +173,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t326-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name empty ^jug <j2>)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <j1> ^jug <j2>)
+    (<s4> ^name water-jug ^jug <j1> ^jug <j2>)
     (<j1> ^contents 2 ^volume 5)
     (<j2> ^volume 3 ^contents <c1>)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j3>)
     (<j3> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t319-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^problem-space <p1>
           ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
@@ -208,26 +205,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t319-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <i1> ^jug <j1>)
+    (<s4> ^name water-jug ^jug <i1> ^jug <j1>)
     (<j1> ^contents 2 ^volume 5)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t210-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^problem-space <p1>
           ^desired <d1> ^jug <j1> ^jug <j2>)
     (<o1> ^name fill ^jug <j1>)
@@ -241,26 +237,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t210-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name fill ^jug <j1>)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <j1> ^jug <j2>)
+    (<s4> ^name water-jug ^jug <j1> ^jug <j2>)
     (<j1> ^volume 5 ^contents <c1>)
     (<j2> ^contents 2 ^volume 3)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j3>)
     (<j3> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t146-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^problem-space <p1>
           ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
@@ -274,26 +269,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t146-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 2 ^volume 3)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <i1> ^jug <j1>)
+    (<s4> ^name water-jug ^jug <i1> ^jug <j1>)
     (<j1> ^contents 5)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t142-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^problem-space <p1>
           ^desired <d1> ^jug <j1> ^jug <j2>)
     (<o1> ^name empty ^jug <j2>)
@@ -307,26 +301,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t142-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name empty ^jug <j2>)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <j1> ^jug <j2>)
+    (<s4> ^name water-jug ^jug <j1> ^jug <j2>)
     (<j1> ^contents 4)
     (<j2> ^volume 3 ^contents <c1>)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j3>)
     (<j3> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t102-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^problem-space <p1>
           ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
@@ -340,26 +333,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t102-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <i1> ^jug <j1>)
+    (<s4> ^name water-jug ^jug <i1> ^jug <j1>)
     (<j1> ^contents 4)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t87-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^problem-space <p1>
           ^desired <d1> ^jug <j1> ^jug <j2>)
     (<o1> ^name empty ^jug <j2>)
@@ -373,26 +365,25 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t87-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name empty ^jug <j2>)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <j1> ^jug <j2>)
+    (<s4> ^name water-jug ^jug <j1> ^jug <j2>)
     (<j1> ^contents 1)
     (<j2> ^volume 3 ^contents <c1>)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j3>)
     (<j3> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t86-2
-    :chunk
+   
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^problem-space <p1>
           ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
@@ -406,20 +397,19 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t86-1
-    :chunk
+   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
-          ^superstate <s5> ^evaluation <e1>)
+          ^evaluation <e1>)
     (<s2> ^name water-jug)
     (<s3> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
-    (<s4> ^name water-jug)
-    (<s5> ^jug <i1> ^jug <j1>)
+    (<s4> ^name water-jug ^jug <i1> ^jug <j1>)
     (<j1> ^contents 1)
     (<e1> ^desired <d1>)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
     -->
-    (<e1> ^symbolic-value success +)
+    (<e1> ^symbolic-value success)
 }
