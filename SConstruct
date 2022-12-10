@@ -24,9 +24,10 @@ soarversionFile = open('soarversion', 'w')
 print(SOAR_VERSION, file=soarversionFile)
 soarversionFile.close()
 
+COMPILE_DB_ALIAS = 'cdb'
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
-DEF_TARGETS = 'kernel cli sml_java debugger headers scripts'.split()
+DEF_TARGETS = ['kernel', 'cli', 'sml_java', 'debugger', 'headers', 'scripts', COMPILE_DB_ALIAS]
 
 print("================================================================================")
 print("Building Soar", SOAR_VERSION, "                      * will be built if no target specified")
@@ -34,7 +35,7 @@ print("Targets available:")
 print("   Core:              kernel* cli* scripts*")
 print("   Testing:           performance_tests tests")
 print("   SWIG:              sml_python sml_tcl sml_java*")
-print("   Extras:            debugger* headers* tclsoarlib")
+print("   Extras:            debugger* headers* tclsoarlib cdb")
 print("Custom Settings available:                                              *default")
 print("   Build Type:        --dbg, --opt*, --static")
 print("   Custom Paths:      --out, --build, --tcl")
@@ -172,6 +173,11 @@ env = Environment(
 	JAVAVERSION='1.8',
 )
 
+# must be specified first or else the resulting file will not contain all compile commands
+env.Tool('compilation_db')
+compile_db_target = env.CompilationDatabase('IDE Projects/compile_commands.json')
+env.Alias(COMPILE_DB_ALIAS, compile_db_target)
+
 # This creates a file for cli_version.cpp to source.  For optimized builds, this guarantees
 # that the build date will be correct in every build.  (Turned off for debug, b/c it was adding
 # extra compilation time.  (for some reason, this will build it the first two times you compile after
@@ -185,7 +191,7 @@ if ((GetOption('dbg') == None) or (GetOption('dbg') == False) or (FindFile('buil
     cli_version_dep.close()
 else:
     print("Build time stamp file was not built because this is a debug build.")
-    
+
 if GetOption('cc') != None:
     env.Replace(CC=GetOption('cc'))
 elif sys.platform == 'darwin':
@@ -226,7 +232,7 @@ if compiler == 'g++':
         # check if the compiler supports -fvisibility=hidden (GCC >= 4)
         if gcc_ver[0] > 3:
             env.Append(CPPFLAGS='-fvisibility=hidden')
-            
+
             config = Configure(env)
             if config.TryCompile('', '.cpp'):
                 cflags.append('-fvisibility=hidden')
@@ -352,8 +358,9 @@ if 'MSVSSolution' in env['BUILDERS']:
 
     env.Alias('msvs', [msvs_solution] + msvs_projs)
 
-env.Alias('all', list(default_ans.keys()))
-all_aliases = default_ans.keys()
+ALL_ALIAS = 'all'
+all_aliases = list(default_ans.keys())
+env.Alias(ALL_ALIAS, all_aliases)
 
 if COMMAND_LINE_TARGETS == ['list']:
     print('\n'.join(sorted(all_aliases)))
