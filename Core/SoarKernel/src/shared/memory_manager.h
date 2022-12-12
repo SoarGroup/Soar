@@ -33,6 +33,7 @@
 #include "kernel.h"
 
 #include <unordered_map>
+#include <string>
 
 #ifndef _WIN32
 #include <stdlib.h> // malloc
