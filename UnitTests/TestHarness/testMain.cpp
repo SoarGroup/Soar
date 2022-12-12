@@ -310,9 +310,11 @@ int main(int argc, char** argv)
                 std::cout.flush();
                 ++expectedFailureCount;
 
-                xml << " >" << std::endl
-                    << "\t\t" << "<failure type=\"Test Failure\">" << runner->failureMessage << "</failure>" << std::endl
-                    << "\t</testcase>" << std::endl;
+                // status="ignored" with the failure message would be more correct,
+                //but our reporting tool can't currently handle this.
+                xml << " status=\"disabled\" />" << std::endl;
+                // << "\t\t" << "<failure type=\"Test Failure\">" << runner->failureMessage << "</failure>" << std::endl
+                // << "\t</testcase>" << std::endl;
             }
             else if (runner->failed)
             {

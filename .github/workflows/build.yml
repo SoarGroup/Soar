@@ -55,7 +55,18 @@ jobs:
 
       - name: unit tests
         working-directory: ./out
-        run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic && junit TestResults.xml
+        run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
+
+      # reports JUnit test results as GitHub PR check.
+      - name: publish test report
+        uses: mikepenz/action-junit-report@v3
+        # always run even if the previous step fails
+        if: always()
+        with:
+          report_paths: './out/TestResults.xml'
+          # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
+          # fail_on_failure: true
+          annotate_only: true
       # TODO: run Python SML test
 
   Windows:
@@ -96,5 +107,17 @@ jobs:
 
       - name: unit tests
         working-directory: ./out
-        run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic && junit TestResults.xml
+        run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
+
+      # reports JUnit test results as GitHub PR check.
+      - name: publish test report
+        uses: mikepenz/action-junit-report@v3
+        # always run even if the previous step fails
+        if: always()
+        with:
+          report_paths: './out/TestResults.xml'
+          # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
+          # fail_on_failure: true
+          annotate_only: true
+
       # TODO: run Python SML test

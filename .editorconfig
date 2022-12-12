@@ -9,3 +9,6 @@ indent_size = 4
 # no particular reason, just specifying how our files are currently formatted
 [*.soar]
 indent_size = 3
+
+[*.yml]
+indent_size = 2
