@@ -19,6 +19,7 @@ import time
 join = os.path.join
 
 SOAR_VERSION = "9.6.0"
+CPP_STD_VERSION = "c++17"
 
 soarversionFile = open('soarversion', 'w')
 print(SOAR_VERSION, file=soarversionFile)
@@ -308,8 +309,10 @@ else:
     sys_lib_path = list(filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':')))
     sys_inc_path = list(filter(None, os.environ.get('CPATH', '').split(':')))
 
-if sys.platform != 'win32':
-    env.Append(CXXFLAGS='-std=c++11')
+if sys.platform == 'win32':
+    env.Append(CXXFLAGS=f'/std:{CPP_STD_VERSION}')
+else:
+    env.Append(CXXFLAGS=f'-std={CPP_STD_VERSION}')
 
 if not sys.platform == 'darwin':
     env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
