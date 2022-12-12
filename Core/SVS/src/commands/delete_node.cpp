@@ -17,8 +17,6 @@
 #include "symbol.h"
 #include "command_table.h"
 
-using namespace std;
-
 class delete_node_command : public command
 {
     public:
@@ -27,17 +25,17 @@ class delete_node_command : public command
         {
             si = state->get_svs()->get_soar_interface();
         }
-        
-        string description()
+
+        std::string description()
         {
-            return string("delete_node");
+            return std::string("delete_node");
         }
-        
+
         int command_type()
         {
             return SVS_WRITE_COMMAND;
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -52,7 +50,7 @@ class delete_node_command : public command
             {
                 return true;
             }
-            
+
             if (scn->del_node(nodeId))
             {
                 set_status("success");
@@ -63,10 +61,10 @@ class delete_node_command : public command
                 set_status("Could not find the given node");
                 return false;
             }
-            
+
             return true;
         }
-        
+
     private:
         bool parse()
         {
@@ -77,22 +75,22 @@ class delete_node_command : public command
                 set_status("^id must be specified");
                 return false;
             }
-            
+
             // Get the value of the ^source-id wme
             if (!get_symbol_value(si->get_wme_val(idWme), nodeId))
             {
-                set_status("^id must be a string");
+                set_status("^id must be a std::string");
                 return false;
             }
-            
+
             return true;
         }
-        
+
         scene*             scn;
         Symbol*            root;
         soar_interface*    si;
         bool first;
-        string                      nodeId;
+        std::string                      nodeId;
 };
 
 command* _make_delete_node_command_(svs_state* state, Symbol* root)

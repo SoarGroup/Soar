@@ -4,19 +4,17 @@
 #include "common.h"
 #include "serialize.h"
 
-using namespace std;
-
-void serialize(const serializable& v, ostream& os)
+void serialize(const serializable& v, std::ostream& os)
 {
     v.serialize(os);
 }
 
-void unserialize(serializable& v, istream& is)
+void unserialize(serializable& v, std::istream& is)
 {
     v.unserialize(is);
 }
 
-void serialize(char c, ostream& os)
+void serialize(char c, std::ostream& os)
 {
     if (!os.put(c))
     {
@@ -24,7 +22,7 @@ void serialize(char c, ostream& os)
     }
 }
 
-void unserialize(char& c, istream& is)
+void unserialize(char& c, std::istream& is)
 {
     if (!(is >> c))
     {
@@ -32,12 +30,12 @@ void unserialize(char& c, istream& is)
     }
 }
 
-void serialize(bool b, ostream& os)
+void serialize(bool b, std::ostream& os)
 {
     os << (b ? 't' : 'f');
 }
 
-void unserialize(bool& b, istream& is)
+void unserialize(bool& b, std::istream& is)
 {
     char c;
     if (!(is >> c))
@@ -48,24 +46,24 @@ void unserialize(bool& b, istream& is)
     b = (c == 't');
 }
 
-void serialize(int v, ostream& os)
+void serialize(int v, std::ostream& os)
 {
     os << v;
 }
 
-void serialize(long v, ostream& os)
+void serialize(long v, std::ostream& os)
 {
     os << v;
 }
 
-void serialize(size_t v, ostream& os)
+void serialize(size_t v, std::ostream& os)
 {
     os << v;
 }
 
-void unserialize(int& v, istream& is)
+void unserialize(int& v, std::istream& is)
 {
-    string buf;
+    std::string buf;
     if (!(is >> buf))
     {
         assert(false);
@@ -82,13 +80,13 @@ void unserialize(int& v, istream& is)
  gives up on readability but prevents rounding errors in the
  serialize/unserialize cycle.
 */
-void serialize(double v, ostream& os)
+void serialize(double v, std::ostream& os)
 {
     static char buf[100];
-    
+
     if (sprintf(buf, "%a", v) == 40)
     {
-        cerr << "buffer overflow when serializing a double" << endl;
+        std::cerr << "buffer overflow when serializing a double" << std::endl;
         assert(false);
     }
     os << buf;
@@ -98,10 +96,10 @@ void serialize(double v, ostream& os)
  The stream operator >> doesn't recognize hex float format, so use strtod
  instead.
 */
-void unserialize(double& v, istream& is)
+void unserialize(double& v, std::istream& is)
 {
-    string buf;
-    
+    std::string buf;
+
     if (!(is >> buf) || !parse_double(buf, v))
     {
         assert(false);
@@ -109,12 +107,12 @@ void unserialize(double& v, istream& is)
 }
 
 /*
- Puts string in " ". Represent literal "'s with ""
+ Puts std::string in " ". Represent literal "'s with ""
 */
-void serialize(const char* s, ostream& os)
+void serialize(const char* s, std::ostream& os)
 {
     bool need_quotes = false;
-    
+
     if (strlen(s) == 0)
     {
         need_quotes = true;
@@ -129,7 +127,7 @@ void serialize(const char* s, ostream& os)
             }
         }
     }
-    
+
     if (need_quotes)
     {
         os << '"';
@@ -151,22 +149,22 @@ void serialize(const char* s, ostream& os)
     }
 }
 
-void serialize(const string& s, ostream& os)
+void serialize(const std::string& s, std::ostream& os)
 {
     serialize(s.c_str(), os);
 }
 
-void unserialize(string& s, istream& is)
+void unserialize(std::string& s, std::istream& is)
 {
     char c;
-    stringstream ss;
+    std::stringstream ss;
     bool quoted = false;
-    
+
     while (is.get(c) && isspace(c))
         ;;
-        
+
     assert(is);
-    
+
     if (c == '"')
     {
         quoted = true;
@@ -175,7 +173,7 @@ void unserialize(string& s, istream& is)
     {
         ss << c;
     }
-    
+
     while (is.get(c))
     {
         if ((quoted && c == '"' && is.get() != '"') ||

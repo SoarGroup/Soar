@@ -22,7 +22,6 @@
 #include "svs.h"
 #include "symbol.h"
 
-using namespace std;
 
 enum GeometryType
 {
@@ -37,16 +36,16 @@ class add_node_command : public command
         {
             si = state->get_svs()->get_soar_interface();
         }
-        
+
         ~add_node_command()
         {
         }
-        
-        string description()
+
+        std::string description()
         {
-            return string("add_node");
+            return std::string("add_node");
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -60,21 +59,21 @@ class add_node_command : public command
             }
             return true;
         }
-        
-        
+
+
         int command_type()
         {
             return SVS_WRITE_COMMAND;
         }
-        
-        
+
+
     private:
         bool parse()
         {
             // ^parent <id>
             // The id of the parent to attach the node to
             // Default is the root
-            string parent_id;
+            std::string parent_id;
             if (!si->get_const_attr(root, "parent", parent_id))
             {
                 parent = scn->get_root();
@@ -88,7 +87,7 @@ class add_node_command : public command
                     return false;
                 }
             }
-            
+
             // ^id <id>
             // The id to give the node
             if (!si->get_const_attr(root, "id", node_id))
@@ -101,7 +100,7 @@ class add_node_command : public command
                 set_status("id already exists");
                 return false;
             }
-            
+
             // ^position <vec3>
             // ^rotation <vec3>
             // ^scale <vec3>
@@ -119,11 +118,11 @@ class add_node_command : public command
             {
                 transforms['s'] = trans;
             }
-            
+
             // ^geometry << box point sphere group >>
             // Optional - default is group
             // The geometry of the new node
-            string geom;
+            std::string geom;
             if (!si->get_const_attr(root, "geometry", geom))
             {
                 geom = "group";
@@ -150,15 +149,15 @@ class add_node_command : public command
             if(si->find_child_wme(root, "tags", tags_wme))
             {
                 Symbol* tags_root = si->get_wme_val(tags_wme);
-                vector<wme*> tag_wmes;
+                std::vector<wme*> tag_wmes;
                 if(si->get_child_wmes(tags_root, tag_wmes))
                 {
-                    for(vector<wme*>::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
+                    for(std::vector<wme*>::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
                     {
                         Symbol* tag_attr = si->get_wme_attr(*tag_it);
                         Symbol* tag_value = si->get_wme_val(*tag_it);
-                        string tag_attr_str;
-                        string tag_value_str;
+                        std::string tag_attr_str;
+                        std::string tag_value_str;
                         if(get_symbol_value(tag_attr, tag_attr_str) && get_symbol_value(tag_value, tag_value_str))
                         {
                             tags[tag_attr_str] = tag_value_str;
@@ -169,12 +168,12 @@ class add_node_command : public command
 
             return true;
         }
-        
+
         bool add_node()
         {
             sgnode* n;
             ptlist verts;
-            
+
             switch (geom_type)
             {
                 case NONE_GEOM:
@@ -195,12 +194,12 @@ class add_node_command : public command
                     n   = NULL;
                     break;
             }
-            
+
             for (std::map<char, vec3>::iterator i = transforms.begin(); i != transforms.end(); i++)
             {
                 n->set_trans(i->first, i->second);
             }
-            
+
             if (!scn->add_node(parent->get_id(), n))
             {
                 set_status("error adding node to scene");
@@ -211,11 +210,11 @@ class add_node_command : public command
             {
                 n->set_tag(tag_it->first, tag_it->second);
             }
-            
+
             set_status("success");
             return true;
         }
-        
+
         ptlist bbox_vertices()
         {
             ptlist pts;
@@ -231,19 +230,19 @@ class add_node_command : public command
             }
             return pts;
         }
-        
+
         scene*             scn;
         Symbol*            root;
         soar_interface*    si;
-        
+
         bool first;
-        
+
         GeometryType geom_type;
-        map<char, vec3> transforms;
+        std::map<char, vec3> transforms;
         group_node* parent;
-        string node_id;
+        std::string node_id;
         tag_map tags;
-        
+
 };
 
 command* _make_add_node_command_(svs_state* state, Symbol* root)

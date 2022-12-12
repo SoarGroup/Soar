@@ -36,7 +36,7 @@ namespace Eigen {
     template<typename Derived>
     void printFirstRow(const Eigen::MatrixBase<Derived>& x)
     {
-      cout << x.row(0) << endl;
+      std::cout << x.row(0) << std::endl;
     }
   * \endcode
   *

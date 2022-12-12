@@ -13,7 +13,6 @@
 
 tc_number get_new_tc_number(agent* thisAgent);
 
-using namespace std;
 
 common_syms::common_syms(soar_interface* si) : si(si)
 {
@@ -51,7 +50,7 @@ void soar_interface::del_sym(Symbol* s)
 }
 
 
-wme* soar_interface::make_id_wme(Symbol* id, const string& attr)
+wme* soar_interface::make_id_wme(Symbol* id, const std::string& attr)
 {
     Symbol* attrsym = thisAgent->symbolManager->make_str_constant(attr.c_str());
     Symbol* valsym = thisAgent->symbolManager->make_new_identifier(attr[0], id->id->level);
@@ -121,8 +120,8 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_vector& childs)
 
 #include <iostream>
 #include "symbol.h"
-using namespace std;
-bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
+
+bool soar_interface::get_vec3(Symbol* id, const std::string& attr, vec3& val)
 {
     vec3 res;
 
@@ -134,11 +133,11 @@ bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
     }
     Symbol* vec3_root = get_wme_val(vec3_wme);
 
-		string vec_id_name;
+		std::string vec_id_name;
 		vec3_root->get_id_name(vec_id_name);
 
     // Then find each dimension to make up the vec3
-    string dims[] = { "x", "y", "z" };
+    std::string dims[] = { "x", "y", "z" };
     for (int d = 0; d < 3; d++)
     {
         wme* dim_wme;
@@ -158,11 +157,11 @@ bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
 }
 
 
-bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
+bool soar_interface::find_child_wme(Symbol* id, const std::string& attr, wme*& w)
 {
     slot* s;
     wme* w1;
-    string a;
+    std::string a;
 
     if (!id->is_sti())
     {
@@ -201,7 +200,7 @@ wme* soar_interface::make_wme(Symbol* id, const std::string& attr, Symbol* val)
     return w;
 }
 
-void soar_interface::print(const string& msg)
+void soar_interface::print(const std::string& msg)
 {
     thisAgent->outputManager->printa(thisAgent, msg.c_str());
 }

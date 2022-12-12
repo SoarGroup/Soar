@@ -10,12 +10,10 @@
 #include "scene.h"
 #include <iostream>
 
-using namespace std;
+typedef std::vector<sgnode*>::iterator childiter;
+typedef std::vector<sgnode*>::const_iterator const_childiter;
 
-typedef vector<sgnode*>::iterator childiter;
-typedef vector<sgnode*>::const_iterator const_childiter;
-
-sgnode::sgnode(const string& id, bool group)
+sgnode::sgnode(const std::string& id, bool group)
     : parent(NULL), group(group), id(id),
       trans_dirty(true), shape_dirty(true), bounds_dirty(true),
       pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
@@ -126,7 +124,7 @@ void sgnode::update_transform() const
     {
         return;
     }
-    
+
     ltransform = transform3(pos, rot, scale);
     if (parent)
     {
@@ -228,17 +226,17 @@ bool sgnode::has_descendent(const sgnode* n) const
     return false;
 }
 
-void sgnode::proxy_use_sub(const vector<string>& args, ostream& os)
+void sgnode::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
 {
     vec3 lp, ls, wp, ws;
     vec4 lr, wr;
     table_printer t, t1, t2, t3;
-    
+
     t.add_row() << "id:"   << id;
     t.add_row() << "parent:" << (parent ? parent->get_id() : "none");
     t.print(os);
-    
-    os << endl << "Local transform:" << endl;
+
+    os << std::endl << "Local transform:" << std::endl;
     update_transform();
     t1.add_row() << "pos:";
     for (int i = 0; i < 3; ++i)
@@ -256,9 +254,9 @@ void sgnode::proxy_use_sub(const vector<string>& args, ostream& os)
         t1 << scale(i);
     }
     t1.print(os);
-    
+
     wtransform.to_prs(wp, wr, ws);
-    os << endl << "World transform:" << endl;
+    os << std::endl << "World transform:" << std::endl;
     t2.add_row() << "pos:";
     for (int i = 0; i < 3; ++i)
     {
@@ -275,9 +273,9 @@ void sgnode::proxy_use_sub(const vector<string>& args, ostream& os)
         t2 << ws(i);
     }
     t2.print(os);
-    
+
     tag_map::const_iterator ti;
-    os << endl << "Tags:" << endl;
+    os << std::endl << "Tags:" << std::endl;
     for (ti = tags.begin(); ti != tags.end(); ti++)
     {
         t3.add_row() << ti->first << ti->second;
@@ -324,7 +322,7 @@ const sgnode* group_node::get_child(size_t i) const
     return NULL;
 }
 
-void group_node::walk(vector<sgnode*>& result)
+void group_node::walk(std::vector<sgnode*>& result)
 {
     childiter i;
     result.push_back(this);
@@ -334,7 +332,7 @@ void group_node::walk(vector<sgnode*>& result)
     }
 }
 
-void group_node::walk_geoms(vector<geometry_node*>& g)
+void group_node::walk_geoms(std::vector<geometry_node*>& g)
 {
     childiter i, iend;
     for (i = children.begin(), iend = children.end(); i != iend; ++i)
@@ -343,7 +341,7 @@ void group_node::walk_geoms(vector<geometry_node*>& g)
     }
 }
 
-void group_node::walk_geoms(vector<const geometry_node*>& g) const
+void group_node::walk_geoms(std::vector<const geometry_node*>& g) const
 {
     const_childiter i, iend;
     for (i = children.begin(), iend = children.end(); i != iend; ++i)
@@ -360,7 +358,7 @@ bool group_node::attach_child(sgnode* c)
     set_shape_dirty();
     std::string added_num = tostring(children.size() - 1);
     send_update(sgnode::CHILD_ADDED, added_num);
-    
+
     return true;
 }
 
@@ -372,7 +370,7 @@ void group_node::update_shape()
         set_bounds(bbox(c));
         return;
     }
-    
+
     bbox b = children[0]->get_bounds();
     for (size_t i = 1; i < children.size(); ++i)
     {
@@ -403,7 +401,7 @@ void group_node::set_transform_dirty_sub()
     }
 }
 
-void group_node::proxy_get_children(map<string, cliproxy*>& c)
+void group_node::proxy_get_children(std::map<std::string, cliproxy*>& c)
 {
     for (size_t i = 0, iend = children.size(); i < iend; ++i)
     {
@@ -453,7 +451,7 @@ void geometry_node::gjk_support(const vec3& dir, vec3& support) const
     vec3 tdir;
     mat B;
     transform3 t;
-    
+
     t = get_world_trans();
     t.get_matrix(B);
     tdir = B.block(0, 0, 3, 3).transpose() * dir;
@@ -471,7 +469,7 @@ void geometry_node::walk_geoms(std::vector<const geometry_node*>& g) const
     g.push_back(this);
 }
 
-convex_node::convex_node(const string& id, const ptlist& v)
+convex_node::convex_node(const std::string& id, const ptlist& v)
     : geometry_node(id), verts(v), world_verts_dirty(true)
 {}
 
@@ -509,9 +507,9 @@ const ptlist& convex_node::get_world_verts() const
     return world_verts;
 }
 
-void convex_node::get_shape_sgel(string& s) const
+void convex_node::get_shape_sgel(std::string& s) const
 {
-    stringstream ss;
+    std::stringstream ss;
     ss << "v ";
     for (size_t i = 0; i < verts.size(); ++i)
     {
@@ -527,7 +525,7 @@ void convex_node::gjk_local_support(const vec3& dir, vec3& support) const
 {
     double dp, best = 0.0;
     long long best_i = -1;
-    
+
     for (size_t i = 0; i < verts.size(); ++i)
     {
         dp = dir.dot(verts[i]);
@@ -540,17 +538,17 @@ void convex_node::gjk_local_support(const vec3& dir, vec3& support) const
     support = verts[static_cast<size_t>(best_i)];
 }
 
-void convex_node::proxy_use_sub(const vector<string>& args, ostream& os)
+void convex_node::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
 {
     sgnode::proxy_use_sub(args, os);
-    
+
     table_printer t;
     for (size_t i = 0, iend = verts.size(); i < iend; ++i)
     {
         t.add_row() << verts[i](0) << verts[i](1) << verts[i](2);
     }
-    
-    os << endl << "vertices" << endl;
+
+    os << std::endl << "vertices" << std::endl;
     t.print(os);
 }
 
@@ -561,7 +559,7 @@ double convex_node::max_project_on_axis(const vec3& axis) const
     for (size_t i = 0, iend = world_verts.size(); i < iend; ++i)
     {
         double vert_proj = world_verts[i].dot(axis);
-        
+
         if(vert_proj > max)
         {
             max = vert_proj;
@@ -585,13 +583,13 @@ double convex_node::min_project_on_axis(const vec3& axis) const
     return min;
 }
 
-ball_node::ball_node(const string& id, double radius)
+ball_node::ball_node(const std::string& id, double radius)
     : geometry_node(id), radius(radius)
 {}
 
-void ball_node::get_shape_sgel(string& s) const
+void ball_node::get_shape_sgel(std::string& s) const
 {
-    stringstream ss;
+    std::stringstream ss;
     ss << "b " << radius;
     s = ss.str();
 }
@@ -629,11 +627,11 @@ void ball_node::gjk_local_support(const vec3& dir, vec3& support) const
     support = radius * dir.normalized();
 }
 
-void ball_node::proxy_use_sub(const vector<string>& args, ostream& os)
+void ball_node::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
 {
     sgnode::proxy_use_sub(args, os);
-    
-    os << endl << "radius: " << radius << endl;
+
+    os << std::endl << "radius: " << radius << std::endl;
 }
 
 double ball_node::max_project_on_axis(const vec3& axis) const

@@ -32,8 +32,6 @@
 #include "scene.h"
 #include "sgnode_algs.h"
 
-using namespace std;
-
 double compare_overlap(sgnode* a, sgnode* b, const filter_params* p){
 		if (a == b)
 		{

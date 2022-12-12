@@ -3,7 +3,7 @@
  * File: filters/monitor_object.cpp
  *
  * Monitoring Filters
- * 
+ *
  * Filter monitor_volume : map_filter<double>
  * 	 Parameters:
  * 	 	sgnode a
@@ -13,11 +13,11 @@
  * 	 	This can be used to track how the volume is changing over time
  *
  * Filter monitor_position : map_filter<double>
- * 	Parameters: 
+ * 	Parameters:
  * 		sgnode a
  * 	Returns:
  * 		Stores the position of node a when the filter is first created
- * 		Then returns the euclidean distance between the current 
+ * 		Then returns the euclidean distance between the current
  * 			position of the node, and its initial position
  * 		This can be used to track how far an object has moved over time
  *
@@ -30,8 +30,6 @@
 #include "sgnode.h"
 #include "scene.h"
 #include "filter_table.h"
-
-using namespace std;
 
 typedef std::map<sgnode*, double> vol_map;
 typedef std::map<sgnode*, vec3> pos_map;

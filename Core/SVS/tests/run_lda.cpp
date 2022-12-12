@@ -11,10 +11,8 @@
 #include "mat.h"
 #include "lda.h"
 
-using namespace std;
-
 num_classifier* make_classifier();
-void read_data(const char* path, mat& X, vector<int>& classes);
+void read_data(const char* path, mat& X, std::vector<int>& classes);
 void run_print(int first, int argc, char* argv[]);
 void run_test_set(int first, int argc, char* argv[]);
 void run_cross_validation(int first, int argc, char* argv[]);
@@ -26,16 +24,16 @@ char* classifier_type = NULL;
 int main(int argc, char* argv[])
 {
     int i = 1;
-    
+
     if (argc < 3)
     {
-        cerr << "usage: " << argv[0] << " [options] [type] [operation]" << endl;
-        cerr << "options = -s (read serialized data)" << endl;
-        cerr << "type = lda | sign | dtree" << endl;
-        cerr << "operation = print, test_set, cv, serialize" << endl;
+        cerr << "usage: " << argv[0] << " [options] [type] [operation]" << std::endl;
+        cerr << "options = -s (read serialized data)" << std::endl;
+        cerr << "type = lda | sign | dtree" << std::endl;
+        cerr << "operation = print, test_set, cv, serialize" << std::endl;
         exit(1);
     }
-    
+
     while (i < argc && argv[i][0] == '-')
     {
         switch (argv[i][1])
@@ -44,15 +42,15 @@ int main(int argc, char* argv[])
                 input_serialized = true;
                 break;
             default:
-                cerr << "unrecognized option " << argv[i] << endl;
+                cerr << "unrecognized option " << argv[i] << std::endl;
                 exit(1);
                 break;
         }
         ++i;
     }
-    
+
     classifier_type = argv[i++];
-    
+
     if (strcmp(argv[i], "print") == 0)
     {
         run_print(++i, argc, argv);
@@ -71,10 +69,10 @@ int main(int argc, char* argv[])
     }
     else
     {
-        cerr << "no such operation" << endl;
+        cerr << "no such operation" << std::endl;
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -92,28 +90,28 @@ num_classifier* make_classifier()
     {
         return new num_classifier(NC_DTREE);
     }
-    cerr << "no such classifier type" << endl;
+    cerr << "no such classifier type" << std::endl;
     return NULL;
 }
 
-void read_data(const char* path, mat& X, vector<int>& classes)
+void read_data(const char* path, mat& X, std::vector<int>& classes)
 {
-    string line;
-    vector<string> fields;
-    vector<vector<double> > data;
+    std::string line;
+    std::vector<std::string> fields;
+    std::vector<std::vector<double> > data;
     double x;
-    
+
     ifstream input(path);
-    
+
     assert(input);
-    
+
     if (input_serialized)
     {
         unserialize(X, input);
         unserialize(classes, input);
         return;
     }
-    
+
     while (getline(input, line))
     {
         fields.clear();
@@ -122,13 +120,13 @@ void read_data(const char* path, mat& X, vector<int>& classes)
         {
             continue;
         }
-        
+
         grow_vec(data);
         for (int i = 0; i < fields.size(); ++i)
         {
             if (!parse_double(fields[i], x))
             {
-                cerr << "non number \"" << fields[i] << "\"" << endl;;
+                cerr << "non number \"" << fields[i] << "\"" << std::endl;;
                 exit(1);
             }
             data.back().push_back(x);
@@ -149,15 +147,15 @@ void read_data(const char* path, mat& X, vector<int>& classes)
 void run_print(int first, int argc, char* argv[])
 {
     mat data;
-    vector<int> classes;
+    std::vector<int> classes;
     num_classifier* cls = make_classifier();
-    
+
     if (first >= argc)
     {
-        cerr << "specify training file" << endl;
+        cerr << "specify training file" << std::endl;
         exit(1);
     }
-    
+
     read_data(argv[first], data, classes);
     cls->learn(data, classes);
     cls->inspect(cout);
@@ -166,23 +164,23 @@ void run_print(int first, int argc, char* argv[])
 
 void run_test_set(int first, int argc, char* argv[])
 {
-    string line;
-    vector<string> fields;
-    vector<int> train_classes, test_classes;
+    std::string line;
+    std::vector<std::string> fields;
+    std::vector<int> train_classes, test_classes;
     mat Xtrain, Xtest;
-    
+
     if (first + 1 >= argc)
     {
-        cerr << "specify training and test files" << endl;
+        cerr << "specify training and test files" << std::endl;
         exit(1);
     }
-    
+
     read_data(argv[first], Xtrain, train_classes);
     read_data(argv[first + 1], Xtest, test_classes);
-    
+
     num_classifier* cls = make_classifier();
     cls->learn(Xtrain, train_classes);
-    
+
     int correct = 0;
     for (int i = 0; i < Xtest.rows(); ++i)
     {
@@ -192,31 +190,31 @@ void run_test_set(int first, int argc, char* argv[])
             ++correct;
         }
     }
-    cout << correct << " correct out of " << Xtest.rows() << endl;
+    std::cout << correct << " correct out of " << Xtest.rows() << std::endl;
     delete cls;
 }
 
 void run_cross_validation(int first, int argc, char* argv[])
 {
     mat data, train;
-    vector<int> classes, train_classes, reorder;
+    std::vector<int> classes, train_classes, reorder;
     int n, k, chunksize, extra, start, ndata, ncols, correct;
-    
+
     if (first >= argc)
     {
-        cerr << "specify training file" << endl;
+        cerr << "specify training file" << std::endl;
         exit(1);
     }
-    
+
     read_data(argv[first], data, classes);
     ndata = data.rows();
     ncols = data.cols();
-    
+
     if (first + 1 < argc)
     {
         if (!parse_int(argv[first + 1], n))
         {
-            cerr << "invalid n" << endl;
+            cerr << "invalid n" << std::endl;
             exit(1);
         }
     }
@@ -224,7 +222,7 @@ void run_cross_validation(int first, int argc, char* argv[])
     {
         n = 10;
     }
-    
+
     reorder.resize(ndata);
     for (int i = 0, iend = ndata; i < iend; ++i)
     {
@@ -247,7 +245,7 @@ void run_cross_validation(int first, int argc, char* argv[])
         }
         train.resize(ndata - k, ncols);
         train_classes.resize(ndata - k);
-        
+
         for (int j = 0; j < ndata - k; ++j)
         {
             if (j < start)
@@ -261,10 +259,10 @@ void run_cross_validation(int first, int argc, char* argv[])
                 train_classes[j] = classes[reorder[j + k]];
             }
         }
-        
+
         num_classifier* cls = make_classifier();
         cls->learn(train, train_classes);
-        
+
         for (int j = 0; j < k; ++j)
         {
             int a = cls->classify(data.row(reorder[start + j]));
@@ -276,38 +274,38 @@ void run_cross_validation(int first, int argc, char* argv[])
         delete cls;
         start += k;
     }
-    
-    cout << correct << " correct out of " << ndata << endl;
+
+    std::cout << correct << " correct out of " << ndata << std::endl;
 }
 
 void run_serialize(int first, int argc, char* argv[])
 {
     mat data;
-    vector<int> classes;
+    std::vector<int> classes;
     num_classifier* cls = make_classifier();
-    
+
     if (first >= argc)
     {
-        cerr << "specify training file" << endl;
+        cerr << "specify training file" << std::endl;
         exit(1);
     }
-    
+
     if (first + 1 >= argc)
     {
-        cerr << "specify output file" << endl;
+        cerr << "specify output file" << std::endl;
         exit(1);
     }
-    
+
     read_data(argv[first], data, classes);
     cls->learn(data, classes);
-    
+
     ofstream out(argv[first + 1]);
     cls->serialize(out);
     out.close();
-    
+
     ifstream input(argv[first + 1]);
     cls->unserialize(input);
     cls->inspect(cout);
-    
+
     delete cls;
 }

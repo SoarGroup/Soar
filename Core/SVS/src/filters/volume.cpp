@@ -10,7 +10,7 @@
  *  bool smaller_test(sgnode* a, sgnode* b, fp* p)
  *    Returns true if vol(a) < vol(b)
  *
- * Volume Type 
+ * Volume Type
  *   bbox - the volume of the node's axis-aligned bounding box
  *   scale - the product of the dimensions in the scale transform
  *     (If the geometry is a unit size, this works well)
@@ -86,11 +86,9 @@
 
 #include <string>
 
-using namespace std;
-
 double evaluate_volume(sgnode* a, const filter_params* p)
 {
-    string vol_type = "bbox";
+    std::string vol_type = "bbox";
     get_filter_param(0, p, "volume_type", vol_type);
     if (vol_type == "scale")
     {
@@ -108,7 +106,7 @@ bool larger_test(sgnode* a, sgnode* b, const filter_params* p)
     {
         return false;
     }
-    string vol_type = "bbox";
+    std::string vol_type = "bbox";
     get_filter_param(0, p, "volume_type", vol_type);
     if (vol_type == "scale")
     {
@@ -126,7 +124,7 @@ bool smaller_test(sgnode* a, sgnode* b, const filter_params* p)
     {
         return false;
     }
-    string vol_type = "bbox";
+    std::string vol_type = "bbox";
     get_filter_param(0, p, "volume_type", vol_type);
     if (vol_type == "scale")
     {

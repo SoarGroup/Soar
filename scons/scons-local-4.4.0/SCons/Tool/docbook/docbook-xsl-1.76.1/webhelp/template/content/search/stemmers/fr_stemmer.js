@@ -38,7 +38,7 @@ var stemmer = function(word){
 //        â   à   ç   ë   é   ê   è   ï   î   ô   û   ù
 //    The following letters are vowels:
 //        a   e   i   o   u   y   â   à   ë   é   ê   è   ï   î   ô   û   ù
-    
+
     word = word.toLowerCase();
     var oriWord = word;
     word = word.replace(/qu/g, 'qU');   //have to perform first, as after the operation, capital U is not treated as a vowel
@@ -46,7 +46,7 @@ var stemmer = function(word){
     word = word.replace(/([aeiouyâàëéêèïîôûù])i([aeiouyâàëéêèïîôûù])/g, '$1I$2');
     word = word.replace(/([aeiouyâàëéêèïîôûù])y/g, '$1Y');
     word = word.replace(/y([aeiouyâàëéêèïîôûù])/g, 'Y$1');
- 
+
     var rv='';
     var rvIndex = -1;
     if(word.search(/^(par|col|tap)/) != -1 || word.search(/^[aeiouyâàëéêèïîôûù]{2}/) != -1){
@@ -70,7 +70,7 @@ var stemmer = function(word){
         r1Index += 2;
         r1 = word.substring(r1Index);
     } else {
-        r1Index = word.length;        
+        r1Index = word.length;
     }
 
     var r2Index = -1;
@@ -83,7 +83,7 @@ var stemmer = function(word){
             r2Index += r1Index;
         } else {
             r2 = '';
-            r2Index = word.length;            
+            r2Index = word.length;
         }
     }
     if (r1Index != -1 && r1Index < 3) {
@@ -136,7 +136,7 @@ var stemmer = function(word){
         } else if(word.search(/(eus)$/) != -1){
             var a6Index2 = word.search(/(eus)$/);
             if(a6Index2 >=r2Index){
-                word = word.substring(0, a6Index2);    
+                word = word.substring(0, a6Index2);
             } else if(a6Index2 >= r1Index){
                 word = word.substring(0,a6Index2)+"eux";
             }
@@ -144,7 +144,7 @@ var stemmer = function(word){
             word = word.replace(/(abl|iqU)$/,'');   //if preceded by abl or iqU, delete if in R2,
         } else if(word.search(/(ièr|Ièr)$/) >= rvIndex){
             word = word.replace(/(ièr|Ièr)$/,'i');   //if preceded by abl or iqU, delete if in R2,
-        } 
+        }
     } else if(a7Index != -1 && a7Index >= r2Index){
         word = word.substring(0,a7Index);   //delete if in R2
         if(word.search(/(abil)$/) != -1){   //if preceded by abil, delete if in R2, else replace by abl, otherwise,
@@ -162,7 +162,7 @@ var stemmer = function(word){
                 word = word.replace(/(ic)$/,'iqU');
             }
         } else if(word.search(/(iv)$/) != r2Index){
-            word = word.replace(/(iv)$/,'');                        
+            word = word.replace(/(iv)$/,'');
         }
     } else if(a8Index != -1 && a8Index >= r2Index){
         word = word.substring(0,a8Index);
@@ -223,7 +223,7 @@ var stemmer = function(word){
             }
         }
     }
-    
+
     if(oriWord != word.toLowerCase()){
         /* Step 3 */
         var rep = '';
@@ -254,7 +254,7 @@ var stemmer = function(word){
             }
         }
     }
-    
+
     /* Step 5: Undouble */
     //word = word.replace(/(en|on|et|el|eil)(n|t|l)$/,'$1');
     word = word.replace(/(en|on)(n)$/,'$1');
@@ -273,7 +273,7 @@ var eqCount = 0;
 /*
 To test the stemming, create two arrays named "voc" and "COut" which are for vocabualary and the stemmed output.
 Then add the vocabulary strings and output strings. This method will generate the stemmed output for "voc" and will
-compare the output with COut.
+compare the output with std::cout.
  (I used porter's voc and out files and did a regex to convert them to js objects. regex: /");\nvoc.push("/g . This
   will add strings to voc array such that output would look like: voc.push("foobar"); ) drop me an email for any help.
  */
@@ -285,7 +285,7 @@ function testFr(){
     for(var k=0;k<voc.length;k++){
         if(COut[k]==stemmer(voc[k])){
             eqCount++;
-            eqOut.push("v: "+voc[k]+" c: "+COut[k]);    
+            eqOut.push("v: "+voc[k]+" c: "+COut[k]);
         } else {
             noteqOut.push(voc[k]+", c: "+COut[k]+" s:"+stemmer(voc[k]));
         }

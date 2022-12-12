@@ -15,28 +15,27 @@ extern "C"
 #endif
 {
 using namespace sml;
-using namespace std;
 
 // Tcl Thread
 // This thread takes care of creating and deleting all tcl interpreters
 // Tcl will cause a crash if an interpreter is not deleted by the same thread that created it
 
 void* launch_tcl(void* lib_ptr){
-    //cout << "TclThread: Started" << endl;
+    //cout << "TclThread: Started" << std::endl;
     TclSoarLib* tcl_lib = (TclSoarLib*)lib_ptr;
 
     /****** INITIALIZATION ******/
-    unique_lock<mutex> interp_lock(tcl_lib->interp_mutex);
+    std::unique_lock<std::mutex> interp_lock(tcl_lib->interp_mutex);
     {
         tcl_lib->m_interp = Tcl_CreateInterp();
         Tcl_FindExecutable(0);
 
-        //cout << "TclThread: Created Interpreter" << endl;
+        //cout << "TclThread: Created Interpreter" << std::endl;
 
         if (!tcl_lib->initialize_Tcl_Interpreter() || !tcl_lib->initialize_Master())
         {
             tcl_lib->m_interp = NULL;
-        } 
+        }
         else if (tcl_lib->m_kernel)
         {
             std::string output;
@@ -45,7 +44,7 @@ void* launch_tcl(void* lib_ptr){
     }
     interp_lock.unlock();
 
-    //cout << "TclThread: Initialized Interpreter" << endl;
+    //cout << "TclThread: Initialized Interpreter" << std::endl;
     // Lets the Library know it has finished the initialization
     tcl_lib->thread_ready = true;
     tcl_lib->cv.notify_one();
@@ -61,7 +60,7 @@ void* launch_tcl(void* lib_ptr){
     while(!exit)
     {
         // Wait until there is a new command (tcl_lib->new_command == true)
-        unique_lock<mutex> cmd_lock(tcl_lib->command_mutex);
+        std::unique_lock<std::mutex> cmd_lock(tcl_lib->command_mutex);
         tcl_lib->cv.wait(cmd_lock, [tcl_lib]{ return tcl_lib->new_command; });
         tcl_lib->new_command = false;
 
@@ -71,7 +70,7 @@ void* launch_tcl(void* lib_ptr){
         switch(tcl_lib->command_type)
         {
             case TclSoarLib::CREATE_TCL_SLAVE:
-                //cout << "TclThread: create slave " << tcl_lib->command_info << endl;
+                //cout << "TclThread: create slave " << tcl_lib->command_info << std::endl;
                 command = "createSlave \"" + tcl_lib->command_info + "\"";
                 interp_lock.lock();
                 {
@@ -81,7 +80,7 @@ void* launch_tcl(void* lib_ptr){
                 break;
 
             case TclSoarLib::DESTROY_TCL_SLAVE:
-                //cout << "TclThread: destroy slave " << tcl_lib->command_info << endl;
+                //cout << "TclThread: destroy slave " << tcl_lib->command_info << std::endl;
                 command = "destroySlave \"" + tcl_lib->command_info + "\"";
                 interp_lock.lock();
                 {
@@ -91,7 +90,7 @@ void* launch_tcl(void* lib_ptr){
                 break;
 
             case TclSoarLib::SHUTDOWN_TCL_THREAD:
-                //cout << "TclThread: SHUTDOWN received" << endl;
+                //cout << "TclThread: SHUTDOWN received" << std::endl;
                 exit = true;
                 break;
         }
@@ -112,14 +111,14 @@ void* launch_tcl(void* lib_ptr){
                 std::string output;
                 tcl_lib->GlobalEval("smlshutdown", output);
             }
-            //cout << "TclThread: Deleting Tcl Interpreter" << endl;
+            //cout << "TclThread: Deleting Tcl Interpreter" << std::endl;
             Tcl_DeleteInterp(tcl_lib->m_interp);
             tcl_lib->m_interp = 0;
         }
     }
     interp_lock.unlock();
 
-    //cout << "TclThread: Exiting" << endl;
+    //cout << "TclThread: Exiting" << std::endl;
     return NULL;
 }
 
@@ -131,8 +130,8 @@ TclSoarLib::TclSoarLib(Kernel* myKernel) :
 
     // Create the new thread
     thread_ready = false;
-    unique_lock<mutex> lock(command_mutex);
-    lib_thread = thread(&launch_tcl, (void*)this);
+    std::unique_lock<std::mutex> lock(command_mutex);
+    lib_thread = std::thread(&launch_tcl, (void*)this);
 
     // Wait until the new thread has finished initialization
     cv.wait(lock, [this]{ return thread_ready; });
@@ -140,8 +139,8 @@ TclSoarLib::TclSoarLib(Kernel* myKernel) :
 
 TclSoarLib::~TclSoarLib()
 {
-    //cout << "TclSoarLib::~TclSoarLib()" << endl;
-    //cout << "   Waiting for TclThread to exit" << endl;
+    //cout << "TclSoarLib::~TclSoarLib()" << std::endl;
+    //cout << "   Waiting for TclThread to exit" << std::endl;
 
     // Tell the thread to shutdown
     send_thread_command(SHUTDOWN_TCL_THREAD, "");
@@ -151,14 +150,14 @@ TclSoarLib::~TclSoarLib()
 
     m_kernel = 0;
 
-    //cout << "TclSoarLib destroyed" << endl;
+    //cout << "TclSoarLib destroyed" << std::endl;
 }
 
-void TclSoarLib::send_thread_command(int type, string info){
+void TclSoarLib::send_thread_command(int type, std::string info){
     if (m_interp)
     {
         // Set up the command to be sent to the thread
-        unique_lock<mutex> cmd_lock(command_mutex);
+        std::unique_lock<std::mutex> cmd_lock(command_mutex);
         command_type = type;
         command_info = info;
         new_command = true;
@@ -183,12 +182,12 @@ bool TclSoarLib::handle_message(std::string message)
     else if(message == "off")
     {
         return turnOff();
-    } 
+    }
     else if(message.find("create") == 0 && message.size() >= 8)
     {
         send_thread_command(CREATE_TCL_SLAVE, message.substr(7));
         return true;
-    } 
+    }
     else if(message.find("destroy") == 0 && message.size() >= 9)
     {
         send_thread_command(DESTROY_TCL_SLAVE, message.substr(8));
@@ -219,9 +218,9 @@ int TclSoarLib::GlobalDirEval(const std::string& command, std::string& result)
     }
     else
     {
-    
-        string tcl_cmd_string;
-        
+
+        std::string tcl_cmd_string;
+
         EscapeTclString(command.c_str(), tcl_cmd_string);
         if (Tcl_Eval(m_interp, (char*) tcl_cmd_string.c_str()) != TCL_OK)
         {
@@ -229,7 +228,7 @@ int TclSoarLib::GlobalDirEval(const std::string& command, std::string& result)
             result = Tcl_GetStringResult(m_interp);
             ret_val = TCL_ERROR;
         }
-        else 
+        else
         {
             tcl_cmd_string.erase();
             result = Tcl_GetStringResult(m_interp);
@@ -247,7 +246,7 @@ int TclSoarLib::GlobalEval(const std::string& command, std::string& result)
     }
     else
     {
-    
+
         if (Tcl_Eval(m_interp, (char*) command.c_str()) != TCL_OK)
         {
             result = Tcl_GetStringResult(m_interp);
@@ -274,33 +273,33 @@ bool TclSoarLib::initialize_Tcl_Interpreter()
         Tcl_DeleteInterp(m_interp);
         ret_val = false;
     }
-    
+
     return ret_val;
 }
-bool TclSoarLib::evaluateDirCommand(const string command)
+bool TclSoarLib::evaluateDirCommand(const std::string command)
 {
-    string tcl_cmd_string, result_string;
-    
+    std::string tcl_cmd_string, result_string;
+
     EscapeTclString(command.c_str(), tcl_cmd_string);
     if (GlobalEval(tcl_cmd_string, result_string) != TCL_OK)
     {
         tcl_cmd_string.erase();
         return false;
     }
-    
+
     tcl_cmd_string.erase();
     return true;
 }
 
 bool TclSoarLib::turnOn()
 {
-    lock_guard<mutex> lock(interp_mutex);
+    std::lock_guard<std::mutex> lock(interp_mutex);
     return evaluateDirCommand("createCallbackHandlers");
 }
 
 bool TclSoarLib::turnOff()
 {
-    lock_guard<mutex> lock(interp_mutex);
+    std::lock_guard<std::mutex> lock(interp_mutex);
     return evaluateDirCommand("removeCallbackHandlers");
 }
 
@@ -329,8 +328,8 @@ bool isDir(const char* path)
 
 bool TclSoarLib::initialize_Master()
 {
-    string smlTclDir,  libDir, masterFilePath, result_string;
-    
+    std::string smlTclDir,  libDir, masterFilePath, result_string;
+
     if (((GlobalDirEval("pwd", libDir) != TCL_OK) ||
             (GlobalDirEval("file join [pwd] tcl", smlTclDir) != TCL_OK) ||
             (GlobalDirEval("file join [pwd] tcl master.tcl", masterFilePath) != TCL_OK)))
@@ -348,22 +347,22 @@ bool TclSoarLib::initialize_Master()
                 GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME, which is not currently set.}", result_string);
                 return false;
             }
-            
+
             smlTclDir = libDir;
             if (smlTclDir.find_last_of("/\\") != smlTclDir.size() - 1)
             {
                 smlTclDir += '/';
             }
             smlTclDir += "tcl";
-            
+
             /* -- Normalize directory for any cross-platform differences-- */
-            string normalizeCmd("file normalize ");
+            std::string normalizeCmd("file normalize ");
             normalizeCmd += smlTclDir;
             if (GlobalDirEval(normalizeCmd.c_str(), smlTclDir) != TCL_OK)
             {
                 return false;
             }
-            
+
             masterFilePath = smlTclDir;
             masterFilePath += "/master.tcl";
             if (!(isDir(libDir.c_str()) && isDir(smlTclDir.c_str()) && isFile(masterFilePath.c_str())))
@@ -373,7 +372,7 @@ bool TclSoarLib::initialize_Master()
             }
         }
     }
-    
+
     if (!evaluateDirCommand("source \"" + smlTclDir + "/dirstack.tcl\""))
     {
         GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
@@ -384,7 +383,7 @@ bool TclSoarLib::initialize_Master()
         GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
         return false;
     }
-    
+
     if (GlobalDirEval("source master.tcl", result_string) != TCL_OK)
     {
         GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME.}", result_string);
@@ -395,13 +394,13 @@ bool TclSoarLib::initialize_Master()
         GlobalEval("puts {Error initializing master tcl interpreter}", result_string);
         return false;
     }
-    
+
     if (!evaluateDirCommand("popd"))
     {
         GlobalEval("puts {Error initializing master tcl interpreter}", result_string);
         return false;
     }
-    
+
     return true;
 }
 

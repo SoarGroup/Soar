@@ -5,8 +5,6 @@
 #include <iostream>
 #include <iomanip>
 
-using namespace std;
-
 filter_table& get_filter_table()
 {
     static filter_table inst;
@@ -74,7 +72,7 @@ filter_table_entry* tag_select_filter_entry();
 filter_table::filter_table()
 {
     set_help("Prints out a list of all filter types.");
-    
+
     add(node_filter_entry());
     add(all_nodes_filter_entry());
     add(remove_node_filter_entry());
@@ -83,12 +81,12 @@ filter_table::filter_table()
     add(node_scale_filter_entry());
     add(node_bbox_filter_entry());
     add(combine_nodes_filter_entry());
-    
+
     add(distance_filter_entry());
     add(distance_select_filter_entry());
     add(closest_filter_entry());
     add(farthest_filter_entry());
-    
+
     add(volume_filter_entry());
     add(volume_select_filter_entry());
     add(largest_filter_entry());
@@ -97,17 +95,17 @@ filter_table::filter_table()
     add(smaller_filter_entry());
     add(larger_select_filter_entry());
     add(smaller_select_filter_entry());
-    
+
     add(axis_distance_filter_entry());
     add(axis_distance_select_filter_entry());
 
 		add(axis_relation_select_filter_entry());
 
 		add(calculate_placement_filter_entry());
-    
+
     add(intersect_filter_entry());
     add(intersect_select_filter_entry());
-    
+
     add(contain_filter_entry());
     add(contain_select_filter_entry());
 
@@ -115,16 +113,16 @@ filter_table::filter_table()
 
 		add(overlap_filter_entry());
 		add(overlap_select_filter_entry());
-    
+
 		add(monitor_volume_filter_entry());
 		add(monitor_position_filter_entry());
 
     add(tag_select_filter_entry());
 }
 
-void filter_table::proxy_get_children(map<string, cliproxy*>& c)
+void filter_table::proxy_get_children(std::map<std::string, cliproxy*>& c)
 {
-    map<string, filter_table_entry*>::iterator i, iend;
+    std::map<std::string, filter_table_entry*>::iterator i, iend;
     for (i = t.begin(), iend = t.end(); i != iend; ++i)
     {
         c[i->first] = i->second;
@@ -133,20 +131,20 @@ void filter_table::proxy_get_children(map<string, cliproxy*>& c)
 
 void filter_table::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
 {
-    os << "====================== FILTER TABLE =======================" << endl;
-    map<string, filter_table_entry*>::iterator i;
+    os << "====================== FILTER TABLE =======================" << std::endl;
+    std::map<std::string, filter_table_entry*>::iterator i;
     for (i = t.begin(); i != t.end(); i++)
     {
-        os << "  " << setw(22) << left << i->first << " | " << i->second->description << endl;
+        os << "  " << std::setw(22) << std::left << i->first << " | " << i->second->description << std::endl;
     }
-    os << "===========================================================" << endl;
-    os << "For specific filter info, use the command 'svs filters.filter_name'" << endl;
+    os << "===========================================================" << std::endl;
+    os << "For specific filter info, use the command 'svs filters.filter_name'" << std::endl;
 }
 
 
-filter* filter_table::make_filter(const string& pred, Symbol* root, soar_interface* si, scene* scn, filter_input* input) const
+filter* filter_table::make_filter(const std::string& pred, Symbol* root, soar_interface* si, scene* scn, filter_input* input) const
 {
-    map<std::string, filter_table_entry*>::const_iterator i = t.find(pred);
+    std::map<std::string, filter_table_entry*>::const_iterator i = t.find(pred);
     if (i == t.end() || i->second->create == NULL)
     {
         return NULL;
@@ -167,15 +165,15 @@ filter_table_entry::filter_table_entry()
     set_help("Reports information about this filter type.");
 }
 
-void filter_table_entry::proxy_use_sub(const vector<string>& args, ostream& os)
+void filter_table_entry::proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
 {
-    os << "Filter: " << name << endl;
-    os << "  " << description << endl;
-    os << "  Parameters:" << endl;
-    map<string, string>::iterator i;
+    os << "Filter: " << name << std::endl;
+    os << "  " << description << std::endl;
+    os << "  Parameters:" << std::endl;
+    std::map<std::string, std::string>::iterator i;
     for (i = parameters.begin(); i != parameters.end(); i++)
     {
-        os << "    " << setw(15) << left << i->first << " | " << i->second << endl;
+        os << "    " << std::setw(15) << std::left << i->first << " | " << i->second << std::endl;
     }
 }
 /*
@@ -189,20 +187,20 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
 {
     wme_vector children, params;
     wme_vector::iterator i;
-    string pname, ftype, itype;
+    std::string pname, ftype, itype;
     filter_input* input;
     bool fail;
     filter* f = NULL;
-    
+
     if (!root->is_sti())
     {
-        string strval;
+        std::string strval;
         long intval;
         double floatval;
-        
+
         if (get_symbol_value(root, strval))
         {
-            return new const_filter<string>(strval);
+            return new const_filter<std::string>(strval);
         }
         else if (get_symbol_value(root, intval))
         {
@@ -214,7 +212,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
         }
         return NULL;
     }
-    
+
     fail = false;
     si->get_child_wmes(root, children);
     for (i = children.begin(); i != children.end(); ++i)
@@ -243,7 +241,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
             params.push_back(*i);
         }
     }
-    
+
     // The combine type check is a bit of a hack
     if (itype == "concat" || ftype == "combine_nodes")
     {
@@ -257,7 +255,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
     {
         input = new product_filter_input();
     }
-    
+
     for (i = params.begin(); i != params.end(); ++i)
     {
         if (!get_symbol_value(si->get_wme_attr(*i), pname))
@@ -273,7 +271,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
         }
         input->add_param(pname, cf);
     }
-    
+
     if (!fail)
     {
         if (ftype == "combine")
@@ -285,7 +283,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
             f = get_filter_table().make_filter(ftype, root, si, scn, input);
         }
     }
-    
+
     if (fail || ftype == "" || f == NULL)
     {
         delete input;

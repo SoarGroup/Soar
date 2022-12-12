@@ -93,7 +93,7 @@ class Output_Manager
         char* m_pre_string, *m_post_string;
         int  m_column_indent[MAX_COLUMNS];
 
-        /* -- The following tracks column of the next character to print if Soar is writing to cout --*/
+        /* -- The following tracks column of the next character to print if Soar is writing to std::cout --*/
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
 

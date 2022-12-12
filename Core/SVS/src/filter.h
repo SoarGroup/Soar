@@ -85,8 +85,6 @@
 #include "sgnode.h"
 #include "soar_interface.h"
 
-using namespace std;
-
 /*
  Every filter generates a list of filter values as output, even if
  the list is empty or a singleton.
@@ -124,30 +122,30 @@ typedef std::vector<std::pair<std::string, filter_val*> > filter_params;
 class filter
 {
     public:
-    
+
         filter(Symbol* root, soar_interface* si, filter_input* in);
-        
+
         virtual ~filter();
-        
+
         void set_status(const std::string& msg);
-        
+
         void add_output(filter_val* fv)
         {
             output.add(fv);
         }
-        
+
         void change_output(filter_val* fv)
         {
             output.change(fv);
         }
-        
+
         void remove_output(filter_val* fv)
         {
             output.remove(fv);
         }
-        
+
         bool update();
-        
+
         filter_output* get_output()
         {
             return &output;
@@ -168,22 +166,22 @@ class filter
         {
             input->change(s);
         }
-        
+
         virtual void get_output_params(filter_val* v, const filter_params*& p)
         {
             p = NULL;
         }
-        
+
     protected:
         virtual void clear_output()
         {
             output.clear();
         }
-        
+
         // Classes that inherit from filter are responsible for
         // handling output
         virtual bool update_outputs() = 0;
-        
+
     private:
         filter_input* input;
         filter_output output;
@@ -249,9 +247,9 @@ class typed_filter : public filter
         typed_filter(Symbol* root, soar_interface* si, filter_input* in)
             : filter(root, si, in)
         {}
-        
+
         virtual ~typed_filter() {}
-        
+
         // Get the input filter_params associated with an output filter_val
         void get_output_params(filter_val* fv, const filter_params*& p)
         {
@@ -260,7 +258,7 @@ class typed_filter : public filter
                 p = NULL;
             }
         }
-        
+
         // Set the filter output for a given filter_params input
         void set_output(const filter_params* p, T v)
         {
@@ -288,7 +286,7 @@ class typed_filter : public filter
                 filter::add_output(fv);
             }
         }
-        
+
         // Remove the filter output associated with the given filter_params
         void remove_output(const filter_params* p)
         {
@@ -303,7 +301,7 @@ class typed_filter : public filter
                 filter::remove_output(fv);
             }
         }
-        
+
     protected:
         // Clears all output values from the filter
         void clear_output()
@@ -312,7 +310,7 @@ class typed_filter : public filter
             out2in.clear();
             filter::clear_output();
         }
-        
+
     private:
         // Mapping between inputs and outputs (both directions)
         // Assumes each filter_param is associated with a single output
@@ -335,12 +333,12 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
             : filter(root, si, in)
         {
         }
-        
+
         virtual ~typed_filter()
         {
             clear_output();
         }
-        
+
         // Get the input filter_params associated with an output filter_val
         void get_output_params(filter_val* fv, const filter_params*& p)
         {
@@ -349,7 +347,7 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
                 p = NULL;
             }
         }
-        
+
         // Add an output to the filter for the given filter_params
         void set_output(const filter_params* p, sgnode* v)
         {
@@ -375,7 +373,7 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
             {
                 return;
             }
-            
+
             // Check to see if we've seen the node before
             std::map<sgnode*, std::set<filter_val*> >::iterator o_it = outputs.find(v);
             if (o_it == outputs.end())
@@ -391,13 +389,13 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
                 // Already seen this, just register the fv
                 o_it->second.insert(fv);
             }
-            
+
             in2out[p] = fv;
             out2in[fv] = p;
             filter::add_output(fv);
-            
+
         }
-        
+
         // Remove the filter output associated with the given filter_params
         void remove_output(const filter_params* p)
         {
@@ -432,7 +430,7 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
                 filter::remove_output(fv);
             }
         }
-        
+
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
         {
             std::map<sgnode*, std::set<filter_val*> >::iterator node_it;
@@ -476,7 +474,7 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
                     break;
             }
         }
-        
+
     protected:
         // Clears all output values from the filter
         void clear_output()
@@ -491,7 +489,7 @@ class typed_filter<sgnode*> : public filter, public sgnode_listener
             outputs.clear();
             filter::clear_output();
         }
-        
+
     private:
         // Mapping between inputs and outputs (both directions)
         // Assumes each filter_param is associated with a single output
@@ -516,13 +514,13 @@ class map_filter : public typed_filter<T>
         map_filter(Symbol* root, soar_interface* si, filter_input* input)
             : typed_filter<T>(root, si, input)
         {}
-        
+
         /*
          All created filter_vals are owned by the output list and cleaned
          up there, so don't do it here.
         */
         virtual ~map_filter() {}
-        
+
         /*
          * Compute the output from parameters.
          * If compute is successful, set out to be the desired
@@ -530,11 +528,11 @@ class map_filter : public typed_filter<T>
          * If an error occurs, return false
          */
         virtual bool compute(const filter_params* params, T& out) = 0;
-        
+
         bool update_outputs()
         {
             const filter_input* input = filter::get_input();
-            
+
             for (size_t i = input->first_added(); i < input->num_current(); ++i)
             {
                 const filter_params* params = input->get_current(i);
@@ -580,9 +578,9 @@ class select_filter : public typed_filter<T>
         select_filter(Symbol* root, soar_interface* si, filter_input* input)
             : typed_filter<T>(root, si, input)
         {}
-        
+
         virtual ~select_filter() {}
-        
+
         /*
          * Compute the output from parameters.
          * If compute is successful, set out to be the desired
@@ -592,12 +590,12 @@ class select_filter : public typed_filter<T>
          *   if select is set to true
          */
         virtual bool compute(const filter_params* params, T& out, bool& select) = 0;
-        
-        
+
+
         bool update_outputs()
         {
             const filter_input* input = filter::get_input();
-            
+
             for (size_t i = input->first_added(); i < input->num_current(); ++i)
             {
                 const filter_params* params = input->get_current(i);
@@ -658,7 +656,7 @@ class select_filter : public typed_filter<T>
             }
             return true;
         }
-        
+
     private:
         std::set<const filter_params*> active_outputs;
 };
@@ -670,24 +668,24 @@ class rank_filter : public typed_filter<double>
         rank_filter(Symbol* root, soar_interface* si, filter_input* input)
             : typed_filter<double>(root, si, input), best_input(NULL), select_highest(true)
         {}
-        
+
         virtual bool rank(const filter_params* params, double& r) = 0;
-        
+
         void set_select_highest(bool sel_highest)
         {
             select_highest = sel_highest;
         }
-        
+
     private:
-    
+
         virtual bool update_outputs()
         {
             const filter_input* input = filter::get_input();
             double r;
             const filter_params* p;
-            
+
             bool changed = false;
-            
+
             // Added inputs
             for (size_t i = input->first_added(); i < input->num_current(); ++i)
             {
@@ -699,7 +697,7 @@ class rank_filter : public typed_filter<double>
                 elems[p] = r;
                 changed = true;
             }
-            
+
             // Changed inputs
             for (size_t i = 0; i < input->num_changed(); ++i)
             {
@@ -711,7 +709,7 @@ class rank_filter : public typed_filter<double>
                 elems[p] = r;
                 changed = true;
             }
-            
+
             // Removed inputs
             for (size_t i = 0; i < input->num_removed(); ++i)
             {
@@ -719,13 +717,13 @@ class rank_filter : public typed_filter<double>
                 elems.erase(p);
                 changed = true;
             }
-            
+
             if (changed && !elems.empty())
             {
                 // Calculate the best value
                 const filter_params* cur_best = elems.begin()->first;
                 double best_val = elems.begin()->second;
-                
+
                 std::map<const filter_params*, double>::iterator i;
                 for (i = elems.begin(); i != elems.end(); i++)
                 {
@@ -740,7 +738,7 @@ class rank_filter : public typed_filter<double>
                         best_val = i->second;
                     }
                 }
-                
+
                 if (best_input == NULL)
                 {
                     // No previous output, add the current best
@@ -766,10 +764,10 @@ class rank_filter : public typed_filter<double>
                 remove_output(best_input);
                 best_input = NULL;
             }
-            
+
             return true;
         }
-        
+
         std::map<const filter_params*, double> elems;
         const filter_params* best_input;
         bool select_highest;
@@ -783,8 +781,8 @@ class const_filter : public typed_filter<T>
 {
     public:
         const_filter(const T& v) : typed_filter<T>(NULL, NULL, NULL), added(false), v(v) {}
-        
-        
+
+
         bool update_outputs()
         {
             if (!added)
@@ -794,7 +792,7 @@ class const_filter : public typed_filter<T>
             }
             return true;
         }
-        
+
     private:
         T v;
         bool added;
@@ -813,7 +811,7 @@ class passthru_filter : public map_filter<T>
         passthru_filter(Symbol* root, soar_interface* si, filter_input* input)
             : map_filter<T>(root, si, input)
         {}
-        
+
         bool compute(const filter_params* params, T& out)
         {
             if (params->empty())

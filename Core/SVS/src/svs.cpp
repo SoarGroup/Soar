@@ -20,9 +20,7 @@
 
 #include "symbol.h"
 
-using namespace std;
-
-typedef map<string, command*>::iterator cmd_iter;
+typedef std::map<std::string, command*>::iterator cmd_iter;
 
 svs_interface* make_svs(agent* a)
 {
@@ -35,7 +33,7 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
 {
     node->listen(this);
     id_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_id());
-    
+
     if (node->is_group())
     {
         group_node* g = node->as_group();
@@ -44,7 +42,7 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
             add_child(g->get_child(i));
         }
     }
-    
+
     const tag_map& node_tags = node->get_all_tags();
     tag_map::const_iterator ti;
     for (ti = node_tags.begin(); ti != node_tags.end(); ti++)
@@ -55,20 +53,20 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
 
 sgwme::~sgwme()
 {
-    map<sgwme*, wme*>::iterator i;
-    
+    std::map<sgwme*, wme*>::iterator i;
+
     if (node)
     {
         node->unlisten(this);
     }
     soarint->remove_wme(id_wme);
-    
-    map<string, wme*>::iterator ti;
+
+    std::map<std::string, wme*>::iterator ti;
     for (ti = tags.begin(); ti != tags.end(); ti++)
     {
         soarint->remove_wme(ti->second);
     }
-    
+
     for (i = childs.begin(); i != childs.end(); ++i)
     {
         i->first->parent = NULL;
@@ -77,7 +75,7 @@ sgwme::~sgwme()
     }
     if (parent)
     {
-        map<sgwme*, wme*>::iterator ci = parent->childs.find(this);
+        std::map<sgwme*, wme*>::iterator ci = parent->childs.find(this);
         assert(ci != parent->childs.end());
         soarint->remove_wme(ci->second);
         parent->childs.erase(ci);
@@ -115,9 +113,9 @@ void sgwme::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
 void sgwme::add_child(sgnode* c)
 {
     char letter;
-    string cid = c->get_id();
+    std::string cid = c->get_id();
     sgwme* child;
-    
+
     if (cid.size() == 0 || !isalpha(cid[0]))
     {
         letter = 'n';
@@ -127,16 +125,16 @@ void sgwme::add_child(sgnode* c)
         letter = cid[0];
     }
     wme* cid_wme = soarint->make_id_wme(id, "child");
-    
+
     child = new sgwme(soarint, soarint->get_wme_val(cid_wme), this, c);
     childs[child] = cid_wme;
 }
 
-void sgwme::set_tag(const string& tag_name, const string& tag_value)
+void sgwme::set_tag(const std::string& tag_name, const std::string& tag_value)
 {
     Symbol* rootID = id;
     std::string att = tag_name;
-    
+
     wme* value_wme;
     if (map_get(tags, tag_name, value_wme))
     {
@@ -145,16 +143,16 @@ void sgwme::set_tag(const string& tag_name, const string& tag_value)
     tags[tag_name] = soarint->make_wme(rootID, att, tag_value);
 }
 
-void sgwme::update_tag(const string& tag_name)
+void sgwme::update_tag(const std::string& tag_name)
 {
-    string tag_value;
+    std::string tag_value;
     if (node->get_tag(tag_name, tag_value))
     {
         set_tag(tag_name, tag_value);
     }
 }
 
-void sgwme::delete_tag(const string& tag_name)
+void sgwme::delete_tag(const std::string& tag_name)
 {
     wme* value_wme;
     if (map_get(tags, tag_name, value_wme))
@@ -186,12 +184,12 @@ svs_state::svs_state(Symbol* state, svs_state* parent)
 svs_state::~svs_state()
 {
     command_set_it i, iend;
-    
+
     for (i = curr_cmds.begin(), iend = curr_cmds.end(); i != iend; ++i)
     {
         delete i->cmd;
     }
-    
+
     if (scn)
     {
         svsp->get_drawer()->delete_scene(scn->get_name());
@@ -202,7 +200,7 @@ svs_state::~svs_state()
 void svs_state::init()
 {
     common_syms& cs = si->get_common_syms();
-    
+
     state->get_id_name(name);
     svs_link = si->get_wme_val(si->make_svs_wme(state));
     cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
@@ -262,25 +260,25 @@ void svs_state::process_cmds()
     wme_vector all;
     wme_vector::iterator all_it;
     si->get_child_wmes(cmd_link, all);
-    
+
     command_set live_commands;
     for (all_it = all.begin(); all_it != all.end(); all_it++)
     {
-        // Convert wme val to string
+        // Convert wme val to std::string
         Symbol* idSym = si->get_wme_val(*all_it);
-        string cmdId;
+        std::string cmdId;
         ;
         if (!idSym->get_id_name(cmdId))
         {
             // Not an identifier, continue;
             continue;
         }
-        
+
         live_commands.insert(command_entry(cmdId, 0, *all_it));
     }
     // Do a diff on the curr_cmds list and the live_commands
     //   to find which have been added and which have been removed
-    vector<command_set_it> old_commands, new_commands;
+    std::vector<command_set_it> old_commands, new_commands;
     command_set_it live_it = live_commands.begin();
     command_set_it curr_it = curr_cmds.begin();
     while (live_it != live_commands.end() || curr_it != curr_cmds.end())
@@ -312,18 +310,18 @@ void svs_state::process_cmds()
             live_it++;
         }
     }
-    
+
     // Delete the command
-    vector<command_set_it>::iterator old_it;
+    std::vector<command_set_it>::iterator old_it;
     for (old_it = old_commands.begin(); old_it != old_commands.end(); old_it++)
     {
         command_set_it old_cmd = *old_it;
         delete old_cmd->cmd;
         curr_cmds.erase(old_cmd);
     }
-    
+
     // Add the new commands
-    vector<command_set_it>::iterator new_it;
+    std::vector<command_set_it>::iterator new_it;
     for (new_it = new_commands.begin(); new_it != new_commands.end(); new_it++)
     {
         command_set_it new_cmd = *new_it;
@@ -335,7 +333,7 @@ void svs_state::process_cmds()
         }
         else
         {
-            string attr;
+            std::string attr;
             get_symbol_value(si->get_wme_attr(new_cmd->cmd_wme), attr);
         }
     }
@@ -346,7 +344,7 @@ void svs_state::clear_scene()
     scn->clear();
 }
 
-void svs_state::proxy_get_children(map<string, cliproxy*>& c)
+void svs_state::proxy_get_children(std::map<std::string, cliproxy*>& c)
 {
     c["scene"]        = scn;
 }
@@ -376,16 +374,16 @@ svs::~svs()
     {
         delete scn_cache;
     }
-    
+
     delete si;
     delete draw;
 }
 
 void svs::state_creation_callback(Symbol* state)
 {
-    string type, msg;
+    std::string type, msg;
     svs_state* s;
-    
+
     if (state_stack.empty())
     {
         if (scn_cache)
@@ -399,7 +397,7 @@ void svs::state_creation_callback(Symbol* state)
     {
         s = new svs_state(state, state_stack.back());
     }
-    
+
     state_stack.push_back(s);
 }
 
@@ -414,7 +412,7 @@ void svs::state_deletion_callback(Symbol* state)
         scn_cache = s->get_scene();
         s->disown_scene();
     }
-    
+
     delete s;
     state_stack.pop_back();
 }
@@ -439,9 +437,9 @@ void svs::output_callback()
     {
         return;
     }
-    vector<svs_state*>::iterator i;
-    string sgel;
-    
+    std::vector<svs_state*>::iterator i;
+    std::string sgel;
+
     for (i = state_stack.begin(); i != state_stack.end(); ++i)
     {
         (**i).process_cmds();
@@ -450,7 +448,7 @@ void svs::output_callback()
     //{
     //    (**i).update_cmd_results(true);
     //}
-    
+
 }
 
 void svs::input_callback()
@@ -461,9 +459,9 @@ void svs::input_callback()
     }
     svs_state* topstate = state_stack.front();
     proc_input(topstate);
-    
-    vector<svs_state*>::iterator i;
-	
+
+    std::vector<svs_state*>::iterator i;
+
     for (i = state_stack.begin(); i != state_stack.end(); ++i)
     {
         (**i).update_cmd_results(SVS_WRITE_COMMAND);
@@ -479,15 +477,15 @@ void svs::input_callback()
 
 /*
  This is a naive implementation. If this method is called concurrently
- with proc_input, the env_inputs vector will probably become
+ with proc_input, the env_inputs std::vector will probably become
  inconsistent. This eventually needs to be replaced by a thread-safe FIFO.
 */
-void svs::add_input(const string& in)
+void svs::add_input(const std::string& in)
 {
     split(in, "\n", env_inputs);
 }
 
-string svs::svs_query(const string& query)
+std::string svs::svs_query(const std::string& query)
 {
     if (state_stack.size() == 0)
     {
@@ -496,56 +494,56 @@ string svs::svs_query(const string& query)
     return state_stack[0]->get_scene()->parse_query(query);
 }
 
-void svs::proxy_get_children(map<string, cliproxy*>& c)
+void svs::proxy_get_children(std::map<std::string, cliproxy*>& c)
 {
     c["connect_viewer"]    = new memfunc_proxy<svs>(this, &svs::cli_connect_viewer);
     c["connect_viewer"]->set_help("Connect to a running viewer.")
     .add_arg("PORT", "TCP port (or file socket path in Linux) to connect to.")
     ;
-    
+
     c["disconnect_viewer"] = new memfunc_proxy<svs>(this, &svs::cli_disconnect_viewer);
     c["disconnect_viewer"]->set_help("Disconnect from viewer.");
-    
+
     c["filters"]           = &get_filter_table();
     c["commands"]          = &get_command_table();
-    
+
     for (size_t j = 0, jend = state_stack.size(); j < jend; ++j)
     {
         c[state_stack[j]->get_name()] = state_stack[j];
     }
 }
 
-bool svs::do_cli_command(const vector<string>& args, string& output)
+bool svs::do_cli_command(const std::vector<std::string>& args, std::string& output)
 {
-    stringstream ss;
-    vector<string> rest;
-    
+    std::stringstream ss;
+    std::vector<std::string> rest;
+
     if (args.size() < 2)
     {
         output = "specify path\n";
         return false;
     }
-    
+
     for (size_t i = 2, iend = args.size(); i < iend; ++i)
     {
         rest.push_back(args[i]);
     }
-    
+
     proxy_use(args[1], rest, ss);
     output = ss.str();
     return true;
 }
 
-void svs::cli_connect_viewer(const vector<string>& args, ostream& os)
+void svs::cli_connect_viewer(const std::vector<std::string>& args, std::ostream& os)
 {
     if (args.empty())
     {
-        os << "specify socket path" << endl;
+        os << "specify socket path" << std::endl;
         return;
     }
     if (draw->connect(args[0]))
     {
-        os << "connection successful" << endl;
+        os << "connection successful" << std::endl;
         for (size_t i = 0, iend = state_stack.size(); i < iend; ++i)
         {
             state_stack[i]->get_scene()->refresh_draw();
@@ -553,11 +551,11 @@ void svs::cli_connect_viewer(const vector<string>& args, ostream& os)
     }
     else
     {
-        os << "connection failed" << endl;
+        os << "connection failed" << std::endl;
     }
 }
 
-void svs::cli_disconnect_viewer(const vector<string>& args, ostream& os)
+void svs::cli_disconnect_viewer(const std::vector<std::string>& args, std::ostream& os)
 {
     draw->disconnect();
 }

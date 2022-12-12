@@ -32,9 +32,7 @@
 
 #include <string>
 
-using namespace std;
-
-bool test_axis_relation(const sgnode* a, const sgnode* b, int axis, double top, double bot, 
+bool test_axis_relation(const sgnode* a, const sgnode* b, int axis, double top, double bot,
 		bool less, bool aligned, bool greater)
 {
 	double dist = axis_distance(a, b, axis);
@@ -63,7 +61,7 @@ class axis_relation_select_filter : public select_filter<sgnode*>
             : select_filter<sgnode*>(root, si, input)
         {
         }
-        
+
         bool compute(const filter_params* params, sgnode*& out, bool& select)
         {
 					sgnode* a;
@@ -78,26 +76,26 @@ class axis_relation_select_filter : public select_filter<sgnode*>
 						return false;
 					}
 
-					string axisName;
+					std::string axisName;
 					if(!get_filter_param(this, params, "axis", axisName)){
 						set_status("Need axis x, y, or z specified");
 						return false;
 					}
 					int axis = tolower(axisName[0]) - 'x';
 
-					string greater_str;
+					std::string greater_str;
 					if(!get_filter_param(this, params, "greater", greater_str)){
 						greater_str = "false";
 					}
 					bool greater = (greater_str == "true");
 
-					string aligned_str;
+					std::string aligned_str;
 					if(!get_filter_param(this, params, "aligned", aligned_str)){
 						aligned_str = "false";
 					}
 					bool aligned = (aligned_str == "true");
 
-					string less_str;
+					std::string less_str;
 					if(!get_filter_param(this, params, "less", less_str)){
 						less_str = "false";
 					}
@@ -113,7 +111,7 @@ class axis_relation_select_filter : public select_filter<sgnode*>
 						top = 0.0;
 					}
 
-					string base;
+					std::string base;
 					if(!get_filter_param(this, params, "base", base)){
 						base = "b";
 					}

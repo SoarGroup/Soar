@@ -11,7 +11,6 @@
 #include "scene.h"
 
 #include <iostream>
-using namespace std;
 
 typedef std::vector<const sgnode*> c_sgnode_list;
 typedef std::set<const sgnode*> c_sgnode_set;
@@ -33,7 +32,7 @@ void geom_ccd_support(const void* obj, const ccd_vec3_t* dir, ccd_vec3_t* v)
 {
     vec3 d, support;
     const geometry_node* n = static_cast<const geometry_node*>(obj);
-    
+
     for (int i = 0; i < 3; ++i)
     {
         d(i) = dir->v[i];
@@ -50,13 +49,13 @@ double geom_convex_dist(const geometry_node* a, const geometry_node* b)
 {
     ccd_t ccd;
     double dist;
-    
+
     CCD_INIT(&ccd);
     ccd.support1       = geom_ccd_support;
     ccd.support2       = geom_ccd_support;
     ccd.max_iterations = 100;
     ccd.dist_tolerance = INTERSECT_THRESH;
-    
+
     dist = ccdGJKDist(a, b, &ccd);
     return dist > 0.0 ? dist : 0.0;
 }
@@ -66,13 +65,13 @@ double point_geom_convex_dist(const vec3& p, const geometry_node* g)
 {
     ccd_t ccd;
     double dist;
-    
+
     CCD_INIT(&ccd);
     ccd.support1       = point_ccd_support;
     ccd.support2       = geom_ccd_support;
     ccd.max_iterations = 100;
     ccd.dist_tolerance = INTERSECT_THRESH;
-    
+
     dist = ccdGJKDist(&p, g, &ccd);
     return dist > 0.0 ? dist : 0.0;
 }
@@ -80,23 +79,23 @@ double point_geom_convex_dist(const vec3& p, const geometry_node* g)
 // Gets the convex distance between two sgnodes //
 double convex_distance(const sgnode* a, const sgnode* b)
 {
-    vector<const geometry_node*> g1, g2;
-    vector<double> dists;
+    std::vector<const geometry_node*> g1, g2;
+    std::vector<double> dists;
     vec3 c;
-    
+
     if (a == b || a->has_descendent(b) || b->has_descendent(a))
     {
         return 0.0;
     }
-    
+
     a->walk_geoms(g1);
     b->walk_geoms(g2);
-    
+
     if (g1.empty() && g2.empty())
     {
         return (a->get_centroid() - b->get_centroid()).norm();
     }
-    
+
     if (g1.empty())
     {
         dists.reserve(g2.size());
@@ -145,7 +144,7 @@ double centroid_distance(const sgnode* a, const sgnode* b)
  * Returns a positive distance if node a is lower than node b
  * Returns 0 if node a and node b overlap on the axis
  *
- * Axis should be 0 for x-axis, 1 for y-axis, 2 for z-axis 
+ * Axis should be 0 for x-axis, 1 for y-axis, 2 for z-axis
  */
 double axis_distance(const sgnode* a, const sgnode* b, int axis)
 {
@@ -157,7 +156,7 @@ double axis_distance(const sgnode* a, const sgnode* b, int axis)
     double maxa = a->get_bounds().get_max()[axis];
     double minb = b->get_bounds().get_min()[axis];
     double maxb = b->get_bounds().get_max()[axis];
-    
+
     if (minb > maxa)
     {
         return (minb - maxa);
@@ -173,7 +172,7 @@ double axis_distance(const sgnode* a, const sgnode* b, int axis)
 }
 
 /*
- * Returns the distance between two nodes along a given axis 
+ * Returns the distance between two nodes along a given axis
  *   using their bounding boxes
  *
  * Returns a negative distance if node a is higher than node b
@@ -191,19 +190,19 @@ double axis_distance(const sgnode* a, const sgnode* b, const vec3& axis)
     }
     vec3 unit_axis = axis / len;
 
-    //cout << "======= axis_distance(" << a->get_id() << ", " << b->get_id() << ") along [" << 
-    //  unit_axis[0] << ", " << unit_axis[1] << ", " << unit_axis[2] << "]" << endl;
+    //cout << "======= axis_distance(" << a->get_id() << ", " << b->get_id() << ") along [" <<
+    //  unit_axis[0] << ", " << unit_axis[1] << ", " << unit_axis[2] << "]" << std::endl;
 
     double mina = a->min_project_on_axis(unit_axis);
     double maxa = a->max_project_on_axis(unit_axis);
     double minb = b->min_project_on_axis(unit_axis);
     double maxb = b->max_project_on_axis(unit_axis);
 
-    //cout << "  mina = " << mina << endl;
-    //cout << "  maxa = " << maxa << endl;
-    //cout << "  minb = " << minb << endl;
-    //cout << "  maxb = " << maxb << endl;
-    
+    //cout << "  mina = " << mina << std::endl;
+    //cout << "  maxa = " << maxa << std::endl;
+    //cout << "  minb = " << minb << std::endl;
+    //cout << "  maxb = " << maxb << std::endl;
+
     if (minb > maxa)
     {
         return (minb - maxa);
@@ -232,7 +231,7 @@ double scale_volume(const sgnode* a)
 	return scale[0] * scale[1] * scale[2];
 }
 
-// Returns true if the convex hull of node a 
+// Returns true if the convex hull of node a
 //   intersects the convex hull of node b
 bool convex_intersects(const sgnode* a, const sgnode* b)
 {
@@ -262,7 +261,7 @@ bool bbox_intersects(const sgnode* a, const sgnode* b)
     return boxa.intersects(boxb);
 }
 
-// Returns true if the bounding box of node a 
+// Returns true if the bounding box of node a
 //   contains the bounding box of node b
 bool bbox_contains(const sgnode* a, const sgnode* b)
 {
@@ -271,8 +270,8 @@ bool bbox_contains(const sgnode* a, const sgnode* b)
     return boxa.contains(boxb);
 }
 
-/*  
- * Returns the estimated percentage of node n1 
+/*
+ * Returns the estimated percentage of node n1
  *   that is contained within node n2
  *   using random sampling
  *
@@ -285,7 +284,7 @@ double convex_overlap(const sgnode* n1, const sgnode* n2, int nsamples){
 		return 0;
 	}
 
-	vector<const geometry_node*> g1, g2;
+	std::vector<const geometry_node*> g1, g2;
 	n1->walk_geoms(g1);
 	n2->walk_geoms(g2);
 
@@ -374,7 +373,7 @@ double convex_overlap(const sgnode* n1, const sgnode* n2, int nsamples){
 
 // Creates a view_line consisting of a convex node with the given name
 //   which represents a line segment between the two given points
-view_line create_view_line(const string& name, const vec3& p1, const vec3& p2){
+view_line create_view_line(const std::string& name, const vec3& p1, const vec3& p2){
 	vec3 dPosOver2 = (p2 - p1)/2;	// Vector from eye to vertex
 	vec3 center = p1 + dPosOver2;	// Point halfway between eye and vertex
 
@@ -408,7 +407,7 @@ void calc_view_lines(const sgnode* target, const sgnode* eye, view_line_list& vi
 		if(c_node){
 			const ptlist& verts = c_node->get_world_verts();
 			for(ptlist::const_iterator i = verts.begin(); i != verts.end(); i++){
-				//std::cout << "Point " << view_lines.size() << ": " << (*i)[0] << ", " << (*i)[1] << ", " << (*i)[2] << endl;
+				//std::cout << "Point " << view_lines.size() << ": " << (*i)[0] << ", " << (*i)[1] << ", " << (*i)[2] << std::endl;
 				std::string name = "_temp_line_" + tostring(view_lines.size());
 				view_lines.push_back(create_view_line(name, eyePos, *i));
 			}
@@ -449,7 +448,7 @@ double convex_occlusion(view_line_list& view_lines, const c_sgnode_list& occlude
 				}
 				//std::cout << "Occlusion detected" << std::endl;
 				//std::cout << "  " << j->first->get_id() << std::endl;
-				//std::cout << "  " << n->get_id() << std::endl; 
+				//std::cout << "  " << n->get_id() << std::endl;
 
 				view_line.second = true;
 				num_occluded++;
@@ -472,7 +471,7 @@ double convex_occlusion(const sgnode* a, const sgnode* eye, const std::vector<co
 vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d2, int d3){
 	vec3 scale = n->get_trans('s');
 	vec3 tempScale = scale;
-	//cout << "Adjusting on dims: " << d1 << ", " << d2 << ", " << d3 << endl;
+	//cout << "Adjusting on dims: " << d1 << ", " << d2 << ", " << d3 << std::endl;
 
 	// Simple binary search, finds it within 1%
 	double min = 0.001, max = 1.0;
@@ -484,10 +483,10 @@ vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d
 		n->set_trans('s', tempScale);
 		//cout << "  Test " << s << ": ";
 		if(convex_intersects(n, targets)){
-			//cout << "I" << endl;
+			//cout << "I" << std::endl;
 			max = s;
 		} else {
-			//cout << "N" << endl;
+			//cout << "N" << std::endl;
 			min = s;
 		}
 	}
@@ -495,7 +494,7 @@ vec3 adjust_on_dims(sgnode* n, std::vector<const sgnode*> targets, int d1, int d
 	tempScale[d1] = scale[d1] * min * .98;
 	tempScale[d2] = scale[d2] * min * .98;
 	tempScale[d3] = scale[d3] * min * .98;
-	//cout << "Final Result: " << min << endl;
+	//cout << "Final Result: " << min << std::endl;
 	return tempScale;
 }
 
@@ -515,7 +514,7 @@ void adjust_sgnode_size(sgnode* n, std::vector<const sgnode*> targets){
 	std::vector<const sgnode*> intersectors;
 	std::vector<const sgnode*>::iterator i;
 	// Find all the nodes that actually intersect the original sized object
-	//cout << "Intersectors: " << endl;
+	//cout << "Intersectors: " << std::endl;
 	for(i = targets.begin(); i != targets.end(); i++){
 		if(*i == n){
 			continue;
@@ -523,29 +522,29 @@ void adjust_sgnode_size(sgnode* n, std::vector<const sgnode*> targets){
 		if(!convex_intersects(n, *i)){
 			continue;
 		}
-		//cout << "  " << (*i)->get_name() << endl;
+		//cout << "  " << (*i)->get_name() << std::endl;
 		intersectors.push_back(*i);
 	}
 	if(intersectors.size() == 0){
-		//cout << "No Intersectors" << endl;
+		//cout << "No Intersectors" << std::endl;
 		// Don't need to adjust at all
 		return;
 	}
-	//cout << "Generating centroid" << endl;
+	//cout << "Generating centroid" << std::endl;
 
 	// Check to see if the centroid is already inside another object
 	ptlist centroid_pt;
 	centroid_pt.push_back(n->get_centroid());
 	convex_node* centroid = new convex_node("temp-centroid", centroid_pt);
 	if(convex_intersects(centroid, intersectors)){
-		//cout << "Centroid is intersected" << endl;
+		//cout << "Centroid is intersected" << std::endl;
 		// Something is very wrong, the centroid is inside another object, just quit
 		delete centroid;
 		return;
 	}
 	delete centroid;
 
-	//cout << "Copying points" << endl;
+	//cout << "Copying points" << std::endl;
 
 	// Now do the actual adjustment, on a copy of the original node
 	// Copy all the points from this node
@@ -555,7 +554,7 @@ void adjust_sgnode_size(sgnode* n, std::vector<const sgnode*> targets){
 	vec3 tempScale = scale;
 	vec3 newScale = scale;
 
-	//cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
+	//cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << std::endl;
 
 	int freeDim = -1;
 	// Test each dimension to see if just 1 needs to be adjusted
@@ -574,7 +573,7 @@ void adjust_sgnode_size(sgnode* n, std::vector<const sgnode*> targets){
 	}
 	tempScale = scale;
 	copied_node->set_trans('s', scale);
-	//cout << "Free Dim: " << freeDim << endl;
+	//cout << "Free Dim: " << freeDim << std::endl;
 	if(freeDim != -1){
 		newScale = adjust_single_dim(copied_node, intersectors, freeDim);
 	} else {
@@ -596,15 +595,15 @@ void adjust_sgnode_size(sgnode* n, std::vector<const sgnode*> targets){
 		}
 		tempScale = scale;
 		copied_node->set_trans('s', scale);
-		//cout << "Free Dim: " << freeDim << endl;
+		//cout << "Free Dim: " << freeDim << std::endl;
 		if(freeDim != -1){
 			newScale = adjust_two_dims(copied_node, intersectors, freeDim);
 		} else {
 			newScale = adjust_all_dims(copied_node, intersectors);
 		}
 	}
-	//cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << endl;
-	//cout << "New Scale: " << newScale[0] << ", " << newScale[1] << ", " << newScale[2] << endl;
+	//cout << "Old Scale: " << scale[0] << ", " << scale[1] << ", " << scale[2] << std::endl;
+	//cout << "New Scale: " << newScale[0] << ", " << newScale[1] << ", " << newScale[2] << std::endl;
 	n->set_trans('s', newScale);
 	delete copied_node;
 }

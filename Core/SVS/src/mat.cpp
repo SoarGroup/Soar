@@ -4,7 +4,6 @@
 #include "params.h"
 #include "serialize.h"
 
-using namespace std;
 dyn_mat::dyn_mat() : buf(0, 0), r(0), c(0), released(false) {}
 
 dyn_mat::dyn_mat(size_t nrows, size_t ncols)
@@ -140,13 +139,13 @@ void dyn_mat::remove_col(size_t i)
     --c;
 }
 
-void dyn_mat::serialize(ostream& os) const
+void dyn_mat::serialize(std::ostream& os) const
 {
     assert(!released);
     ::serialize(const_mat_view(buf.topLeftCorner(r, c)), os);
 }
 
-void dyn_mat::unserialize(istream& is)
+void dyn_mat::unserialize(std::istream& is)
 {
     assert(!released);
     ::unserialize(buf, is);
@@ -154,14 +153,14 @@ void dyn_mat::unserialize(istream& is)
     c = buf.cols();
 }
 
-ostream& output_rvec(ostream& os, const rvec& v, const string& sep)
+std::ostream& output_rvec(std::ostream& os, const rvec& v, const std::string& sep)
 {
     size_t n = v.size();
     if (n == 0)
     {
         return os;
     }
-    
+
     for (size_t i = 0; i < n - 1; ++i)
     {
         os << v(i) << sep;
@@ -170,14 +169,14 @@ ostream& output_rvec(ostream& os, const rvec& v, const string& sep)
     return os;
 }
 
-ostream& output_cvec(ostream& os, const cvec& v, const string& sep)
+std::ostream& output_cvec(std::ostream& os, const cvec& v, const std::string& sep)
 {
     size_t n = v.size();
     if (n == 0)
     {
         return os;
     }
-    
+
     for (size_t i = 0; i < n - 1; ++i)
     {
         os << v(i) << sep;
@@ -186,21 +185,21 @@ ostream& output_cvec(ostream& os, const cvec& v, const string& sep)
     return os;
 }
 
-ostream& output_mat(ostream& os, const_mat_view m)
+std::ostream& output_mat(std::ostream& os, const_mat_view m)
 {
     size_t r = m.rows(), c = m.cols();
     if (r == 0 || c == 0)
     {
         return os;
     }
-    
+
     for (size_t i = 0; i < r; ++i)
     {
         for (size_t j = 0; j < c - 1; ++j)
         {
             os << m(i, j) << " ";
         }
-        os << m(i, c - 1) << endl;
+        os << m(i, c - 1) << std::endl;
     }
     return os;
 }
@@ -229,7 +228,7 @@ bool uniform(const_mat_view m)
     return m.isConstant(m(0, 0), SAME_THRESH);
 }
 
-void get_nonuniform_cols(const_mat_view X, int ncols, vector<int>& cols)
+void get_nonuniform_cols(const_mat_view X, int ncols, std::vector<int>& cols)
 {
     for (int i = 0; i < ncols; ++i)
     {
@@ -240,13 +239,13 @@ void get_nonuniform_cols(const_mat_view X, int ncols, vector<int>& cols)
     }
 }
 
-void del_uniform_cols(mat_view X, int ncols, vector<int>& cols)
+void del_uniform_cols(mat_view X, int ncols, std::vector<int>& cols)
 {
     get_nonuniform_cols(X, ncols, cols);
     pick_cols(X, cols);
 }
 
-void pick_cols(const_mat_view X, const vector<int>& cols, mat& result)
+void pick_cols(const_mat_view X, const std::vector<int>& cols, mat& result)
 {
     result.resize(X.rows(), cols.size());
     for (size_t i = 0; i < cols.size(); ++i)
@@ -255,7 +254,7 @@ void pick_cols(const_mat_view X, const vector<int>& cols, mat& result)
     }
 }
 
-void pick_rows(const_mat_view X, const vector<int>& rows, mat& result)
+void pick_rows(const_mat_view X, const std::vector<int>& rows, mat& result)
 {
     if (result.rows() < X.rows() || result.cols() != X.cols())
     {
@@ -267,7 +266,7 @@ void pick_rows(const_mat_view X, const vector<int>& rows, mat& result)
     }
 }
 
-void pick_cols(mat_view X, const vector<int>& cols)
+void pick_cols(mat_view X, const std::vector<int>& cols)
 {
     assert(static_cast<size_t>(X.cols()) >= cols.size());
     bool need_copy = false;
@@ -296,7 +295,7 @@ void pick_cols(mat_view X, const vector<int>& cols)
     }
 }
 
-void pick_rows(mat_view X, const vector<int>& rows)
+void pick_rows(mat_view X, const std::vector<int>& rows)
 {
     assert(static_cast<size_t>(X.rows()) >= rows.size());
     bool need_copy = false;
@@ -380,21 +379,21 @@ double dir_separation(const ptlist& a, const ptlist& b, const vec3& u)
             maxx = x;
         }
     }
-    
+
     return maxx - minx;
 }
 
-ostream& operator<<(ostream& os, const bbox& b)
+std::ostream& operator<<(std::ostream& os, const bbox& b)
 {
     os << b.min_pt[0] << " " << b.min_pt[1] << " " << b.min_pt[2] << " "
        << b.max_pt[0] << " " << b.max_pt[1] << " " << b.max_pt[2];
     return os;
 }
 
-void serialize(const_mat_view m, ostream& os)
+void serialize(const_mat_view m, std::ostream& os)
 {
     serializer sr(os);
-    sr << string("MAT") << static_cast<int>(m.rows()) << static_cast<int>(m.cols()) << '\n';
+    sr << std::string("MAT") << static_cast<int>(m.rows()) << static_cast<int>(m.cols()) << '\n';
     for (int i = 0; i < m.rows(); ++i)
     {
         for (int j = 0; j < m.cols(); ++j)
@@ -405,15 +404,15 @@ void serialize(const_mat_view m, ostream& os)
     }
 }
 
-void unserialize(mat& m, istream& is)
+void unserialize(mat& m, std::istream& is)
 {
-    string label;
+    std::string label;
     int nrows, ncols;
     unserializer unsr(is);
-    
+
     unsr >> label >> nrows >> ncols;
     assert(label == "MAT");
-    
+
     m.resize(nrows, ncols);
     for (int i = 0; i < nrows; ++i)
     {
@@ -424,7 +423,7 @@ void unserialize(mat& m, istream& is)
     }
 }
 
-void unserialize(rvec& v, istream& is)
+void unserialize(rvec& v, std::istream& is)
 {
     mat m;
     unserialize(m, is);
@@ -432,7 +431,7 @@ void unserialize(rvec& v, istream& is)
     v = m.row(0);
 }
 
-void unserialize(cvec& v, istream& is)
+void unserialize(cvec& v, std::istream& is)
 {
     mat m;
     unserialize(m, is);
@@ -476,16 +475,16 @@ transform3::transform3(const vec3& p, const vec3& r, const vec3& s)
 void transform3::to_prs(vec3& p, vec4& r, vec3& s) const
 {
     Eigen::Matrix3d rm, sm;
-    
+
     p = trans.translation();
     trans.computeRotationScaling(&rm, &sm);
-    
+
     Eigen::Quaterniond q(rm);
     r(0) = q.x();
     r(1) = q.y();
     r(2) = q.z();
     r(3) = q.w();
-    
+
     s(0) = sm(0, 0);
     s(1) = sm(1, 1);
     s(2) = sm(2, 2);

@@ -4,9 +4,9 @@
  *
  * Calculate Placement Filter
  * 	given two nodes, find a position for the first relative to the second
- * 	that satisfies axis separation constraints, 
+ * 	that satisfies axis separation constraints,
  * 	taking bounding boxes into consideration
- * 	E.g. calculate a position so that an object is on top of another, 
+ * 	E.g. calculate a position so that an object is on top of another,
  *
  * Filter calculate_placement : map_filter<vec3>
  *   Parameters:
@@ -17,13 +17,13 @@
  *    z_axis_separation FLOAT [Optional] - Default is 0 (aligned)
  *    sgnode reference [optional - default=world], frame of reference to calculate wrt
  *   Returns:
- *    vec3 - a position at which to place node a such that the given 
+ *    vec3 - a position at which to place node a such that the given
  *    	axis separation constraints are satisfied
  *   Notes on separations:
- *   	The separation is a constraint on what the distance between 
+ *   	The separation is a constraint on what the distance between
  *   	the two nodes should be along the given axis (using bounding boxes)
- *   		A positive distance indicates node a is higher up on the axis, 
- *   		A negative distance indicates node a is lower down on the axis, 
+ *   		A positive distance indicates node a is higher up on the axis,
+ *   		A negative distance indicates node a is lower down on the axis,
  *   		A distance of 0 indicates they are aligned on that axis (share the same value)
  *
  *********************************************************/
@@ -33,8 +33,6 @@
 #include "filter_table.h"
 
 #include <string>
-
-using namespace std;
 
 vec3 calculate_placement(const sgnode* a, const sgnode* b, const sgnode* ref, double xsep, double ysep, double zsep){
     vec3 sep(xsep, ysep, zsep);
@@ -74,7 +72,7 @@ vec3 calculate_placement(const sgnode* a, const sgnode* b, const sgnode* ref, do
           // Pos of a += axis * (max bound of b + separation distance + distance to centroid of a)
           // (mina is negative)
           pos = pos + axes[dim] * (maxb[dim] + sep[dim] - mina[dim]);
-        } 
+        }
         else if(sep[dim] < 0)
         {
           // Pos of a -= axis * (min bound of b + separation distance + distance to centroid of a)
@@ -91,7 +89,7 @@ class calculate_placement_filter : public map_filter<vec3>
       calculate_placement_filter(Symbol* root, soar_interface* si, filter_input* input)
             : map_filter<vec3>(root, si, input)
         {}
-        
+
         bool compute(const filter_params* params, vec3& out)
         {
             sgnode* a;

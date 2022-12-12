@@ -26,8 +26,6 @@
 #include "command_table.h"
 #include "sgnode_algs.h"
 
-using namespace std;
-
 class copy_transform_command : public command
 {
     public:
@@ -38,9 +36,9 @@ class copy_transform_command : public command
             scn = state->get_scene();
         }
 
-        string description()
+        std::string description()
         {
-            return string("copy-node");
+            return std::string("copy-node");
         }
 
         bool update_sub()
@@ -67,7 +65,7 @@ class copy_transform_command : public command
         {
             // source <id>
             // The id of the node to copy the transforms from
-            string source_id;
+            std::string source_id;
             if (!si->get_const_attr(root, "source", source_id))
             {
                 set_status("must specify a source");
@@ -83,7 +81,7 @@ class copy_transform_command : public command
 
             // destination <id>
             // The id of the node to copy the transforms to
-            string dest_id;
+            std::string dest_id;
             if (!si->get_const_attr(root, "destination", dest_id))
             {
                 set_status("must specify a destination");
@@ -99,7 +97,7 @@ class copy_transform_command : public command
 
 						// position << yes no >>
 						// Whether to copy the position transform
-						string pos_str;
+						std::string pos_str;
 						if(si->get_const_attr(root, "position", pos_str) &&
 								(pos_str == "yes" || pos_str == "true")){
 							copy_pos = true;
@@ -111,7 +109,7 @@ class copy_transform_command : public command
 
 						// rotation << yes no >>
 						// Whether to copy the rotation transform
-						string rot_str;
+						std::string rot_str;
 						if(si->get_const_attr(root, "rotation", rot_str) &&
 								(rot_str == "yes" || rot_str == "true")){
 							copy_rot = true;
@@ -123,7 +121,7 @@ class copy_transform_command : public command
 
 						// scale << yes no >>
 						// Whether to copy the scale transform
-						string scl_str;
+						std::string scl_str;
 						if(si->get_const_attr(root, "scale", scl_str) &&
 								(scl_str == "yes" || scl_str == "true"))
 						{
@@ -136,7 +134,7 @@ class copy_transform_command : public command
 
 						// adjust << true false >>
 						adjust = false;
-						string adjust_str;
+						std::string adjust_str;
 						if(si->get_const_attr(root, "adjust", adjust_str) &&
 								(adjust_str == "yes" || adjust_str == "true")){
 							adjust = true;

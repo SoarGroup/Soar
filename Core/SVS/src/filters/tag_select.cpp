@@ -18,8 +18,6 @@
 
 #include <string>
 
-using namespace std;
-
 class tag_select_filter : public select_filter<sgnode*>
 {
     public:
@@ -27,7 +25,7 @@ class tag_select_filter : public select_filter<sgnode*>
                           filter_input* input)
             : select_filter<sgnode * >(root, si, input)
         {}
-        
+
         bool compute(const filter_params* p, sgnode*& out, bool& select)
         {
             sgnode* a;
@@ -36,22 +34,22 @@ class tag_select_filter : public select_filter<sgnode*>
                 set_status("Needs node a as input");
                 return false;
             }
-            
-            string tag_name;
+
+            std::string tag_name;
             if (!get_filter_param(this, p, "tag_name", tag_name))
             {
                 set_status("Needs tag_name as input");
                 return false;
             }
-            
-            string desired_value;
+
+            std::string desired_value;
             if (!get_filter_param(this, p, "tag_value", desired_value))
             {
                 set_status("Needs tag_value as input");
                 return false;
             }
-            
-            string tag_value;
+
+            std::string tag_value;
             if (a->get_tag(tag_name, tag_value) && desired_value == tag_value)
             {
                 select = true;
@@ -60,7 +58,7 @@ class tag_select_filter : public select_filter<sgnode*>
             {
                 select = false;
             }
-            
+
             out = a;
             return true;
         }

@@ -13,17 +13,16 @@
 
 #include "symbol.h"
 
-using namespace std;
 
-bool is_reserved_param(const string& name)
+bool is_reserved_param(const std::string& name)
 {
     return name == "result" || name == "parent";
 }
 
-/* Remove weird characters from string */
-void cleanstring(string& s)
+/* Remove weird characters from std::string */
+void cleanstring(std::string& s)
 {
-    string::iterator i;
+    std::string::iterator i;
     for (i = s.begin(); i != s.end();)
     {
         if (!isalnum(*i) && *i != '.' && *i != '-' && *i != '_')
@@ -62,13 +61,13 @@ bool command::changed()
 void command::parse_substructure(size_t& size, uint64_t& max_time)
 {
     tc_number tc;
-    stack< Symbol*> to_process;
+    std::stack<Symbol*> to_process;
     wme_vector childs;
     wme_vector::iterator i;
     Symbol* parent, *v;
     uint64_t tt;
-    string attr;
-    
+    std::string attr;
+
     tc = si->new_tc_num();
     size = 0;
     max_time = -1;
@@ -77,7 +76,7 @@ void command::parse_substructure(size_t& size, uint64_t& max_time)
     {
         parent = to_process.top();
         to_process.pop();
-        
+
         si->get_child_wmes(parent, childs);
         for (i = childs.begin(); i != childs.end(); ++i)
         {
@@ -90,12 +89,12 @@ void command::parse_substructure(size_t& size, uint64_t& max_time)
             v = si->get_wme_val(*i);
             tt = si->get_timetag(*i);
             size++;
-            
+
             if (tt > max_time)
             {
                 max_time = tt;
             }
-            
+
             if (v->is_sti() && (v->get_tc_num() != tc))
             {
                 v->set_tc_num(tc);
@@ -105,12 +104,12 @@ void command::parse_substructure(size_t& size, uint64_t& max_time)
     }
 }
 
-bool command::get_str_param(const string& name, string& val)
+bool command::get_str_param(const std::string& name, std::string& val)
 {
     wme_vector children;
     wme_vector::iterator i;
-    string attr, v;
-    
+    std::string attr, v;
+
     si->get_child_wmes(root, children);
     for (i = children.begin(); i != children.end(); ++i)
     {
@@ -130,7 +129,7 @@ bool command::get_str_param(const string& name, string& val)
     return false;
 }
 
-void command::set_status(const string& s)
+void command::set_status(const std::string& s)
 {
     if (curr_status == s)
     {

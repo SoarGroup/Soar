@@ -6,8 +6,6 @@
 #include "foil.h"
 #include "common.h"
 
-using namespace std;
-
 #define MAX_CLAUSES 10
 #define EQUAL_MARGIN 1.0e-3
 
@@ -85,7 +83,7 @@ int main(int argc, char* argv[])
         }
         exit(0);
     }
-    
+
     test();
     test_fix_variables();
     return 0;
@@ -104,18 +102,18 @@ bool run_foil(const char* path, bool prune, clause_vec& clauses, relation& pos, 
 {
     FOIL foil;
     ifstream input(path);
-    
+
     if (!input)
     {
-        cerr << "could not load " << path << endl;
+        cerr << "could not load " << path << std::endl;
         assert(false);
     }
-    
+
     if (!foil.load_foil6(input))
     {
         return false;
     }
-    
+
     input.close();
     double t1 = time();
     foil.learn(prune, false);
@@ -136,16 +134,16 @@ void standalone(const char* path, bool prune)
     relation pos, neg;
     relation_table all;
     double t;
-    
+
     if (!run_foil(path, prune, clauses, pos, neg, all, t))
     {
         assert(false);
     }
-    
-    cout << t << " msecs" << endl;
+
+    std::cout << t << " msecs" << std::endl;
     for (int i = 0, iend = clauses.size(); i < iend; ++i)
     {
-        cout << i << ": " << clauses[i] << endl;
+        std::cout << i << ": " << clauses[i] << std::endl;
     }
     test_clauses(clauses, pos, neg, all);
 }
@@ -159,7 +157,7 @@ bool test()
     double t, success, fp, fn;
     int i, j;
     bool result = true;
-    
+
     for (int i = 0; tests[i].path != NULL; ++i)
     {
         //if (i == 3) LOG.turn_on(FOILDBG);
@@ -168,7 +166,7 @@ bool test()
         {
             assert(false);
         }
-        
+
         for (j = 0; tests[i].clauses[j].clause != NULL; ++j)
         {
             const clause_test_spec& spec = tests[i].clauses[j];
@@ -181,13 +179,13 @@ bool test()
                 clause_success_rate(clauses[j], pos, neg, all, success, fp, fn);
                 if (!close(success, spec.success_rate))
                 {
-                    cout << "Expected success rate " << spec.success_rate << ", got " << success << endl;
+                    std::cout << "Expected success rate " << spec.success_rate << ", got " << success << std::endl;
                     result = false;
                 }
             }
             else
             {
-                cout << "Test " << j << " expected " << spec.clause << ", got " << learned << endl;
+                std::cout << "Test " << j << " expected " << spec.clause << ", got " << learned << std::endl;
                 result = false;
             }
         }
@@ -217,8 +215,8 @@ void test_clauses(clause_vec& clauses, relation& pos, relation& neg, relation_ta
     relation::const_iterator i, iend;
     int matched, false_negs, false_pos;
     var_domains d;
-    
-    cout << "False negatives" << endl;
+
+    std::cout << "False negatives" << std::endl;
     for (false_negs = 0, i = pos.begin(), iend = pos.end(); i != iend; ++i)
     {
         d.clear();
@@ -229,12 +227,12 @@ void test_clauses(clause_vec& clauses, relation& pos, relation& neg, relation_ta
         matched = test_clause_vec(clauses, all_rels, d);
         if (matched < 0)
         {
-            join(cout, *i, ", ") << endl;
+            join(cout, *i, ", ") << std::endl;
             ++false_negs;
         }
     }
-    
-    cout << "False positives" << endl;
+
+    std::cout << "False positives" << std::endl;
     for (false_pos = 0, i = neg.begin(), iend = neg.end(); i != iend; ++i)
     {
         d.clear();
@@ -245,26 +243,26 @@ void test_clauses(clause_vec& clauses, relation& pos, relation& neg, relation_ta
         matched = test_clause_vec(clauses, all_rels, d);
         if (matched >= 0)
         {
-            cout << "(" << matched << ") ";
+            std::cout << "(" << matched << ") ";
             join(cout, *i, ", ") << " | ";
             var_domains::const_iterator di, diend;
             for (di = d.begin(), diend = d.end(); di != diend; ++di)
             {
                 assert(di->second.size() == 1);
                 int val = *di->second.begin();
-                cout << di->first << " <- " << val << " ";
+                std::cout << di->first << " <- " << val << " ";
             }
-            cout << endl;
+            std::cout << std::endl;
             ++false_pos;
         }
     }
-    
+
     int total = pos.size() + neg.size();
     int correct = total - false_negs - false_pos;
     double success_rate = correct / static_cast<double>(total);
-    cout << endl
+    std::cout << std::endl
          << success_rate << " success, " << correct << " correct, " << false_negs + false_pos << " incorrect, "
-         << false_negs << " false negs, " << false_pos << " false pos" << endl;
+         << false_negs << " false negs, " << false_pos << " false pos" << std::endl;
 }
 
 literal PL(const string& s)
@@ -274,7 +272,7 @@ literal PL(const string& s)
     tuple args;
     int open, close;
     vector<string> arg_str;
-    
+
     open = s.find_first_of("(");
     close = s.find_first_of(")");
     assert(open != string::npos && close != string::npos && open < close);
@@ -288,7 +286,7 @@ literal PL(const string& s)
         negate = false;
         name = s.substr(0, open);
     }
-    
+
     split(s.substr(open + 1, close - open - 1), ", ", arg_str);
     assert(arg_str.size() > 0);
     args.resize(arg_str.size());
@@ -321,16 +319,16 @@ bool test_fix_variables()
     fix_variables(3, c1);
     if (c1 != t1)
     {
-        cout << "Expected " << t1 << ", got " << c1 << endl;
+        std::cout << "Expected " << t1 << ", got " << c1 << std::endl;
         return false;
     }
-    
+
     clause c2 = PC("A(0,1) & B(0,3)");
     clause t2 = PC("A(0,1) & B(0,2)");
     fix_variables(1, c2);
     if (c2 != t2)
     {
-        cout << "Expected " << t2 << ", got " << c2 << endl;
+        std::cout << "Expected " << t2 << ", got " << c2 << std::endl;
         return false;
     }
     return true;

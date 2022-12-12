@@ -22,7 +22,7 @@
 /* Defining SOAR_RELEASE_VERSION will:
  *
  * 1 -  Remove debug trace statements
- * 2 -  Soar will not re-direct all printing output from callbacks to cout
+ * 2 -  Soar will not re-direct all printing output from callbacks to std::cout
  *         (useful for debugging, keeps things in the right order)
  * 3 -  Memory pools and memory pool allocators will be turned on (if disabled below)
  * 4 -  Debugging flags below will be disabled

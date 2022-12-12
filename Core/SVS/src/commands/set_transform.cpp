@@ -23,8 +23,6 @@
 #include "symbol.h"
 #include "command_table.h"
 
-using namespace std;
-
 class set_transform_command : public command
 {
     public:
@@ -39,9 +37,9 @@ class set_transform_command : public command
         {
         }
 
-        string description()
+        std::string description()
         {
-            return string("transform");
+            return std::string("transform");
         }
 
         bool update_sub()
@@ -62,15 +60,15 @@ class set_transform_command : public command
             sgnode* n = scn->get_node(id);
             if (!n)
             {
-                set_status(string("Couldn't find node ") + id);
+                set_status(std::string("Couldn't find node ") + id);
                 return false;
             }
 
-//						cout << "setting " << props.size() << " properties" << endl;
-            map<char, vec3>::iterator pi;
+//						cout << "setting " << props.size() << " properties" << std::endl;
+            std::map<char, vec3>::iterator pi;
             for (pi = props.begin(); pi != props.end(); pi++)
             {
-//								cout << "setting " << pi->first << " for " << n->get_id() << " to " << pi->second << endl;
+//								cout << "setting " << pi->first << " for " << n->get_id() << " to " << pi->second << std::endl;
                 n->set_trans(pi->first, pi->second);
             }
 
@@ -95,7 +93,7 @@ class set_transform_command : public command
             }
             if (!get_symbol_value(si->get_wme_val(idwme), id))
             {
-                set_status("object id must be a string");
+                set_status("object id must be a std::string");
                 return false;
             }
 
@@ -121,8 +119,8 @@ class set_transform_command : public command
         scene*          scn;
         soar_interface* si;
         bool            first;
-        string          id;
-        map<char, vec3> props;
+        std::string          id;
+        std::map<char, vec3> props;
 
 };
 

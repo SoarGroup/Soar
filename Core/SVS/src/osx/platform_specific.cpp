@@ -9,15 +9,13 @@
 #include <ctime>
 #include "common.h"
 
-using namespace std;
-
-int get_tcp_socket(const string& port_or_path)
+int get_tcp_socket(const std::string& port_or_path)
 {
     int family, fd, port, name_size;
     sockaddr_in in_name;
     sockaddr_un un_name;
     sockaddr* name;
-    
+
     if (parse_int(port_or_path, port))
     {
         memset(&in_name, 0, sizeof(in_name));
@@ -49,16 +47,16 @@ int get_tcp_socket(const string& port_or_path)
     return fd;
 }
 
-bool tcp_send(int fd, const string& s)
+bool tcp_send(int fd, const std::string& s)
 {
     if (fd < 0)
     {
         return false;
     }
-    
+
     size_t n;
     const char* p = s.c_str();
-    
+
     while (*p)
     {
         if ((n = ::send(fd, p, strlen(p), 0)) <= 0)

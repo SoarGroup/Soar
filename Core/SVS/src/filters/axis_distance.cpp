@@ -34,11 +34,9 @@
 
 #include <string>
 
-using namespace std;
-
 double compare_axis_distance(sgnode* a, sgnode* b, const filter_params* p)
 {
-    string axisName;
+    std::string axisName;
     if (!get_filter_param(0, p, "axis", axisName))
     {
         return 0;
@@ -59,7 +57,7 @@ double compare_axis_distance(sgnode* a, sgnode* b, const filter_params* p)
         vec3 dir = ref->get_world_trans()(axis) - ref->get_world_trans()(vec3(0, 0, 0));
         return axis_distance(a, b, dir);
     }
-    else 
+    else
     {
         return axis_distance(a, b, dim);
     }

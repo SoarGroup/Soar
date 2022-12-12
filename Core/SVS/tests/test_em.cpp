@@ -3,9 +3,7 @@
 #include "model.h"
 #include "common.h"
 
-using namespace std;
-
-void read_sig(const vector<string>& fields, scene_sig& sig, int& target)
+void read_sig(const std::vector<std::string>& fields, scene_sig& sig, int& target)
 {
     int id = 0;
     scene_sig::entry ent;
@@ -16,7 +14,7 @@ void read_sig(const vector<string>& fields, scene_sig& sig, int& target)
     sig.clear();
     for (int i = 1, iend = fields.size(); i < iend; ++i)
     {
-        vector<string> prop_fields;
+        std::vector<std::string> prop_fields;
         split(fields[i], ":", prop_fields);
         assert(prop_fields.size() == 3);
         if (prop_fields[0] != ent.name)
@@ -36,14 +34,14 @@ void read_sig(const vector<string>& fields, scene_sig& sig, int& target)
     sig.add(ent);
 }
 
-void read_tabular(ifstream& is, model_train_data& data)
+void read_tabular(std::ifstream& is, model_train_data& data)
 {
-    string line;
-    vector<string> fields;
+    std::string line;
+    std::vector<std::string> fields;
     scene_sig sig;
     relation_table empty; // not concerned with relations here
     int target;
-    
+
     while (getline(is, line))
     {
         fields.clear();
@@ -74,9 +72,9 @@ void read_tabular(ifstream& is, model_train_data& data)
     }
 }
 
-void error(const string& msg)
+void error(const std::string& msg)
 {
-    cerr << msg << endl;
+    cerr << msg << std::endl;
     exit(1);
 }
 
@@ -86,8 +84,8 @@ int main(int argc, char* argv[])
     bool serialized_input = false;
     model_train_data data;
     double noise_var = 1e-8;
-    string load_path, save_path;
-    
+    std::string load_path, save_path;
+
     while (i < argc && argv[i][0] == '-')
     {
         switch (argv[i][1])
@@ -120,19 +118,19 @@ int main(int argc, char* argv[])
         }
         ++i;
     }
-    
+
     if (i == argc)
     {
-        cerr << "specify data file" << endl;
+        cerr << "specify data file" << std::endl;
         exit(1);
     }
-    
-    ifstream input(argv[i]);
+
+    std::ifstream input(argv[i]);
     if (!input)
     {
         error(string("can't open ") + argv[i]);
     }
-    
+
     if (serialized_input)
     {
         data.unserialize(input);
@@ -141,31 +139,31 @@ int main(int argc, char* argv[])
     {
         read_tabular(input, data);
     }
-    
+
     EM em(data);
     if (!load_path.empty())
     {
-        ifstream load_file(load_path.c_str());
+        std::ifstream load_file(load_path.c_str());
         if (!load_file)
         {
             error(string("couldn't read ") + load_path);
         }
         em.unserialize(load_file);
     }
-    
+
     em.set_noise_var(noise_var);
     for (int i = 0, iend = data.size(); i < iend; ++i)
     {
         em.add_data(i);
         if (!em.run(50))
         {
-            cerr << "max iterations reached" << endl;
+            cerr << "max iterations reached" << std::endl;
         }
     }
-    
+
     em.print_ptable();
     em.print_modes(cout);
-    
+
     if (!save_path.empty())
     {
         ofstream save_file(save_path.c_str());
@@ -175,6 +173,6 @@ int main(int argc, char* argv[])
         }
         em.serialize(save_file);
     }
-    
+
     return 0;
 }

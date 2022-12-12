@@ -36,9 +36,7 @@
 #include "scene.h"
 #include "filter_table.h"
 
-using namespace std;
-
-typedef map<const filter_params*, sgnode*> element_map;
+typedef std::map<const filter_params*, sgnode*> element_map;
 
 
 class occlusion_filter : public typed_filter<double> {
@@ -48,7 +46,7 @@ public:
 	{}
 
 	~occlusion_filter(){
-		for(vector<view_line>::iterator i = view_lines.begin(); i != view_lines.end(); i++){
+		for(std::vector<view_line>::iterator i = view_lines.begin(); i != view_lines.end(); i++){
 			delete i->first;
 		}
 	}
@@ -116,7 +114,7 @@ private:
 		}
 
 		if(changed){
-			vector<const sgnode*> occluders;
+			std::vector<const sgnode*> occluders;
 			for(element_map::const_iterator i = nodes.begin(); i != nodes.end(); i++){
 				occluders.push_back(i->second);
 			}
@@ -131,7 +129,7 @@ private:
 
 	sgnode* a;
 	sgnode* eye;
-	vector<view_line> view_lines; // Set of lines from eye to vertices of a
+	std::vector<view_line> view_lines; // Set of lines from eye to vertices of a
 	element_map nodes;  // Set of nodes to check as occluders
 };
 

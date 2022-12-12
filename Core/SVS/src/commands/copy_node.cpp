@@ -15,7 +15,7 @@
  *     ^scale <vec3> [Optional] - scale of the new node
  *       (These transforms default to that of the source node)
  *     ^copy_tags <bool> [Optional] - whether to copy tags from source
- *     ^tags <tags> [Optional] - any string att/val pairs underneath added as tags
+ *     ^tags <tags> [Optional] - any std::string att/val pairs underneath added as tags
  **********************************************************/
 #include <iostream>
 #include <string>
@@ -29,8 +29,6 @@
 #include "symbol.h"
 #include "command_table.h"
 
-using namespace std;
-
 class copy_node_command : public command
 {
     public:
@@ -40,12 +38,12 @@ class copy_node_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-        
-        string description()
+
+        std::string description()
         {
-            return string("copy-node");
+            return std::string("copy-node");
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -59,19 +57,19 @@ class copy_node_command : public command
             }
             return true;
         }
-        
-        
+
+
         int command_type()
         {
             return SVS_WRITE_COMMAND;
         }
-        
+
         bool parse()
         {
             // ^parent <id>
             // The id of the parent to attach the node to
             // Default is the root
-            string parent_id;
+            std::string parent_id;
             if (!si->get_const_attr(root, "parent", parent_id))
             {
                 parent = scn->get_root();
@@ -85,23 +83,23 @@ class copy_node_command : public command
                     return false;
                 }
             }
-            
+
             // source <id>
             // The id of the node to copy
-            string source_id;
+            std::string source_id;
             if (!si->get_const_attr(root, "source", source_id))
             {
                 set_status("must specify a source");
                 return false;
             }
-            
+
             source_node = scn->get_node(source_id);
             if (!source_node)
             {
                 set_status("Could not find the given source node");
                 return false;
             }
-            
+
             // id <id>
             // the id of the node to create
             if (!si->get_const_attr(root, "id", node_id))
@@ -114,7 +112,7 @@ class copy_node_command : public command
                 set_status("Node already exists");
                 return false;
             }
-            
+
             // ^position <vec3>
             // ^rotation <vec3>
             // ^scale <vec3>
@@ -123,7 +121,7 @@ class copy_node_command : public command
             transforms['p'] = source_node->get_trans('p');
             transforms['r'] = source_node->get_trans('r');
             transforms['s'] = source_node->get_trans('s');
-            
+
             vec3 trans;
             if (si->get_vec3(root, "position", trans))
             {
@@ -137,10 +135,10 @@ class copy_node_command : public command
             {
                 transforms['s'] = trans;
             }
-            
+
             // ^copy_tags << true false >>
             copy_tags = false;
-            string copy_str;
+            std::string copy_str;
             if (si->get_const_attr(root, "copy_tags", copy_str) &&
                     copy_str == "true")
             {
@@ -152,15 +150,15 @@ class copy_node_command : public command
             if(si->find_child_wme(root, "tags", tags_wme))
             {
                 Symbol* tags_root = si->get_wme_val(tags_wme);
-                vector<wme*> tag_wmes;
+                std::vector<wme*> tag_wmes;
                 if(si->get_child_wmes(tags_root, tag_wmes))
                 {
-                    for(vector<wme*>::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
+                    for(std::vector<wme*>::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
                     {
                         Symbol* tag_attr = si->get_wme_attr(*tag_it);
                         Symbol* tag_value = si->get_wme_val(*tag_it);
-                        string tag_attr_str;
-                        string tag_value_str;
+                        std::string tag_attr_str;
+                        std::string tag_value_str;
                         if(get_symbol_value(tag_attr, tag_attr_str) && get_symbol_value(tag_value, tag_value_str))
                         {
                             tags[tag_attr_str] = tag_value_str;
@@ -171,19 +169,19 @@ class copy_node_command : public command
 
 						// adjust << true false >>
 						adjust = false;
-						string adjust_str;
+						std::string adjust_str;
 						if(si->get_const_attr(root, "adjust", adjust_str) &&
 								adjust_str == "true"){
 							adjust = true;
 						}
-            
+
             return true;
         }
-        
+
         bool copy_node()
         {
             sgnode* dest_node;
-            
+
             const ball_node* sourceBall = dynamic_cast<const ball_node*>(source_node);
             const convex_node* sourceConvex = dynamic_cast<const convex_node*>(source_node);
             if (sourceBall)
@@ -200,13 +198,13 @@ class copy_node_command : public command
             {
                 dest_node = new group_node(node_id);
             }
-            
+
             parent->attach_child(dest_node);
-            
+
             dest_node->set_trans('p', transforms['p']);
             dest_node->set_trans('r', transforms['r']);
             dest_node->set_trans('s', transforms['s']);
-            
+
             if (copy_tags)
             {
                 const tag_map& src_tags = source_node->get_all_tags();
@@ -224,21 +222,21 @@ class copy_node_command : public command
 						if(adjust){
 							adjust_sgnode_size(dest_node, scn);
 						}
-            
+
             set_status("success");
             return true;
         }
-        
+
     private:
         Symbol*         root;
         scene*          scn;
         soar_interface* si;
         bool first;
-        
+
         const sgnode* source_node;
         group_node* parent;
-        string node_id;
-        map<char, vec3> transforms;
+        std::string node_id;
+        std::map<char, vec3> transforms;
         tag_map tags;
         bool copy_tags;
 				bool adjust;

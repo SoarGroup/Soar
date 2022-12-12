@@ -4,25 +4,24 @@
 #include "sml_Client.h"
 #include "sml_Connection.h"
 
-using namespace std;
 using namespace sml;
 
 void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
 {
-    cout << pMessage << endl;
+    std::cout << pMessage << std::endl;
 }
 
-void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, const vector<string>& commands, int numInits, const vector<string>& init_commands)
+void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, const std::vector<std::string>& commands, int numInits, const std::vector<std::string>& init_commands)
 {
 
     for (int i = 0; i < numTrials; i++)
     {
         Kernel* kernel = Kernel::CreateKernelInNewThread();
         Agent* agent = kernel->CreateAgent("Soar1");
-        string runCmd = "time run ";
-        if (numDecisions > 0) runCmd += to_string(numDecisions);
-        cout << (i+1) << " ";
-        cout.flush();
+        std::string runCmd = "time run ";
+        if (numDecisions > 0) runCmd += std::to_string(numDecisions);
+        std::cout << (i+1) << " ";
+        std::cout.flush();
 
         #ifndef QUIET_MODE
         agent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, NULL);
@@ -37,8 +36,8 @@ void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, con
                 {
                     agent->ExecuteCommandLine(init_commands[j].c_str());
                 }
-                cout << ".";
-                cout.flush();
+                std::cout << ".";
+                std::cout.flush();
             } else {
                 for (int j = 0; j < commands.size(); ++j)
                 {
@@ -59,12 +58,12 @@ void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, con
         kernel->Shutdown();
         delete kernel;
 
-        if (!numInits) cout << "✅  "; else cout << "✅\n";
-        cout.flush();
+        if (!numInits) std::cout << "✅  "; else std::cout << "✅\n";
+        std::cout.flush();
     }
 
-    cout << endl;
-    cout.flush();
+    std::cout << std::endl;
+    std::cout.flush();
 }
 
 int main(int argc, char* argv[])
@@ -87,24 +86,24 @@ int main(int argc, char* argv[])
     else if (argc == 3)
     {
         agentname = argv[1];
-        stringstream(argv[2]) >> numTrials;
+        std::stringstream(argv[2]) >> numTrials;
     }
     else if (argc == 4)
     {
         agentname = argv[1];
-        stringstream(argv[2]) >> numTrials;
-        stringstream(argv[3]) >> numDCs;
+        std::stringstream(argv[2]) >> numTrials;
+        std::stringstream(argv[3]) >> numDCs;
     }
     else if (argc == 5)
     {
         agentname = argv[1];
-        stringstream(argv[2]) >> numTrials;
-        stringstream(argv[3]) >> numDCs;
-        stringstream(argv[4]) >> numInits;
+        std::stringstream(argv[2]) >> numTrials;
+        std::stringstream(argv[3]) >> numDCs;
+        std::stringstream(argv[4]) >> numInits;
     }
     else
     {
-        cout << "Usage: " << argv[0] << " [default | <agent name>] [<numtrials>] [<num_decisions>] [<num_init_and_rerun>]" << endl;
+        std::cout << "Usage: " << argv[0] << " [default | <agent name>] [<numtrials>] [<num_decisions>] [<num_init_and_rerun>]" << std::endl;
         return 1;
     }
     if (!strcmp(agentname, "default"))
@@ -113,18 +112,18 @@ int main(int argc, char* argv[])
     }
     if (!numDCs) numDCs = DEFAULT_DCS;
 
-    cout << "\e[1;31m" << agentname << "\e[0;37m" << ": ";
-    if (numTrials > 1) cout << numTrials << " trials"; else cout << "single run";
-    if (numDCs > 0) cout << ", " << numDCs << " DCs"; else cout << ", run forever";
-    if (numInits > 0) cout << ", " << numInits << " extra init-soar/runs\n"; else cout << endl;
-    cout.flush();
+    std::cout << "\e[1;31m" << agentname << "\e[0;37m" << ": ";
+    if (numTrials > 1) std::cout << numTrials << " trials"; else std::cout << "single run";
+    if (numDCs > 0) std::cout << ", " << numDCs << " DCs"; else std::cout << ", run forever";
+    if (numInits > 0) std::cout << ", " << numInits << " extra init-soar/runs\n"; else std::cout << std::endl;
+    std::cout.flush();
 
     {
         StatsTracker l_testStats;
-        vector<string> commands, init_commands;
+        std::vector<std::string> commands, init_commands;
 
         commands.push_back("pushd SoarPerformanceTests");
-        string srccmd = "source ";
+        std::string srccmd = "source ";
         srccmd += agentname;
         srccmd += ".soar";
         commands.push_back(srccmd.c_str());

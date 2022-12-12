@@ -5,7 +5,6 @@
 #include "sml_AgentSML.h"
 
 using namespace sml;
-using namespace std;
 
 int main(int argc, char* argv[])
 {
@@ -149,7 +148,7 @@ sp {apply*store-result-removal
 
 	std::ostream* output = &std::cout;
 
-	ofstream out("out.csv");
+	std::ofstream out("out.csv");
 	output = &out;
 
 	std::map<std::string, double> query, store_result;
@@ -173,7 +172,7 @@ sp {apply*store-result-removal
 	print_timer(query, output);
 	*output << DELIMITER;
 	print_timer(store_result, output);
-	*output << endl;
+	*output << std::endl;
 
 	for (int i = 0;;++i)
 	{

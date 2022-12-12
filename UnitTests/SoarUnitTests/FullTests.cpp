@@ -540,8 +540,8 @@ void FullTests_Parent::testWMEs()
     /*
 	 printWMEs(agent->GetInputLink()) ;
 	 std::string printInput1 = agent->ExecuteCommandLine("print --depth 2 I2") ;
-	 cout << printInput1 << endl ;
-	 cout << endl << "Now work with the input link" << endl ;
+	 std::cout << printInput1 << std::endl ;
+	 std::cout << std::endl << "Now work with the input link" << std::endl ;
      */
 
     // Delete one of the shared WMEs to make sure that's ok
@@ -672,7 +672,7 @@ void FullTests_Parent::testAgent()
     /* Not true now we support stopping before/after phases when running by decision.
 	 if (phaseCount != 20)
 	 {
-	 cout << "Error receiving phase events" << endl ;
+	 std::cout << "Error receiving phase events" << std::endl ;
 	 return false ;
 	 }
      */
@@ -713,7 +713,7 @@ void FullTests_Parent::testAgent()
     /*
 	 printWMEs(agent->GetInputLink()) ;
 	 std::string printInput = agent->ExecuteCommandLine("print --depth 2 I2") ;
-	 cout << printInput << endl ;
+	 std::cout << printInput << std::endl ;
      */
 
     // Then add some tic tac toe stuff which should trigger output
@@ -786,7 +786,7 @@ void FullTests_Parent::testAgent()
     no_agent_assertTrue(m_pKernel->UnregisterForUpdateEvent(callback_g));
     no_agent_assertTrue(agent->UnregisterForPrintEvent(callbackp1));
 
-    //cout << "Time to dump output link" << endl ;
+    //cout << "Time to dump output link" << std::endl ;
 
     no_agent_assertTrue(agent->GetOutputLink());
     //printWMEs(agent->GetOutputLink()) ;
@@ -867,19 +867,19 @@ void FullTests_Parent::testAgent()
     /*
 	 if (pos == std::string.npos)
 	 {
-	 cout << "*** ERROR: Failed to interrupt Soar during a run." << endl ;
+	 std::cout << "*** ERROR: Failed to interrupt Soar during a run." << std::endl ;
 	 return false ;
 	 }
      */
     no_agent_assertTrue(agent->UnregisterForRunEvent(callback3));
 
     /* These comments haven't kept up with the test -- does a lot more now
-	 cout << endl << "If this test worked should see something like this (above here):" << endl ;
-	 cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;
-	 cout << "(M1 ^col 1)" << endl << "(I3 ^alternative M1)" << endl ;
-	 cout << "And then after the command is marked as completed (during the test):" << endl ;
-	 cout << "Top Identifier I3" << endl ;
-	 cout << "Together with about 6 received events" << endl ;
+	 std::cout << std::endl << "If this test worked should see something like this (above here):" << std::endl ;
+	 std::cout << "Top Identifier I3" << std::endl << "(I3 ^move M1)" << std::endl << "(M1 ^row 1)" << std::endl ;
+	 std::cout << "(M1 ^col 1)" << std::endl << "(I3 ^alternative M1)" << std::endl ;
+	 std::cout << "And then after the command is marked as completed (during the test):" << std::endl ;
+	 std::cout << "Top Identifier I3" << std::endl ;
+	 std::cout << "Together with about 6 received events" << std::endl ;
      */
 
     no_agent_assertTrue(agent->UnregisterForRunEvent(callback1));
@@ -952,8 +952,8 @@ void FullTests_Parent::testSimpleCopy()
 
     std::string result = agent->RunSelf(1) ;
 
-    //cout << result << endl ;
-    //cout << trace << endl ;
+    //cout << result << std::endl ;
+    //cout << trace << std::endl ;
 
     // TODO: check this output
     //std::cout << agent->ExecuteCommandLine("print --depth 5 s1 --tree") << std::endl;
@@ -998,7 +998,7 @@ void FullTests_Parent::testSimpleCopy()
 
     /*
 	 Output:
-	 
+
 	 (28: I3 ^text-output S4)
 	 (14: S4 ^newest yes)
 	 (15: S4 ^num-words 3)
@@ -1042,7 +1042,7 @@ void FullTests_Parent::testSimpleReteNetLoader()
 
     // Get the latest id from the input link
     sml::Identifier* pID = agent->GetInputLink() ;
-    //cout << "Input link id is " << pID->GetValueAsString() << endl ;
+    //cout << "Input link id is " << pID->GetValueAsString() << std::endl ;
 
     no_agent_assertTrue(pID);
     SoarHelper::init_check_to_find_refcount_leaks(agent);
@@ -1055,7 +1055,7 @@ void FullTests_Parent::test64BitReteNet()
 
     // Get the latest id from the input link
     sml::Identifier* pID = agent->GetInputLink() ;
-    //cout << "Input link id is " << pID->GetValueAsString() << endl ;
+    //cout << "Input link id is " << pID->GetValueAsString() << std::endl ;
 
     no_agent_assertTrue(pID);
     SoarHelper::init_check_to_find_refcount_leaks(agent);

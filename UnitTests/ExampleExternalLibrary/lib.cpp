@@ -10,9 +10,8 @@
 #include <iostream>
 
 using namespace sml;
-using namespace std;
 
-string myRHSTest(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument)
+std::string myRHSTest(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
     return "myRHSTest";
 }
@@ -45,29 +44,29 @@ int main(int argc, char** argv)
 {
     sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection();
     sml_InitLibrary(pKernel, 0, 0);
-    
+
     assert(pKernel);
     if (pKernel->HadError())
     {
-        cout << "Error: " << pKernel->GetLastErrorDescription() << endl;
+        std::cout << "Error: " << pKernel->GetLastErrorDescription() << std::endl;
         exit(1);
     }
-    
+
     // Listen for when to shutdown
     pKernel->RegisterForSystemEvent(smlEVENT_BEFORE_SHUTDOWN, MyShutdownHandler, NULL);
-    
+
     pKernel->SetConnectionInfo("TestExternalLibraryLib", sml_Names::kStatusReady, sml_Names::kStatusReady);
-    
-    cout << endl << "This will automatically close when the remote kernel shuts down." << endl;
+
+    std::cout << std::endl << "This will automatically close when the remote kernel shuts down." << std::endl;
     // stay open until the remote Soar is shutdown
     for (;;)
     {
         sml::Sleep(100000, 0);
     }
-    
+
     pKernel->SetConnectionInfo("RHSemotion", sml_Names::kStatusClosing, sml_Names::kStatusClosing);
     pKernel->Shutdown();
     delete pKernel;
-    
+
     return 0;
 }

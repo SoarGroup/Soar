@@ -8,21 +8,19 @@
 #include "scene.h"
 #include "sgnode.h"
 
-using namespace std;
-
 /**********************************************
  * member functions for filter_val_c<sgnode*>
  ***********************************************/
 
-void filter_val_c<sgnode*>::get_rep(map<string, string>& rep) const
+void filter_val_c<sgnode*>::get_rep(std::map<std::string, std::string>& rep) const
 {
     rep.clear();
     rep[""] = v->get_id();
 }
 
-string filter_val_c<sgnode*>::toString() const
+std::string filter_val_c<sgnode*>::toString() const
 {
-    stringstream ss;
+    std::stringstream ss;
     ss << v;
     return ss.str();
 }
@@ -75,7 +73,7 @@ bool filter::update()
         clear_output();
         return false;
     }
-    
+
     if (!update_outputs())
     {
         input->reset();

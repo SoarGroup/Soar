@@ -42,7 +42,6 @@
 
 using namespace cli;
 using namespace sml;
-using namespace std;
 
 bool CommandLineInterface::DoLoad(std::vector<std::string>& argv, const std::string& pCmd)
 {

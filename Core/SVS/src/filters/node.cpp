@@ -8,9 +8,7 @@
 #include "filter_table.h"
 #include "command.h"
 
-using namespace std;
-
-typedef map<sgnode*, const filter_params*> node_param_map;
+typedef std::map<sgnode*, const filter_params*> node_param_map;
 
 /*
  This filter takes an "id" parameter and outputs a pointer to the node
@@ -23,21 +21,21 @@ class node_filter : public select_filter<sgnode*>
             : select_filter<sgnode * >(root, si, input), scn(scn)
         {
         }
-        
+
         bool compute(const filter_params* params, sgnode*& out, bool& select)
         {
             //out = NULL;
             //changed = false;
             //select = false;
             //return true;
-            string id;
+            std::string id;
             if (!get_filter_param(this, params, "id", id))
             {
                 set_status("expecting parameter id");
                 return false;
             }
-            
-            
+
+
             out = scn->get_node(id);
             if (out == NULL)
             {
@@ -47,7 +45,7 @@ class node_filter : public select_filter<sgnode*>
             {
                 select = true;
             }
-            
+
             return true;
         }
     private:
@@ -60,32 +58,32 @@ class all_nodes_filter : public filter, public sgnode_listener
     public:
         all_nodes_filter(Symbol* root, soar_interface* si, scene* scn)
             : filter(root, si, NULL), scn(scn), first(true) {}
-            
+
         ~all_nodes_filter()
         {
-            map<sgnode*, filter_val*>::iterator i;
+            std::map<sgnode*, filter_val*>::iterator i;
             for (i = outputs.begin(); i != outputs.end(); ++i)
             {
                 i->first->unlisten(this);
             }
-            
-            vector<sgnode*> nodes;
+
+            std::vector<sgnode*> nodes;
             scn->get_all_nodes(nodes);
             nodes[0]->unlisten(this);
         }
-        
+
         bool update_outputs()
         {
-            vector<sgnode*> nodes;
-            
+            std::vector<sgnode*> nodes;
+
             if (!first)
             {
                 return true;
             }
-            
+
             scn->get_all_nodes(nodes);
             nodes[0]->listen(this);
-            
+
             for (size_t i = 1, iend = nodes.size(); i < iend; ++i) // don't add world node
             {
                 add_node(nodes[i]);
@@ -93,7 +91,7 @@ class all_nodes_filter : public filter, public sgnode_listener
             first = false;
             return true;
         }
-        
+
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info)
         {
             filter_val* r;
@@ -134,7 +132,7 @@ class all_nodes_filter : public filter, public sgnode_listener
                     break;
             }
         }
-        
+
     private:
         filter_val* add_node(sgnode* n)
         {
@@ -144,11 +142,11 @@ class all_nodes_filter : public filter, public sgnode_listener
             add_output(r);
             return r;
         }
-        
+
         scene* scn;
         bool first;
-        
-        map<sgnode*, filter_val*> outputs;
+
+        std::map<sgnode*, filter_val*> outputs;
 };
 
 class remove_node_filter : public select_filter<sgnode*>
@@ -157,13 +155,13 @@ class remove_node_filter : public select_filter<sgnode*>
         remove_node_filter(Symbol* root, soar_interface* si, filter_input* input, scene* scn)
             : select_filter<sgnode * >(root, si, input), scn(scn)
         {}
-        
+
         bool compute(const filter_params* p, sgnode*& out, bool& select)
         {
-        
+
             sgnode* a;
-            string id;
-            
+            std::string id;
+
             if (!get_filter_param(this, p, "a", a))
             {
                 set_status("expecting parameter a");
@@ -180,12 +178,12 @@ class remove_node_filter : public select_filter<sgnode*>
                 set_status("The given node doesn't exist");
                 return false;
             }
-            
+
             out = a;
             select = (a != b);
             return true;
         }
-        
+
     private:
         scene* scn;
 };
@@ -196,7 +194,7 @@ class node_bbox_filter : public map_filter<bbox>
         node_bbox_filter(Symbol* root, soar_interface* si, filter_input* input)
             : map_filter<bbox>(root, si, input)
         {}
-        
+
         bool compute(const filter_params* params, bbox& out)
         {
             sgnode* n;
@@ -204,7 +202,7 @@ class node_bbox_filter : public map_filter<bbox>
             {
                 return false;
             }
-            
+
             out = n->get_bounds();
             return true;
         }
@@ -216,7 +214,7 @@ class node_trans_filter : public map_filter<vec3>
         node_trans_filter(Symbol* root, soar_interface* si, filter_input* input, char trans_type)
             : map_filter<vec3>(root, si, input), trans_type(trans_type)
         {}
-        
+
         bool compute(const filter_params* params, vec3& out)
         {
             sgnode* n;
@@ -224,7 +222,7 @@ class node_trans_filter : public map_filter<vec3>
             {
                 return false;
             }
-            
+
             out = n->get_trans(trans_type);
             return true;
         }

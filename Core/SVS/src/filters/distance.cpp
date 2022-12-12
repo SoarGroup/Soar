@@ -46,15 +46,13 @@
 
 #include <string>
 
-using namespace std;
-
 double compare_distance(sgnode* a, sgnode* b, const filter_params* p)
 {
     if (a == b)
     {
         return 0;
     }
-    string dist_type = "centroid";
+    std::string dist_type = "centroid";
     get_filter_param(0, p, "distance_type", dist_type);
     if (dist_type == "hull")
     {

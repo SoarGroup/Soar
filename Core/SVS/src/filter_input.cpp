@@ -7,8 +7,6 @@
 #include "scene.h"
 #include <iostream>
 
-using namespace std;
-
 /*********************************************************
  * class filter_input
  ********************************************************/
@@ -32,18 +30,18 @@ bool filter_input::update()
             return false;
         }
     }
-    
+
     combine(input_info);
-    
+
     for (size_t i = 0, iend = input_info.size(); i < iend; ++i)
     {
         input_info[i].in_fltr->get_output()->clear_changes();
     }
-    
+
     return true;
 }
 
-void filter_input::add_param(string name, filter* in_fltr)
+void filter_input::add_param(std::string name, filter* in_fltr)
 {
     param_info i;
     i.name = name;
@@ -70,7 +68,7 @@ void concat_filter_input::combine(const input_table& inputs)
     {
         filter_params* p;
         filter_output* o = inputs[i].in_fltr->get_output();
-        
+
         for (size_t j = o->first_added(), jend = o->num_current(); j < jend; ++j)
         {
             p = new filter_params();
@@ -114,18 +112,18 @@ void product_filter_input::combine(const input_table& inputs)
     for (size_t i = 0, iend = inputs.size(); i < iend; ++i)
     {
         filter_output* o = inputs[i].in_fltr->get_output();
-        
+
         for (size_t j = 0, jend = o->num_removed(); j < jend; ++j)
         {
             filter_val* r = o->get_removed(j);
             k = val2params.find(r);
-            
+
             if (k == val2params.end() || val2params.empty())
             {
                 continue;
             }
             //assert(k != val2params.end());
-            
+
             param_set_list temp = k->second;
             for (l = temp.begin(); l != temp.end(); ++l)
             {
@@ -135,7 +133,7 @@ void product_filter_input::combine(const input_table& inputs)
             val2params.erase(k);
         }
     }
-    
+
     for (size_t i = 0, iend = inputs.size(); i < iend; ++i)
     {
         filter_output* o = inputs[i].in_fltr->get_output();
@@ -146,7 +144,7 @@ void product_filter_input::combine(const input_table& inputs)
             {
                 continue;
             }
-            
+
             //assert(k != val2params.end());
             for (l = k->second.begin(); l != k->second.end(); ++l)
             {
@@ -179,7 +177,7 @@ void product_filter_input::gen_new_combinations(const input_table& inputs)
 {
     for (size_t i = 0, iend = inputs.size(); i < iend; ++i)
     {
-        vector<size_t> begin, end;
+        std::vector<size_t> begin, end;
         bool empty = false;
         for (size_t j = 0, jend = inputs.size(); j < jend; ++j)
         {
@@ -209,7 +207,7 @@ void product_filter_input::gen_new_combinations(const input_table& inputs)
         {
             continue;
         }
-        vector<size_t> curr = begin;
+        std::vector<size_t> curr = begin;
         while (true)
         {
             filter_params* p = new filter_params();
@@ -221,7 +219,7 @@ void product_filter_input::gen_new_combinations(const input_table& inputs)
                 val2params[v].push_back(p);
             }
             add(p);
-            
+
             size_t j, jend;
             for (j = 0, jend = curr.size(); j < jend && ++curr[j] == end[j]; ++j)
             {
