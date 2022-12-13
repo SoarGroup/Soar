@@ -56,21 +56,18 @@ if platform.system().startswith('Linux'):
 	for f, m in PROCADDRESS_FUNCS:
 		if conf.CheckLibWithHeader('GL', 'GL/gl.h', 'C', '%s("");' % f):
 			macro = m
-			break;
+			break
 	viewer_env.Append(CPPFLAGS='-D_GLFW_HAS_' + macro)
 elif platform.system() == 'Darwin':
 	viewer_env.Append(CPPFLAGS='-D_GLFW_HAS_GLXGETPROCADDRESS')
 
 conf.Finish()
 
-if not platform.system() == 'Darwin':
-	if not missing_libs:
-		viewer_prog = viewer_env.Program('svs_viewer', viewer_src)
-		viewer_install = viewer_env.Alias('svs_viewer', viewer_env.Install('$OUT_DIR', viewer_prog))
-	else:
-		print('Cannot find %s, not building svs_viewer' % ', '.join(missing_libs))
+if not missing_libs:
+    viewer_prog = viewer_env.Program('svs_viewer', viewer_src)
+    viewer_install = viewer_env.Alias('svs_viewer', viewer_env.Install('$OUT_DIR', viewer_prog))
 else:
-	print('Not building svs_viewer for OSX')
+    print('Cannot find %s, not building svs_viewer' % ', '.join(missing_libs))
 
 # svs library objects
 svs_env = env.Clone()
@@ -92,7 +89,7 @@ if compiler == 'g++':
 	]
 	if lsb_build:
 		flags.append('-DEIGEN_ALLOCA=aligned_malloc')   # alloca isn't in LSB
-	
+
 	if sys.platform == "darwin":
 		srcdirs.append('src/osx')
 		incdirs.append('src/osx')
@@ -133,7 +130,7 @@ ccd_src = Glob('ccd/*.c')
 
 if compiler == 'msvc':
 	ccd_env.Append(CPPFLAGS=['/D', 'WIN32'])
-	
+
 if GetOption('static'):
 	svs_objs = svs_env.Object(src) + ccd_env.Object(ccd_src)
 else:
