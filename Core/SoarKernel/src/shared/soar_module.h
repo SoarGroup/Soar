@@ -47,7 +47,7 @@ namespace soar_module
 
     // a functor for validating parameter values
     template <typename T>
-    class predicate: public std::unary_function<T, bool>
+    class predicate
     {
         public:
             virtual ~predicate() {}
@@ -166,7 +166,7 @@ namespace soar_module
 
 
     template <typename T>
-    class accumulator: public std::unary_function<T, void>
+    class accumulator
     {
         public:
             virtual ~accumulator() {}
