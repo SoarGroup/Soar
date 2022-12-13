@@ -3,7 +3,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <GL/glfw.h>
+#include <tinycthread.h>
+// Tell glfw to include GLU, which is actually
+// deprecated and therefore not included by default
+#define GLFW_INCLUDE_GLU 1
+#include <GLFW/glfw3.h>
 
 #define PAN_FACTOR  1.0e-1
 #define GRID_LINES  10
@@ -36,26 +40,26 @@ typedef struct Geometry {
 	char *name;
 	int layer;
 	double line_width;
-	
+
 	vec3 pos;
 	vec3 axis;
 	real angle;
 	vec3 scale;
 	vec3 color;
-	
+
 	/* for polyhedrons */
 	real *vertices;
 	GLuint *indexes;
 	int ninds;
 	real *normals;
-	
+
 	/* for spheres */
 	GLUquadricObj *quadric;
 	real radius;
-	
+
 	/* for text */
 	char *text;
-	
+
 	struct Geometry *next;
 } geometry;
 
@@ -66,7 +70,7 @@ typedef struct Layer {
 	int clear_depth;
 	int draw_names;
 	int wireframe;
-	
+
 	/*
 	 storage for various matrices between object drawing and label drawing
 	*/
@@ -81,12 +85,12 @@ typedef struct Scene {
 } scene;
 
 typedef struct Semaphore {
-	GLFWmutex mutex;
-	GLFWcond cond;
+	mtx_t mutex;
+	cnd_t cond;
 	int count;
 } semaphore;
 
-extern GLFWmutex scene_lock;
+extern mtx_t scene_lock;
 extern semaphore redraw_semaphore;
 extern int debug;
 
@@ -122,7 +126,7 @@ int get_redraw();
 void set_redraw();
 
 /* input.c */
-void GLFWCALL proc_input(void *unused);
+void proc_input(void *unused);
 
 /* text.c */
 void init_font(void);

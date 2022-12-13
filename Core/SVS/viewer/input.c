@@ -15,22 +15,22 @@ int proc_layer_cmd(char *fields[]);
 
 int wait_for_redraw = 0;
 
-void GLFWCALL proc_input(void *unused) {
+void proc_input(void *unused) {
 	char cmd[MAX_COMMAND];
 	char *fields[MAX_FIELDS];
 	char *endp, *startp, *startp2, *cp;
 	int left, n, i;
-	
+
 	startp = endp = cmd;
 	left = MAX_COMMAND;
-	
+
 	for(;;) {
 		n = get_input(endp, left);
 		if (n < 0) {
 			/* error */
 			break;
 		}
-		
+
 		*(endp + n) = '\0';
 		for (; n > 0; ++endp, --n) {
 			if (*endp == '\n') {
@@ -44,12 +44,16 @@ void GLFWCALL proc_input(void *unused) {
 				if (debug)
 					printf("cmd: %s\n", startp);
 				split(startp, fields, MAX_FIELDS);
-				
-				glfwLockMutex(scene_lock);
-				proc_cmd(fields);
-				glfwUnlockMutex(scene_lock);
-				startp = endp + 1;
-				
+
+				if (mtx_lock(&scene_lock) != thrd_success){
+                    error("mtx_lock failed");
+				}
+                proc_cmd(fields);
+                if (mtx_unlock(&scene_lock) != thrd_success){
+                    error("mtx_unlock failed");
+				}
+                startp = endp + 1;
+
 				set_redraw();
 				if (wait_for_redraw) {
 					semaphore_P(&redraw_semaphore);
@@ -57,7 +61,7 @@ void GLFWCALL proc_input(void *unused) {
 				}
 			}
 		}
-		
+
 		/* shift remaining input left */
 		if (startp != cmd) {
 			for (startp2 = cmd; startp != endp; ++startp, ++startp2)
@@ -75,7 +79,7 @@ int proc_cmd(char *fields[]) {
 	scene *scenes[MAX_SCENES], *sp;
 	geometry *geoms[MAX_GEOMS], *gp;
 	int nscenes, ngeoms, i;
-	
+
 	if (!fields[0]) {
 		return 1;
 	} else if (strcmp(fields[0], "save") == 0) {
@@ -97,11 +101,11 @@ int proc_cmd(char *fields[]) {
 		geom_pat = fields[1];
 		args = fields + 2;
 	}
-	
+
 	if (!scene_pat) {
 		return 1;
 	}
-	
+
 	if (*scene_pat == '-') {
 		delete_scenes(scene_pat + 1);
 		return 1;
@@ -111,11 +115,11 @@ int proc_cmd(char *fields[]) {
 	} else {
 		nscenes = match_scenes(scene_pat, scenes, MAX_SCENES);
 	}
-	
+
 	if (!geom_pat) {
 		return 1;
 	}
-	
+
 	for (ngeoms = 0, i = 0; i < nscenes; ++i) {
 		if (*geom_pat == '+') {
 			geoms[ngeoms++] = find_or_add_geom(scenes[i], geom_pat + 1);
@@ -125,7 +129,7 @@ int proc_cmd(char *fields[]) {
 			ngeoms += match_geoms(scenes[i], geom_pat, geoms + ngeoms, MAX_GEOMS);
 		}
 	}
-	
+
 	return proc_geom_cmd(geoms, ngeoms, args);
 }
 
@@ -134,7 +138,7 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 	real radius, line_width, layer;
 	int i, f, nverts, pos_set, rot_set, scale_set, color_set;
 	char *text;
-	
+
 	pos_set = 0;
 	rot_set = 0;
 	scale_set = 0;
@@ -144,14 +148,14 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 	layer = -1.0;
 	nverts = -1;
 	text = NULL;
-	
+
 	f = 0;
 	while (fields[f]) {
 		if (strlen(fields[f]) != 1) {
 			fprintf(stderr, "unexpected field: %s\n", fields[f]);
 			return 0;
 		}
-		
+
 		switch (fields[f][0]) {
 			case 'p':  /* position */
 				if (parse_nums(&fields[f+1], 3, pos) != 3) {
@@ -226,13 +230,13 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 				return 0;
 		}
 	}
-	
+
 	for (i = 0; i < ngeoms; ++i) {
 		if (pos_set)   copy_vec3(pos, gs[i]->pos);
 		if (scale_set) copy_vec3(scale, gs[i]->scale);
 		if (color_set) copy_vec3(color, gs[i]->color);
 		if (rot_set)   quat_to_axis_angle(rot, gs[i]->axis, &gs[i]->angle);
-		
+
 		if (radius >= 0.0) {
 			set_geom_radius(gs[i], radius);
 		} else if (nverts != -1) {
@@ -240,7 +244,7 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 		} else if (text != NULL) {
 			set_geom_text(gs[i], text);
 		}
-		
+
 		if (layer >= 0.0) {
 			gs[i]->layer = layer;
 		}
@@ -255,7 +259,7 @@ int proc_geom_cmd(geometry *gs[], int ngeoms, char *fields[]) {
 int parse_nums(char *fields[], int n, real *v) {
 	int i;
 	char *s, *end;
-	
+
 	for (i = 0; i != n && fields[i]; ++i) {
 		v[i] = strtod(fields[i], &end);
 		if (*end != '\0') {
@@ -268,7 +272,7 @@ int parse_nums(char *fields[], int n, real *v) {
 int proc_layer_cmd(char *fields[]) {
 	int layer_num, val, i;
 	real num;
-	
+
 	if (!fields[0] || parse_nums(&fields[0], 1, &num) != 1) {
 		fprintf(stderr, "expecting layer number\n");
 		return 0;
