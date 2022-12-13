@@ -11,7 +11,7 @@
 #ifndef EIGEN_IO_H
 #define EIGEN_IO_H
 
-namespace Eigen {
+namespace Eigen { 
 
 enum { DontAlignCols = 1 };
 enum { StreamPrecision = -1,
@@ -30,7 +30,7 @@ std::ostream & print_matrix(std::ostream & s, const Derived& _m, const IOFormat&
   * List of available parameters:
   *  - \b precision number of digits for floating point values, or one of the special constants \c StreamPrecision and \c FullPrecision.
   *                 The default is the special value \c StreamPrecision which means to use the
-  *                 stream's own precision setting, as set for instance using \c std::cout.precision(3). The other special value
+  *                 stream's own precision setting, as set for instance using \c cout.precision(3). The other special value
   *                 \c FullPrecision means that the number of digits will be computed to match the full precision of each floating-point
   *                 type.
   *  - \b flags an OR-ed combination of flags, the default value is 0, the only currently available flag is \c DontAlignCols which
@@ -41,6 +41,7 @@ std::ostream & print_matrix(std::ostream & s, const Derived& _m, const IOFormat&
   *  - \b rowSuffix string printed at the end of each row
   *  - \b matPrefix string printed at the beginning of the matrix
   *  - \b matSuffix string printed at the end of the matrix
+  *  - \b fill character printed to fill the empty space in aligned columns
   *
   * Example: \include IOFormat.cpp
   * Output: \verbinclude IOFormat.out
@@ -53,9 +54,9 @@ struct IOFormat
   IOFormat(int _precision = StreamPrecision, int _flags = 0,
     const std::string& _coeffSeparator = " ",
     const std::string& _rowSeparator = "\n", const std::string& _rowPrefix="", const std::string& _rowSuffix="",
-    const std::string& _matPrefix="", const std::string& _matSuffix="")
+    const std::string& _matPrefix="", const std::string& _matSuffix="", const char _fill=' ')
   : matPrefix(_matPrefix), matSuffix(_matSuffix), rowPrefix(_rowPrefix), rowSuffix(_rowSuffix), rowSeparator(_rowSeparator),
-    rowSpacer(""), coeffSeparator(_coeffSeparator), precision(_precision), flags(_flags)
+    rowSpacer(""), coeffSeparator(_coeffSeparator), fill(_fill), precision(_precision), flags(_flags)
   {
     // TODO check if rowPrefix, rowSuffix or rowSeparator contains a newline
     // don't add rowSpacer if columns are not to be aligned
@@ -71,6 +72,7 @@ struct IOFormat
   std::string matPrefix, matSuffix;
   std::string rowPrefix, rowSuffix, rowSeparator, rowSpacer;
   std::string coeffSeparator;
+  char fill;
   int precision;
   int flags;
 };
@@ -128,14 +130,33 @@ struct significant_decimals_impl
 template<typename Derived>
 std::ostream & print_matrix(std::ostream & s, const Derived& _m, const IOFormat& fmt)
 {
+  using internal::is_same;
+  using internal::conditional;
+
   if(_m.size() == 0)
   {
     s << fmt.matPrefix << fmt.matSuffix;
     return s;
   }
-
+  
   typename Derived::Nested m = _m;
   typedef typename Derived::Scalar Scalar;
+  typedef typename
+      conditional<
+          is_same<Scalar, char>::value ||
+            is_same<Scalar, unsigned char>::value ||
+            is_same<Scalar, numext::int8_t>::value ||
+            is_same<Scalar, numext::uint8_t>::value,
+          int,
+          typename conditional<
+              is_same<Scalar, std::complex<char> >::value ||
+                is_same<Scalar, std::complex<unsigned char> >::value ||
+                is_same<Scalar, std::complex<numext::int8_t> >::value ||
+                is_same<Scalar, std::complex<numext::uint8_t> >::value,
+              std::complex<int>,
+              const Scalar&
+            >::type
+        >::type PrintType;
 
   Index width = 0;
 
@@ -172,23 +193,31 @@ std::ostream & print_matrix(std::ostream & s, const Derived& _m, const IOFormat&
       {
         std::stringstream sstr;
         sstr.copyfmt(s);
-        sstr << m.coeff(i,j);
+        sstr << static_cast<PrintType>(m.coeff(i,j));
         width = std::max<Index>(width, Index(sstr.str().length()));
       }
   }
+  std::streamsize old_width = s.width();
+  char old_fill_character = s.fill();
   s << fmt.matPrefix;
   for(Index i = 0; i < m.rows(); ++i)
   {
     if (i)
       s << fmt.rowSpacer;
     s << fmt.rowPrefix;
-    if(width) s.width(width);
-    s << m.coeff(i, 0);
+    if(width) {
+      s.fill(fmt.fill);
+      s.width(width);
+    }
+    s << static_cast<PrintType>(m.coeff(i, 0));
     for(Index j = 1; j < m.cols(); ++j)
     {
       s << fmt.coeffSeparator;
-      if (width) s.width(width);
-      s << m.coeff(i, j);
+      if(width) {
+        s.fill(fmt.fill);
+        s.width(width);
+      }
+      s << static_cast<PrintType>(m.coeff(i, j));
     }
     s << fmt.rowSuffix;
     if( i < m.rows() - 1)
@@ -196,6 +225,10 @@ std::ostream & print_matrix(std::ostream & s, const Derived& _m, const IOFormat&
   }
   s << fmt.matSuffix;
   if(explicit_precision) s.precision(old_precision);
+  if(width) {
+    s.fill(old_fill_character);
+    s.width(old_width);
+  }
   return s;
 }
 
