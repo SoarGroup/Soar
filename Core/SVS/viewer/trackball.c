@@ -1,4 +1,3 @@
-#include <stdio.h>
 /*
  * (c) Copyright 1993, 1994, Silicon Graphics, Inc.
  * ALL RIGHTS RESERVED

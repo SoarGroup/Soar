@@ -1,11 +1,7 @@
 #include "filter.h"
 #include "filter_input.h"
 
-#include <sstream>
-#include <iterator>
-#include <utility>
 #include "scene.h"
-#include <iostream>
 
 /*********************************************************
  * class filter_input

@@ -8,8 +8,6 @@
 
 #include "TestRunner.hpp"
 
-#include <exception>
-#include <stdexcept>
 #include "TestCategory.hpp"
 
 TestRunner::TestRunner(TestCategory* c, std::function<void ()> f, std::condition_variable_any* v)
