@@ -81,7 +81,7 @@ class Identity
 
 };
 
-struct IDSetLessThan : public std::binary_function<Identity*, Identity*, bool> {
+struct IDSetLessThan {
         bool operator()(const Identity* lhs, const Identity* rhs) const
         {
             return (lhs->idset_id < rhs->idset_id);
