@@ -18,7 +18,7 @@ import time
 
 join = os.path.join
 
-SOAR_VERSION = "9.6.0"
+SOAR_VERSION = "9.6.1"
 CPP_STD_VERSION = "c++17"
 
 soarversionFile = open('soarversion', 'w')
