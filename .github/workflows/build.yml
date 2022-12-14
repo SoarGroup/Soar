@@ -9,7 +9,13 @@
 # TODO: pin more dependency versions (python, swig, gcc/XCode/MSVC, etc.)
 
 name: Build/Test
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # 5AM every Monday, to catch breaks due to changes in dependencies
+    - cron: "0 5 * * 1"
 
 jobs:
   "Posix":
