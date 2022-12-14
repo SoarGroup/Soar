@@ -39,7 +39,7 @@ const int ElementJSONTest::BUFFER_LENGTH = 10;
 void ElementJSONTest::setUp()
 {
 	agent = nullptr;
-	
+
 	for (int i = 0 ; i < BUFFER_LENGTH ; i++)
 	{
 		buffer[i] = static_cast< char >(i * 30);
@@ -112,7 +112,7 @@ soarjson::ElementJSON* ElementJSONTest::createJSON5()
 void ElementJSONTest::testSimple()
 {
 	soarjson::ElementJSON* pJSON1 = createJSON1();
-	
+
 	assertTrue(pJSON1->GetNumberAttributes() == 2);
 	assertTrue(pJSON1->GetAttribute(att11.c_str()) != NULL);
 	assertTrue(std::string(pJSON1->GetAttribute(att11.c_str())) == val11);
@@ -124,7 +124,7 @@ void ElementJSONTest::testSimple()
 	assertTrue(pJSON1->GetCharacterData() != NULL);
 	assertTrue(std::string(pJSON1->GetCharacterData()) == data1);
 	assertTrue(pJSON1->GetUseCData() == false);
-	
+
 	delete pJSON1;
 }
 
@@ -134,29 +134,29 @@ void ElementJSONTest::testChildren()
 	soarjson::ElementJSON* pJSON2 = createJSON2();
 	soarjson::ElementJSON* pJSON3 = createJSON3();
 	soarjson::ElementJSON* pJSON4 = createJSON4();
-	
+
 	pJSON4->AddChild(pJSON1);
 	pJSON4->AddChild(pJSON2);
 	pJSON4->AddChild(pJSON3);
-	
+
 	assertTrue(pJSON4->GetNumberChildren() == 3);
-	
+
 	soarjson::ElementJSON child0(NULL) ;
 	soarjson::ElementJSON const* pChild0 = &child0 ;
-	
+
 	assertTrue(pJSON4->GetChild(&child0, 0));
 	assertTrue(pChild0->GetTagName() != NULL);
 	assertTrue(std::string(pChild0->GetTagName()) == tag1);
 	assertTrue(pChild0->GetCharacterData() != NULL);
 	assertTrue(std::string(pChild0->GetCharacterData()) == data1);
-	
+
 	assertTrue(pChild0->GetNumberAttributes() == 2);
 	assertTrue(pChild0->GetNumberChildren() == 0);
-	
+
 	// Let's put this one on the heap so we can control when we delete it.
 	soarjson::ElementJSON* pChild1Object = new soarjson::ElementJSON(NULL);
 	soarjson::ElementJSON const* pChild1 = pChild1Object;
-	
+
 	assertTrue(pJSON4->GetChild(pChild1Object, 1));
 	assertTrue(pChild1->GetTagName() != NULL);
 	assertTrue(std::string(pChild1->GetTagName()) == tag2);
@@ -165,7 +165,7 @@ void ElementJSONTest::testChildren()
 	assertTrue(pChild0->GetNumberChildren() == 0);
 	assertTrue(pChild1->GetAttribute(att21.c_str()) != NULL);
 	assertTrue(std::string(pChild1->GetAttribute(att21.c_str())) == val21);
-	
+
 	//// This test is because I read online about looking up an element in an empty
 	//// map causing an exception.  Need to make sure that doesn't happen in our
 	//// attribute map implementation.
@@ -175,46 +175,47 @@ void ElementJSONTest::testChildren()
 	assertTrue(pChild2->GetTagName() != NULL);
 	assertTrue(std::string(pChild2->GetTagName()) == tag3);
 	assertTrue(pChild2->GetAttribute("missing") == NULL);
-	
+
 	soarjson::ElementJSON test;
 	assertTrue(pJSON4->GetChild(&test, 3) == 0);
 	assertTrue(pJSON4->GetChild(&test, -3) == 0);
-	
+
 	// Create an JSON string and print it out
 	char* pStr = pJSON4->GenerateJSONString(true);
-	//printf(pStr) ;
-	//printf("\n") ;
+    // TODO: this is still XML, obviously
+    const char* expected = "<tag4 att41=\"longer value\">some data<tag1 att11=\"val11\" att12=\"val12\">This is a string of data</tag1><tag2 type=\"call me &lt; &amp; now\">another string &lt;s&gt; of &quot;data&quot;</tag2><tag3></tag3></tag4>";
+	assertEquals(*expected, *pStr);
 	pJSON4->DeleteString(pStr);
-	
+
 	// Let's play a game.
 	// Create another object pointing at the same internal handle
 	soarjson::ElementJSON* pChild1Alt = new soarjson::ElementJSON(pChild1->GetJSONHandle());
 	pChild1Alt->AddRefOnHandle();
-	
+
 	// Delete the entire tree, releasing refs on the children
 	delete pJSON4;
-	
+
 	// We have to delete this other reference into the tree or its
 	// not a proper test of pChild1Alt.  (If pChild1Object was on the stack
 	// it wouldn't be deleted yet and of course we could talk to the child).
 	delete pChild1Object;
-	
+
 	// Since we added a ref to pChild1 it should still exist
 	assertTrue(pChild1Alt->GetTagName() != NULL);
 	assertTrue(std::string(pChild1Alt->GetTagName()) == tag2);
 	assertTrue(pChild1Alt->ReleaseRefOnHandle() == 0) ;
-	
+
 	delete pChild1Alt;
 }
 
 void ElementJSONTest::testParse()
 {
 	soarjson::ElementJSON* pJSON1 = createJSON1();
-	
+
 	char* pStr = pJSON1->GenerateJSONString(true);
-	
+
 	soarjson::ElementJSON* pJSON2 = soarjson::ElementJSON::ParseJSONFromString(pStr);
-	
+
 	assertTrue(pJSON2 != NULL) ;
 	assertTrue(pJSON2->GetNumberAttributes() == 2) ;
 	assertTrue(pJSON2->GetAttribute(att11.c_str()) != NULL);
@@ -227,9 +228,9 @@ void ElementJSONTest::testParse()
 	assertTrue(pJSON2->GetCharacterData() != NULL);
 	assertTrue(std::string(pJSON2->GetCharacterData()) == data1) ;
 	assertTrue(pJSON2->GetUseCData() == false) ;
-	
+
 	soarjson::ElementJSON::DeleteString(pStr) ;
-	
+
 	delete pJSON2;
 	delete pJSON1;
 }
@@ -240,17 +241,17 @@ void ElementJSONTest::testBinaryData()
 	soarjson::ElementJSON* pJSON2 = createJSON2();
 	soarjson::ElementJSON* pJSON4 = createJSON4();
 	soarjson::ElementJSON* pJSON5 = createJSON5();
-	
+
 	pJSON4->AddChild(pJSON1) ;
 	pJSON4->AddChild(pJSON2) ;
 	pJSON4->AddChild(pJSON5) ;
-	
+
 	char* pStr = pJSON4->GenerateJSONString(true) ;
 	soarjson::ElementJSON* pParsedJSON = soarjson::ElementJSON::ParseJSONFromString(pStr) ;
-	
+
 	assertTrue(pParsedJSON != NULL) ;
 	assertTrue(pParsedJSON->GetNumberChildren() == 3) ;
-	
+
 	soarjson::ElementJSON child0(NULL) ;
 	soarjson::ElementJSON const* pChild0 = &child0 ;
 	assertTrue(pParsedJSON->GetChild(&child0, 0));
@@ -260,7 +261,7 @@ void ElementJSONTest::testBinaryData()
 	assertTrue(std::string(pChild0->GetCharacterData()) == data1) ;
 	assertTrue(pChild0->GetNumberAttributes() == 2) ;
 	assertTrue(pChild0->GetNumberChildren() == 0) ;
-	
+
 	soarjson::ElementJSON child1(NULL) ;
 	soarjson::ElementJSON const* pChild1 = &child1 ;
 	assertTrue(pParsedJSON->GetChild(&child1, 1)) ;
@@ -271,20 +272,20 @@ void ElementJSONTest::testBinaryData()
 	assertTrue(pChild0->GetNumberChildren() == 0) ;
 	assertTrue(pChild1->GetAttribute(att21.c_str()) != NULL);
 	assertTrue(std::string(pChild1->GetAttribute(att21.c_str())) == val21) ;
-	
+
 	soarjson::ElementJSON child2(NULL) ;
 	soarjson::ElementJSON const* pChild2 = &child2 ;
 	assertTrue(pParsedJSON->GetChild(&child2, 2));
 	assertTrue(pChild2->IsCharacterDataBinary()) ;
-	
+
 	const char* pBuffer = pChild2->GetCharacterData() ;
 	int bufferLen = pChild2->GetCharacterDataLength() ;
-	
+
 	assertTrue(bufferLen == BUFFER_LENGTH) ;
 	assertTrue(verifyBuffer(pBuffer)) ;
-	
+
 	soarjson::ElementJSON::DeleteString(pStr) ;
-	
+
 	delete pJSON4 ;
 	delete pParsedJSON ;
 }
