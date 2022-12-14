@@ -278,7 +278,7 @@ int FullTests_Parent::spawnListener()
 #else // _WIN32
     std::string executable = SoarHelper::GetResource("Prototype-UnitTesting");
 
-    pid = fork();
+    pid = vfork();
     no_agent_assertTrue_msg("fork error", pid >= 0);
     if (pid == 0)
     {
