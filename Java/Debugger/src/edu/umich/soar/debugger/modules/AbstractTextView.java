@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * BaseTextCommandView.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Mar 29, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
@@ -24,10 +24,10 @@ import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.menu.ParseSelectedText;
 
 /************************************************************************
- * 
+ *
  * Supports a range of views that take the form of a combo box for entering
  * commands and a text window to display the output.
- * 
+ *
  ************************************************************************/
 public abstract class AbstractTextView extends AbstractComboView
 {
@@ -52,9 +52,9 @@ public abstract class AbstractTextView extends AbstractComboView
     }
 
     /************************************************************************
-     * 
+     *
      * Clear the display control.
-     * 
+     *
      *************************************************************************/
     public void clearDisplay()
     {
@@ -62,9 +62,9 @@ public abstract class AbstractTextView extends AbstractComboView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Scroll the display control to the bottom
-     * 
+     *
      ********************************************************************************************/
     public void scrollBottom()
     {
@@ -80,10 +80,10 @@ public abstract class AbstractTextView extends AbstractComboView
     }
 
     /************************************************************************
-     * 
+     *
      * Search for the next occurance of 'text' in this view and place the
      * selection at that point.
-     * 
+     *
      * @param text
      *            The string to search for
      * @param searchDown
@@ -96,7 +96,7 @@ public abstract class AbstractTextView extends AbstractComboView
      * @param searchHidden
      *            If true and this view has hidden text (e.g. unexpanded tree
      *            nodes) search that text
-     * 
+     *
      *************************************************************************/
     public boolean find(String text, boolean searchDown, boolean matchCase,
             boolean wrap, boolean searchHiddenText)
@@ -114,7 +114,7 @@ public abstract class AbstractTextView extends AbstractComboView
         Point selectionPoint = m_Text.getSelection();
         int selectionStart = selectionPoint.x;
 
-        int start = -1;
+        int start;
         boolean done;
         do
         {
@@ -188,9 +188,9 @@ public abstract class AbstractTextView extends AbstractComboView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the window that will display the output
-     * 
+     *
      ********************************************************************************************/
     protected void createDisplayControl(Composite parent)
     {
@@ -209,19 +209,19 @@ public abstract class AbstractTextView extends AbstractComboView
             {
                 if (e.button == 2 || e.button == 3)
                     rightButtonPressed(e);
-            };
+            }
         });
 
         createContextMenu(m_Text);
     }
 
     /*******************************************************************************************
-     * 
+     *
      * When the user clicks the right mouse button, sets the selection to that
      * location (just like a left click). This makes right clicking on a piece
      * of text much easier as it's just one click rather than having to left
      * click to place the selection and then right click to bring up the menu.
-     * 
+     *
      ********************************************************************************************/
     protected void rightButtonPressed(MouseEvent e)
     {
@@ -252,10 +252,10 @@ public abstract class AbstractTextView extends AbstractComboView
          * e.y << 16 | e.x ; // Coords are packed as high-word, low-word int
          * result = org.eclipse.swt.internal.win32.OS.SendMessage (handle,
          * org.eclipse.swt.internal.win32.OS.EM_CHARFROMPOS, 0, lParam);
-         * 
+         *
          * // Break out the character and line position from the result int
          * charPos = result & (0xFFFF) ; int linePos = (result >>> 16) ;
-         * 
+         *
          * // Set the selection to the character position (which is measured
          * from the first character // in the control). m_Text.clearSelection()
          * ; m_Text.setSelection(charPos) ; //System.out.println("Char " +
@@ -265,7 +265,7 @@ public abstract class AbstractTextView extends AbstractComboView
 
     /********************************************************************************************
      * @param element
-     * 
+     *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#storeContent(edu.umich.soar.debugger.general.JavaElementXML)
      ********************************************************************************************/
     protected void storeContent(JavaElementXML element)
@@ -276,7 +276,7 @@ public abstract class AbstractTextView extends AbstractComboView
 
     /********************************************************************************************
      * @param element
-     * 
+     *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#restoreContent(edu.umich.soar.debugger.general.JavaElementXML)
      ********************************************************************************************/
     protected void restoreContent(JavaElementXML element)
@@ -293,9 +293,9 @@ public abstract class AbstractTextView extends AbstractComboView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Register for events of particular interest to this view
-     * 
+     *
      ********************************************************************************************/
     protected void registerForViewAgentEvents(Agent agent)
     {
@@ -317,7 +317,7 @@ public abstract class AbstractTextView extends AbstractComboView
 
     /********************************************************************************************
      * @param text
-     * 
+     *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#appendText(java.lang.String)
      ********************************************************************************************/
     protected void appendText(final String text)

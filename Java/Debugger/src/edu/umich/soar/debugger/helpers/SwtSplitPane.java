@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SwtSplitPane.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 15, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.helpers;
@@ -24,12 +24,12 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Sash;
 
 /************************************************************************
- * 
+ *
  * A pane which owns a pair of child widgets and places a sash between them thus
  * creating something close to a JSplitPane for SWT.
- * 
+ *
  * We use it by creating the pane and then creating children
- * 
+ *
  ************************************************************************/
 public class SwtSplitPane
 {
@@ -65,21 +65,9 @@ public class SwtSplitPane
             m_Orientation = SWT.VERTICAL;
         }
 
-        m_Pane.addListener(SWT.Resize, new Listener()
-        {
-            public void handleEvent(Event e)
-            {
-                layoutControls();
-            }
-        });
+        m_Pane.addListener(SWT.Resize, e -> layoutControls());
 
-        m_SashListener = new Listener()
-        {
-            public void handleEvent(Event e)
-            {
-                onDragSash(e);
-            }
-        };
+        m_SashListener = this::onDragSash;
 
         // The sash uses the inverse orientation
         m_Sash = new Sash(m_Pane,

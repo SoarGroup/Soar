@@ -1,30 +1,28 @@
 /********************************************************************************************
  *
  * SoarChangeGenerator.java
- * 
+ *
  * Created on 	Nov 10, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc.events;
 
-import java.util.Iterator;
-
 import sml.Agent;
 
 /********************************************************************************************
- * 
+ *
  * Event fired when a change occurs in the soar process (e.g. kernel
  * connected/disconnected, agent created/destroyed)
- * 
- * 
+ *
+ *
  ********************************************************************************************/
 public class SoarChangeGenerator
 {
-    protected java.util.ArrayList<SoarChangeListener> m_Listeners = new java.util.ArrayList<SoarChangeListener>();
+    protected java.util.ArrayList<SoarChangeListener> m_Listeners = new java.util.ArrayList<>();
 
     public synchronized void addSoarChangeListener(SoarChangeListener listener)
     {
@@ -42,11 +40,7 @@ public class SoarChangeGenerator
     {
         SoarConnectionEvent event = new SoarConnectionEvent(source, connected,
                 remote);
-        java.util.Iterator<SoarChangeListener> listeners = m_Listeners
-                .iterator();
-        while (listeners.hasNext())
-        {
-            SoarChangeListener listener = (listeners.next());
+        for (SoarChangeListener listener : m_Listeners) {
             listener.soarConnectionChanged(event);
         }
     }
@@ -56,10 +50,7 @@ public class SoarChangeGenerator
     {
         SoarAgentEvent event = new SoarAgentEvent(source, type, agent);
 
-        for (Iterator<SoarChangeListener> listener = m_Listeners.iterator(); listener
-                .hasNext();)
-        {
-            SoarChangeListener current = listener.next();
+        for (SoarChangeListener current : m_Listeners) {
             current.soarAgentListChanged(event);
         }
     }

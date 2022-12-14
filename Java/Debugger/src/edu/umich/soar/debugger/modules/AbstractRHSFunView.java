@@ -23,7 +23,7 @@ public abstract class AbstractRHSFunView extends AbstractUpdateView implements
         super.init(frame, doc, parentPane);
     }
 
-    protected String rhsFunName = new String();
+    protected String rhsFunName = "";
 
     protected boolean debugMessages = true;
 

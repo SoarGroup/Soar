@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * FoldingText.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	May 1, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.helpers;
@@ -17,7 +17,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -36,13 +35,13 @@ import org.eclipse.swt.widgets.Text;
 import edu.umich.soar.debugger.modules.AbstractView;
 
 /************************************************************************
- * 
+ *
  * A widget that consists of a scrolling text window and a small bar with icons
  * for 'folding' the text (i.e. expanding and contracting) sections of the text.
- * 
+ *
  * This is very similar to a view offered by Eclipse, but only depends on SWT
  * and may be higher performance if we get it right.
- * 
+ *
  ************************************************************************/
 public class FoldingText
 {
@@ -58,7 +57,7 @@ public class FoldingText
 
     protected int m_LastTopIndex;
 
-    protected boolean m_DrawingDisabled = false;
+    protected boolean m_DrawingDisabled;
 
     // If false, we don't collect information to support filtering (increases
     // performance and saves memory although
@@ -103,7 +102,7 @@ public class FoldingText
 
     public static class FilterDoc
     {
-        protected ArrayList<FilterRecord> m_AllRecords = new ArrayList<FilterRecord>();
+        protected ArrayList<FilterRecord> m_AllRecords = new ArrayList<>();
 
         protected FoldingText m_FoldingText;
 
@@ -188,8 +187,8 @@ public class FoldingText
             // The line in the full list of records which is currently selected
             int selectionIndex = (selectedBlock != null ? selectedBlock
                     .getRecordIndex() : -1);
-            boolean selectionExpanded = (selectedBlock != null ? selectedBlock
-                    .isExpanded() : false);
+            boolean selectionExpanded = (selectedBlock != null && selectedBlock
+                .isExpanded());
 
             // reset m_WasExpanded
             for (FilterRecord r : m_AllRecords)
@@ -277,7 +276,7 @@ public class FoldingText
 
     public static class FoldingTextDoc
     {
-        protected ArrayList<Block> m_TextBlocks = new ArrayList<Block>();
+        protected ArrayList<Block> m_TextBlocks = new ArrayList<>();
 
         protected int m_ShowFilter;
 
@@ -300,11 +299,8 @@ public class FoldingText
 
         public String toString()
         {
-            StringBuffer buffer = new StringBuffer();
 
-            buffer.append(m_TextBlocks.toString());
-
-            return buffer.toString();
+            return m_TextBlocks.toString();
         }
 
         public void addBlock(Block block)
@@ -361,9 +357,8 @@ public class FoldingText
             // the start line for any of the blocks is changed (e.g. when
             // expanding/contracting).
             int size = m_TextBlocks.size();
-            for (int b = 0; b < size; b++)
-            {
-                Block block = (Block) m_TextBlocks.get(b);
+            for (Block mTextBlock : m_TextBlocks) {
+                Block block = mTextBlock;
                 if (block.containsLine(lineNumber))
                     return block;
             }
@@ -373,7 +368,7 @@ public class FoldingText
 
         public Block getBlock(int index)
         {
-            return (Block) m_TextBlocks.get(index);
+            return m_TextBlocks.get(index);
         }
 
         public int getNumberBlocks()
@@ -383,14 +378,13 @@ public class FoldingText
 
         public String getAllText(boolean includeHidden)
         {
-            StringBuffer all = new StringBuffer();
+            StringBuilder all = new StringBuilder();
 
             int size = m_TextBlocks.size();
-            for (int b = 0; b < size; b++)
-            {
-                Block block = (Block) m_TextBlocks.get(b);
+            for (Block mTextBlock : m_TextBlocks) {
+                Block block = mTextBlock;
                 String text = (includeHidden ? block.getAll() : block
-                        .getVisibleText());
+                    .getVisibleText());
                 all.append(text);
             }
 
@@ -407,7 +401,7 @@ public class FoldingText
 
             for (int b = 0; b < block.getIndex(); b++)
             {
-                int chars = ((Block) m_TextBlocks.get(b)).getVisibleCharCount();
+                int chars = m_TextBlocks.get(b).getVisibleCharCount();
                 start += chars;
             }
 
@@ -422,14 +416,12 @@ public class FoldingText
             int visCharPos = 0;
 
             int size = m_TextBlocks.size();
-            for (int b = 0; b < size; b++)
-            {
-                Block block = (Block) m_TextBlocks.get(b);
+            for (Block mTextBlock : m_TextBlocks) {
+                Block block = mTextBlock;
                 int allChars = block.getAllCharCount();
                 int visChars = block.getVisibleCharCount();
 
-                if (charPos >= visCharPos && charPos < visCharPos + visChars)
-                {
+                if (charPos >= visCharPos && charPos < visCharPos + visChars) {
                     // The visible selection lies within this block so return
                     // the sum of all characters to this block, plus the number
                     // of chars into this block
@@ -449,14 +441,12 @@ public class FoldingText
             int visCharPos = 0;
 
             int size = m_TextBlocks.size();
-            for (int b = 0; b < size; b++)
-            {
-                Block block = (Block) m_TextBlocks.get(b);
+            for (Block mTextBlock : m_TextBlocks) {
+                Block block = mTextBlock;
                 int allChars = block.getAllCharCount();
                 int visChars = block.getVisibleCharCount();
 
-                if (charPos >= allCharPos && charPos < allCharPos + allChars)
-                {
+                if (charPos >= allCharPos && charPos < allCharPos + allChars) {
                     // The visible selection lies within this block so return
                     // the sum of all characters to this block, plus the number
                     // of chars into this block
@@ -475,13 +465,11 @@ public class FoldingText
             int allCharPos = 0;
 
             int size = m_TextBlocks.size();
-            for (int b = 0; b < size; b++)
-            {
-                Block block = (Block) m_TextBlocks.get(b);
+            for (Block mTextBlock : m_TextBlocks) {
+                Block block = mTextBlock;
                 int allChars = block.getAllCharCount();
 
-                if (charPos >= allCharPos && charPos < allCharPos + allChars)
-                {
+                if (charPos >= allCharPos && charPos < allCharPos + allChars) {
                     return block;
                 }
 
@@ -492,10 +480,10 @@ public class FoldingText
         }
 
         /********************************************************************************************
-         * 
+         *
          * Returns the block that contains the given character position (in
          * terms of the visible characters on screen).
-         * 
+         *
          * @param charPos
          * @param endMatchesLast
          *            If true and charPos is beyond the end of all blocks,
@@ -508,13 +496,11 @@ public class FoldingText
             int visCharPos = 0;
 
             int size = m_TextBlocks.size();
-            for (int b = 0; b < size; b++)
-            {
-                Block block = (Block) m_TextBlocks.get(b);
+            for (Block mTextBlock : m_TextBlocks) {
+                Block block = mTextBlock;
                 int visChars = block.getVisibleCharCount();
 
-                if (charPos >= visCharPos && charPos < visCharPos + visChars)
-                {
+                if (charPos >= visCharPos && charPos < visCharPos + visChars) {
                     return block;
                 }
 
@@ -525,7 +511,7 @@ public class FoldingText
             // to match the last block
             if (endMatchesLast && charPos >= visCharPos && size >= 1)
             {
-                return (Block) m_TextBlocks.get(size - 1);
+                return m_TextBlocks.get(size - 1);
             }
 
             return null;
@@ -538,7 +524,7 @@ public class FoldingText
                 return;
 
             Point range = getBlockSelectionRange(block);
-            int delta = 0;
+            int delta;
 
             m_FoldingText.m_Text.setSelection(range);
 
@@ -593,7 +579,7 @@ public class FoldingText
                                      // view to the full list). -1 => filtering
                                      // not enabled
 
-        protected ArrayList<String> m_Lines = new ArrayList<String>();
+        protected ArrayList<String> m_Lines = new ArrayList<>();
 
         protected StringBuffer m_All = new StringBuffer();
 
@@ -681,7 +667,7 @@ public class FoldingText
 
         public String getFirst()
         {
-            return (String) m_Lines.get(0);
+            return m_Lines.get(0);
         }
 
         public String getAll()
@@ -693,7 +679,7 @@ public class FoldingText
         {
             if (m_Lines.size() == 0)
                 throw new IllegalStateException("Block shouldn't be empty");
-            return (String) m_Lines.get(m_Lines.size() - 1);
+            return m_Lines.get(m_Lines.size() - 1);
         }
 
         public String getVisibleText()
@@ -703,15 +689,14 @@ public class FoldingText
 
         public String getTextForLine(int line)
         {
-            return (String) m_Lines.get(line);
+            return m_Lines.get(line);
         }
 
         private void recalcAll()
         {
             m_All = new StringBuffer();
 
-            for (int i = 0; i < m_Lines.size(); i++)
-                m_All.append((String) m_Lines.get(i));
+            for (String mLine : m_Lines) m_All.append(mLine);
         }
 
         public int getFirstLineCharCount()
@@ -736,7 +721,7 @@ public class FoldingText
             int lines = m_Lines.size();
             for (int i = 0; i < lines; i++)
             {
-                String line = (String) m_Lines.get(i);
+                String line = m_Lines.get(i);
                 int len = line.length();
 
                 if (charCount >= pos && charCount < pos + len)
@@ -751,17 +736,16 @@ public class FoldingText
 
         public String toString()
         {
-            StringBuffer buffer = new StringBuffer();
 
-            buffer.append("(");
-            buffer.append(m_Start);
-            buffer.append(m_CanExpand ? (m_IsExpanded ? "-" : "+") : "!");
-            buffer.append(",");
-            buffer.append(" Size ");
-            buffer.append(getSize());
-            buffer.append(")");
+            String buffer = "(" +
+                m_Start +
+                (m_CanExpand ? (m_IsExpanded ? "-" : "+") : "!") +
+                "," +
+                " Size " +
+                getSize() +
+                ")";
 
-            return buffer.toString();
+            return buffer;
         }
     }
 
@@ -788,13 +772,7 @@ public class FoldingText
         GridData data2 = new GridData(GridData.FILL_BOTH);
         m_Text.setLayoutData(data2);
 
-        m_IconBar.addPaintListener(new PaintListener()
-        {
-            public void paintControl(PaintEvent e)
-            {
-                paintIcons(e);
-            }
-        });
+        m_IconBar.addPaintListener(this::paintIcons);
         m_IconBar.setBackground(m_IconBar.getDisplay().getSystemColor(
                 SWT.COLOR_WHITE));
 
@@ -860,15 +838,11 @@ public class FoldingText
     private void periodicRepaint(final int delayMillis)
     {
         // Every n milliseconds redraw the icon bar
-        m_Text.getDisplay().timerExec(delayMillis, new Runnable()
-        {
-            public void run()
+        m_Text.getDisplay().timerExec(delayMillis, () -> {
+            if (!m_IconBar.isDisposed())
             {
-                if (!m_IconBar.isDisposed())
-                {
-                    m_IconBar.redraw();
-                    periodicRepaint(delayMillis);
-                }
+                m_IconBar.redraw();
+                periodicRepaint(delayMillis);
             }
         });
     }
@@ -1034,8 +1008,7 @@ public class FoldingText
         if (block == null)
             return null;
 
-        String text = block.getTextForLine(line - block.getStart());
-        return text;
+        return block.getTextForLine(line - block.getStart());
     }
 
     public String getAllText(boolean includeHidden)
@@ -1082,10 +1055,10 @@ public class FoldingText
     }
 
     /********************************************************************************************
-     * 
+     *
      * Takes a character position from anywhere in the "all text" of the window
      * and forces it to be visible (i.e. expands it).
-     * 
+     *
      * @param charPos
      ********************************************************************************************/
     public void makeCharPosVisible(int charPos)
@@ -1103,10 +1076,10 @@ public class FoldingText
     }
 
     /********************************************************************************************
-     * 
+     *
      * Given a line of text and a position, returns the character position
      * within this line.
-     * 
+     *
      * @param text
      *            The line of text. Can be looked up through getLine() and
      *            getTextForLine()
@@ -1337,13 +1310,13 @@ public class FoldingText
     }
 
     /********************************************************************************************
-     * 
+     *
      * Adds text to the view one level deep in the tree (so normally it is
      * hidden until the user expands the block).
-     * 
+     *
      * If autoexpand is true any newly created blocks are expanded immediately
      * so the user doesn't need to expand the block manually.
-     * 
+     *
      * @param text
      * @param autoExpand
      ********************************************************************************************/

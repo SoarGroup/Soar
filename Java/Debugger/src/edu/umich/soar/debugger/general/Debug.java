@@ -1,9 +1,9 @@
-/** 
+/**
  * Debug.java
  *
  * Description:		<describe the Debug class here>
  * @author			Doug
- * @version			
+ * @version
  */
 
 package edu.umich.soar.debugger.general;
@@ -60,10 +60,10 @@ public class Debug
      * to look up the location of this class. Note--this is potentially invalid
      * if the application is being run over the net or if this is called inside
      * an applet.
-     * 
+     *
      * @return - Null if there is an error, otherwise the folder containing
      *         app's jar file.
-     * 
+     *
      *************************************************************************/
     public static File FindDataDirectory()
     {
@@ -86,11 +86,7 @@ public class Debug
             URL sourceURI = new URL(source.getLocation().toString());
             dataDir = new File(sourceURI.getFile());
         }
-        catch (MalformedURLException e)
-        {
-            return null;
-        }
-        catch (IllegalArgumentException e)
+        catch (MalformedURLException | IllegalArgumentException e)
         {
             return null;
         }

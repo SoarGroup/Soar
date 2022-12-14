@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * AgentMenu.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Jan 31, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
@@ -20,10 +20,10 @@ import edu.umich.soar.debugger.dialogs.SelectAgentDialog;
 import edu.umich.soar.debugger.doc.Document;
 
 /************************************************************************
- * 
+ *
  * A menu for controlling agent level commands--creating them, destroying them
  * etc.
- * 
+ *
  ************************************************************************/
 public class AgentMenu
 {
@@ -144,13 +144,7 @@ public class AgentMenu
         if (!m_CreateNewOnAgent.getMenuItem().isDisposed())
         {
             final boolean check = isCreateNewWindowForNewAgent();
-            this.m_Frame.getDisplay().asyncExec(new Runnable()
-            {
-                public void run()
-                {
-                    m_CreateNewOnAgent.setChecked(check, false);
-                }
-            });
+            this.m_Frame.getDisplay().asyncExec(() -> m_CreateNewOnAgent.setChecked(check, false));
 
         }
     }
@@ -227,7 +221,7 @@ public class AgentMenu
                 "Enter new agent name", generatedName);
 
         // Check if cancelled
-        if (name == null || name == "")
+        if (name == null || name.isEmpty())
             return;
 
         if (m_Document.getAgent(name) != null)

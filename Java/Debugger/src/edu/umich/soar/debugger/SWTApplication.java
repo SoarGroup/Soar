@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SWTApplication.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Mar 2, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger;
@@ -27,9 +27,9 @@ import sml.Kernel;
 import edu.umich.soar.debugger.doc.Document;
 
 /************************************************************************
- * 
+ *
  * SWT based application (we used to have a Swing version too)
- * 
+ *
  ************************************************************************/
 public class SWTApplication
 {
@@ -50,16 +50,14 @@ public class SWTApplication
     int m_MaxY;
 
     // This is just a little place for me to easily test SWT concepts
-    public void startTest(String[] args) throws Exception
-    {
+    public void startTest(String[] args) {
         final Display display = new Display();
         Shell shell = new Shell(display);
         shell.setLayout(new FillLayout());
 
         // The container lets us control the layout of the controls
         // within this window
-        Composite parent = shell;
-        Composite container = new Composite(parent, SWT.NULL);
+        Composite container = new Composite(shell, SWT.NULL);
 
         RowLayout layout = new RowLayout(SWT.HORIZONTAL);
         // layout.wrap = true ;
@@ -69,7 +67,7 @@ public class SWTApplication
         for (int i = 0; i < 10; i++)
         {
             Button button = new Button(container, SWT.PUSH);
-            button.setText("Button " + Integer.toString(i));
+            button.setText("Button " + i);
         }
 
         shell.pack();
@@ -94,9 +92,8 @@ public class SWTApplication
     // (Use this for simple flags like -remote)
     private boolean hasOption(String[] args, String option)
     {
-        for (int i = 0; i < args.length; i++)
-        {
-            if (args[i].equalsIgnoreCase(option))
+        for (String arg : args) {
+            if (arg.equalsIgnoreCase(option))
                 return true;
         }
 
@@ -146,8 +143,7 @@ public class SWTApplication
         startApp(args, null);
     }
 
-    public void startApp(String[] args, Display display) throws Exception
-    {
+    public void startApp(String[] args, Display display) {
         // The document manages the Soar process
         m_Document = new Document();
 

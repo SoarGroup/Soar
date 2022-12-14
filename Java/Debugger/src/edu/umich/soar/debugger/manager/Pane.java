@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * Pane.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 16, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.manager;
@@ -27,23 +27,23 @@ import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.modules.AbstractView;
 
 /************************************************************************
- * 
+ *
  * A pane represents a sub-window in the MainWindow.
- * 
+ *
  * A module is attached to a pane which gives it is content (e.g. a text window
  * for typing commands and receiving output or a tree control for viewing
  * state).
- * 
+ *
  * Thus a pane is simply a place holder. It can manage a single module or a list
  * of modules (through a tabbed window).
- * 
+ *
  ************************************************************************/
 public class Pane
 {
     // List of views attached to this pane
     // Each view represents a distinct module and only one is visible at a time
     // (> 1 => we use some form of tab)
-    private List<AbstractView> m_Views = new ArrayList<AbstractView>();
+    private List<AbstractView> m_Views = new ArrayList<>();
 
     private Composite m_Pane;
 
@@ -72,18 +72,18 @@ public class Pane
     protected boolean m_TabAtTop = false;
 
     /********************************************************************************************
-     * 
+     *
      * A pane is a rectangular area on the screen. A view is a particular window
      * (e.g. a trace window) of which several could occupy the same area on the
      * screen and we'd tab between them.
-     * 
+     *
      * When created we need to know if there will be only one view in this pane
      * or multiple views so we know whether to create a tabbed window or not.
-     * 
+     *
      * (Why do we need to know at creation? Because SWT controls need to know
      * their parents when they are created, so the children of this pane need to
      * know if their parent should be a simple group or a tab folder.)
-     * 
+     *
      * @param singleView
      *            If true, there must be only one view in this pane
      * @param tabAtTop
@@ -97,7 +97,7 @@ public class Pane
         m_SingleView = singleView;
         m_TabAtTop = tabAtTop;
 
-        Composite top = null;
+        Composite top;
 
         if (singleView)
         {
@@ -108,18 +108,16 @@ public class Pane
             m_Pane.setLayout(layout);
 
             // Identify which SWT window is at the top of this pane
-            top = m_Pane;
         }
         else
         {
-            TabFolder tabFolder = new TabFolder(parent, tabAtTop ? SWT.BORDER
+            m_Pane = new TabFolder(parent, tabAtTop ? SWT.BORDER
                     | SWT.TOP : SWT.BORDER | SWT.BOTTOM);
-            m_Pane = tabFolder;
             m_Pane.setLayout(new FillLayout(SWT.VERTICAL));
 
             // Identify which SWT window is at the top of this pane
-            top = m_Pane;
         }
+        top = m_Pane;
 
         // Mark this composite as a pane window so we know we're
         // at a leaf in the layout and moving over to the actual module's
@@ -330,8 +328,7 @@ public class Pane
         }
         else
         {
-            m_HorizontalOrientation = Boolean.valueOf(orientation)
-                    .booleanValue();
+            m_HorizontalOrientation = Boolean.parseBoolean(orientation);
         }
 
         for (int i = 0; i < element.getNumberChildren(); i++)

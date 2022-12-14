@@ -1,17 +1,18 @@
 /********************************************************************************************
  *
  * ReorderButtonsDialog.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Oct 1, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -31,9 +32,9 @@ import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.modules.ButtonView;
 
 /************************************************************************
- * 
+ *
  * A dialog that allows the user to define the order of a list of buttons.
- * 
+ *
  ************************************************************************/
 public class ReorderButtonsDialog extends BaseDialog
 {
@@ -48,10 +49,10 @@ public class ReorderButtonsDialog extends BaseDialog
     private boolean m_ModifiedList = false;
 
     /********************************************************************************************
-     * 
+     *
      * Create a simple dialog asking the user to create a new sequence of
      * buttons.
-     * 
+     *
      * @param parent
      *            The parent for this dialog (we'll center the dialog within
      *            this window)
@@ -82,10 +83,10 @@ public class ReorderButtonsDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the dialog -- the constructor is private because we use a static
      * method to build this.
-     * 
+     *
      ********************************************************************************************/
     private ReorderButtonsDialog(Composite parent, String title,
             ArrayList<ButtonView.ButtonInfo> buttonInfoList)
@@ -204,14 +205,13 @@ public class ReorderButtonsDialog extends BaseDialog
         {
             for (int i = selection; i > dest; i--)
                 m_Buttons[i] = m_Buttons[i - 1];
-            m_Buttons[dest] = temp;
         }
         else
         {
             for (int i = selection; i < dest; i++)
                 m_Buttons[i] = m_Buttons[i + 1];
-            m_Buttons[dest] = temp;
         }
+        m_Buttons[dest] = temp;
 
         // Update the control
         for (int i = 0; i <= limit; i++)
@@ -223,9 +223,9 @@ public class ReorderButtonsDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog -- either successfully or cancelled.
-     * 
+     *
      ********************************************************************************************/
     protected void endDialog(boolean ok)
     {
@@ -236,10 +236,9 @@ public class ReorderButtonsDialog extends BaseDialog
         }
         else
         {
-            m_Result = new ArrayList<ButtonView.ButtonInfo>();
+            m_Result = new ArrayList<>();
 
-            for (int i = 0; i < m_Buttons.length; i++)
-                m_Result.add(m_Buttons[i]);
+            m_Result.addAll(Arrays.asList(m_Buttons));
         }
 
         // Close the dialog

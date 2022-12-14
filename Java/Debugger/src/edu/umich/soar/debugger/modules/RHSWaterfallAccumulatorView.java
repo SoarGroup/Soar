@@ -31,14 +31,13 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements
         if (newTag)
         {
             // rewrite entire text
-            StringBuilder newText = new StringBuilder();
-            newText.append(currentTag);
-            newText.append(": ");
-            newText.append(currentValue);
-            newText.append("\n");
-            newText.append(oldValues);
+            String newText = currentTag +
+                ": " +
+                currentValue +
+                "\n" +
+                oldValues;
 
-            setTextSafely(newText.toString());
+            setTextSafely(newText);
 
         }
         else
@@ -55,13 +54,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements
 
             // Have to make update in the UI thread.
             // Callback comes in the document thread.
-            Display.getDefault().asyncExec(new Runnable()
-            {
-                public void run()
-                {
-                    changeCurrentValue();
-                }
-            });
+            Display.getDefault().asyncExec(this::changeCurrentValue);
         }
     }
 
@@ -76,13 +69,12 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements
         assert index != -1;
 
         // insert new stuff
-        StringBuilder newText = new StringBuilder();
-        newText.append(currentTag);
-        newText.append(": ");
-        newText.append(currentValue);
-        newText.append("\n");
+        String newText = currentTag +
+            ": " +
+            currentValue +
+            "\n";
 
-        textBox.replaceTextRange(0, index, newText.toString());
+        textBox.replaceTextRange(0, index, newText);
     }
 
     boolean newTag = false;
@@ -117,7 +109,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements
                     + rhsFunName + ", got " + commandLine.length + ".";
         }
 
-        double value = 0;
+        double value;
         try
         {
             value = Double.parseDouble(commandLine[1]);
@@ -129,7 +121,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements
                     + commandLine[1];
         }
 
-        if (currentTag == null || !commandLine[0].equals(currentTag))
+        if (!commandLine[0].equals(currentTag))
         {
             newTag = true;
 
@@ -143,7 +135,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements
             }
 
             // create new tag
-            currentTag = new String(commandLine[0]);
+            currentTag = commandLine[0];
 
             // reset value
             currentValue = value;

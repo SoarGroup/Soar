@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * GeneralFileFilter.java
- * 
+ *
  * Created on 	Nov 20, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.general;
@@ -15,13 +15,13 @@ package edu.umich.soar.debugger.general;
  * @(#)GeneralFileFilter.java	1.9 99/04/23
  *
  * Copyright (c) 1998, 1999 by Sun Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * Sun grants you ("Licensee") a non-exclusive, royalty free, license to use,
  * modify and redistribute this software in source and binary code form,
  * provided that i) this copyright notice and license appear on all copies of
  * the software; and ii) Licensee does not utilize the software in a manner
  * which is disparaging to Sun.
- * 
+ *
  * This software is provided "AS IS," without a warranty of any kind. ALL
  * EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY
  * IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR
@@ -33,7 +33,7 @@ package edu.umich.soar.debugger.general;
  * CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF THE USE OF
  * OR INABILITY TO USE SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGES.
- * 
+ *
  * This software is not designed or intended for use in on-line control of
  * aircraft, air traffic, aircraft navigation or aircraft communications; or in
  * the design, construction, operation or maintenance of any nuclear
@@ -48,17 +48,17 @@ import java.util.Hashtable;
 /**
  * A convenience implementation of GeneralFileFilter that filters out all files
  * except for those type extensions that it knows about.
- * 
+ *
  * Extensions are of the type ".foo", which is typically found on Windows and
  * Unix boxes, but not on Macinthosh. Case is ignored.
- * 
+ *
  * Example - create a new filter that filerts out all files but gif and jpg
  * image files:
- * 
+ *
  * JFileChooser chooser = new JFileChooser(); GeneralFileFilter filter = new
  * GeneralFileFilter( new String{"gif", "jpg"}, "JPEG & GIF Images")
  * chooser.addChoosableGeneralFileFilter(filter); chooser.showOpenDialog(this);
- * 
+ *
  * @version 1.9 04/23/99
  * @author Jeff Dinkins
  */
@@ -69,7 +69,7 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     // private static String TYPE_UNKNOWN = "Type Unknown";
     // private static String HIDDEN_FILE = "Hidden File";
 
-    private Hashtable<String, GeneralFileFilter> filters = null;
+    private Hashtable<String, GeneralFileFilter> filters;
 
     private String description = null;
 
@@ -86,18 +86,18 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     /**
      * Creates a file filter. If no filters are added, then all files are
      * accepted.
-     * 
+     *
      * @see #addExtension
      */
     public GeneralFileFilter()
     {
-        this.filters = new Hashtable<String, GeneralFileFilter>();
+        this.filters = new Hashtable<>();
     }
 
     /**
      * Creates a file filter that accepts files with the given extension.
      * Example: new GeneralFileFilter("jpg");
-     * 
+     *
      * @see #addExtension
      */
     public GeneralFileFilter(String extension)
@@ -108,10 +108,10 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     /**
      * Creates a file filter that accepts the given file type. Example: new
      * GeneralFileFilter("jpg", "JPEG Image Images");
-     * 
+     *
      * Note that the "." before the extension is not needed. If provided, it
      * will be ignored.
-     * 
+     *
      * @see #addExtension
      */
     public GeneralFileFilter(String extension, String description)
@@ -126,9 +126,9 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     /**
      * Creates a file filter from the given string array. Example: new
      * GeneralFileFilter(String {"gif", "jpg"});
-     * 
+     *
      * Note that the "." before the extension is not needed adn will be ignored.
-     * 
+     *
      * @see #addExtension
      */
     public GeneralFileFilter(String[] filters)
@@ -140,18 +140,17 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
      * Creates a file filter from the given string array and description.
      * Example: new GeneralFileFilter(String {"gif", "jpg"},
      * "Gif and JPG Images");
-     * 
+     *
      * Note that the "." before the extension is not needed and will be ignored.
-     * 
+     *
      * @see #addExtension
      */
     public GeneralFileFilter(String[] filters, String description)
     {
         this();
-        for (int i = 0; i < filters.length; i++)
-        {
+        for (String filter : filters) {
             // add filters one by one
-            addExtension(filters[i]);
+            addExtension(filter);
         }
         if (description != null)
             setDescription(description);
@@ -160,9 +159,9 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     /**
      * Return true if this file should be shown in the directory pane, false if
      * it shouldn't.
-     * 
+     *
      * Files that begin with "." are ignored.
-     * 
+     *
      * @see #getExtension
      * @see GeneralFileFilter#accepts
      */
@@ -179,14 +178,13 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
             {
                 return true;
             }
-            ;
         }
         return false;
     }
 
     /**
      * Return the extension portion of the file's name .
-     * 
+     *
      * @see #getExtension
      * @see GeneralFileFilter#accept
      */
@@ -200,27 +198,26 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
             {
                 return filename.substring(i + 1).toLowerCase();
             }
-            ;
         }
         return null;
     }
 
     /**
      * Adds a filetype "dot" extension to filter against.
-     * 
+     *
      * For example: the following code will create a filter that filters out all
      * files except those that end in ".jpg" and ".tif":
-     * 
+     *
      * GeneralFileFilter filter = new GeneralFileFilter();
      * filter.addExtension("jpg"); filter.addExtension("tif");
-     * 
+     *
      * Note that the "." before the extension is not needed and will be ignored.
      */
     public void addExtension(String extension)
     {
         if (filters == null)
         {
-            filters = new Hashtable<String, GeneralFileFilter>(5);
+            filters = new Hashtable<>(5);
         }
         if (this.primaryExtension == null)
             this.primaryExtension = extension.toLowerCase();
@@ -229,39 +226,37 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     }
 
     /**
-     * Returns the human readable description of this filter. For example:
+     * Returns the human-readable description of this filter. For example:
      * "JPEG and GIF Image Files (*.jpg, *.gif)"
-     * 
-     * @see setDescription
-     * @see setExtensionListInDescription
-     * @see isExtensionListInDescription
+     *
+     * @see #setDescription
+     * @see #setExtensionListInDescription
+     * @see #isExtensionListInDescription
      * @see GeneralFileFilter#getDescription
      */
     public String getDescription()
     {
-        if (fullDescription == null)
-        {
-            if (description == null || isExtensionListInDescription())
-            {
-                fullDescription = description == null ? "(" : description
-                        + " (";
-                // build the description from the extension list
-                Enumeration<String> extensions = filters.keys();
-                if (extensions != null)
-                {
-                    fullDescription += "." + (String) extensions.nextElement();
-                    while (extensions.hasMoreElements())
-                    {
-                        fullDescription += ", "
-                                + (String) extensions.nextElement();
-                    }
+        if (fullDescription != null) {
+            return fullDescription;
+        }
+        if (description == null || isExtensionListInDescription()) {
+            StringBuilder descriptionBuilder = new StringBuilder();
+            if (description != null) {
+                descriptionBuilder.append(description).append(" ");
+            }
+            descriptionBuilder.append("(");
+            // build the description from the extension list
+            Enumeration<String> extensions = filters.keys();
+            if (extensions != null) {
+                descriptionBuilder.append(".").append(extensions.nextElement());
+                while (extensions.hasMoreElements()) {
+                    descriptionBuilder.append(", ").append(extensions.nextElement());
                 }
-                fullDescription += ")";
             }
-            else
-            {
-                fullDescription = description;
-            }
+            descriptionBuilder.append(")");
+            fullDescription = descriptionBuilder.toString();
+        } else {
+            fullDescription = description;
         }
         return fullDescription;
     }
@@ -269,7 +264,7 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     /**
      * Sets the human readable description of this filter. For example:
      * filter.setDescription("Gif and JPG Images");
-     * 
+     *
      * @see setDescription
      * @see setExtensionListInDescription
      * @see isExtensionListInDescription
@@ -283,10 +278,10 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     /**
      * Determines whether the extension list (.jpg, .gif, etc) should show up in
      * the human readable description.
-     * 
+     *
      * Only relevent if a description was provided in the constructor or using
      * setDescription();
-     * 
+     *
      * @see getDescription
      * @see setDescription
      * @see isExtensionListInDescription
@@ -300,10 +295,10 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
     /**
      * Returns whether the extension list (.jpg, .gif, etc) should show up in
      * the human readable description.
-     * 
+     *
      * Only relevent if a description was provided in the constructor or using
      * setDescription();
-     * 
+     *
      * @see getDescription
      * @see setDescription
      * @see setExtensionListInDescription

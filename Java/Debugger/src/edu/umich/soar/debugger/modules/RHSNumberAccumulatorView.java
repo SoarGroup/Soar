@@ -32,7 +32,7 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
                     + ": set to clear" : "";
         }
 
-        double value = 0;
+        double value;
         try
         {
             value = Double.parseDouble(argument);

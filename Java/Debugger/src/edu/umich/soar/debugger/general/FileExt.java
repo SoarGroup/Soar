@@ -1,20 +1,20 @@
 /********************************************************************************************
  *
  * FileExt.java
- * 
+ *
  * Created on 	Nov 20, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.general;
 
 /********************************************************************************************
- * 
+ *
  * Methods for working with file extensions.
- * 
+ *
  ********************************************************************************************/
 public class FileExt
 {
@@ -34,9 +34,8 @@ public class FileExt
             return "";
 
         // Get the extension in lower case
-        String ext = filePath.substring(lastDot + 1).toLowerCase();
 
-        return ext;
+        return filePath.substring(lastDot + 1).toLowerCase();
     }
 
     // Make the file path have the given extension

@@ -1,18 +1,17 @@
 /********************************************************************************************
  *
  * HelpMenu.java
- * 
+ *
  * Description:	Help menu
- * 
+ *
  * Created on 	Apr 10, 2006
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
 
-import java.io.File;
-import java.net.URL;
+import java.util.Objects;
 
 import org.eclipse.swt.widgets.Menu;
 
@@ -111,10 +110,7 @@ public class HelpMenu
 
         String kernelVersion = m_Document.getKernelVersion();
 
-        if (kernelVersion != null)
-            aboutText += kernelVersion;
-        else
-            aboutText += "no kernel is running.";
+        aboutText += Objects.requireNonNullElse(kernelVersion, "no kernel is running.");
 
         // This version is for the communication library
         aboutText += newLine + "\tSML version: \t\t"

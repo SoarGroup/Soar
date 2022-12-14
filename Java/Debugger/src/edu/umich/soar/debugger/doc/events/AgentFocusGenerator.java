@@ -1,28 +1,26 @@
 /********************************************************************************************
  *
  * AgentFocusGenerator.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 2, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc.events;
 
-import java.util.Iterator;
-
 import sml.Agent;
 
 /************************************************************************
- * 
+ *
  * Event fired when a frame switches to tracking a different agent.
- * 
+ *
  ************************************************************************/
 public class AgentFocusGenerator
 {
-    protected java.util.ArrayList<AgentFocusListener> m_Listeners = new java.util.ArrayList<AgentFocusListener>();
+    protected java.util.ArrayList<AgentFocusListener> m_Listeners = new java.util.ArrayList<>();
 
     public synchronized void addAgentFocusListener(AgentFocusListener listener)
     {
@@ -43,10 +41,7 @@ public class AgentFocusGenerator
         AgentFocusEvent event = new AgentFocusEvent(source,
                 AgentFocusEvent.kGettingFocus, agent);
 
-        for (Iterator<AgentFocusListener> iter = m_Listeners.iterator(); iter
-                .hasNext();)
-        {
-            AgentFocusListener listener = iter.next();
+        for (AgentFocusListener listener : m_Listeners) {
             listener.agentGettingFocus(event);
         }
     }
@@ -56,10 +51,7 @@ public class AgentFocusGenerator
         AgentFocusEvent event = new AgentFocusEvent(source,
                 AgentFocusEvent.kLosingFocus, agent);
 
-        for (Iterator<AgentFocusListener> iter = m_Listeners.iterator(); iter
-                .hasNext();)
-        {
-            AgentFocusListener listener = iter.next();
+        for (AgentFocusListener listener : m_Listeners) {
             listener.agentLosingFocus(event);
         }
     }
@@ -69,10 +61,7 @@ public class AgentFocusGenerator
         AgentFocusEvent event = new AgentFocusEvent(source,
                 AgentFocusEvent.kGone, null);
 
-        for (Iterator<AgentFocusListener> iter = m_Listeners.iterator(); iter
-                .hasNext();)
-        {
-            AgentFocusListener listener = iter.next();
+        for (AgentFocusListener listener : m_Listeners) {
             listener.agentGone(event);
         }
     }

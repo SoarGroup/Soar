@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * DebuggerWindow.java
- * 
+ *
  * Created on 	Nov 12, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
@@ -22,7 +22,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -38,9 +37,9 @@ import edu.umich.soar.debugger.manager.MainWindow;
 import edu.umich.soar.debugger.manager.Pane;
 
 /********************************************************************************************
- * 
+ *
  * The functionality that a debugger window needs to support.
- * 
+ *
  ********************************************************************************************/
 public abstract class AbstractView implements AgentFocusListener
 {
@@ -133,12 +132,12 @@ public abstract class AbstractView implements AgentFocusListener
     }
 
     /********************************************************************************************
-     * 
+     *
      * Returns the agent that is associated with the main frame. A given window
      * can choose to override this and work with a different agent.
-     * 
+     *
      * This can return null if no agent is currently selected in the main frame.
-     * 
+     *
      ********************************************************************************************/
     public Agent getAgentFocus()
     {
@@ -146,48 +145,48 @@ public abstract class AbstractView implements AgentFocusListener
     }
 
     /********************************************************************************************
-     * 
+     *
      * This "base name" is used to generate a unique name for the window. For
      * example, returning a base name of "trace" would lead to windows named
      * "trace1", "trace2" etc.
-     * 
+     *
      ********************************************************************************************/
     public abstract String getModuleBaseName();
 
     /********************************************************************************************
-     * 
+     *
      * Return true if this view shouldn't be user resizable. E.g. A text window
      * would return false but a bar for buttons would return true.
-     * 
+     *
      ********************************************************************************************/
     public abstract boolean isFixedSizeView();
 
     /********************************************************************************************
-     * 
+     *
      * Change the font we use to display text items in this window.
-     * 
+     *
      ********************************************************************************************/
     public abstract void setTextFont(Font f);
 
     /********************************************************************************************
-     * 
+     *
      * Initialize this window and its children. Should call initContainer() at
      * the start to complete initialization of the abstract view.
-     * 
+     *
      ********************************************************************************************/
     public abstract void init(MainFrame frame, Document doc, Pane parentPane);
 
     /********************************************************************************************
-     * 
+     *
      * Copy current selection to the clipboard.
-     * 
+     *
      ********************************************************************************************/
     public abstract void copy();
 
     /********************************************************************************************
-     * 
+     *
      * Execute whatever is on the clipboard as a command
-     * 
+     *
      ********************************************************************************************/
     public void paste()
     {
@@ -206,40 +205,36 @@ public abstract class AbstractView implements AgentFocusListener
     // Adding a key listener for this event allows us to call our paste method
     // so commands are pasted into the command
     // buffer rather than into the window.
-    protected Listener m_ControlV = new Listener()
-    {
-        public void handleEvent(Event e)
+    protected Listener m_ControlV = e -> {
+        if (e.type == SWT.KeyDown)
         {
-            if (e.type == SWT.KeyDown)
-            {
-                int key = e.keyCode;
-                int mask = e.stateMask;
+            int key = e.keyCode;
+            int mask = e.stateMask;
 
-                if (key == 'v' && (mask & SWT.CTRL) > 0)
-                    paste();
-            }
+            if (key == 'v' && (mask & SWT.CTRL) > 0)
+                paste();
         }
     };
 
     /************************************************************************
-     * 
+     *
      * Converts this object into an XML representation.
-     * 
+     *
      * @param tagName
      *            The tag name to use for the top XML element created by this
      *            view
      * @param storeContent
      *            If true, record the content from the display (e.g. the text
      *            from a trace window)
-     * 
+     *
      *************************************************************************/
     public abstract edu.umich.soar.debugger.general.JavaElementXML convertToXML(
             String tagName, boolean storeContent);
 
     /************************************************************************
-     * 
+     *
      * Rebuild the object from an XML representation.
-     * 
+     *
      * @param frame
      *            The top level window that owns this window
      * @param doc
@@ -248,7 +243,7 @@ public abstract class AbstractView implements AgentFocusListener
      *            The pane window that owns this view
      * @param element
      *            The XML representation of this command
-     * 
+     *
      *************************************************************************/
     public abstract void loadFromXML(MainFrame frame,
             edu.umich.soar.debugger.doc.Document doc, Pane parent,
@@ -256,46 +251,46 @@ public abstract class AbstractView implements AgentFocusListener
             throws Exception;
 
     /************************************************************************
-     * 
+     *
      * Execute a command (send it to Soar) and display the output in a manner
      * appropriate to this view.
-     * 
+     *
      * @param Command
      *            The command line to execute
      * @param echoCommand
      *            If true, display the command in the output window as well.
-     * 
+     *
      *            The result (if any) is also returned to the caller.
-     * 
+     *
      *************************************************************************/
     public abstract String executeAgentCommand(String command,
             boolean echoCommand);
 
     /************************************************************************
-     * 
+     *
      * Returns true if this window can display output from commands executed
      * through the "executeAgentCommand" method.
-     * 
+     *
      *************************************************************************/
     public abstract boolean canDisplayOutput();
 
     /************************************************************************
-     * 
+     *
      * Display the given text in this view (if possible).
-     * 
+     *
      * This method is used to programmatically insert text that Soar doesn't
      * generate into the output window.
-     * 
+     *
      *************************************************************************/
     public abstract void displayText(String text);
 
     /************************************************************************
-     * 
+     *
      * Return true from a subclass if the window is a trace window. We'll send
      * menu commands (like "source file") to this window and display the results
      * of the command here. Multiple windows can return true in which case the
      * first is selected (currently).
-     * 
+     *
      *************************************************************************/
     public boolean canBePrimeWindow()
     {
@@ -303,36 +298,36 @@ public abstract class AbstractView implements AgentFocusListener
     }
 
     /************************************************************************
-     * 
+     *
      * Set the focus to this window so the user can type commands easily. Return
      * true if this window wants the focus (some don't have a sensible place to
      * focus on).
-     * 
+     *
      *************************************************************************/
     public abstract boolean setFocus();
 
     public abstract boolean hasFocus();
 
     /************************************************************************
-     * 
+     *
      * Given a context menu and a control, fill in the items you want to see in
      * the menu. The simplest is to just call "fillWindowMenu".
-     * 
+     *
      * This call is made after the user has clicked to bring up the menu so we
      * can create a dymanic menu based on the current context.
-     * 
+     *
      * You also have to call createContextMenu() to request a context menu be
      * attached to a specific control.
-     * 
+     *
      *************************************************************************/
     protected abstract void fillInContextMenu(Menu contextMenu,
             Control control, int mouseX, int mouseY);
 
     /************************************************************************
-     * 
+     *
      * Search for the next occurance of 'text' in this view and place the
      * selection at that point.
-     * 
+     *
      * @param text
      *            The string to search for
      * @param searchDown
@@ -345,19 +340,19 @@ public abstract class AbstractView implements AgentFocusListener
      * @param searchHidden
      *            If true and this view has hidden text (e.g. unexpanded tree
      *            nodes) search that text
-     * 
+     *
      *************************************************************************/
     public abstract boolean find(String text, boolean searchDown,
             boolean matchCase, boolean wrap, boolean searchHiddenText);
 
     /************************************************************************
-     * 
+     *
      * Register and unregister for Soar events for this agent. (E.g. a trace
      * window might register for the print event)
-     * 
+     *
      * ClearAgentEvents is called when the agent has already been deleted (so we
      * can't unregister but should just clear our references)
-     * 
+     *
      *************************************************************************/
     protected abstract void registerForAgentEvents(Agent agent);
 
@@ -449,26 +444,26 @@ public abstract class AbstractView implements AgentFocusListener
     }
 
     /********************************************************************************************
-     * 
+     *
      * Display a dialog that allows the user to adjust properties for this
      * window e.g. choosing whether to clear the window everytime a new command
      * executes or not.
-     * 
+     *
      ********************************************************************************************/
     public abstract void showProperties();
 
     /************************************************************************
-     * 
+     *
      * Clear the display (the text part if any)
-     * 
+     *
      *************************************************************************/
     public abstract void clearDisplay();
 
     /************************************************************************
-     * 
+     *
      * Override and return false if it doesn't make sense to clear this type of
      * view and so we shouldn't offer it to the user in the context menu.
-     * 
+     *
      *************************************************************************/
     public boolean offerClearDisplay()
     {
@@ -476,11 +471,11 @@ public abstract class AbstractView implements AgentFocusListener
     }
 
     /************************************************************************
-     * 
+     *
      * Override and return false if it doesn't make sense to log the contexts of
      * this type of view and so we shouldn't offer it to the user in the context
      * menu.
-     * 
+     *
      *************************************************************************/
     public boolean offerLogging()
     {

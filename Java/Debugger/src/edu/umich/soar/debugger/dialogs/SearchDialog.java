@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SearchDialog.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Apr 14, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
@@ -18,7 +18,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
@@ -27,9 +26,9 @@ import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.modules.AbstractView;
 
 /************************************************************************
- * 
+ *
  * Search dialog for finding text in a window
- * 
+ *
  ************************************************************************/
 public class SearchDialog extends BaseDialog
 {
@@ -57,9 +56,9 @@ public class SearchDialog extends BaseDialog
     private Listener m_ControlF;
 
     /********************************************************************************************
-     * 
+     *
      * Create a simple dialog asking the user for input (a single string).
-     * 
+     *
      * @param parent
      *            The parent for this dialog (we'll center the dialog within
      *            this window)
@@ -88,7 +87,7 @@ public class SearchDialog extends BaseDialog
 
     /**
      * FindReplaceDialog constructor
-     * 
+     *
      * @param shell
      *            the parent shell
      * @param document
@@ -107,7 +106,7 @@ public class SearchDialog extends BaseDialog
 
     /**
      * Creates the dialog's contents
-     * 
+     *
      * @param window
      */
     protected void createContents(final Composite window)
@@ -193,19 +192,15 @@ public class SearchDialog extends BaseDialog
         // Listen for Ctrl-F within the dialog and issue a find immediately.
         // This allows users to hit Ctrl-F to bring up find and then do it again
         // to search.
-        m_ControlF = new Listener()
-        {
-            public void handleEvent(Event e)
+        m_ControlF = e -> {
+            if (e.type == SWT.KeyDown)
             {
-                if (e.type == SWT.KeyDown)
-                {
-                    int key = e.keyCode;
-                    int mask = e.stateMask;
+                int key = e.keyCode;
+                int mask = e.stateMask;
 
-                    if (key == 'f' && (mask & SWT.CTRL) > 0
-                            && !getDialog().isDisposed())
-                        find();
-                }
+                if (key == 'f' && (mask & SWT.CTRL) > 0
+                        && !getDialog().isDisposed())
+                    find();
             }
         };
 
@@ -261,12 +256,12 @@ public class SearchDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Trigger the dialog to start a find.
-     * 
+     *
      * This is exposed publicly so we can programmatically trigger a find once
      * the dialog is up (based on user key presses etc.)
-     * 
+     *
      ********************************************************************************************/
     public void find()
     {

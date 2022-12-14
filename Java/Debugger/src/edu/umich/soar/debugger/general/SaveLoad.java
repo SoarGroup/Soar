@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SaveLoad.java
- * 
+ *
  * Created on 	Nov 20, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.general;
@@ -20,16 +20,16 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 
 /********************************************************************************************
- * 
+ *
  * Save and load file dialogs
- * 
+ *
  ********************************************************************************************/
 public class SaveLoad
 {
     /********************************************************************************************
-     * 
+     *
      * Shows a file dialog and returns a file name
-     * 
+     *
      * @param parent
      *            A parent window for the file dialog
      * @param fileExt
@@ -45,9 +45,9 @@ public class SaveLoad
      * @param fileLoadName
      *            The name of the property to use to store directory to use for
      *            loading files (e.g. "LoadFile")
-     * 
+     *
      * @return The name of the file to use (or null if user canceled)
-     * 
+     *
      ********************************************************************************************/
     public static String LoadFileDialog(Composite parent, String[] fileExts,
             String[] fileDescriptions, AppProperties props,
@@ -88,9 +88,9 @@ public class SaveLoad
     }
 
     /********************************************************************************************
-     * 
+     *
      * Shows a file dialog and returns a file name
-     * 
+     *
      * @param parent
      *            A parent window for the file dialog
      * @param fileExt
@@ -106,9 +106,9 @@ public class SaveLoad
      * @param fileLoadName
      *            The name of the property to use to store directory to use for
      *            loading files (e.g. "LoadFile")
-     * 
+     *
      * @return The name of the file to use (or null if user canceled)
-     * 
+     *
      ********************************************************************************************/
     public static String SaveFileDialog(Composite parent, String[] fileExts,
             String[] fileDescriptions, AppProperties props,
@@ -147,7 +147,7 @@ public class SaveLoad
 
         // Find out if the user entered an extension
         // If not, we will use a default one.
-        if (FileExt.GetLowerFileExtension(filePath) == "")
+        if (FileExt.GetLowerFileExtension(filePath).isEmpty())
         {
             // Don't think with SWT we can get the user's choice in the
             // extensions
@@ -192,7 +192,6 @@ public class SaveLoad
         if (initialFolder != null)
             dialog.setFilterPath(initialFolder);
 
-        String path = dialog.open();
-        return path;
+        return dialog.open();
     }
 }
