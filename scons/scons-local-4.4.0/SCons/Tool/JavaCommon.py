@@ -101,29 +101,33 @@ if java_parsing:
         interfaces, and anonymous inner classes."""
 
         def __init__(self, version=default_java_version):
-            if version not in (
-                '1.1',
-                '1.2',
-                '1.3',
-                '1.4',
-                '1.5',
-                '1.6',
-                '1.7',
-                '1.8',
-                '5',
-                '6',
-                '9.0',
-                '10.0',
-                '11.0',
-                '12.0',
-                '13.0',
-                '14.0',
-                '15.0',
-                '16.0',
-                '17.0',
-            ):
-                msg = "Java version %s not supported" % version
-                raise NotImplementedError(msg)
+            # Patched out for use with Soar; this check is unnecessarily strict.
+            # See https://github.com/SCons/scons/issues/4280.
+            # if version not in (
+            #     '1.1',
+            #     '1.2',
+            #     '1.3',
+            #     '1.4',
+            #     '1.5',
+            #     '1.6',
+            #     '1.7',
+            #     '1.8',
+            #     '5',
+            #     '6',
+            #     '9.0',
+            #     '10.0',
+            #     '11.0',
+            #     '12.0',
+            #     '13.0',
+            #     '14.0',
+            #     '15.0',
+            #     '16.0',
+            #     '17.0',
+            #     '18.0',
+            #     '19.0',
+            # ):
+            #     msg = "Java version %s not supported" % version
+            #     raise NotImplementedError(msg)
 
             self.version = version
             self.listClasses = []
@@ -511,7 +515,7 @@ def get_java_install_dirs(platform, version=None) -> List[str]:
             extracts the next-to-last component, then trims it further if
             it had a complex name, like 'java-1.8.0-openjdk-1.8.0.312-1',
             to try and put it on a common footing with the more common style,
-            which looks like 'jdk-11.0.2'. 
+            which looks like 'jdk-11.0.2'.
 
             This is certainly fragile, and if someone has a 9.0 it won't
             sort right since this will still be alphabetic, BUT 9.0 was
