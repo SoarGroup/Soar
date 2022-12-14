@@ -181,7 +181,6 @@ env = Environment(
     OUT_DIR=os.path.realpath(GetOption('outdir')),
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
-	JAVAVERSION='1.8',
     SML_CSHARP_ALIAS = SML_CSHARP_ALIAS,
     SML_JAVA_ALIAS = SML_JAVA_ALIAS,
     SML_PYTHON_ALIAS = SML_PYTHON_ALIAS,
