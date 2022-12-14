@@ -1449,39 +1449,39 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
       fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
 
-			if ( std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed" )
-			{
-				// unit tests
-			}
-			else
-			{
-				if ( fun_name )
-				{
-					// might still be bad, so lookup the rh
-					rf = lookup_rhs_function(thisAgent, fun_name);
+        if ( std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed" )
+        {
+            // unit tests
+        }
+        else
+        {
+            if ( fun_name )
+            {
+                // might still be bad, so lookup the rh
+                rf = lookup_rhs_function(thisAgent, fun_name);
 
-					if ( !rf )
-						fun_name = NULL;
-				}
+                if ( !rf )
+                    fun_name = NULL;
+            }
 
-				if ( !fun_name )
-				{
-					thisAgent->outputManager->printa_sf(thisAgent, "Adding exec to RHS function: %s\n", lexer->current_lexeme.string() );
+            if ( !fun_name )
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "Adding exec to RHS function: %s\n", lexer->current_lexeme.string() );
 
-					lexer->addExec();
+                lexer->addExec();
 
-					thisAgent->outputManager->printa_sf(thisAgent, "%s\n", lexer->current_orig_string() );
-					
-					fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
-				}
-			}
+                thisAgent->outputManager->printa_sf(thisAgent, "%s\n", lexer->current_orig_string() );
+
+                fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
+            }
+        }
     }
 
-	if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
-	{
-		thisAgent->outputManager->printa_sf(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
-		fun_name = thisAgent->symbolManager->find_str_constant("halt");
-	}
+    if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
+        fun_name = thisAgent->symbolManager->find_str_constant("halt");
+    }
 
     if (!fun_name)
     {
@@ -1491,11 +1491,11 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     }
     rf = lookup_rhs_function(thisAgent, fun_name);
 
-	if (!rf && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
-	{
-		thisAgent->outputManager->printa_sf(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
-		rf = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
-	}
+    if (!rf && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
+        rf = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
+    }
 
     if (!rf)
     {
@@ -1509,13 +1509,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "Function %s cannot be used as a stand-alone action\n",
               lexer->current_lexeme.string());
-				return NIL;
+        return NIL;
     }
     if ((! is_stand_alone_action) && (! rf->can_be_rhs_value))
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "Function %s can only be used as a stand-alone action\n",
               lexer->current_lexeme.string());
-				return NIL;
+        return NIL;
     }
 
     /* --- build list of rhs_function and arguments --- */
@@ -1524,10 +1524,10 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     fl->first = rf;
     prev_c = fl;
     /* consume function name, advance to argument list */
-    if (!lexer->get_lexeme()) 
-		{
-			return NULL;
-		}
+    if (!lexer->get_lexeme())
+    {
+        return NULL;
+    }
     num_args = 0;
     while (lexer->current_lexeme.type != R_PAREN_LEXEME)
     {
@@ -1536,7 +1536,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         {
             prev_c->rest = NIL;
             deallocate_rhs_value(thisAgent, funcall_list_to_rhs_value(fl));
-						return NIL;
+            return NIL;
         }
         num_args++;
         allocate_cons(thisAgent, &c);
@@ -1552,16 +1552,16 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         thisAgent->outputManager->printa_sf(thisAgent,  "Wrong number of arguments to function %s (expected %d)\n",
               rf->name->sc->name, static_cast<int64_t>(rf->num_args_expected));
         deallocate_rhs_value(thisAgent, funcall_list_to_rhs_value(fl));
-				return NIL;
+        return NIL;
     }
 
     /* consume the right parenthesis */
     if (!lexer->get_lexeme())
-		{
-			return NULL;
-		}
-		
-		return funcall_list_to_rhs_value(fl);
+    {
+        return NULL;
+    }
+
+    return funcall_list_to_rhs_value(fl);
 }
 
 /* -----------------------------------------------------------------

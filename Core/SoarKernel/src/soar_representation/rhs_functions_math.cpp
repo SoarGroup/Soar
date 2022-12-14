@@ -1851,33 +1851,33 @@ struct wme_val_stats {
 
 /*
  * Helper for set-based processes.  This calls the given fn for each wme in the set being processed.
- * 
+ *
  * The return value is only not NIL if the fn returns an error symbol.
  */
 [[nodiscard]] Symbol* set_reduce(agent* thisAgent, cons* args, Symbol* (*fn)(agent*, wme*, void*), void* data) {
     cons* c = args;
     Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
-    
+
     if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
         idSymbol* set_id = param_set_id_sym->id;
                        c = c->rest;
-                    
-        if (c != NIL) { 
+
+        if (c != NIL) {
             Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);
-            
+
             if(param_attr_name_sym == NIL) {
                 return thisAgent->symbolManager->make_str_constant("|ERROR: Missing set attribute parameter.|");
             }
 
             Symbol* param_level_2       = NIL;
             Symbol* param_level_3       = NIL;
-            
+
             // Optional nesting
             c = c->rest;
-            if (c != NIL) { 
-                param_level_2 = static_cast<symbol_struct*>(c->first); 
+            if (c != NIL) {
+                param_level_2 = static_cast<symbol_struct*>(c->first);
                 c = c->rest;
-                if (c != NIL) 
+                if (c != NIL)
                     param_level_3 = static_cast<symbol_struct*>(c->first);
             }
 
@@ -1885,16 +1885,16 @@ struct wme_val_stats {
                 // The following if statement handles nested values inside of a structure up to two levels.
                 // It can handle multi-valued attributes at all levels
                 if (!param_level_2) {
-                    Symbol* error = fn(thisAgent, cwme, data);    
+                    Symbol* error = fn(thisAgent, cwme, data);
                     if (error != NIL) { return error; }
                 } else {
                     for(wme* cwme2 = get_wmes_for_named_slot(cwme->value, param_level_2); cwme2 != NIL; cwme2 = cwme2->next) {
                         if(!param_level_3) {
-                            Symbol* error = fn(thisAgent, cwme2, data);    
+                            Symbol* error = fn(thisAgent, cwme2, data);
                             if (error != NIL) { return error; }
                         } else {
                             for(wme* cwme3 = get_wmes_for_named_slot(cwme2->value, param_level_3); cwme3 != NIL; cwme3 = cwme3->next) {
-                                Symbol* error = fn(thisAgent, cwme3, data);    
+                                Symbol* error = fn(thisAgent, cwme3, data);
                                 if (error != NIL) { return error; }
                             }
                         }
@@ -1909,27 +1909,27 @@ struct wme_val_stats {
 
 /*
  * Set-based multiply accumulates.
- * 
+ *
  * Expects four parameters:
  *  - The ID of a set
  *  - Attribute name for the item that contains two factors to multiply
  *  - The name of one of the factors
  *  - The name of the other factor
- * 
+ *
  * The algorithm moves through each item and multiplies its two factors, accumulating the result
  *  across all items (thus multiply-accumulate)
- * 
+ *
  * The return value is only not NIL if the fn returns an error symbol.
  */
 Symbol* set_mac(agent* thisAgent, cons* args, void* data) {
     cons* c = args;
     Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
-    
+
     if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
         idSymbol* set_id = param_set_id_sym->id;
                        c = c->rest;
-                    
-        if (c != NIL) { 
+
+        if (c != NIL) {
             Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);
 
             if(param_attr_name_sym == NIL) {
@@ -1938,18 +1938,18 @@ Symbol* set_mac(agent* thisAgent, cons* args, void* data) {
 
             Symbol* param_factor_1_name_sym = NIL;
             Symbol* param_factor_2_name_sym = NIL;
-            
+
             // The two factor names (required)
             c = c->rest;
-            if (c != NIL) { 
-                param_factor_1_name_sym = static_cast<symbol_struct*>(c->first); 
+            if (c != NIL) {
+                param_factor_1_name_sym = static_cast<symbol_struct*>(c->first);
                 c = c->rest;
-                if (c != NIL) 
+                if (c != NIL)
                     param_factor_2_name_sym = static_cast<symbol_struct*>(c->first);
                 else
                     return thisAgent->symbolManager->make_str_constant("|ERROR: Missing second factor parameter|");
-            } else { 
-                return thisAgent->symbolManager->make_str_constant("|ERROR: Missing first factor parameter|"); 
+            } else {
+                return thisAgent->symbolManager->make_str_constant("|ERROR: Missing first factor parameter|");
             }
 
             struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
@@ -1972,7 +1972,7 @@ Symbol* set_mac(agent* thisAgent, cons* args, void* data) {
                         } else if (factor1->is_int()) {
                             product = (double)factor1->ic->value;
                             stats->count++;
-                        } 
+                        }
                     } else { continue; }
 
                     if (factor2 != NIL) {
@@ -1980,7 +1980,7 @@ Symbol* set_mac(agent* thisAgent, cons* args, void* data) {
                             product *= factor2->fc->value;
                         } else if (factor2->is_int()) {
                             product *= (double)factor2->ic->value;
-                        } 
+                        }
                     } else { continue; }
 
                     stats->sum += product;
@@ -2012,7 +2012,7 @@ Symbol* add_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
         } else if (wme_val->is_int()) {
             stats->sum += (double)wme_val->ic->value;
             stats->count++;
-        } 
+        }
     }
     return NIL;
 };
@@ -2028,7 +2028,7 @@ Symbol* multiply_wme(agent* thisAgent, wme* wme_to_mult, void* data) {
         } else if (wme_val->is_int()) {
             stats->product *= (double)wme_val->ic->value;
             stats->count++;
-        } 
+        }
     }
     return NIL;
 };
@@ -2039,14 +2039,14 @@ Symbol* min_max_wme(agent* thisAgent, wme* wme_to_min, void* data) {
     Symbol* wme_val = wme_to_min->value;
     if (wme_val != NIL) {
         double new_val;
-        if (wme_val->is_float()) 
+        if (wme_val->is_float())
             new_val = wme_val->fc->value;
         else if (wme_val->is_int())
             new_val = wme_val->ic->value;
         else
             return NIL;
-       
-        if (new_val < stats->min) 
+
+        if (new_val < stats->min)
             stats->min = new_val;
         if (new_val > stats->max)
             stats->max = new_val;
@@ -2065,7 +2065,7 @@ Symbol* mean_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
         } else if (wme_val->is_int()) {
             stats->sum = stats->sum + (double)wme_val->ic->value;
             stats->count++;
-        } 
+        }
     }
     return NIL;
 };
@@ -2080,15 +2080,15 @@ Symbol* stdev_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
         } else if (wme_val->is_int()) {
             double diff = (double)wme_val->ic->value - stats->mean;
             stats->sum_square = stats->sum_square + (diff * diff);
-        } 
+        }
     }
     return NIL;
 };
 
 /*
  * A right hand side function that can count the members of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want counted (second parameter).
  *
  * Returns an error string if there is an issue with the parameters, otherwise the number of
@@ -2105,8 +2105,8 @@ Symbol* set_count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
 
 /*
  * A right hand side function that sum the members of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want summed (second parameter).
  *
  * Non-numeric attributes are ignored.
@@ -2122,15 +2122,15 @@ Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
     if (error != NIL)
         return error;
 
-    return (stats.count > 0)? 
+    return (stats.count > 0)?
                     thisAgent->symbolManager->make_float_constant(stats.sum):
                     thisAgent->symbolManager->make_str_constant("NaN");
 }
 
 /*
  * A right hand side function that multiplies the members of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want multiplied (second parameter).
  *
  * Non-numeric attributes are ignored.
@@ -2146,15 +2146,15 @@ Symbol* set_multiply_rhs_function_code(agent* thisAgent, cons* args, void* /*use
     if (error != NIL)
         return error;
 
-    return (stats.count > 0)? 
+    return (stats.count > 0)?
                     thisAgent->symbolManager->make_float_constant(stats.product):
                     thisAgent->symbolManager->make_str_constant("NaN");
 }
 
 /*
  * A right hand side function that finds the minimum of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want min of (second parameter).
  *
  * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
@@ -2168,15 +2168,15 @@ Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
     if (error != NIL)
         return error;
 
-    return (stats.count > 0)? 
+    return (stats.count > 0)?
                     thisAgent->symbolManager->make_float_constant(stats.min):
                     thisAgent->symbolManager->make_str_constant("NaN");
 }
 
 /*
  * A right hand side function that finds the maximum of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want max of (second parameter).
  *
  * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
@@ -2190,17 +2190,15 @@ Symbol* set_max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
     if (error != NIL)
         return error;
 
-    return (stats.count > 0)? 
+    return (stats.count > 0)?
                     thisAgent->symbolManager->make_float_constant(stats.max):
                     thisAgent->symbolManager->make_str_constant("NaN");
-
-    
 }
 
 /*
  * A right hand side function that finds the range of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want range of (second parameter).
  *
  * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
@@ -2214,17 +2212,15 @@ Symbol* set_range_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
     if (error != NIL)
         return error;
 
-    return (stats.count > 0)? 
+    return (stats.count > 0)?
                     thisAgent->symbolManager->make_float_constant(stats.max - stats.min):
                     thisAgent->symbolManager->make_str_constant("NaN");
-
-    
 }
 
 /*
  * A right hand side function that finds the mean value of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want the mean of (second parameter).
  *
  * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
@@ -2243,13 +2239,13 @@ Symbol* set_mean_rhs_function_code(agent* thisAgent, cons* args, void* /*user_da
     } else {
         return thisAgent->symbolManager->make_str_constant("NaN");
     }
-    
+
 }
 
 /*
  * A right hand side function that finds the standard deviation of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want the standard deviation of (second parameter).
  *
  * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
@@ -2270,13 +2266,13 @@ Symbol* set_stdev_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
     } else {
         return thisAgent->symbolManager->make_str_constant("NaN");
     }
-    
+
 }
 
 /*
  * A right hand side function that finds the standard deviation of a set.
- * 
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
  *   want the standard deviation of (second parameter).
  *
  * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
@@ -2295,8 +2291,9 @@ Symbol* set_mac_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
     } else {
         return thisAgent->symbolManager->make_str_constant("NaN");
     }
-    
+
 }
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Math Functions

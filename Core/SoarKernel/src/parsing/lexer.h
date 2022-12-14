@@ -124,13 +124,19 @@ namespace soar
          */
         int current_parentheses_level () const;
 
-				/**
-				* Return the remaining string in the lex.
-				*/
-				const char *current_orig_string() const;
-				const char *current_remaining_string() const;
+        /**
+        * Return the remaining string in the lex.
+        */
+        const char *current_orig_string() const;
+        const char *current_remaining_string() const;
 
-				void addExec();
+
+        /**
+         * Inserts an exec lexeme in front of the current lexeme, resets the lexer to before
+         * the exec lexeme, then reads back up to the exec lexeme. We use this to change undefined
+         * RHS function calls into exec calls.
+        */
+        void addExec();
 
         /**
          * Eat lexemes until current_parentheses_level matches the input
@@ -175,7 +181,11 @@ namespace soar
          * The second-to-last character read from the input string.
          */
         int                 prev_char;
-				std::string         orig_string;
+        /**
+         * Saves the original string passed to the lexer, in case
+         * it is changed by addExec().
+        */
+        std::string         orig_string;
         const char*         production_string;
         //0 means top level, no left parens seen
         int                 parentheses_level;
