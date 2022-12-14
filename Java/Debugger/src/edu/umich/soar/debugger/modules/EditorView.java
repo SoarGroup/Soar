@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * EditorView.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Apr 30, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
@@ -37,9 +37,9 @@ import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.manager.Pane;
 
 /************************************************************************
- * 
+ *
  * Provides a window where a production can be edited and then loaded into Soar.
- * 
+ *
  ************************************************************************/
 public class EditorView extends AbstractView
 {
@@ -77,10 +77,10 @@ public class EditorView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Returns true if this window can display output from commands executed
      * through the "executeAgentCommand" method.
-     * 
+     *
      *************************************************************************/
     public boolean canDisplayOutput()
     {
@@ -88,9 +88,9 @@ public class EditorView extends AbstractView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Copy current selection to the clipboard.
-     * 
+     *
      ********************************************************************************************/
     public void copy()
     {
@@ -98,11 +98,11 @@ public class EditorView extends AbstractView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Execute whatever is on the clipboard as a command. Overriding the default
      * behavior to produce a simple paste into the window. (Usually we intercept
      * this and execute what's on the command line)
-     * 
+     *
      ********************************************************************************************/
     public void paste()
     {
@@ -187,9 +187,9 @@ public class EditorView extends AbstractView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the window that will display the production being edited
-     * 
+     *
      ********************************************************************************************/
     protected void createDisplayControl(Composite parent)
     {
@@ -235,7 +235,7 @@ public class EditorView extends AbstractView
     {
         String production = getProduction();
 
-        if (production != null && production != "")
+        if (production != null && !production.isEmpty())
         {
             m_Frame.getPrimeView().executeAgentCommand(production, true);
         }
@@ -245,7 +245,7 @@ public class EditorView extends AbstractView
      * @param frame
      * @param doc
      * @param parentPane
-     * 
+     *
      * @see edu.umich.soar.debugger.modules.AbstractView#init(edu.umich.soar.debugger.MainFrame,
      *      edu.umich.soar.debugger.doc.Document,
      *      edu.umich.soar.debugger.manager.Pane)
@@ -274,8 +274,7 @@ public class EditorView extends AbstractView
 
         // Decide how many rows to show in the combo list
         m_CommandCombo
-                .setVisibleItemCount(CommandHistory.kMaxHistorySize > 10 ? 10
-                        : CommandHistory.kMaxHistorySize);
+                .setVisibleItemCount(Math.min(CommandHistory.kMaxHistorySize, 10));
 
         // Create the control that will display output from the commands
         createDisplayControl(m_Container);
@@ -350,7 +349,7 @@ public class EditorView extends AbstractView
         String result = m_Document.sendAgentCommand(getAgentFocus(),
                 commandLine);
 
-        if (result != null && result != "")
+        if (result != null && !result.isEmpty())
             m_Text.setText(result);
     }
 

@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * DocumentThread.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 21, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc;
@@ -17,31 +17,31 @@ import sml.Agent;
 import sml.ClientAnalyzedXML;
 
 /************************************************************************
- * 
+ *
  * Executing Soar commands can take a long time (e.g. "run 1000").
- * 
+ *
  * If we execute them in the main UI thread then the UI will be locked until
  * Soar returns control to us (menus can't be selected etc.).
- * 
+ *
  * One solution to this is to execute the Soar commands in a separate thread
  * within the debugger. This class does just that, queueing up commands and
  * executing them.
- * 
+ *
  ************************************************************************/
 public class DocumentThread2 extends Thread
 {
     /**
      * Calls to the kernel are represented as generalized "Command" objects.
-     * 
+     *
      * Each derived class overrides the "execute" method, issues a command to
      * the kernel and then stores the result of that command in the m_Result
      * variable.
-     * 
+     *
      * m_Result is a generic Object so any value can be returned by derived
      * classes.
-     * 
+     *
      * @author Doug
-     * 
+     *
      */
     public abstract static class Command
     {
@@ -140,13 +140,13 @@ public class DocumentThread2 extends Thread
     }
 
     /** The commands waiting to be executed */
-    private ArrayList<Command> m_ToExecuteQueue = new ArrayList<Command>();
+    private ArrayList<Command> m_ToExecuteQueue = new ArrayList<>();
 
     /** A flag used when we wish to stop this thread (during system shutdown) */
     private boolean m_AskedToStop = false;
 
     /** The main document (which owns the Soar kernel object etc.) */
-    private Document m_Document = null;
+    private Document m_Document;
 
     private boolean m_IsExecutingCommand = false;
 
@@ -199,7 +199,7 @@ public class DocumentThread2 extends Thread
         if (m_ToExecuteQueue.size() == 0)
             return null;
 
-        Command command = (Command) m_ToExecuteQueue.get(0);
+        Command command = m_ToExecuteQueue.get(0);
         m_ToExecuteQueue.remove(0);
 
         return command;

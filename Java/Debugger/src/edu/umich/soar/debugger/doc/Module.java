@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * Module.java
- * 
+ *
  * Created on 	Nov 22, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc;
@@ -15,13 +15,13 @@ import edu.umich.soar.debugger.general.Debug;
 import edu.umich.soar.debugger.modules.AbstractView;
 
 /********************************************************************************************
- * 
+ *
  * Instances of this class represent modules (types of windows) that can be
  * created in the debugger.
- * 
+ *
  * So for example, a the TraceView class might be recorded in an instance of
  * this class.
- * 
+ *
  ********************************************************************************************/
 public class Module
 {
@@ -64,8 +64,7 @@ public class Module
         try
         {
             // Construct the new object
-            AbstractView window = (AbstractView) m_Class.newInstance();
-            return window;
+            return m_Class.getDeclaredConstructor().newInstance();
         }
         catch (Exception e)
         {

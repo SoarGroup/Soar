@@ -1,7 +1,6 @@
 package edu.umich.soar.debugger.modules;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,7 +17,7 @@ public class RHSOperatorTextView extends RHSObjectTextView
     enum ParseState
     {
         START, ACCEPTABLES, BEFORE_NUM, NUM, DONE
-    };
+    }
 
     @Override
     protected void updateNow()
@@ -51,7 +50,7 @@ public class RHSOperatorTextView extends RHSObjectTextView
         // System.out.println(m.group(1));
         // }
         // System.out.println("end");
-        //		
+        //
         // if (true) return;
 
         if (this.idToOrdered.size() < 1)
@@ -67,15 +66,12 @@ public class RHSOperatorTextView extends RHSObjectTextView
 
         // clear out old values
         {
-            Iterator<OrderedIdentifier> iter = idToOrdered.values().iterator();
-            while (iter.hasNext())
-            {
-                OrderedIdentifier oid = iter.next();
+            for (OrderedIdentifier oid : idToOrdered.values()) {
                 oid.resetValues();
             }
         }
 
-        HashSet<String> reported = new HashSet<String>();
+        HashSet<String> reported = new HashSet<>();
 
         // get preferences result, split on newlines
         String[] prefOutput = agent.ExecuteCommandLine("pref s1").split("\n");
@@ -85,78 +81,65 @@ public class RHSOperatorTextView extends RHSObjectTextView
         Matcher matcher;
         String match1;
         String match2;
-        for (int index = 0; index < prefOutput.length; ++index)
-        {
-            switch (state)
-            {
-            case START:
-                matcher = Pattern.compile("acceptables:$").matcher(
-                        prefOutput[index]);
-                if (matcher.matches())
-                {
-                    state = ParseState.ACCEPTABLES;
-                }
-                break;
-
-            case ACCEPTABLES:
-                matcher = Pattern.compile("^\\s+(O\\d+)\\s+.*").matcher(
-                        prefOutput[index]);
-                if (matcher.matches())
-                {
-                    match1 = matcher.group(1);
-
-                    OrderedIdentifier oid = this.idToOrdered.get(match1);
-                    if (oid != null)
-                    {
-                        reported.add(new String(match1));
+        for (String s : prefOutput) {
+            switch (state) {
+                case START:
+                    matcher = Pattern.compile("acceptables:$").matcher(
+                        s);
+                    if (matcher.matches()) {
+                        state = ParseState.ACCEPTABLES;
                     }
-                }
-                else
-                {
-                    state = ParseState.BEFORE_NUM;
-                }
-                break;
+                    break;
 
-            case BEFORE_NUM:
-                matcher = Pattern.compile(".*indifferents:$").matcher(
-                        prefOutput[index]);
-                if (matcher.matches())
-                {
-                    state = ParseState.NUM;
-                }
-                break;
+                case ACCEPTABLES:
+                    matcher = Pattern.compile("^\\s+(O\\d+)\\s+.*").matcher(
+                        s);
+                    if (matcher.matches()) {
+                        match1 = matcher.group(1);
 
-            case NUM:
-                matcher = Pattern.compile(
+                        OrderedIdentifier oid = this.idToOrdered.get(match1);
+                        if (oid != null) {
+                            reported.add(match1);
+                        }
+                    } else {
+                        state = ParseState.BEFORE_NUM;
+                    }
+                    break;
+
+                case BEFORE_NUM:
+                    matcher = Pattern.compile(".*indifferents:$").matcher(
+                        s);
+                    if (matcher.matches()) {
+                        state = ParseState.NUM;
+                    }
+                    break;
+
+                case NUM:
+                    matcher = Pattern.compile(
                         "^\\s+(O\\d+).+=(-?\\d+\\.?\\d*)\\s.*$").matcher(
-                        prefOutput[index]);
-                if (matcher.matches())
-                {
-                    match1 = matcher.group(1);
-                    match2 = matcher.group(2);
+                        s);
+                    if (matcher.matches()) {
+                        match1 = matcher.group(1);
+                        match2 = matcher.group(2);
 
-                    OrderedIdentifier oid = this.idToOrdered.get(match1);
-                    if (oid != null)
-                    {
-                        Double value = oid.getDoubleOrder();
-                        value += Double.parseDouble(match2);
-                        // System.out.println(oid + " --> " + value);
+                        OrderedIdentifier oid = this.idToOrdered.get(match1);
+                        if (oid != null) {
+                            double value = oid.getDoubleOrder();
+                            value += Double.parseDouble(match2);
+                            // System.out.println(oid + " --> " + value);
 
-                        oid.setDoubleOrder(value);
+                            oid.setDoubleOrder(value);
+                        }
+                    } else {
+                        state = ParseState.DONE;
                     }
-                }
-                else
-                {
-                    state = ParseState.DONE;
-                }
-                break;
+                    break;
 
-            default:
-                assert false;
+                default:
+                    assert false;
             }
 
-            if (state == ParseState.DONE)
-            {
+            if (state == ParseState.DONE) {
                 break;
             }
         }
@@ -164,23 +147,16 @@ public class RHSOperatorTextView extends RHSObjectTextView
         this.idToOrdered.keySet().retainAll(reported);
         this.sortedIdentifiers.clear();
         {
-            Iterator<Map.Entry<String, OrderedIdentifier>> iter = this.idToOrdered
-                    .entrySet().iterator();
-            while (iter.hasNext())
-            {
-                this.sortedIdentifiers.add(iter.next().getValue());
+            for (Map.Entry<String, OrderedIdentifier> stringOrderedIdentifierEntry : this.idToOrdered
+                .entrySet()) {
+                this.sortedIdentifiers.add(stringOrderedIdentifierEntry.getValue());
             }
         }
 
         // iterate through sortedIdentifiers and print values
         StringBuilder output = new StringBuilder();
         {
-            Iterator<OrderedIdentifier> iter = this.sortedIdentifiers
-                    .iterator();
-            while (iter.hasNext())
-            {
-                OrderedIdentifier oid = iter.next();
-
+            for (OrderedIdentifier oid : this.sortedIdentifiers) {
                 output.append(oid.getIdentifier());
                 output.append(" (");
                 output.append(oid.getDoubleOrder());

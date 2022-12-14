@@ -1,9 +1,9 @@
-/** 
+/**
  * AppProperties.java
  *
  * Description:		<describe the AppProperties class here>
  * @author			Doug
- * @version			
+ * @version
  */
 
 package edu.umich.soar.debugger.general;
@@ -198,8 +198,7 @@ public class AppProperties extends java.util.Properties
             String value = this.getProperty(property);
             if (value != null)
             {
-                double d = Double.parseDouble(value);
-                return d;
+                return Double.parseDouble(value);
             }
         }
         catch (NumberFormatException e)
@@ -216,8 +215,7 @@ public class AppProperties extends java.util.Properties
             String value = this.getProperty(property);
             if (value != null)
             {
-                int i = Integer.parseInt(value);
-                return i;
+                return Integer.parseInt(value);
             }
         }
         catch (NumberFormatException e)

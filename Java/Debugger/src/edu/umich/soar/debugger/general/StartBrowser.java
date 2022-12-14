@@ -28,8 +28,8 @@ public class StartBrowser
         {
             Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
             Method openURL = fileMgr.getDeclaredMethod("openURL",
-                    new Class[] { String.class });
-            openURL.invoke(null, new Object[] { url });
+                String.class);
+            openURL.invoke(null, url);
         }
         else if (osName.startsWith("Windows"))
             Runtime.getRuntime().exec(

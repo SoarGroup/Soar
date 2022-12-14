@@ -1,22 +1,24 @@
 /********************************************************************************************
  *
  * CommandHistory.java
- * 
+ *
  * Created on 	Nov 22, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.helpers;
 
 import edu.umich.soar.debugger.general.JavaElementXML;
 
+import java.util.Arrays;
+
 /********************************************************************************************
- * 
+ *
  * Used by other modules to store a history of command issued in this window.
- * 
+ *
  ********************************************************************************************/
 public class CommandHistory
 {
@@ -38,10 +40,7 @@ public class CommandHistory
     public CommandHistory()
     {
         // Start with empty strings, not null strings
-        for (int i = 0; i < m_History.length; i++)
-        {
-            m_History[i] = "";
-        }
+        Arrays.fill(m_History, "");
     }
 
     // Note: This is not case-sensitive. Should it be?
@@ -55,17 +54,17 @@ public class CommandHistory
     }
 
     /********************************************************************************************
-     * 
+     *
      * Add a new item to the top of the list. Optionally, if the item is already
      * in the list we just move that item up to the top. It depends on the
      * semantics you'd like to have for the history.
-     * 
+     *
      * @param newItem
      *            The new string to add
      * @param allowMovement
      *            If true and the string is in the list already, move its
      *            position in the list
-     * 
+     *
      ********************************************************************************************/
     public void UpdateHistoryList(String newItem, boolean allowMovement)
     {
@@ -80,8 +79,6 @@ public class CommandHistory
             // Move this item to the top of the list (nothing is added)
             for (int i = pos; i > 0; i--)
                 m_History[i] = m_History[i - 1];
-
-            m_History[0] = newItem;
         }
         else
         {
@@ -95,9 +92,8 @@ public class CommandHistory
             {
                 m_History[i] = m_History[i - 1];
             }
-
-            m_History[0] = newItem;
         }
+        m_History[0] = newItem;
     }
 
     public String getMostRecent()
@@ -124,9 +120,9 @@ public class CommandHistory
     }
 
     /************************************************************************
-     * 
+     *
      * Converts this object into an XML representation.
-     * 
+     *
      *************************************************************************/
     public edu.umich.soar.debugger.general.JavaElementXML ConvertToXML(
             String title)
@@ -144,7 +140,7 @@ public class CommandHistory
         // Record the array
         for (int i = 0; i < this.m_HistorySize; i++)
         {
-            String item = "Item" + Integer.toString(i);
+            String item = "Item" + i;
             element.addAttribute(item, this.m_History[i]);
         }
 
@@ -152,14 +148,14 @@ public class CommandHistory
     }
 
     /************************************************************************
-     * 
+     *
      * Rebuild the object from an XML representation.
-     * 
+     *
      * @param doc
      *            The document we're rebuilding
      * @param element
      *            The XML representation of this command
-     * 
+     *
      *************************************************************************/
     public void LoadFromXML(edu.umich.soar.debugger.doc.Document doc,
             edu.umich.soar.debugger.general.JavaElementXML element)
@@ -174,7 +170,7 @@ public class CommandHistory
 
         for (int i = 0; i < this.m_HistorySize; i++)
         {
-            String item = "Item" + Integer.toString(i);
+            String item = "Item" + i;
             m_History[i] = element.getAttributeThrows(item);
         }
     }

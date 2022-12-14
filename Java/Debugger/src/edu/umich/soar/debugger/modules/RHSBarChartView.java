@@ -2,7 +2,6 @@ package edu.umich.soar.debugger.modules;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.eclipse.swt.SWT;
@@ -30,12 +29,12 @@ import edu.umich.soar.debugger.manager.Pane;
 public class RHSBarChartView extends AbstractRHSFunView implements
         Kernel.RhsFunctionInterface
 {
-    protected String chartTitle = new String();
+    protected String chartTitle = "";
 
     @Override
     public void init(MainFrame frame, Document doc, Pane parentPane)
     {
-        if (chartTitle.length() <= 0)
+        if (chartTitle.isEmpty())
         {
             chartTitle = getModuleBaseName();
         }
@@ -69,25 +68,25 @@ public class RHSBarChartView extends AbstractRHSFunView implements
         chart.setTitle(chartTitle);
     }
 
-    class OrderedString implements Comparable<OrderedString>
+    static class OrderedString implements Comparable<OrderedString>
     {
 
         OrderedString(String string)
         {
-            this.string = new String(string);
-            this.value = new Integer(0);
+            this.string = string;
+            this.value = 0;
         }
 
         OrderedString(String string, int value)
         {
-            this.string = new String(string);
-            this.value = new Integer(value);
+            this.string = string;
+            this.value = value;
         }
 
         OrderedString(OrderedString ov)
         {
-            this.string = new String(ov.string);
-            this.value = new Integer(ov.value);
+            this.string = ov.string;
+            this.value = ov.value;
         }
 
         public String string;
@@ -123,11 +122,11 @@ public class RHSBarChartView extends AbstractRHSFunView implements
     boolean clear = false;
 
     // category -> series -> value
-    HashMap<String, HashMap<String, Double>> categoryToSeriesMap = new HashMap<String, HashMap<String, Double>>();
+    HashMap<String, HashMap<String, Double>> categoryToSeriesMap = new HashMap<>();
 
-    TreeSet<OrderedString> categoryOrderSet = new TreeSet<OrderedString>();
+    TreeSet<OrderedString> categoryOrderSet = new TreeSet<>();
 
-    TreeSet<OrderedString> seriesOrderSet = new TreeSet<OrderedString>();
+    TreeSet<OrderedString> seriesOrderSet = new TreeSet<>();
 
     public String rhsFunctionHandler(int eventID, Object data,
             String agentName, String functionName, String argument)
@@ -163,7 +162,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
                         + ": addvalue requires <category> <category-order> <series> <series-order> <value>";
             }
 
-            int catOrder = 0;
+            int catOrder;
             try
             {
                 catOrder = Integer.parseInt(commandLine[2]);
@@ -176,7 +175,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
                         + ": addvalue: parsing failed for <category-order> argument";
             }
 
-            int serOrder = 0;
+            int serOrder;
             try
             {
                 serOrder = Integer.parseInt(commandLine[4]);
@@ -189,7 +188,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
                         + ": addvalue: parsing failed for <series-order> argument";
             }
 
-            double value = 0;
+            double value;
             try
             {
                 value = Double.parseDouble(commandLine[5]);
@@ -215,7 +214,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
     {
         if (!categoryToSeriesMap.containsKey(category))
         {
-            HashMap<String, Double> seriesToValueMap = new HashMap<String, Double>();
+            HashMap<String, Double> seriesToValueMap = new HashMap<>();
             categoryToSeriesMap.put(category, seriesToValueMap);
             categoryOrderSet.add(new OrderedString(category, categoryOrder));
         }
@@ -328,23 +327,19 @@ public class RHSBarChartView extends AbstractRHSFunView implements
         // update
 
         // for each category
-        Iterator<OrderedString> catIter = this.categoryOrderSet.iterator();
-        while (catIter.hasNext())
-        {
-            String category = catIter.next().string;
+        for (OrderedString orderedString : this.categoryOrderSet) {
+            String category = orderedString.string;
 
             // for each series
             HashMap<String, Double> seriesToValueMap = categoryToSeriesMap
-                    .get(category);
-            Iterator<OrderedString> serIter = this.seriesOrderSet.iterator();
-            while (serIter.hasNext())
-            {
-                String series = serIter.next().string;
+                .get(category);
+            for (OrderedString string : this.seriesOrderSet) {
+                String series = string.string;
 
                 // add/set value (add seems to work)
                 dataset
-                        .addValue(seriesToValueMap.get(series), series,
-                                category);
+                    .addValue(seriesToValueMap.get(series), series,
+                        category);
             }
         }
     }
@@ -368,13 +363,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
 
         // Have to make update in the UI thread.
         // Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable()
-        {
-            public void run()
-            {
-                updateChart();
-            }
-        });
+        Display.getDefault().asyncExec(this::updateChart);
 
     }
 
@@ -394,13 +383,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
 
         // Have to make update in the UI thread.
         // Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable()
-        {
-            public void run()
-            {
-                dataset.clear();
-            }
-        });
+        Display.getDefault().asyncExec(() -> dataset.clear());
     }
 
     public void onInitSoar()
@@ -409,9 +392,9 @@ public class RHSBarChartView extends AbstractRHSFunView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Converts this object into an XML representation.
-     * 
+     *
      *************************************************************************/
     @Override
     public JavaElementXML convertToXML(String title, boolean storeContent)
@@ -445,9 +428,9 @@ public class RHSBarChartView extends AbstractRHSFunView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Rebuild the object from an XML representation.
-     * 
+     *
      * @param frame
      *            The top level window that owns this window
      * @param doc
@@ -456,7 +439,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
      *            The pane window that owns this view
      * @param element
      *            The XML representation of this command
-     * 
+     *
      *************************************************************************/
     @Override
     public void loadFromXML(MainFrame frame, Document doc, Pane parent,
@@ -476,12 +459,12 @@ public class RHSBarChartView extends AbstractRHSFunView implements
 
         if (rhsFunName == null)
         {
-            rhsFunName = new String();
+            rhsFunName = "";
         }
 
         if (chartTitle == null)
         {
-            chartTitle = new String();
+            chartTitle = "";
         }
 
         JavaElementXML log = element.findChildByName("Logger");
@@ -501,17 +484,17 @@ public class RHSBarChartView extends AbstractRHSFunView implements
 }
 
 /*
- * 
+ *
  * Test code:
- * 
+ *
  * sp {propose*init (state <s> ^superstate nil -^name) --> (<s> ^operator <o> +)
  * (<o> ^name init) }
- * 
+ *
  * sp {apply*init (state <s> ^operator.name init) --> (<s> ^name test) }
- * 
+ *
  * sp {propose*update (state <s> ^name test -^toggle on) --> (<s> ^operator <o>
  * +) (<o> ^name update) }
- * 
+ *
  * sp {apply*update (state <s> ^operator.name update) --> (<s> ^toggle on)
  * (write (crlf) (exec graph |addvalue category1 1 series1 1 0.5|)) (write
  * (crlf) (exec graph |addvalue category2 2 series1 1 0.7|)) (write (crlf) (exec
@@ -519,10 +502,10 @@ public class RHSBarChartView extends AbstractRHSFunView implements
  * |addvalue category1 1 series2 2 0.2|)) (write (crlf) (exec graph |addvalue
  * category2 2 series2 2 0.4|)) (write (crlf) (exec graph |addvalue category3 3
  * series2 2 0.8|)) }
- * 
+ *
  * sp {propose*update2 (state <s> ^name test ^toggle on) --> (<s> ^operator <o>
  * +) (<o> ^name update2) }
- * 
+ *
  * sp {apply*update2 (state <s> ^operator.name update2) --> (<s> ^toggle on -)
  * (write (crlf) (exec graph |addvalue category1 1 series1 1 0.1|)) (write
  * (crlf) (exec graph |addvalue category2 2 series1 1 0.2|)) (write (crlf) (exec

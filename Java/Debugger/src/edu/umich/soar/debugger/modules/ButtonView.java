@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * ButtonPanel.java
- * 
+ *
  * Created on 	Nov 23, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
@@ -36,9 +36,9 @@ import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.manager.Pane;
 
 /********************************************************************************************
- * 
+ *
  * Shows a series of buttons for issuing commands.
- * 
+ *
  ********************************************************************************************/
 public class ButtonView extends AbstractFixedView
 {
@@ -54,7 +54,7 @@ public class ButtonView extends AbstractFixedView
     }
 
     /** A list of ButtonInfo objects */
-    protected ArrayList<ButtonInfo> m_ButtonList = new ArrayList<ButtonInfo>();
+    protected ArrayList<ButtonInfo> m_ButtonList = new ArrayList<>();
 
     protected String m_LinkedViewName;
 
@@ -81,11 +81,11 @@ public class ButtonView extends AbstractFixedView
     }
 
     /********************************************************************************************
-     * 
+     *
      * This "base name" is used to generate a unique name for the window. For
      * example, returning a base name of "trace" would lead to windows named
      * "trace1", "trace2" etc.
-     * 
+     *
      ********************************************************************************************/
     public String getModuleBaseName()
     {
@@ -93,15 +93,15 @@ public class ButtonView extends AbstractFixedView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create a new button with visible text of "name" that issues command
      * "command" when the user presses the button. (A null command is valid and
      * does nothing).
-     * 
+     *
      * The caller can also (optionally) register an internal command. That is a
      * command that does something inside the debugger based on a set of
      * scripted commands that the debugger itself supports.
-     * 
+     *
      ********************************************************************************************/
     public void addButton(String name, String command, String internalCommand)
     {
@@ -114,11 +114,11 @@ public class ButtonView extends AbstractFixedView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create a new button with visible text of "name" that issues command
      * "command" when the user presses the button. (A null command is valid and
      * does nothing).
-     * 
+     *
      ********************************************************************************************/
     public void addButton(String name, String command)
     {
@@ -126,7 +126,7 @@ public class ButtonView extends AbstractFixedView
     }
 
     /*******************************************************************************************
-     * 
+     *
      * The button pane can be linked to a specific view -- in which case
      * commands are executed there. If it is not linked it defaults to using the
      * prime view for output. We use the name of the view instead of the view
@@ -134,7 +134,7 @@ public class ButtonView extends AbstractFixedView
      * we may load this button pane before the view it is linked to and just
      * storing the name avoids a problem of when to resolve the name into the
      * view.
-     * 
+     *
      ********************************************************************************************/
     public void setLinkedView(String viewName)
     {
@@ -151,9 +151,7 @@ public class ButtonView extends AbstractFixedView
 
     protected ButtonInfo getButtonInfo(Button button)
     {
-        for (int i = 0; i < this.m_ButtonList.size(); i++)
-        {
-            ButtonInfo info = m_ButtonList.get(i);
+        for (ButtonInfo info : this.m_ButtonList) {
             if (info.m_Button == button)
                 return info;
         }
@@ -186,7 +184,7 @@ public class ButtonView extends AbstractFixedView
     {
         ButtonInfo info = getButtonInfo(button);
 
-        PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3];
+        PropertiesDialog.Property[] properties = new PropertiesDialog.Property[3];
 
         properties[0] = new PropertiesDialog.StringProperty("Label",
                 info.m_Name);
@@ -218,7 +216,7 @@ public class ButtonView extends AbstractFixedView
         ButtonInfo info = new ButtonInfo();
         info.m_Name = "Name";
 
-        PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3];
+        PropertiesDialog.Property[] properties = new PropertiesDialog.Property[3];
 
         properties[0] = new PropertiesDialog.StringProperty("Label",
                 info.m_Name);
@@ -272,16 +270,16 @@ public class ButtonView extends AbstractFixedView
     }
 
     /************************************************************************
-     * 
+     *
      * Given a context menu and a control, fill in the items you want to see in
      * the menu. The simplest is to just call "fillWindowMenu".
-     * 
+     *
      * This call is made after the user has clicked to bring up the menu so we
      * can create a dymanic menu based on the current context.
-     * 
+     *
      * You also have to call createContextMenu() to request a context menu be
      * attached to a specific control.
-     * 
+     *
      *************************************************************************/
     protected void fillInContextMenu(Menu contextMenu, final Control control,
             int mouseX, int mouseY)
@@ -372,10 +370,10 @@ public class ButtonView extends AbstractFixedView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Initialize this window and its children. Should call setValues() at the
      * start to complete initialization of the abstract view.
-     * 
+     *
      ********************************************************************************************/
     public void init(MainFrame frame, Document doc, Pane parentPane)
     {
@@ -393,7 +391,7 @@ public class ButtonView extends AbstractFixedView
 
     public void showProperties()
     {
-        PropertiesDialog.Property properties[] = new PropertiesDialog.Property[1];
+        PropertiesDialog.Property[] properties = new PropertiesDialog.Property[1];
 
         // Create a list of all views out there which can accept output
         AbstractView[] views = this.m_Frame.getAllOutputViews();
@@ -424,18 +422,18 @@ public class ButtonView extends AbstractFixedView
     }
 
     /********************************************************************************************
-     * 
+     *
      * We want the button views to wrap to use a second line when needed.
      * However, there's a problem letting the parent composite know that it
      * should give this view the space it needs to wrap.
-     * 
+     *
      * The solution I'm using is to compute how much size the view wants to have
      * and then manually setting the height/width value of the formData of the
      * parent.
-     * 
+     *
      * This is the only solution I've found so far. It's quite likely there's a
      * simple solution to this but finding even this one took a while.
-     * 
+     *
      ********************************************************************************************/
     private void setPrefSize()
     {
@@ -542,7 +540,7 @@ public class ButtonView extends AbstractFixedView
                 public void widgetSelected(SelectionEvent e)
                 {
                     buttonPressed(e, pos);
-                };
+                }
             });
 
             // Record a reference to the button, in case we need it.
@@ -557,9 +555,7 @@ public class ButtonView extends AbstractFixedView
 
         // Create a context menu for each button -- allowing us to modify it
         // etc.
-        for (int i = 0; i < m_ButtonList.size(); i++)
-        {
-            ButtonInfo info = m_ButtonList.get(i);
+        for (ButtonInfo info : m_ButtonList) {
             Button button = info.m_Button;
 
             createContextMenu(button);
@@ -591,17 +587,16 @@ public class ButtonView extends AbstractFixedView
             AbstractView linkedView = getLinkedView();
 
             // We now allow multiple line commands, so process each in turn.
-            String lines[] = command.split(AbstractView.kLineSeparator);
+            String[] lines = command.split(AbstractView.kLineSeparator);
 
-            for (int i = 0; i < lines.length; i++)
-            {
-                if (lines[i].length() == 0)
+            for (String line : lines) {
+                if (line.length() == 0)
                     continue;
 
                 if (linkedView != null)
-                    linkedView.executeAgentCommand(lines[i], true);
+                    linkedView.executeAgentCommand(line, true);
                 else
-                    m_Frame.executeCommandPrimeView(lines[i], true);
+                    m_Frame.executeCommandPrimeView(line, true);
             }
         }
 
@@ -612,11 +607,11 @@ public class ButtonView extends AbstractFixedView
     }
 
     /************************************************************************
-     * 
+     *
      * Converts this object into an XML representation.
-     * 
+     *
      * For the button view there is no content beyond the list of buttons.
-     * 
+     *
      *************************************************************************/
     public edu.umich.soar.debugger.general.JavaElementXML convertToXML(
             String title, boolean storeContent)
@@ -637,10 +632,7 @@ public class ButtonView extends AbstractFixedView
             element.addAttribute("LinkedView", m_LinkedViewName);
 
         // Save information for each button in the panel
-        for (int i = 0; i < m_ButtonList.size(); i++)
-        {
-            ButtonInfo button = m_ButtonList.get(i);
-
+        for (ButtonInfo button : m_ButtonList) {
             JavaElementXML child = new JavaElementXML("Button");
             child.addAttribute("Name", button.m_Name);
 
@@ -657,10 +649,10 @@ public class ButtonView extends AbstractFixedView
     }
 
     /************************************************************************
-     * 
+     *
      * Create an instance of the class. It does not have to be fully initialized
      * (it's the caller's responsibility to finish the initilization).
-     * 
+     *
      *************************************************************************/
     public static ButtonView createInstance()
     {
@@ -668,9 +660,9 @@ public class ButtonView extends AbstractFixedView
     }
 
     /************************************************************************
-     * 
+     *
      * Rebuild the object from an XML representation.
-     * 
+     *
      * @param frame
      *            The top level window that owns this window
      * @param doc
@@ -679,7 +671,7 @@ public class ButtonView extends AbstractFixedView
      *            The pane window that owns this view
      * @param element
      *            The XML representation of this command
-     * 
+     *
      *************************************************************************/
     public void loadFromXML(MainFrame frame,
             edu.umich.soar.debugger.doc.Document doc, Pane parent,

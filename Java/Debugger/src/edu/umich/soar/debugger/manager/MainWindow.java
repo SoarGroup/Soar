@@ -1,18 +1,19 @@
 /********************************************************************************************
  *
  * MainWindow.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 16, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.manager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -37,15 +38,15 @@ import edu.umich.soar.debugger.modules.KeepCommandView;
 import edu.umich.soar.debugger.modules.UpdateCommandView;
 
 /************************************************************************
- * 
+ *
  * Represents the main content window (one per agent usually).
- * 
+ *
  * It does not have a menu bar (that's owned by the frame) and usually will
  * contain a series of Panes each of which is attached to a module that handles
  * the display in that pane.
- * 
+ *
  * A Pane in turn can be either a single window or a tabbed window depending.
- * 
+ *
  ************************************************************************/
 public class MainWindow
 {
@@ -91,7 +92,7 @@ public class MainWindow
                                                        // with a sash control
 
     // The order of this list determines tab order
-    private ArrayList<Pane> m_PaneList = new ArrayList<Pane>();
+    private ArrayList<Pane> m_PaneList = new ArrayList<>();
 
     public MainWindow(MainFrame frame, Document doc, Composite parent)
     {
@@ -126,12 +127,8 @@ public class MainWindow
 
     public void setTextFont(Font f)
     {
-        for (int i = 0; i < m_PaneList.size(); i++)
-        {
-            Pane pane = m_PaneList.get(i);
-
-            for (int j = 0; j < pane.getNumberViews(); j++)
-            {
+        for (Pane pane : m_PaneList) {
+            for (int j = 0; j < pane.getNumberViews(); j++) {
                 AbstractView view = pane.getView(j);
                 view.setTextFont(f);
             }
@@ -144,12 +141,8 @@ public class MainWindow
      **/
     public AbstractView getPrimeView()
     {
-        for (int i = 0; i < m_PaneList.size(); i++)
-        {
-            Pane pane = m_PaneList.get(i);
-
-            for (int j = 0; j < pane.getNumberViews(); j++)
-            {
+        for (Pane pane : m_PaneList) {
+            for (int j = 0; j < pane.getNumberViews(); j++) {
                 AbstractView view = pane.getView(j);
 
                 if (view.canBePrimeWindow())
@@ -163,12 +156,8 @@ public class MainWindow
     public int getNumberViews(boolean outputViewsOnly)
     {
         int count = 0;
-        for (int i = 0; i < m_PaneList.size(); i++)
-        {
-            Pane pane = m_PaneList.get(i);
-
-            for (int j = 0; j < pane.getNumberViews(); j++)
-            {
+        for (Pane pane : m_PaneList) {
+            for (int j = 0; j < pane.getNumberViews(); j++) {
                 AbstractView view = pane.getView(j);
                 if (view.canDisplayOutput() || !outputViewsOnly)
                     count++;
@@ -181,14 +170,10 @@ public class MainWindow
     {
         int counter = 0;
         int count = getNumberViews(outputViewsOnly);
-        AbstractView views[] = new AbstractView[count];
+        AbstractView[] views = new AbstractView[count];
 
-        for (int i = 0; i < m_PaneList.size(); i++)
-        {
-            Pane pane = m_PaneList.get(i);
-
-            for (int j = 0; j < pane.getNumberViews(); j++)
-            {
+        for (Pane pane : m_PaneList) {
+            for (int j = 0; j < pane.getNumberViews(); j++) {
                 AbstractView view = pane.getView(j);
                 if (view.canDisplayOutput() || !outputViewsOnly)
                     views[counter++] = view;
@@ -201,12 +186,8 @@ public class MainWindow
     /** Returns the view that currently has focus */
     public AbstractView getFocusView()
     {
-        for (int i = 0; i < m_PaneList.size(); i++)
-        {
-            Pane pane = m_PaneList.get(i);
-
-            for (int j = 0; j < pane.getNumberViews(); j++)
-            {
+        for (Pane pane : m_PaneList) {
+            for (int j = 0; j < pane.getNumberViews(); j++) {
                 AbstractView view = pane.getView(j);
 
                 if (view.hasFocus())
@@ -439,9 +420,9 @@ public class MainWindow
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the default children that we use in the standard window layout.
-     * 
+     *
      ********************************************************************************************/
     public void useDefaultLayout(String filename)
     {
@@ -522,9 +503,9 @@ public class MainWindow
     }
 
     /************************************************************************
-     * 
+     *
      * Loads the window layout from an XML file.
-     * 
+     *
      *************************************************************************/
     public boolean loadLayoutFromFile(String filename, boolean showErrors)
     {
@@ -622,8 +603,7 @@ public class MainWindow
     {
         Control[] controls = composite.getChildren();
 
-        for (int i = 0; i < controls.length; i++)
-        {
+        for (Control control : controls) {
             // Look up the logical type of window this is (we store this when
             // the window is created).
             // This helps with debugging.
@@ -632,31 +612,26 @@ public class MainWindow
 
             // When we reach a pane we're at a leaf in the layout logic and need
             // to switch to storing the pane information.
-            Pane pane = (Pane) controls[i].getData(Pane.kPaneKey);
+            Pane pane = (Pane) control.getData(Pane.kPaneKey);
 
-            if (pane != null)
-            {
+            if (pane != null) {
                 element.addChildElement(pane.convertToXML(Pane.kTagName,
-                        storeContent));
+                    storeContent));
                 continue;
             }
 
             // Children must be composite windows (either simple composites
             // or sash forms). Anything else we ignore (like an actual Sash
             // control).
-            if (controls[i] instanceof Composite)
-            {
-                Composite comp = (Composite) controls[i];
+            if (control instanceof Composite) {
+                Composite comp = (Composite) control;
 
-                if (comp instanceof SashForm)
-                {
+                if (comp instanceof SashForm) {
                     element.addChildElement(convertSashFormToXML(
-                            (SashForm) comp, storeContent));
-                }
-                else
-                {
+                        (SashForm) comp, storeContent));
+                } else {
                     element.addChildElement(convertCompositeToXML(comp,
-                            storeContent));
+                        storeContent));
                 }
             }
         }
@@ -798,10 +773,7 @@ public class MainWindow
                         .println("Error: Number of weights didn't match number of children, so resetting them all to equal weight.  (Acceptable if removing windows, not if loading layouts).");
                 weights = new int[element.getNumberChildren()];
 
-                for (int w = 0; w < weights.length; w++)
-                {
-                    weights[w] = 100 / (weights.length);
-                }
+                Arrays.fill(weights, 100 / (weights.length));
             }
             sash.setWeights(weights);
         }

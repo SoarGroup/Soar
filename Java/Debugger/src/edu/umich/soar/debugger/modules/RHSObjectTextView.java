@@ -101,7 +101,7 @@ public class RHSObjectTextView extends RHSFunTextView implements
         setTextSafely(output.toString());
     }
 
-    public class OrderedIdentifier implements Comparable<OrderedIdentifier>
+    public static class OrderedIdentifier implements Comparable<OrderedIdentifier>
     {
 
         public OrderedIdentifier(String id)
@@ -118,7 +118,7 @@ public class RHSObjectTextView extends RHSFunTextView implements
 
         protected int order = 0;
 
-        protected String attributes = new String();
+        protected String attributes = "";
 
         protected double doubleOrder = 0;
 
@@ -205,10 +205,10 @@ public class RHSObjectTextView extends RHSFunTextView implements
     }
 
     // Identifier to metadata map
-    HashMap<String, OrderedIdentifier> idToOrdered = new HashMap<String, OrderedIdentifier>();
+    HashMap<String, OrderedIdentifier> idToOrdered = new HashMap<>();
 
     // The sorted objects
-    TreeSet<OrderedIdentifier> sortedIdentifiers = new TreeSet<OrderedIdentifier>();
+    TreeSet<OrderedIdentifier> sortedIdentifiers = new TreeSet<>();
 
     @Override
     public String rhsFunctionHandler(int eventID, Object data,
@@ -241,7 +241,7 @@ public class RHSObjectTextView extends RHSFunTextView implements
                         + ": --order requires an argument";
             }
 
-            int value = 0;
+            int value;
             try
             {
                 value = Integer.parseInt(commandLine[2]);

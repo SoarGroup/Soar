@@ -31,7 +31,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
     @Override
     public void init(MainFrame frame, Document doc, Pane parentPane)
     {
-        if (labelText.length() <= 0)
+        if (labelText.isEmpty())
         {
             labelText = getModuleBaseName();
         }
@@ -43,7 +43,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
         return "rhs_fun_text";
     }
 
-    protected String labelText = new String();
+    protected String labelText = "";
 
     protected Label labelTextWidget;
 
@@ -52,9 +52,9 @@ public class RHSFunTextView extends AbstractRHSFunView implements
     boolean clear = false;
 
     /************************************************************************
-     * 
+     *
      * Set text in a thread safe way (switches to UI thread)
-     * 
+     *
      *************************************************************************/
     protected void setTextSafely(final String text)
     {
@@ -68,13 +68,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
 
         // Have to make update in the UI thread.
         // Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable()
-        {
-            public void run()
-            {
-                textBox.setText(text);
-            }
-        });
+        Display.getDefault().asyncExec(() -> textBox.setText(text));
     }
 
     protected void setLabelText(final String text)
@@ -89,19 +83,13 @@ public class RHSFunTextView extends AbstractRHSFunView implements
 
         // Have to make update in the UI thread.
         // Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable()
-        {
-            public void run()
-            {
-                labelTextWidget.setText(text);
-            }
-        });
+        Display.getDefault().asyncExec(() -> labelTextWidget.setText(text));
     }
 
     /************************************************************************
-     * 
+     *
      * Append text in a thread safe way (switches to UI thread)
-     * 
+     *
      *************************************************************************/
     protected void appendTextSafely(final String text)
     {
@@ -115,13 +103,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
 
         // Have to make update in the UI thread.
         // Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable()
-        {
-            public void run()
-            {
-                textBox.append(text);
-            }
-        });
+        Display.getDefault().asyncExec(() -> textBox.append(text));
     }
 
     StringBuilder output = new StringBuilder();
@@ -206,7 +188,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
             {
                 if (e.button == 2 || e.button == 3)
                     rightButtonPressed(e);
-            };
+            }
         });
 
         textBox.setBackground(getBackgroundColor());
@@ -216,12 +198,12 @@ public class RHSFunTextView extends AbstractRHSFunView implements
     }
 
     /*******************************************************************************************
-     * 
+     *
      * When the user clicks the right mouse button, sets the selection to that
      * location (just like a left click). This makes right clicking on a piece
      * of text much easier as it's just one click rather than having to left
      * click to place the selection and then right click to bring up the menu.
-     * 
+     *
      ********************************************************************************************/
     protected void rightButtonPressed(MouseEvent e)
     {
@@ -350,9 +332,9 @@ public class RHSFunTextView extends AbstractRHSFunView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Converts this object into an XML representation.
-     * 
+     *
      *************************************************************************/
     @Override
     public JavaElementXML convertToXML(String title, boolean storeContent)
@@ -386,9 +368,9 @@ public class RHSFunTextView extends AbstractRHSFunView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Rebuild the object from an XML representation.
-     * 
+     *
      * @param frame
      *            The top level window that owns this window
      * @param doc
@@ -397,7 +379,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
      *            The pane window that owns this view
      * @param element
      *            The XML representation of this command
-     * 
+     *
      *************************************************************************/
     @Override
     public void loadFromXML(MainFrame frame, Document doc, Pane parent,
@@ -417,12 +399,12 @@ public class RHSFunTextView extends AbstractRHSFunView implements
 
         if (rhsFunName == null)
         {
-            rhsFunName = new String();
+            rhsFunName = "";
         }
 
         if (labelText == null)
         {
-            labelText = new String();
+            labelText = "";
         }
 
         JavaElementXML log = element.findChildByName("Logger");

@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * AbstractFixedView.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Sep 25, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
@@ -21,22 +21,22 @@ import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.manager.Pane;
 
 /************************************************************************
- * 
+ *
  * Fixed views generally don't do a whole lot (compared to variable size
  * trace/output windows), so we'll fill in default methods here to save each
  * subclass from providing them.
- * 
+ *
  * If a class really wants to implement one of these methods directly they can
  * always override it.
- * 
+ *
  ************************************************************************/
 public abstract class AbstractFixedView extends AbstractView
 {
     /********************************************************************************************
-     * 
+     *
      * Return true if this view shouldn't be user resizable. E.g. A text window
      * would return false but a bar for buttons would return true.
-     * 
+     *
      ********************************************************************************************/
     public boolean isFixedSizeView()
     {
@@ -44,10 +44,10 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Returns true if this window can display output from commands executed
      * through the "executeAgentCommand" method.
-     * 
+     *
      *************************************************************************/
     public boolean canDisplayOutput()
     {
@@ -60,9 +60,9 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Copy/paste current selection to/from the clipboard.
-     * 
+     *
      ********************************************************************************************/
     public void copy()
     {
@@ -70,10 +70,10 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Search for the next occurance of 'text' in this view and place the
      * selection at that point.
-     * 
+     *
      * @param text
      *            The string to search for
      * @param searchDown
@@ -85,7 +85,7 @@ public abstract class AbstractFixedView extends AbstractView
      * @param searchHidden
      *            If true and this view has hidden text (e.g. unexpanded tree
      *            nodes) search that text
-     * 
+     *
      *************************************************************************/
     public boolean find(String text, boolean searchDown, boolean matchCase,
             boolean wrap, boolean searchHiddenText)
@@ -94,19 +94,19 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Clear the display (the text part if any)
-     * 
+     *
      *************************************************************************/
     public void clearDisplay()
     {
     }
 
     /************************************************************************
-     * 
+     *
      * Override and return false if it doesn't make sense to clear this type of
      * view.
-     * 
+     *
      *************************************************************************/
     public boolean offerClearDisplay()
     {
@@ -114,11 +114,11 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Override and return false if it doesn't make sense to log the contexts of
      * this type of view and so we shouldn't offer it to the user in the context
      * menu.
-     * 
+     *
      *************************************************************************/
     public boolean offerLogging()
     {
@@ -129,10 +129,8 @@ public abstract class AbstractFixedView extends AbstractView
     {
         // Send the command to Soar but there's no where to display the output
         // so we just eat it.
-        String result = getDocument()
+        return getDocument()
                 .sendAgentCommand(getAgentFocus(), command);
-
-        return result;
     }
 
     public void displayText(String text)
@@ -141,10 +139,10 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Set the focus to this window so the user can type commands easily. Return
      * true if this window wants the focus.
-     * 
+     *
      *************************************************************************/
     public boolean setFocus()
     {
@@ -157,10 +155,10 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Register and unregister for Soar events for this agent. (E.g. a trace
      * window might register for the print event)
-     * 
+     *
      *************************************************************************/
     protected void registerForAgentEvents(Agent agent)
     {
@@ -171,21 +169,21 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * ClearAgentEvents is called when the agent has already been deleted (so we
      * can't unregister but should just clear our references)
-     * 
+     *
      *************************************************************************/
     protected void clearAgentEvents()
     {
     }
 
     /************************************************************************
-     * 
+     *
      * Converts this object into an XML representation.
-     * 
+     *
      * For the button view there is no content beyond the list of buttons.
-     * 
+     *
      *************************************************************************/
     public JavaElementXML convertToXML(String tagName, boolean storeContent)
     {
@@ -203,9 +201,9 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Rebuild the object from an XML representation.
-     * 
+     *
      * @param frame
      *            The top level window that owns this window
      * @param doc
@@ -214,7 +212,7 @@ public abstract class AbstractFixedView extends AbstractView
      *            The pane window that owns this view
      * @param element
      *            The XML representation of this command
-     * 
+     *
      *************************************************************************/
     public void loadFromXML(MainFrame frame,
             edu.umich.soar.debugger.doc.Document doc, Pane parent,
@@ -233,16 +231,16 @@ public abstract class AbstractFixedView extends AbstractView
     }
 
     /************************************************************************
-     * 
+     *
      * Given a context menu and a control, fill in the items you want to see in
      * the menu. The simplest is to just call "fillWindowMenu".
-     * 
+     *
      * This call is made after the user has clicked to bring up the menu so we
      * can create a dymanic menu based on the current context.
-     * 
+     *
      * You also have to call createContextMenu() to request a context menu be
      * attached to a specific control.
-     * 
+     *
      *************************************************************************/
     protected void fillInContextMenu(Menu contextMenu, Control control,
             int mouseX, int mouseY)

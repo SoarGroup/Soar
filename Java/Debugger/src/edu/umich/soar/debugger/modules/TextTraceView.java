@@ -1,14 +1,14 @@
 /********************************************************************************************
  *
  * ComboCommandLineWindow.java
- * 
+ *
  * Description:	Mimic a simple command line window -- type commands directly to execute them.
  * 				For now we still just use a combo box for the input -- later we'll do a version
  * 				which uses a normal command line prompt.
- * 
+ *
  * Created on 	Jan 29, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
@@ -28,13 +28,13 @@ import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.menu.ParseSelectedText;
 
 /************************************************************************
- * 
+ *
  * This version clears the last command from the combo box (so you're ready to
  * type another), keeps all of the output and doesn't do anything when Soar
  * stops running.
- * 
+ *
  * Getting closer to a real command line window.
- * 
+ *
  ************************************************************************/
 public class TextTraceView extends AbstractComboView
 {
@@ -59,9 +59,9 @@ public class TextTraceView extends AbstractComboView
     }
 
     /************************************************************************
-     * 
+     *
      * Clear the display control.
-     * 
+     *
      *************************************************************************/
     public void clearDisplay()
     {
@@ -69,9 +69,9 @@ public class TextTraceView extends AbstractComboView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Copy current selection to the clipboard.
-     * 
+     *
      ********************************************************************************************/
     public void copy()
     {
@@ -79,9 +79,9 @@ public class TextTraceView extends AbstractComboView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Scroll the display control to the bottom
-     * 
+     *
      ********************************************************************************************/
     public void scrollBottom()
     {
@@ -92,10 +92,10 @@ public class TextTraceView extends AbstractComboView
     }
 
     /************************************************************************
-     * 
+     *
      * Search for the next occurance of 'text' in this view and place the
      * selection at that point.
-     * 
+     *
      * @param text
      *            The string to search for
      * @param searchDown
@@ -108,7 +108,7 @@ public class TextTraceView extends AbstractComboView
      * @param searchHidden
      *            If true and this view has hidden text (e.g. unexpanded tree
      *            nodes) search that text
-     * 
+     *
      *************************************************************************/
     public boolean find(String text, boolean searchDown, boolean matchCase,
             boolean wrap, boolean searchHiddenText)
@@ -126,7 +126,7 @@ public class TextTraceView extends AbstractComboView
         Point selectionPoint = m_Text.getSelection();
         int selectionStart = selectionPoint.x;
 
-        int start = -1;
+        int start;
         boolean done;
         do
         {
@@ -186,9 +186,9 @@ public class TextTraceView extends AbstractComboView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the window that will display the output
-     * 
+     *
      ********************************************************************************************/
     protected void createDisplayControl(Composite parent)
     {
@@ -207,19 +207,19 @@ public class TextTraceView extends AbstractComboView
             {
                 if (e.button == 2 || e.button == 3)
                     rightButtonPressed(e);
-            };
+            }
         });
 
         createContextMenu(m_Text);
     }
 
     /*******************************************************************************************
-     * 
+     *
      * When the user clicks the right mouse button, sets the selection to that
      * location (just like a left click). This makes right clicking on a piece
      * of text much easier as it's just one click rather than having to left
      * click to place the selection and then right click to bring up the menu.
-     * 
+     *
      ********************************************************************************************/
     protected void rightButtonPressed(MouseEvent e)
     {
@@ -250,10 +250,10 @@ public class TextTraceView extends AbstractComboView
          * e.y << 16 | e.x ; // Coords are packed as high-word, low-word int
          * result = org.eclipse.swt.internal.win32.OS.SendMessage (handle,
          * org.eclipse.swt.internal.win32.OS.EM_CHARFROMPOS, 0, lParam);
-         * 
+         *
          * // Break out the character and line position from the result int
          * charPos = result & (0xFFFF) ; int linePos = (result >>> 16) ;
-         * 
+         *
          * // Set the selection to the character position (which is measured
          * from the first character // in the control). m_Text.clearSelection()
          * ; m_Text.setSelection(charPos) ; //System.out.println("Char " +
@@ -263,7 +263,7 @@ public class TextTraceView extends AbstractComboView
 
     /********************************************************************************************
      * @param element
-     * 
+     *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#storeContent(edu.umich.soar.debugger.general.JavaElementXML)
      ********************************************************************************************/
     protected void storeContent(JavaElementXML element)
@@ -274,7 +274,7 @@ public class TextTraceView extends AbstractComboView
 
     /********************************************************************************************
      * @param element
-     * 
+     *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#restoreContent(edu.umich.soar.debugger.general.JavaElementXML)
      ********************************************************************************************/
     protected void restoreContent(JavaElementXML element)
@@ -291,9 +291,9 @@ public class TextTraceView extends AbstractComboView
     }
 
     /********************************************************************************************
-     * 
+     *
      * Register for events of particular interest to this view
-     * 
+     *
      ********************************************************************************************/
     protected void registerForViewAgentEvents(Agent agent)
     {
@@ -310,7 +310,7 @@ public class TextTraceView extends AbstractComboView
 
     /********************************************************************************************
      * @param text
-     * 
+     *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#appendText(java.lang.String)
      ********************************************************************************************/
     protected void appendText(final String text)
@@ -331,11 +331,11 @@ public class TextTraceView extends AbstractComboView
     }
 
     /********************************************************************************************
-     * 
+     *
      * This "base name" is used to generate a unique name for the window. For
      * example, returning a base name of "trace" would lead to windows named
      * "trace1", "trace2" etc.
-     * 
+     *
      ********************************************************************************************/
     public String getModuleBaseName()
     {
@@ -344,7 +344,7 @@ public class TextTraceView extends AbstractComboView
 
     public void showProperties()
     {
-        PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3];
+        PropertiesDialog.Property[] properties = new PropertiesDialog.Property[3];
 
         properties[0] = new PropertiesDialog.BooleanProperty(
                 "Update automatically on stop", m_UpdateOnStop);

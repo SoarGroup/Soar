@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * XmlTrace.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	May 24, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.helpers;
@@ -17,9 +17,9 @@ import sml.sml_Names;
 import edu.umich.soar.debugger.modules.AbstractView;
 
 /************************************************************************
- * 
+ *
  * Methods we can use to convert XML trace data into strings to display
- * 
+ *
  ************************************************************************/
 public class XmlOutput
 {
@@ -51,7 +51,7 @@ public class XmlOutput
     static
     {
         // Fill in the kPadSpaces array
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         for (int i = 0; i < kCachedSpaces; i++)
         {
@@ -80,18 +80,15 @@ public class XmlOutput
             return kPadSpaces[length];
 
         // Otherwise we have to generate it which is slow
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(kPadSpaces[kPadSpaces.length - 1]);
 
-        // If we use this a lot we could speed it up by using a binary addition
-        // process
-        // but I hope to never use it (except in a run-away stack situation).
-        for (int i = 0; i < length - kPadSpaces.length; i++)
-        {
-            buffer.append(" ");
-        }
+        String buffer = kPadSpaces[kPadSpaces.length - 1] +
 
-        return buffer.toString();
+            // If we use this a lot we could speed it up by using a binary addition
+            // process,
+            // but I hope to never use it (except in a run-away stack situation).
+            " ".repeat(length - kPadSpaces.length);
+
+        return buffer;
     }
 
     /** Add spaces to the length until reaches minLength */
@@ -124,7 +121,7 @@ public class XmlOutput
             int indentSize)
     {
         // 3: ==>S: S2 (operator no-change)
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
         text.append(XmlOutput.padLeft(xmlTrace.GetDecisionCycleCount(),
                 kDecisionDigits));
         text.append(": ");
@@ -162,7 +159,7 @@ public class XmlOutput
             int indentSize)
     {
         // 2: O: O8 (move-block)
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
         text.append(XmlOutput.padLeft(xmlTrace.GetDecisionCycleCount(),
                 kDecisionDigits));
         text.append(": ");
@@ -183,7 +180,7 @@ public class XmlOutput
     public static String getPhaseText(Agent agent, ClientTraceXML xmlTrace,
             String status)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         String firingType = xmlTrace.GetFiringType();
 
@@ -209,7 +206,7 @@ public class XmlOutput
 
     public static String getSubphaseText(Agent agent, ClientTraceXML xmlTrace)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         String subphase = "unknown";
 
@@ -249,7 +246,7 @@ public class XmlOutput
     public static String getConditionText(Agent agent, ClientTraceXML cond,
             boolean indent)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         if (indent)
             text.append(kProdIndent);
@@ -282,7 +279,7 @@ public class XmlOutput
     public static String getNumericIndiffernceText(Agent agent,
             ClientTraceXML xmlTrace)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         // Going to allow for any and all of these being null since this is more
         // experimental
@@ -336,7 +333,7 @@ public class XmlOutput
     public static String getBacktraceText(Agent agent, ClientTraceXML xml,
             String parentTagName)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         if (xml.IsTagBacktrace())
         {
@@ -443,7 +440,7 @@ public class XmlOutput
     public static String getLocalNegationText(Agent agent, ClientTraceXML xml,
             String parentTagName)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
         text
                 .append("*** Chunk won't be formed due to local negation in backtrace ***");
         String output = getConditionsText(agent, xml);
@@ -454,7 +451,7 @@ public class XmlOutput
 
     public static String getActionText(Agent agent, ClientTraceXML action)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         text.append(kLineProdIndent);
         text.append("(");
@@ -487,7 +484,7 @@ public class XmlOutput
     public static String getConditionsText(Agent agent,
             ClientTraceXML conditions)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         for (int j = 0; j < conditions.GetNumberChildren(); j++)
         {
@@ -532,7 +529,7 @@ public class XmlOutput
 
     public static String getProductionText(Agent agent, ClientTraceXML xmlProd)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         // sp {chunk-2*d9*tie*2
         // :chunk
@@ -600,7 +597,7 @@ public class XmlOutput
 
     public static String getPreferenceText(Agent agent, ClientTraceXML xmlTrace)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         text.append("(");
         text.append(xmlTrace.GetPreferenceID());
@@ -633,7 +630,7 @@ public class XmlOutput
 
     public static String getWmeText(Agent agent, ClientTraceXML wme)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         text.append("(");
         String timetag = wme.GetWmeTimeTag();
@@ -671,7 +668,7 @@ public class XmlOutput
     public static String getWmeChanges(Agent agent, ClientTraceXML xmlTrace,
             boolean adding)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         for (int i = 0; i < xmlTrace.GetNumberChildren(); i++)
         {
@@ -695,7 +692,7 @@ public class XmlOutput
     public static String getProductionFiring(Agent agent,
             ClientTraceXML xmlTrace, boolean firing)
     {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
 
         // Firing/Retracting <production>
         // followed by timetag or full wme information for LHS

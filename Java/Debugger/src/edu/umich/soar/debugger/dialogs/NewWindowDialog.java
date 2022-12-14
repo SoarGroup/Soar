@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * NewWindowDialog.java
- * 
+ *
  * Created on 	Nov 22, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
@@ -24,13 +24,13 @@ import edu.umich.soar.debugger.doc.Module;
 import edu.umich.soar.debugger.doc.ModuleList;
 
 /********************************************************************************************
- * 
+ *
  * This dialog offers a list of available modules (window classes) and allows
  * the user to select one.
- * 
+ *
  * This dialog (like most I write) is designed as a panel so it can be used in a
  * dialog or placed on another window if desired.
- * 
+ *
  ********************************************************************************************/
 public class NewWindowDialog extends BaseDialog
 {
@@ -45,9 +45,9 @@ public class NewWindowDialog extends BaseDialog
     private MainFrame m_Frame;
 
     /********************************************************************************************
-     * 
+     *
      * Create a simple dialog asking the user to pick a module (window type)
-     * 
+     *
      * @param parent
      *            The parent for this dialog (we'll center the dialog within
      *            this window)
@@ -77,10 +77,10 @@ public class NewWindowDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the dialog -- the constructor is private because we use a static
      * method to build this.
-     * 
+     *
      ********************************************************************************************/
     private NewWindowDialog(MainFrame frame, String title, ModuleList modules)
     {
@@ -94,7 +94,7 @@ public class NewWindowDialog extends BaseDialog
         String[] moduleNames = new String[modules.size()];
         for (int i = 0; i < modules.size(); i++)
         {
-            moduleNames[i] = ((Module) modules.get(i)).getName();
+            moduleNames[i] = modules.get(i).getName();
         }
 
         // getOpenArea().setLayout(new FormLayout()) ;
@@ -141,9 +141,9 @@ public class NewWindowDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog -- either successfully or cancelled.
-     * 
+     *
      ********************************************************************************************/
     protected void endDialog(boolean ok)
     {
@@ -163,9 +163,9 @@ public class NewWindowDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * The user selected a new module.
-     * 
+     *
      ********************************************************************************************/
     private void selectionChanged()
     {

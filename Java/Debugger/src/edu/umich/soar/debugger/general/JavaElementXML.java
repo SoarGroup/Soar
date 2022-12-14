@@ -1,9 +1,9 @@
-/** 
+/**
  * ElementXML.java
  *
  * Description:		Utility class for reading and writing XML values.
  * @author			Doug
- * @version			
+ * @version
  */
 
 package edu.umich.soar.debugger.general;
@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 /************************************************************************
- * 
+ *
  * IMPORTANT NOTES ON THIS CLASS: This class was written long before SML
  * existed. During the writing of SML, this class was re-implemented in C++ as
  * ElementXML. In general, the sml.ElementXML class should be the class of
@@ -29,20 +29,20 @@ import java.util.Map.Entry;
  * debugger that uses this class and we just haven't had time to go through and
  * remove all of the uses of this code and use sml.ElementXML instead. To make
  * sure the two aren't muddled up this one has been renamed to JavaElementXML.
- * 
+ *
  * The ElementXML class is a general utility class for reading and writing XML
  * files. It represents an XML element, such as (using square brackets instead
  * of angled so that javadoc doesn't have a fit):
- * 
+ *
  * <pre>
  * [author genre="fiction"]
  * "tolkien"
  * [book]"the hobbit"[/book]
  * [/author]
  * </pre>
- * 
+ *
  * The components here are:
- * 
+ *
  * <pre>
  * Tag name   - "author"
  * Attribute  - "genre"
@@ -50,23 +50,23 @@ import java.util.Map.Entry;
  * Contents   - "tolkien"
  * Children   - another element: tag "book", contents "the hobbit".
  * </pre>
- * 
+ *
  * Note that because XML elements can contain other child XML elements that one
  * element (and its children) is generally sufficient to represent an entire XML
  * file.
- * 
+ *
  * To write an XML file, construct the root XML element (and add all of its
  * children). Then call the WriteToFile function.
- * 
+ *
  * To read an XML file call the ReadFromFile function, which builds the XML root
  * element (and its children) and then returns it.
- * 
+ *
  * Of the two, the read function is much more complex. It uses a parser, which
  * in turn uses a lexical analyser.
- * 
+ *
  * The job of the lexical analyser is to turn the input stream into a series of
  * tokens: E.g. Given "[tag att="value"] the tokens would be
- * 
+ *
  * <pre>
  * symbol       - "[",
  * identifier   - "tag",
@@ -75,10 +75,10 @@ import java.util.Map.Entry;
  * quotedString - "value"
  * symbol	   - "]"
  * </pre>
- * 
+ *
  * Once the stream is broken into tokens, the parser then consumes them to build
  * the XML element.
- * 
+ *
  *************************************************************************/
 public class JavaElementXML
 {
@@ -97,12 +97,12 @@ public class JavaElementXML
         public static final int kEOF = 5;
 
         /************************************************************************
-         * 
+         *
          * The token class represents one element in the input stream. E.g.
          * Given "[tag att="value"] the tokens would be symbol - "[", identifier
          * - "tag", identifier - "att", symbol - "=" quotedString - "value"
          * symbol - "]"
-         * 
+         *
          *************************************************************************/
         private static class Token
         {
@@ -129,23 +129,23 @@ public class JavaElementXML
             // public void setValue(String s){ this.m_Value = s ; }
         }
 
-        protected BufferedReader m_Input = null;
+        protected BufferedReader m_Input;
 
-        protected String m_CurrentLine = null;
+        protected String m_CurrentLine;
 
-        protected int m_Pos = 0;
+        protected int m_Pos;
 
         protected Token m_CurrentToken = null;
 
-        protected String m_LastComment = null;
+        protected String m_LastComment;
 
         /************************************************************************
-         * 
+         *
          * Constructor for the XML lexical analyser.
-         * 
+         *
          * @param input
          *            The input stream of raw text from the XML file
-         * 
+         *
          *************************************************************************/
         public LexXML(BufferedReader input) throws Exception
         {
@@ -185,15 +185,15 @@ public class JavaElementXML
         }
 
         /************************************************************************
-         * 
+         *
          * Read the next character from the input file.
-         * 
+         *
          * This function reads lines from the input file and inserts the local
          * line break character. For example, if you're running on Windows
          * reading a Linux file, the Windows line break chars will appear in the
          * character stream even though the original file used Linux line break
          * char.
-         * 
+         *
          *************************************************************************/
         protected void GetNextChar() throws java.io.IOException
         {
@@ -220,9 +220,9 @@ public class JavaElementXML
         }
 
         /************************************************************************
-         * 
+         *
          * Returns the current character from the input stream.
-         * 
+         *
          *************************************************************************/
         protected char getCurrentChar()
         {
@@ -230,9 +230,9 @@ public class JavaElementXML
         }
 
         /************************************************************************
-         * 
+         *
          * Returns true if we're at the end of the file.
-         * 
+         *
          *************************************************************************/
         protected boolean IsEOF()
         {
@@ -240,9 +240,9 @@ public class JavaElementXML
         }
 
         /************************************************************************
-         * 
+         *
          * Returns true if the character is white space.
-         * 
+         *
          *************************************************************************/
         protected boolean IsWhiteSpace(char ch)
         {
@@ -250,9 +250,9 @@ public class JavaElementXML
         }
 
 /************************************************************************
-		* 
+		*
 		* Returns true if this is a symbol (i.e. a special char in XML, like "<")
-		* 
+		*
 		*************************************************************************/
         protected boolean IsSymbol(char ch)
         {
@@ -266,9 +266,9 @@ public class JavaElementXML
         }
 
         /************************************************************************
-         * 
+         *
          * Returns true if this is the quote character (")
-         * 
+         *
          *************************************************************************/
         protected boolean IsQuote(char ch)
         {
@@ -276,9 +276,9 @@ public class JavaElementXML
         }
 
         /************************************************************************
-         * 
+         *
          * Set the value of the current token.
-         * 
+         *
          *************************************************************************/
         protected void SetCurrentToken(String value, int type)
         {
@@ -286,10 +286,10 @@ public class JavaElementXML
         }
 
         /************************************************************************
-         * 
+         *
          * This is the main lexical analyser functions--gets the next token from
          * the input stream (e.g. an identifier, or a symbol etc.)
-         * 
+         *
          *************************************************************************/
         public void GetNextToken() throws Exception
         {
@@ -323,7 +323,7 @@ public class JavaElementXML
                 // differently from a regular symbol
                 if (IsCommentStart(getCurrentChar()))
                 {
-                    StringBuffer buffer = new StringBuffer();
+                    StringBuilder buffer = new StringBuilder();
 
                     // Consume the ! and the two leading dashes (BADBAD, I guess
                     // we should check that they are leading -- and report a
@@ -360,7 +360,7 @@ public class JavaElementXML
             if (IsQuote(getCurrentChar()))
             {
                 // Buffer we'll use to build up the string
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder buffer = new StringBuilder();
 
                 // Consume the opening quote.
                 GetNextChar();
@@ -380,7 +380,7 @@ public class JavaElementXML
             }
 
             // Identifier
-            StringBuffer identifier = new StringBuffer();
+            StringBuilder identifier = new StringBuilder();
             while (!IsEOF() && !IsWhiteSpace(getCurrentChar())
                     && !IsSymbol(getCurrentChar())
                     && !IsQuote(getCurrentChar()))
@@ -396,41 +396,40 @@ public class JavaElementXML
         // {
         // return this.m_CurrentToken ;
         // }
-        //		
+        //
         // public int getCurrentTokenType()
         // {
         // return this.m_CurrentToken.getType() ;
         // }
-        //		
+        //
         public String getCurrentTokenValue()
         {
             return this.m_CurrentToken.getValue();
         }
 
         /************************************************************************
-         * 
+         *
          * Returns true if the current token matches the given type. E.g. if
          * (Have(kSymbol)) { // Process symbol }
-         * 
+         *
          * @param type
          *            The type to test against.
-         * 
+         *
          *************************************************************************/
-        public boolean Have(int type) throws Exception
-        {
+        public boolean Have(int type) {
             return (m_CurrentToken.getType() == type);
         }
 
 /************************************************************************
-		* 
+		*
 		* Returns true AND consumes the current token, if the values match.
 		* We can consume the token, because the parser already knows its value.
 		* E.g. if (Have("<")) { // Parse what comes after "<" }
-		* 
+		*
 		* @param value			The string value to test
-		* 
+		*
 		* @return True if value matches current token.
-		* 
+		*
 		*************************************************************************/
         public boolean Have(String value) throws Exception
         {
@@ -459,15 +458,15 @@ public class JavaElementXML
         // }
 
         /************************************************************************
-         * 
+         *
          * Checks that the current token matches the given value. If not, throws
          * an exception. Used for places in the parse when you know what must
          * come next. E.g. At the end of an XML token : MustBe("/") ;
          * MustBe(">") ;
-         * 
+         *
          * @param value
          *            The value to test
-         * 
+         *
          *************************************************************************/
         public void MustBe(String value) throws Exception
         {
@@ -481,16 +480,16 @@ public class JavaElementXML
         }
 
         /************************************************************************
-         * 
+         *
          * Checks that the current token matches the given type. If it does,
          * returns the value (this is often useful when testing for
          * identifiers). If it does not match, throws an exception.
-         * 
+         *
          * @param type
          *            The type to test (e.g. kSymbol)
-         * 
+         *
          * @return The value of the current token (if matches type).
-         * 
+         *
          *************************************************************************/
         public String MustBe(int type) throws Exception
         {
@@ -565,13 +564,13 @@ public class JavaElementXML
             .getProperty("line.separator");
 
     /** List of attribute names and string values */
-    protected HashMap<String, String> m_AttributeList = new HashMap<String, String>();
+    protected HashMap<String, String> m_AttributeList = new HashMap<>();
 
     /** List of elements contained in this element */
-    protected ArrayList<JavaElementXML> m_ChildElementList = new ArrayList<JavaElementXML>();
+    protected ArrayList<JavaElementXML> m_ChildElementList = new ArrayList<>();
 
     /** The tag for this item */
-    protected String m_TagName = null;
+    protected String m_TagName;
 
     /**
      * The comment for this item which will be added to the XML in front of this
@@ -599,18 +598,18 @@ public class JavaElementXML
     protected JavaElementXML m_Parent = null;
 
     /************************************************************************
-     * 
+     *
      * Constructor -- builds the new XML element and assigns it a tag name.
-     * 
+     *
      * @param tagName
      *            The name of the tag for this element
-     * 
+     *
      *************************************************************************/
     public JavaElementXML(String tagName)
     {
         // Check there are no spaces in the tag name -- spaces make it hard to
         // parse when reading the file.
-        if (tagName.indexOf(" ") != -1)
+        if (tagName.contains(" "))
             throw new Error(
                     "Not allowed tag names with spaces inside them -- at least not for my form of XML");
 
@@ -636,10 +635,10 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * These convert invalid XML chars to XML escape sequences and back again
      * (e.g. "<" => "&lt;" and so on.
-     * 
+     *
      *************************************************************************/
     protected static String convertToEscapes(String src)
     {
@@ -649,7 +648,7 @@ public class JavaElementXML
          * "&quot;" ; static char const* kAPOS = "&apos;" ;
          */
 
-        StringBuffer xmlSafe = new StringBuffer();
+        StringBuilder xmlSafe = new StringBuilder();
 
         int len = src.length();
         for (int i = 0; i < len; i++)
@@ -689,7 +688,7 @@ public class JavaElementXML
          * "&quot;" ; static char const* kAPOS = "&apos;" ;
          */
 
-        StringBuffer orig = new StringBuffer();
+        StringBuilder orig = new StringBuilder();
 
         int len = src.length();
         for (int i = 0; i < len; i++)
@@ -724,9 +723,8 @@ public class JavaElementXML
                     else
                     {
                         i += 5;
-                        orig.append("\'");
+                        orig.append("'");
                     }
-                    ;
                     break;
                 }
             }
@@ -740,15 +738,15 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Constructor -- builds the new XML element and assigns it a tag name and
      * initial contents. Useful for simple tags.
-     * 
+     *
      * @param tagName
      *            The name of the tag for this element
      * @param contents
      *            The body of this tag ([tag]"contents"[/tag])
-     * 
+     *
      *************************************************************************/
     public JavaElementXML(String tagName, String contents)
     {
@@ -758,15 +756,15 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Add a string to the "contents" of the XML element. The contents is the
      * part falling between the opening and closing tag. E.g.
      * <tag>contents</tag> The contents can be multi-line, but cannot contain
      * any embedded quotes.
-     * 
+     *
      * @param contents
      *            The string to add to the current contents.
-     * 
+     *
      *************************************************************************/
     public void addContents(String contents)
     {
@@ -791,9 +789,9 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Gets the contents of this XML element.
-     * 
+     *
      *************************************************************************/
     public String getContents()
     {
@@ -801,10 +799,10 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Get and set the "source" object -- whose use is up to the client (not
      * required at all)
-     * 
+     *
      *************************************************************************/
     public Object getSource()
     {
@@ -817,10 +815,10 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns a Hashtable, mapping from attribute name to attribute value.
      * (String to String).
-     * 
+     *
      *************************************************************************/
     public HashMap<String, String> getAttributeMap()
     {
@@ -828,9 +826,9 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute. The value is always a string.
-     * 
+     *
      *************************************************************************/
     public String getAttribute(String name)
     {
@@ -838,10 +836,10 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute. The value is always a string.
      * This version throws an exception if the attribute is missing.
-     * 
+     *
      *************************************************************************/
     public String getAttributeThrows(String name) throws Exception
     {
@@ -855,119 +853,101 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute, interpreting it as an double. If
      * the attribute is missing or cannot be parsed as an int, this function
      * throws an exception.
-     * 
+     *
      *************************************************************************/
     public double getAttributeDoubleThrows(String name) throws Exception
     {
         String val = getAttributeThrows(name);
 
-        double doubleVal = Double.parseDouble(val);
-
-        return doubleVal;
+        return Double.parseDouble(val);
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute, interpreting it as an double. If
      * the attribute is missing returns the defaultValue. If the attribute is
      * present but cannot be parsed as an int this throws.
-     * 
+     *
      *************************************************************************/
-    public double getAttributeDoubleDefault(String name, double defaultValue)
-            throws Exception
-    {
+    public double getAttributeDoubleDefault(String name, double defaultValue) {
         String val = this.getAttribute(name);
 
         if (val == null)
             return defaultValue;
 
-        double doubleVal = Double.parseDouble(val);
-
-        return doubleVal;
+        return Double.parseDouble(val);
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute, interpreting it as an int. If the
      * attribute is missing or cannot be parsed as an int, this function throws
      * an exception.
-     * 
+     *
      *************************************************************************/
     public int getAttributeIntThrows(String name) throws Exception
     {
         String val = getAttributeThrows(name);
 
-        int intVal = Integer.parseInt(val);
-
-        return intVal;
+        return Integer.parseInt(val);
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute, interpreting it as an int. If the
      * attribute is missing returns the defaultValue. If the attribute is
      * present but cannot be parsed as an int this throws.
-     * 
+     *
      *************************************************************************/
-    public int getAttributeIntDefault(String name, int defaultValue)
-            throws Exception
-    {
+    public int getAttributeIntDefault(String name, int defaultValue) {
         String val = this.getAttribute(name);
 
         if (val == null)
             return defaultValue;
 
-        int intVal = Integer.parseInt(val);
-
-        return intVal;
+        return Integer.parseInt(val);
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute, interpreting it as a long. If the
      * attribute is missing or cannot be parsed as a long, this function throws
      * an exception.
-     * 
+     *
      *************************************************************************/
     public long getAttributeLongThrows(String name) throws Exception
     {
         String val = getAttributeThrows(name);
 
-        long longVal = Long.parseLong(val);
-
-        return longVal;
+        return Long.parseLong(val);
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute, interpreting it as a long. If the
      * attribute is missing returns the defaultValue. If the attribute is
      * present but cannot be parsed as an long this throws
-     * 
+     *
      *************************************************************************/
-    public long getAttributeLongDefault(String name, long defaultValue)
-            throws Exception
-    {
+    public long getAttributeLongDefault(String name, long defaultValue) {
         String val = this.getAttribute(name);
 
         if (val == null)
             return defaultValue;
 
-        long longVal = Long.parseLong(val);
-
-        return longVal;
+        return Long.parseLong(val);
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute, interpreting it as an boolean. If
      * the attribute is missing or cannot be parsed as a bool, this function
      * returns the default value without throwing.
-     * 
+     *
      *************************************************************************/
     public boolean getAttributeBooleanDefault(String name, boolean defaultValue)
     {
@@ -985,11 +965,11 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the value of a named attribute, interpreting it as an boolean. If
      * the attribute is missing or cannot be parsed as a bool, this function
      * throws an exception.
-     * 
+     *
      *************************************************************************/
     public boolean getAttributeBooleanThrows(String name) throws Exception
     {
@@ -1005,9 +985,9 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the number of children of this element.
-     * 
+     *
      *************************************************************************/
     public int getNumberChildren()
     {
@@ -1015,14 +995,14 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns a specific child of this element.
-     * 
+     *
      * @param index
      *            The position in the list (>=0 and < number of children)
-     * 
+     *
      * @return The element at the given position.
-     * 
+     *
      *************************************************************************/
     public JavaElementXML getChild(int index)
     {
@@ -1030,10 +1010,10 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns a list of all of the children of this element. The list is of
      * ElementXML objects.
-     * 
+     *
      *************************************************************************/
     protected ArrayList<JavaElementXML> getChildElementList()
     {
@@ -1041,15 +1021,15 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Replaces one child with another (in the same position in the list of
      * children).
-     * 
+     *
      * @param existingChild
      *            The child being replaced
      * @param newChild
      *            The child being added (can be null -> just deletes)
-     * 
+     *
      * @return True if replacement succeeds (i.e. existingChild is found)
      *************************************************************************/
     public boolean replaceChild(JavaElementXML existingChild,
@@ -1076,12 +1056,12 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Removes a child from the XML tree
-     * 
+     *
      * @param existingChild
      *            The child being removed
-     * 
+     *
      * @return True if removal succeeds (i.e. existingChild is found)
      *************************************************************************/
     public boolean removeChild(JavaElementXML child)
@@ -1090,10 +1070,10 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Returns the tag name for this element. E.g. <author>Thomas</author> the
      * tag name is "author".
-     * 
+     *
      *************************************************************************/
     public String getTagName()
     {
@@ -1101,13 +1081,13 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * A comment can be placed in front of this tag in the XML output. It takes
      * the form: <!--Comment String--> <tag>...</tag>
-     * 
+     *
      * This doesn't allow completely general commenting but should be sufficient
      * for most uses and allows us to hide comments completely from a parser.
-     * 
+     *
      *************************************************************************/
     public void setComment(String comment)
     {
@@ -1120,18 +1100,18 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Add an attribute and value pair. The value is always stored as a string.
-     * 
+     *
      * @param name
      *            The attribute name
      * @param value
      *            The attribute value
-     * 
+     *
      *************************************************************************/
     public void addAttribute(String name, String value)
     {
-        if (name.indexOf(" ") != -1)
+        if (name.contains(" "))
             throw new Error(
                     "Can't have attribute names that contain a space -- won't parse correctly");
 
@@ -1139,12 +1119,12 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Add a child element to this element's list of children.
-     * 
+     *
      * @param element
      *            The element to add
-     * 
+     *
      *************************************************************************/
     public void addChildElement(JavaElementXML element)
     {
@@ -1153,20 +1133,16 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Find a child element based on an attribut name
-     * 
+     *
      * @param attName
      *            The name to match against
-     * 
+     *
      *************************************************************************/
     public JavaElementXML findChildByAtt(String attName, String value)
     {
-        for (java.util.Iterator<JavaElementXML> iter = m_ChildElementList
-                .iterator(); iter.hasNext();)
-        {
-            JavaElementXML element = iter.next();
-
+        for (JavaElementXML element : m_ChildElementList) {
             String att = element.getAttribute(attName);
             if (att != null && att.equalsIgnoreCase(value))
                 return element;
@@ -1176,20 +1152,16 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Find a child element based on a tag name
-     * 
+     *
      * @param tagName
      *            The name to match against
-     * 
+     *
      *************************************************************************/
     public JavaElementXML findChildByName(String tagName)
     {
-        for (java.util.Iterator<JavaElementXML> iter = m_ChildElementList
-                .iterator(); iter.hasNext();)
-        {
-            JavaElementXML element = iter.next();
-
+        for (JavaElementXML element : m_ChildElementList) {
             if (element.getTagName().equalsIgnoreCase(tagName))
                 return element;
         }
@@ -1198,13 +1170,13 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Find a child element based on an attribute and value If the child does
      * not exist, this version throws an exception.
-     * 
+     *
      * @param tagName
      *            The name to match against
-     * 
+     *
      *************************************************************************/
     public JavaElementXML findChildByAttThrows(String attName, String value)
             throws Exception
@@ -1219,13 +1191,13 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Find a child element based on its tag name (case insensitve). If the
      * child does not exist, this version throws an exception.
-     * 
+     *
      * @param tagName
      *            The name to match against
-     * 
+     *
      *************************************************************************/
     public JavaElementXML findChildByNameThrows(String tagName)
             throws Exception
@@ -1240,13 +1212,13 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Find a child's contents based on its tag name (case insensitve). This
      * turns out to be a handy utility function.
-     * 
+     *
      * @param tagName
      *            The name to match against
-     * 
+     *
      *************************************************************************/
     public String findContentsByName(String tagName)
     {
@@ -1259,12 +1231,12 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Write out the element and all of its children to a given file.
-     * 
+     *
      * @param filename
      *            The path name of the output file.
-     * 
+     *
      *************************************************************************/
     public void WriteToFile(String filename) throws java.io.IOException
     {
@@ -1314,16 +1286,16 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Reads an XML file and builds the ElementXML object that represents it. As
      * an XML element can contain arbitrary children, the root object returned
      * can contain references to an arbitrarily deep tree of elements.
-     * 
+     *
      * @param filename
      *            The xml file to read.
-     * 
+     *
      * @return The root element.
-     * 
+     *
      *************************************************************************/
     public static JavaElementXML ReadFromFile(String filename) throws Exception
     {
@@ -1346,16 +1318,16 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Parse an XML element and its children. This is the main parsing function.
      * The lexical analyser contains a references to the input stream being
      * parsed. The function calls itself recursively to parse its children.
-     * 
+     *
      * @param lex
      *            The lexical analyser for this parse.
-     * 
+     *
      * @return The element that has just been read from the input stream.
-     * 
+     *
      *************************************************************************/
     public static JavaElementXML ParseElement(LexXML lex) throws Exception
     {
@@ -1473,19 +1445,19 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Parse the input stream (encoded by the lexical analyser) until we find
      * the first XML element. Return that element. Note: This assumes the file
      * contains only a single element, with all other elements stored as its
      * children. BADBAD: If this is not true, this function should be
      * generalized to create a root node and store all of the elements it finds
      * in this root node.
-     * 
+     *
      * @param lex
      *            The lexical analyser, tied to a specific input stream
-     * 
+     *
      * @return The root XML element.
-     * 
+     *
      *************************************************************************/
     public static JavaElementXML ReadFromLex(LexXML lex) throws Exception
     {
@@ -1517,22 +1489,22 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Write out this XML element to the given output stream. The output is
      * indented by 'indent' spaces so that the output looks more pleasant when
      * viewed in an editor.
-     * 
+     *
      * @param output
      *            The output stream
      * @param indent
      *            The number of spaces to indent this XML element.
-     * 
+     *
      *************************************************************************/
     public void WriteToStream(BufferedWriter output, int indent)
             throws java.io.IOException
     {
         // Build a buffer for the text we'll output
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         // Decide if this tag should all be on one line.
         // We only do this for "simple" tags, e.g. <color>"red"</color>
@@ -1541,10 +1513,7 @@ public class JavaElementXML
 
         // Add the necessary spaces to indent everything
         // Just makes the file easier to read.
-        for (int i = 0; i < indent; i++)
-        {
-            buffer.append("  ");
-        }
+        buffer.append("  ".repeat(Math.max(0, indent)));
 
         // Add a comment line if a comment has been specified.
         if (m_Comment != null)
@@ -1565,12 +1534,8 @@ public class JavaElementXML
                 .entrySet();
 
         // Go through each attribute
-        for (java.util.Iterator<Entry<String, String>> iter = entrySet
-                .iterator(); iter.hasNext();)
-        {
+        for (Entry<String, String> entry : entrySet) {
             // Get the next item in the hashtable
-            Entry<String, String> entry = iter.next();
-
             // Retrieve the key and value
             String name = entry.getKey();
             String value = entry.getValue();
@@ -1615,11 +1580,7 @@ public class JavaElementXML
         }
 
         // Go through all of the child nodes
-        for (java.util.Iterator<JavaElementXML> iter = m_ChildElementList
-                .iterator(); iter.hasNext();)
-        {
-            JavaElementXML element = iter.next();
-
+        for (JavaElementXML element : m_ChildElementList) {
             // Write out each child
             element.WriteToStream(output, indent + 1);
         }
@@ -1641,13 +1602,13 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Write out the XML header. BADBAD: Not sure what needs to go in here to
      * make it fully valid XML. I think just the version is sufficient.
-     * 
+     *
      * @param output
      *            The output stream.
-     * 
+     *
      *************************************************************************/
     public static void WriteHeader(BufferedWriter output)
             throws java.io.IOException
@@ -1657,16 +1618,16 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Given an XML element that represents an object from a class, this
      * function creates the object. It does this by looking for a "class"
      * attribute and then instantiating an instance of that class. Note: This
      * will only work if the class (a) exists and (b) has a public default
      * constructor.
-     * 
+     *
      * @return The object represented by this XML element (or null if there's an
      *         error).
-     * 
+     *
      *************************************************************************/
     public Object CreateObjectFromXMLDefaultConstructorNoThrow()
     {
@@ -1683,10 +1644,9 @@ public class JavaElementXML
             Class<?> childClass = Class.forName(className);
 
             // Create an instance of the class
-            Object obj = childClass.newInstance();
 
             // Return the newly created object
-            return obj;
+            return childClass.getDeclaredConstructor().newInstance();
         }
         catch (Exception e)
         {
@@ -1701,18 +1661,18 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Given an XML element that represents an object from a class, this
      * function creates the object. It does this by looking for a "class"
      * attribute and then instantiating an instance of that class. Note: This
      * will only work if the class (a) exists and (b) has a "createInstance()"
      * public method that takes no arguments.
-     * 
+     *
      * I think this is a better solution than the methods which require a
      * default constructor.
-     * 
+     *
      * @return The object represented by this XML element.
-     * 
+     *
      *************************************************************************/
     public Object CreateObjectFromXML() throws Exception
     {
@@ -1735,10 +1695,9 @@ public class JavaElementXML
 
             // Create an instance of the class (since the method is static both
             // params are null here)
-            Object obj = method.invoke(null, (Object[]) null);
 
             // Return the newly created object
-            return obj;
+            return method.invoke(null, (Object[]) null);
         }
         catch (Exception e)
         {
@@ -1753,24 +1712,24 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * Given an XML element that represents an object from a class, this
      * function creates the object. It does this by looking for a "class"
      * attribute and then instantiating an instance of that class. Note: This
      * will only work if the class (a) exists and (b) has a public default
      * constructor.
-     * 
+     *
      * I have generally decided that I'm not very happy with this because it
      * requires a public default constructor and that removes a nice paradigm
      * where some classes would have a constructor taking arguments, so we could
      * be sure they are initialized correctly.
-     * 
+     *
      * Instead, I've therefore written a replacement for this which requires a
      * createInstance() static method--not something likely to be used in error
      * by a developer.
-     * 
+     *
      * @return The object represented by this XML element.
-     * 
+     *
      *************************************************************************/
     public Object CreateObjectFromXMLDefaultConstructor() throws Exception
     {
@@ -1788,10 +1747,9 @@ public class JavaElementXML
             Class<?> childClass = Class.forName(className);
 
             // Create an instance of the class
-            Object obj = childClass.newInstance();
 
             // Return the newly created object
-            return obj;
+            return childClass.getDeclaredConstructor().newInstance();
         }
         catch (Exception e)
         {
@@ -1806,11 +1764,11 @@ public class JavaElementXML
     }
 
     /************************************************************************
-     * 
+     *
      * A test function that writes out a sample file and reads it back in.
-     * 
+     *
      * @return True if the test succeeds, else false.
-     * 
+     *
      *************************************************************************/
     public static boolean Test()
     {
@@ -1854,15 +1812,15 @@ public class JavaElementXML
             Debug.Check(readRoot.getTagName().equals("rootNode"));
             Debug.Check(readRoot.getChildElementList().size() == 2);
             Debug.Check(readRoot.getContents().equals("Root contents"));
-            String val1 = (String) readRoot.getAttributeMap().get("att1");
-            String val4 = (String) readRoot.getAttributeMap().get("att2");
+            String val1 = readRoot.getAttributeMap().get("att1");
+            String val4 = readRoot.getAttributeMap().get("att2");
             Debug.Check(val1 != null
                     && val1.equals("this is first attribute value"));
             Debug.Check(val4 != null && val4.equals("true"));
 
-            JavaElementXML readChild1 = (JavaElementXML) readRoot
+            JavaElementXML readChild1 = readRoot
                     .getChildElementList().get(0);
-            JavaElementXML readChild2 = (JavaElementXML) readRoot
+            JavaElementXML readChild2 = readRoot
                     .getChildElementList().get(1);
             Debug.Check(readChild1.getTagName().equals("child1"));
             Debug.Check(readChild2.getTagName().equals("child2"));
@@ -1870,17 +1828,17 @@ public class JavaElementXML
                     + "Child 1 has more contents";
             Debug.Check(readChild1.getContents().equals(contents));
 
-            String val2 = (String) readChild2.getAttributeMap().get("color");
+            String val2 = readChild2.getAttributeMap().get("color");
             Debug.Check(val2 != null && val2.equals("red"));
             String val3 = readChild2.getAttribute("color");
             Debug.Check(val3 != null && val3.equals("red"));
 
-            JavaElementXML readSubChild = (JavaElementXML) readChild1
+            JavaElementXML readSubChild = readChild1
                     .getChildElementList().get(0);
             JavaElementXML sameSubChild = readChild1.getChild(0);
             Debug.Check(readSubChild == sameSubChild);
             Debug.Check(readSubChild.getTagName().equals("subchild"));
-            JavaElementXML readSubSubChild = (JavaElementXML) readSubChild
+            JavaElementXML readSubSubChild = readSubChild
                     .getChildElementList().get(0);
             Debug.Check(readSubSubChild.getTagName().equals("subSubChild"));
         }

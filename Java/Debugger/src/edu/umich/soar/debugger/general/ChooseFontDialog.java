@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * ChooseFontDialog.java
- * 
+ *
  * Created on 	Nov 9, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.general;
@@ -17,8 +17,6 @@ import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -30,16 +28,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /********************************************************************************************
- * 
+ *
  * Dialog class for picking a font.
- * 
+ *
  * This dialog (like most I write) is designed as a panel so it can be used in a
  * dialog or placed on another window if desired.
- * 
+ *
  ********************************************************************************************/
 public class ChooseFontDialog extends JPanel
 {
@@ -69,23 +65,23 @@ public class ChooseFontDialog extends JPanel
     private JCheckBox m_FixedWidthOnly;
 
     private FontStyleDisplay[] m_FontStyles = new FontStyleDisplay[] {
-            new FontStyleDisplay("Plain", Font.PLAIN),
-            new FontStyleDisplay("Bold", Font.BOLD),
-            new FontStyleDisplay("Italic", Font.ITALIC),
-            new FontStyleDisplay("Bold & Italic", Font.BOLD | Font.ITALIC), };
+        new FontStyleDisplay("Plain", Font.PLAIN),
+        new FontStyleDisplay("Bold", Font.BOLD),
+        new FontStyleDisplay("Italic", Font.ITALIC),
+        new FontStyleDisplay("Bold & Italic", Font.BOLD | Font.ITALIC), };
 
     private Font m_Font;
 
     /********************************************************************************************
-     * 
+     *
      * This class is used to display a font name on screen and store whether it
      * is fixed width or not.
-     * 
+     *
      * The key function here is "toString()" which allows us to control how to
      * display the font on screen.
-     * 
+     *
      ********************************************************************************************/
-    private class FontDisplay
+    private static class FontDisplay
     {
         private Font m_Font;
 
@@ -114,12 +110,12 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * This class is used to display a font style on screen (e.g. bold). It
      * allows us to associate the name of the style with its numeric equivalent.
-     * 
+     *
      ********************************************************************************************/
-    private class FontStyleDisplay
+    private static class FontStyleDisplay
     {
         private int m_Style;
 
@@ -148,18 +144,18 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * Decide if a font is fixed width.
-     * 
+     *
      * There seems to be no clean way to do this in Java and also it seems this
      * will be expensive as the component is involved.
-     * 
+     *
      * @param font
      *            The font
-     * 
+     *
      * @return True if this font is fixed width (i.e. all chars occupy same
      *         horizontal space)
-     * 
+     *
      ********************************************************************************************/
     private boolean isFixedWidthFont(Font font)
     {
@@ -174,16 +170,16 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * This function examines the list of fonts and decides which ones are fixed
      * width.
-     * 
+     *
      * This is a slow process in Java as we need to construct each font in turn
      * and test whether two characters in the font have the same width.
-     * 
+     *
      * Because it's slow, we wait to do this intialization until the user asks
      * for it.
-     * 
+     *
      ********************************************************************************************/
     private void InitFixedWidthInfo()
     {
@@ -194,29 +190,27 @@ public class ChooseFontDialog extends JPanel
 
         // Initialize the fixed width font information
         int fixedCount = 0;
-        for (int i = 0; i < m_AllFontDisplays.length; i++)
-        {
-            m_AllFontDisplays[i]
-                    .setFixedWidth(isFixedWidthFont(m_AllFontDisplays[i].m_Font));
+        for (FontDisplay m_allFontDisplay : m_AllFontDisplays) {
+            m_allFontDisplay
+                .setFixedWidth(isFixedWidthFont(m_allFontDisplay.m_Font));
 
-            if (m_AllFontDisplays[i].isFixedWidth())
+            if (m_allFontDisplay.isFixedWidth())
                 fixedCount++;
         }
 
         // Fill in the list of all fixed width fonts in the system
         int j = 0;
         m_FixedFontDisplays = new FontDisplay[fixedCount];
-        for (int i = 0; i < m_AllFontDisplays.length; i++)
-        {
-            if (m_AllFontDisplays[i].isFixedWidth())
-                m_FixedFontDisplays[j++] = m_AllFontDisplays[i];
+        for (FontDisplay mAllFontDisplay : m_AllFontDisplays) {
+            if (mAllFontDisplay.isFixedWidth())
+                m_FixedFontDisplays[j++] = mAllFontDisplay;
         }
     }
 
     /********************************************************************************************
-     * 
+     *
      * Initialize all of the windows and controls in the dialog.
-     * 
+     *
      ********************************************************************************************/
     private void Init()
     {
@@ -249,20 +243,8 @@ public class ChooseFontDialog extends JPanel
         m_StyleList = new JList(m_FontStyles);
         m_SizeField = new JTextField(5);
 
-        m_FontList.addListSelectionListener(new ListSelectionListener()
-        {
-            public void valueChanged(ListSelectionEvent e)
-            {
-                selectionChanged();
-            }
-        });
-        m_StyleList.addListSelectionListener(new ListSelectionListener()
-        {
-            public void valueChanged(ListSelectionEvent e)
-            {
-                selectionChanged();
-            }
-        });
+        m_FontList.addListSelectionListener(e -> selectionChanged());
+        m_StyleList.addListSelectionListener(e -> selectionChanged());
         m_SizeField.getDocument().addDocumentListener(new TextFieldListener()
         {
             public void textUpdate(DocumentEvent e)
@@ -270,13 +252,7 @@ public class ChooseFontDialog extends JPanel
                 selectionChanged();
             }
         });
-        m_FixedWidthOnly.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                clickedFixedWidth();
-            }
-        });
+        m_FixedWidthOnly.addActionListener(e -> clickedFixedWidth());
 
         JScrollPane scrollFont = new JScrollPane(m_FontList);
         JScrollPane scrollStyle = new JScrollPane(m_StyleList);
@@ -337,20 +313,8 @@ public class ChooseFontDialog extends JPanel
         JButton ok = new JButton("OK");
         JButton cancel = new JButton("Cancel");
 
-        ok.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                okPressed();
-            }
-        });
-        cancel.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                cancelPressed();
-            }
-        });
+        ok.addActionListener(e -> okPressed());
+        cancel.addActionListener(e -> cancelPressed());
 
         buttonPanel.setLayout(new GridLayout(1, 0, 10, 10));
         buttonPanel.add(ok);
@@ -377,10 +341,10 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * The user has clicked on the fixed width font check box (selecting or
      * unselecting it).
-     * 
+     *
      ********************************************************************************************/
     private void clickedFixedWidth()
     {
@@ -398,9 +362,9 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * Change the font used to display the sample text in the dialog.
-     * 
+     *
      ********************************************************************************************/
     private void setSampleFont()
     {
@@ -408,10 +372,10 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * Select the appropriate values in the font name, style and size fields to
      * reflect the font passed in.
-     * 
+     *
      ********************************************************************************************/
     private void setSelectionFromFont(Font font)
     {
@@ -446,9 +410,9 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * One of the lists or fields used to describe the font has changed.
-     * 
+     *
      ********************************************************************************************/
     private void selectionChanged()
     {
@@ -483,9 +447,9 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * The user pressed OK.
-     * 
+     *
      ********************************************************************************************/
     private void okPressed()
     {
@@ -493,9 +457,9 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * The user pressed Cancel.
-     * 
+     *
      ********************************************************************************************/
     private void cancelPressed()
     {
@@ -504,9 +468,9 @@ public class ChooseFontDialog extends JPanel
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog window.
-     * 
+     *
      ********************************************************************************************/
     private void EndDialog()
     {
@@ -520,17 +484,17 @@ public class ChooseFontDialog extends JPanel
     }
 
     /**************************************************************************
-     * 
+     *
      * Creates the panel inside a dialog box, shows the dialog (modally) and
      * returns the results of the user's selection.
-     * 
+     *
      * @param frame
      *            The frame which that will own this dialog
      * @param title
      *            The title of the dialog window
      * @param initialFont
      *            The font to select initially (can't be null)
-     * 
+     *
      * @return Font The font the user chose (or null if cancelled)
      *************************************************************************/
     public static Font ShowDialog(Frame frame, String title, Font initialFont)

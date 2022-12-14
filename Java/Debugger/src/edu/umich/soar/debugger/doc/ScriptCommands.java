@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * DebuggerCommands.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Mar 19, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc;
@@ -22,14 +22,16 @@ import edu.umich.soar.debugger.manager.MainWindow;
 import edu.umich.soar.debugger.manager.Pane;
 import edu.umich.soar.debugger.modules.AbstractView;
 
+import java.util.Objects;
+
 /************************************************************************
- * 
+ *
  * A set of commands that produce actions within the debugger (e.g. closing a
  * window or operating a menu item).
- * 
+ *
  * This allows us to script the debugger from within modules and do pretty
  * arbitrary code actions using a simple sort of scripting.
- * 
+ *
  ************************************************************************/
 public class ScriptCommands
 {
@@ -307,7 +309,7 @@ public class ScriptCommands
         JavaElementXML newChild1 = existingPane;
         JavaElementXML newChild2 = newPane.convertToXML(Pane.kTagName, false);
 
-        JavaElementXML newParent = null;
+        JavaElementXML newParent;
 
         if (addSash)
         {
@@ -743,9 +745,11 @@ public class ScriptCommands
                 char ch = name.charAt(i);
 
                 if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
-                        || (ch >= '0' && ch <= '9') || (ch == '_' || ch == '-'
-                        || ch == '<' || ch == '>')))
+                    || (ch >= '0' && ch <= '9') || (ch == '_' || ch == '-'
+                    || ch == '<' || ch == '>'))) {
                     valid = false;
+                    break;
+                }
             }
 
             if (!valid)
@@ -783,14 +787,14 @@ public class ScriptCommands
     public String replaceVariables(MainFrame frame, AbstractView view,
             String command)
     {
-        StringBuffer newCommand = new StringBuffer();
+        StringBuilder newCommand = new StringBuilder();
         String[] tokens = command.split(" ");
 
         for (int i = 0; i < tokens.length; i++)
         {
-            if (tokens[i] == "[thisframe]")
+            if (Objects.equals(tokens[i], "[thisframe]"))
                 tokens[i] = frame.getName();
-            else if (tokens[i] == "[thisview]")
+            else if (Objects.equals(tokens[i], "[thisview]"))
                 tokens[i] = view.getName();
 
             newCommand.append(tokens[i]);

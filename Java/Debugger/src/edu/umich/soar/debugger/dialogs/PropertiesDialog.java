@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * PropertiesDialog.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Mar 23, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
@@ -20,9 +20,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -34,9 +32,9 @@ import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.modules.AbstractView;
 
 /************************************************************************
- * 
+ *
  * The base dialog used to show properties for a view
- * 
+ *
  ************************************************************************/
 public class PropertiesDialog extends BaseDialog
 {
@@ -179,8 +177,7 @@ public class PropertiesDialog extends BaseDialog
         // Return false if its not valid for some reason.
         public boolean update()
         {
-            String value = m_Text.getText();
-            m_Value = value;
+            m_Value = m_Text.getText();
 
             return true;
         }
@@ -212,8 +209,7 @@ public class PropertiesDialog extends BaseDialog
 
         public String[] getLines()
         {
-            String[] lines = m_Value.split(AbstractView.kLineSeparator);
-            return lines;
+            return m_Value.split(AbstractView.kLineSeparator);
         }
 
         private void updateButtonLabel()
@@ -237,23 +233,19 @@ public class PropertiesDialog extends BaseDialog
 
             // For some reason using the selectionAdapter doesn't work here, but
             // a generic listener does.
-            m_Button.addListener(SWT.Selection, new Listener()
-            {
-                public void handleEvent(Event e)
-                {
-                    String newValue = SwtInputDialog.showMultiLineDialog(table,
-                            "Enter button actions", "Actions", m_Value);
+            m_Button.addListener(SWT.Selection, e -> {
+                String newValue = SwtInputDialog.showMultiLineDialog(table,
+                        "Enter button actions", "Actions", m_Value);
 
-                    if (newValue != null)
-                    {
-                        // We store our commands separated with \n since that's
-                        // what Soar uses (not \r\n which is what Windows uses,
-                        // sometimes)
-                        m_Value = newValue.replaceAll(
-                                AbstractView.kSystemLineSeparator,
-                                AbstractView.kLineSeparator);
-                        updateButtonLabel();
-                    }
+                if (newValue != null)
+                {
+                    // We store our commands separated with \n since that's
+                    // what Soar uses (not \r\n which is what Windows uses,
+                    // sometimes)
+                    m_Value = newValue.replaceAll(
+                            AbstractView.kSystemLineSeparator,
+                            AbstractView.kLineSeparator);
+                    updateButtonLabel();
                 }
             });
 
@@ -416,15 +408,12 @@ public class PropertiesDialog extends BaseDialog
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
         String[] titles = { "Property Name", "Property Value" };
-        for (int i = 0; i < titles.length; i++)
-        {
+        for (String s : titles) {
             TableColumn column = new TableColumn(table, SWT.NULL);
-            column.setText(titles[i]);
+            column.setText(s);
         }
 
-        for (int i = 0; i < baseProperties.length; i++)
-        {
-            Property property = baseProperties[i];
+        for (Property property : baseProperties) {
             property.addTableItem(table);
         }
 
@@ -435,9 +424,9 @@ public class PropertiesDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create a simple dialog asking the user for input (a single string).
-     * 
+     *
      * @param parent
      *            The parent for this dialog (we'll center the dialog within
      *            this window)
@@ -467,9 +456,9 @@ public class PropertiesDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog -- either successfully or cancelled.
-     * 
+     *
      ********************************************************************************************/
     protected void endDialog(boolean ok)
     {

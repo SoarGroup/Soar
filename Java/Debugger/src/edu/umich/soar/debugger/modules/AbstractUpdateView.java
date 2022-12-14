@@ -1,20 +1,18 @@
 /********************************************************************************************
  *
  * AbstractUpdateView.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Oct 15, 2007
  * @author 		Jonathan Voigt and Bob Marinier
- * 
+ *
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
 
 import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FormData;
@@ -37,10 +35,10 @@ import edu.umich.soar.debugger.manager.Pane;
 import edu.umich.soar.debugger.menu.ParseSelectedText;
 
 /********************************************************************************************
- * 
+ *
  * This is a base class designed to part of a view. This is for views that need
  * to be regularly updated during a Soar run.
- * 
+ *
  ********************************************************************************************/
 public abstract class AbstractUpdateView extends AbstractView implements
         Agent.RunEventInterface, Kernel.AgentEventInterface,
@@ -77,7 +75,7 @@ public abstract class AbstractUpdateView extends AbstractView implements
 
     /**
      * Returns the entire window, within which the display control lies.
-     * 
+     *
      * Usually the display control is all there is, but this method allows us to
      * define a container that surrounds the display control and includes other
      * supporting controls. In which case this method should be overriden.
@@ -88,10 +86,10 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Go from current selection (where right click occured) to the object
      * selected by the user (e.g. a production name).
-     * 
+     *
      *************************************************************************/
     protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX,
             int mouseY)
@@ -100,16 +98,16 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Given a context menu and a control, fill in the items you want to see in
      * the menu. The simplest is to just call "fillWindowMenu".
-     * 
+     *
      * This call is made after the user has clicked to bring up the menu so we
      * can create a dymanic menu based on the current context.
-     * 
+     *
      * You also have to call createContextMenu() to request a context menu be
      * attached to a specific control.
-     * 
+     *
      *************************************************************************/
     @Override
     protected void fillInContextMenu(Menu contextMenu, Control control,
@@ -136,10 +134,10 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /********************************************************************************************
-     * 
+     *
      * Return true if this view shouldn't be user resizable. E.g. A text window
      * would return false but a bar for buttons would return true.
-     * 
+     *
      ********************************************************************************************/
     @Override
     public boolean isFixedSizeView()
@@ -148,10 +146,10 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Returns true if this window can display output from commands executed
      * through the "executeAgentCommand" method.
-     * 
+     *
      *************************************************************************/
     @Override
     public boolean canDisplayOutput()
@@ -160,17 +158,17 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the window that will display the output
-     * 
+     *
      ********************************************************************************************/
     protected abstract void createDisplayControl(Composite parent);
 
     /********************************************************************************************
-     * 
+     *
      * Initialize this window and its children. Should call setValues() at the
      * start to complete initialization of the abstract view.
-     * 
+     *
      ********************************************************************************************/
     @Override
     public void init(MainFrame frame, Document doc, Pane parentPane)
@@ -184,13 +182,7 @@ public abstract class AbstractUpdateView extends AbstractView implements
 
         // Listen for when this window is disposed and unregister for anything
         // we registered for
-        m_Container.addDisposeListener(new DisposeListener()
-        {
-            public void widgetDisposed(DisposeEvent e)
-            {
-                removeListeners();
-            }
-        });
+        m_Container.addDisposeListener(e -> removeListeners());
 
         m_Updating = false;
 
@@ -232,10 +224,10 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Set the focus to this window so the user can type commands easily. Return
      * true if this window wants the focus.
-     * 
+     *
      *************************************************************************/
     @Override
     public boolean setFocus()
@@ -260,9 +252,9 @@ public abstract class AbstractUpdateView extends AbstractView implements
     protected abstract void restoreContent(JavaElementXML element);
 
     /************************************************************************
-     * 
+     *
      * Converts this object into an XML representation.
-     * 
+     *
      *************************************************************************/
     @Override
     public JavaElementXML convertToXML(String title, boolean storeContent)
@@ -293,9 +285,9 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Rebuild the object from an XML representation.
-     * 
+     *
      * @param frame
      *            The top level window that owns this window
      * @param doc
@@ -304,7 +296,7 @@ public abstract class AbstractUpdateView extends AbstractView implements
      *            The pane window that owns this view
      * @param element
      *            The XML representation of this command
-     * 
+     *
      *************************************************************************/
     @Override
     public void loadFromXML(MainFrame frame, Document doc, Pane parent,
@@ -366,9 +358,9 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /************************************************************************
-     * 
+     *
      * We're not sure why this needs to be overridden.
-     * 
+     *
      *************************************************************************/
     @Override
     public String executeAgentCommand(String command, boolean echoCommand)
@@ -382,9 +374,9 @@ public abstract class AbstractUpdateView extends AbstractView implements
     }
 
     /********************************************************************************************
-     * 
+     *
      * Register for events of particular interest to this view
-     * 
+     *
      ********************************************************************************************/
     protected abstract void registerForViewAgentEvents(Agent agent);
 
@@ -456,8 +448,7 @@ public abstract class AbstractUpdateView extends AbstractView implements
 
         if (m_StopCallback != -1)
         {
-            ok = agent.GetKernel().UnregisterForSystemEvent(m_StopCallback)
-                    && ok;
+            ok = agent.GetKernel().UnregisterForSystemEvent(m_StopCallback);
         }
 
         if (m_InitCallback != -1)
@@ -499,7 +490,7 @@ public abstract class AbstractUpdateView extends AbstractView implements
     @Override
     public void showProperties()
     {
-        ArrayList<PropertiesDialog.Property> properties = new ArrayList<PropertiesDialog.Property>();
+        ArrayList<PropertiesDialog.Property> properties = new ArrayList<>();
         initProperties(properties);
 
         if (!PropertiesDialog.showDialog(m_Frame, "Properties", properties

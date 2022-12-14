@@ -1,23 +1,20 @@
 /********************************************************************************************
  *
  * AbstractComboView.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Mar 29, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -44,11 +41,11 @@ import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.manager.Pane;
 
 /********************************************************************************************
- * 
+ *
  * This is a base class designed to part of a view. This part handles the combo
  * box. Another derived class handles the display of those commands which may be
  * in text or something else.
- * 
+ *
  ********************************************************************************************/
 public abstract class AbstractComboView extends AbstractUpdateView implements
         Agent.PrintEventInterface
@@ -115,10 +112,10 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Returns true if this window can display output from commands executed
      * through the "executeAgentCommand" method.
-     * 
+     *
      *************************************************************************/
     @Override
     public boolean canDisplayOutput()
@@ -184,17 +181,17 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     }
 
     /********************************************************************************************
-     * 
+     *
      * Scroll the display control to the bottom
-     * 
+     *
      ********************************************************************************************/
     public abstract void scrollBottom();
 
     /********************************************************************************************
-     * 
+     *
      * Initialize this window and its children. Should call setValues() at the
      * start to complete initialization of the abstract view.
-     * 
+     *
      ********************************************************************************************/
     public void init(MainFrame frame, Document doc, Pane parentPane)
     {
@@ -234,28 +231,15 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
 
         // Listen for changes to the text in the combo box so we can keep track
         // of what's currently entered
-        m_CommandCombo.addModifyListener(new ModifyListener()
-        {
-            public void modifyText(ModifyEvent e)
-            {
-                comboTextModified(e);
-            }
-        });
+        m_CommandCombo.addModifyListener(this::comboTextModified);
 
         // Decide how many rows to show in the combo list
         m_CommandCombo
-                .setVisibleItemCount(CommandHistory.kMaxHistorySize > 10 ? 10
-                        : CommandHistory.kMaxHistorySize);
+                .setVisibleItemCount(Math.min(CommandHistory.kMaxHistorySize, 10));
 
         // Listen for when this window is disposed and unregister for anything
         // we registered for
-        m_Container.addDisposeListener(new DisposeListener()
-        {
-            public void widgetDisposed(DisposeEvent e)
-            {
-                removeListeners();
-            }
-        });
+        m_Container.addDisposeListener(e -> removeListeners());
 
         m_Updating = false;
 
@@ -298,10 +282,10 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     };
 
     /************************************************************************
-     * 
+     *
      * Set the focus to this window so the user can type commands easily. Return
      * true if this window wants the focus.
-     * 
+     *
      *************************************************************************/
     @Override
     public boolean setFocus()
@@ -474,9 +458,9 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Converts this object into an XML representation.
-     * 
+     *
      *************************************************************************/
     @Override
     public edu.umich.soar.debugger.general.JavaElementXML convertToXML(
@@ -523,9 +507,9 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Rebuild the object from an XML representation.
-     * 
+     *
      * @param frame
      *            The top level window that owns this window
      * @param doc
@@ -534,7 +518,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
      *            The pane window that owns this view
      * @param element
      *            The XML representation of this command
-     * 
+     *
      *************************************************************************/
     @Override
     public void loadFromXML(MainFrame frame,
@@ -603,29 +587,23 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
             {
                 // Have to make update in the UI thread.
                 // Callback comes in the document thread.
-                Display.getDefault().asyncExec(new Runnable()
-                {
-                    public void run()
-                    {
-                        commandEntered(command, false);
-                    }
-                });
+                Display.getDefault().asyncExec(() -> commandEntered(command, false));
             }
         }
     }
 
     /************************************************************************
-     * 
+     *
      * Execute a command (send it to Soar) and display the output in a manner
      * appropriate to this view.
-     * 
+     *
      * @param Command
      *            The command line to execute
      * @param echoCommand
      *            If true, display the command in the output window as well.
-     * 
+     *
      *            The result (if any) is also returned to the caller.
-     * 
+     *
      *************************************************************************/
     @Override
     public String executeAgentCommand(String command, boolean echoCommand)
@@ -677,12 +655,12 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Display the given text in this view (if possible).
-     * 
+     *
      * This method is used to programmatically insert text that Soar doesn't
      * generate into the output window.
-     * 
+     *
      *************************************************************************/
     @Override
     public void displayText(String text)
@@ -691,17 +669,17 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     }
 
     /************************************************************************
-     * 
+     *
      * Add the text to the view (this method assumes always called from UI
      * thread)
-     * 
+     *
      *************************************************************************/
     protected abstract void appendText(String text);
 
     /************************************************************************
-     * 
+     *
      * Add the text to the view in a thread safe way (switches to UI thread)
-     * 
+     *
      *************************************************************************/
     protected void appendTextSafely(final String text)
     {
@@ -715,13 +693,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
 
         // Have to make update in the UI thread.
         // Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable()
-        {
-            public void run()
-            {
-                appendText(text);
-            }
-        });
+        Display.getDefault().asyncExec(() -> appendText(text));
     }
 
     private String getCurrentCommand()
@@ -819,8 +791,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
 
         if (m_StopCallback != -1)
         {
-            ok = agent.GetKernel().UnregisterForSystemEvent(m_StopCallback)
-                    && ok;
+            ok = agent.GetKernel().UnregisterForSystemEvent(m_StopCallback);
         }
 
         if (m_InitCallback != -1)
