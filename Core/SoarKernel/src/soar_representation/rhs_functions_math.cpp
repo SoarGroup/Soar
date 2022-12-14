@@ -1854,7 +1854,7 @@ struct wme_val_stats {
  * 
  * The return value is only not NIL if the fn returns an error symbol.
  */
-Symbol* set_reduce(agent* thisAgent, cons* args, Symbol* (*fn)(agent*, wme*, void*), void* data) {
+[[nodiscard]] Symbol* set_reduce(agent* thisAgent, cons* args, Symbol* (*fn)(agent*, wme*, void*), void* data) {
     cons* c = args;
     Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
     
@@ -2090,13 +2090,16 @@ Symbol* stdev_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want counted (second parameter).
- * 
- * It returns a symbol with the count or a -1 if there is an error in the parameters
+ *
+ * Returns an error string if there is an issue with the parameters, otherwise the number of
+ * WMEs in the set.
  */
 Symbol* set_count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     struct wme_val_stats stats;
-    set_reduce(thisAgent, args, count_wme, &stats);
+    Symbol* error = set_reduce(thisAgent, args, count_wme, &stats);
+    if (error != NIL)
+        return error;
     return thisAgent->symbolManager->make_int_constant(stats.count);
 }
 
@@ -2105,8 +2108,11 @@ Symbol* set_count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want summed (second parameter).
- * 
- * Non-numeric attributes are ignored
+ *
+ * Non-numeric attributes are ignored.
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
  */
 Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -2126,8 +2132,11 @@ Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want multiplied (second parameter).
- * 
- * Non-numeric attributes are ignored
+ *
+ * Non-numeric attributes are ignored.
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
  */
 Symbol* set_multiply_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -2147,8 +2156,9 @@ Symbol* set_multiply_rhs_function_code(agent* thisAgent, cons* args, void* /*use
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want min of (second parameter).
- * 
- * Non-numeric attributes are ignored
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
  */
 Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -2168,8 +2178,9 @@ Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want max of (second parameter).
- * 
- * Non-numeric attributes are ignored
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
  */
 Symbol* set_max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -2191,8 +2202,9 @@ Symbol* set_max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want range of (second parameter).
- * 
- * Non-numeric attributes are ignored
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
  */
 Symbol* set_range_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -2214,8 +2226,9 @@ Symbol* set_range_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want the mean of (second parameter).
- * 
- * Non-numeric attributes are ignored
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
  */
 Symbol* set_mean_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -2238,8 +2251,9 @@ Symbol* set_mean_rhs_function_code(agent* thisAgent, cons* args, void* /*user_da
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want the standard deviation of (second parameter).
- * 
- * Non-numeric attributes are ignored
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
  */
 Symbol* set_stdev_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -2264,8 +2278,9 @@ Symbol* set_stdev_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
  * 
  * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you 
  *   want the standard deviation of (second parameter).
- * 
- * Non-numeric attributes are ignored
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
  */
 Symbol* set_mac_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
