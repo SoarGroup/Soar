@@ -36,7 +36,7 @@ print("Targets available:")
 print("   Core:              kernel* cli* scripts*")
 print("   Testing:           performance_tests tests")
 print("   SWIG:              sml_python sml_tcl sml_java*")
-print("   Extras:            debugger* headers* tclsoarlib cdb*")
+print(f"   Extras:            debugger* headers* tclsoarlib {COMPILE_DB_ALIAS}*")
 print("Custom Settings available:                                              *default")
 print("   Build Type:        --dbg, --opt*, --static")
 print("   Custom Paths:      --out, --build, --tcl")
@@ -176,7 +176,7 @@ env = Environment(
 
 # must be specified first or else the resulting file will not contain all compile commands
 env.Tool('compilation_db')
-compile_db_target = env.CompilationDatabase('IDE Projects/compile_commands.json')
+compile_db_target = env.CompilationDatabase()
 env.Alias(COMPILE_DB_ALIAS, compile_db_target)
 
 # This creates a file for cli_version.cpp to source.  For optimized builds, this guarantees
