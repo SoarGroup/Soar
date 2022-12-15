@@ -30,7 +30,9 @@ BOOL WINAPI handle_ctrlc(DWORD dwCtrlType)
 
     return FALSE;
 }
-#endif // _WIN32
+#else // _WIN32
+#include <spawn.h>
+#endif // not _WIN32
 
 const std::string FullTests_Parent::kAgentName("full-tests-agent");
 
@@ -275,20 +277,11 @@ int FullTests_Parent::spawnListener()
 #else // _WIN32
     std::string executable = SoarHelper::GetResource("Prototype-UnitTesting");
 
-    pid = vfork();
-    no_agent_assertTrue_msg("fork error", pid >= 0);
-    if (pid == 0)
-    {
-        // child
-        execlp(executable.c_str(), "Prototype-UnitTesting", "--listener", nullptr);
-
-        // does not return on success
-        no_agent_assertTrue_msg("execlp failed", false);
-    }
-    else
-    {
-        targetPid = pid;
-    }
+    char arg1[22] = {"Prototype-UnitTesting"};
+    char arg2[11] = {"--listener"};
+    char* argv[] = {arg1, arg2, NULL};
+    int error = posix_spawn(&targetPid, executable.c_str(), NULL, NULL, argv, NULL);
+    no_agent_assertTrue_msg("posix_spawn error", error == 0);
 
 #endif // _WIN32
 
