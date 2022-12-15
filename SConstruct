@@ -146,7 +146,7 @@ AddOption('--no-scu-cli', action='store_true', dest='no_scu_cli', default=False,
 AddOption('--scu', action='store_true', dest='scu', default=False, help='Build using single compilation units.')
 AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR', help='Directory to install binaries. Defaults to "out".')
 AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR', help='Directory to store intermediate (object) files. Defaults to "build".')
-AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
+AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable; defaults to same executable used to run SCons')
 AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Active TCL (>= 8.6) libraries')
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Enable debug build.  Disables compiler optimizations, includes debugging symbols, debug trace statements and assertions')
