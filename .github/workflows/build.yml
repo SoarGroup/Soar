@@ -2,7 +2,7 @@
 # depends on pre-installed software; see image definitions:
 #  - https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
 #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-# We use these tools from the runner images: git, gcc/XCode/MSVC, python, swig
+# We use these tools from the runner images: git, gcc/XCode/MSVC, python, swig, Tcl/Tk on MacOS
 
 # TODO: not building svs_viewer ('Cannot find GL, GLU, not building svs_viewer' and 'Cannot find opengl32, glu32, not building svs_viewer')
 # TODO: not building with TCL support; need to install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
@@ -24,7 +24,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # TODO: put linux back before merging, obviously
+        os: [macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
