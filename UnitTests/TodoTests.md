@@ -91,6 +91,7 @@
 - [ ] SoarEventsTest
 - [ ] ??? org.soar.util.properties.* (we have none of these???)
 - [ ] ??? DefaultExecutionTimerTest (we don’t have this right???)
+- [ ] SoarTechXmlToWmeTest
 
 ### Existing Soar Tests to Port
 
