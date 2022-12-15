@@ -32,9 +32,8 @@
 #include <unordered_map>
 
 // JRV: Added to support XML management inside Soar
-// These handles should not be used directly, see xml.h
+// This handle should not be used directly, see xml.h
 typedef void* xml_handle;
-typedef void* json_handle;
 
 #define UPDATE_LINKS_NORMALLY 0
 #define UPDATE_DISCONNECTED_IDS_LIST 1
@@ -501,10 +500,6 @@ typedef struct EXPORT agent_struct
     xml_handle xml_destination;       // The current destination for all XML generation, essentially either == to xml_trace or xml_commands
     xml_handle xml_trace;             // During a run, xml_destination will be set to this pointer.
     xml_handle xml_commands;          // During commands, xml_destination will be set to this pointer.
-
-		json_handle json_destination;
-		json_handle json_trace;
-		json_handle json_commands;
 
     // stats database
     bool dc_stat_tracking;

@@ -15,7 +15,7 @@ def recursive_glob(treeroot, pattern):
 		results.extend(env.File(os.path.join(base, f)) for f in goodfiles)
 	return results
 # 	('SoarKernel/SoarKernel.cxx',       recursive_glob(kernel_env.Dir('SoarKernel/src').abspath(), '*.cpp')),    # Kernel
-   
+
 def CheckSWIG(env):
 	if not env.WhereIs('swig'):
 		return False
@@ -58,7 +58,6 @@ srcs = [
 	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     		# ClientSML
 	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), 		# ConnectionSML
 	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    		# ElementXML
-	('ElementJSON/ElementJSON.cxx',     Glob('ElementJSON/src/*.cpp')),    		# ElementJSON
 # 	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           		# CLI
 ]
 
@@ -70,7 +69,7 @@ if env['NO_SCU_CLI']:
 	srcs.append([Glob('CLI/src/*.cpp'),				Glob('CLI/src/*.cpp')])
 else:
 	srcs.append(['CLI/CommandLineInterface.cxx',	Glob('CLI/src/*.cpp')])
-	
+
 
 # print('Soar compiler settings')
 # print('CXXFlags ', kernel_env.Dump('CXXFLAGS'))
@@ -104,7 +103,7 @@ lib_install = env.Alias('kernel', env.Install(env['OUT_DIR'], soarlib))
 
 # headers
 headers = []
-for d in ['ElementJSON/src', 'ElementXML/src', 'ConnectionSML/src', 'ClientSML/src', 'shared']:
+for d in ['ElementXML/src', 'ConnectionSML/src', 'ClientSML/src', 'shared']:
 	headers.extend(InstallDir(env, env['OUT_DIR'] + '/include', env.Dir(d).srcnode().abspath, '*.h*'))
 env.Alias('headers', headers)
 

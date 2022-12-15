@@ -501,7 +501,6 @@ enum SOAR_CALLBACK_TYPE             // if you change this, update soar_callback_
     PRINT_CALLBACK,
     LOG_CALLBACK,
     INPUT_WME_GARBAGE_COLLECTED_CALLBACK,
-		JSON_GENERATION_CALLBACK,
 		NUMBER_OF_CALLBACKS               /* Not actually a callback   */
     /* type.  Used to indicate   */
     /* list size and MUST ALWAYS */

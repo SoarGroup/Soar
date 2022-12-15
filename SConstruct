@@ -292,7 +292,6 @@ env.Replace(
         '#Core/SoarKernel/src/soar_representation',
         '#Core/SoarKernel/src/visualizer',
         '#Core/ElementXML/src',
-        '#Core/ElementJSON/src',
         '#Core/KernelSML/src',
         '#Core/ConnectionSML/src',
         '#Core/ClientSML/src',
