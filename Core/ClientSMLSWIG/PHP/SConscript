@@ -8,9 +8,15 @@ import os
 import SCons.Script
 
 Import('env')
-Return()
+
+build_php = False
+if not build_php:
+    print("Not creating build target for PHP. TODO: finish implementation or delete")
+    Return()
 
 clone = env.Clone()
+
+sml_php_target = clone['SML_PHP_ALIAS']
 
 # Targets, sources, other constants
 nosvs = ''
@@ -46,3 +52,5 @@ shlib = clone.SharedLibrary(phpsml_shlib, phpsml_wrap)
 # copy out shared library and php include
 env.Install('$PREFIX/lib', shlib)
 env.Install('$PREFIX/lib', phpsml_php)
+
+env.Alias(sml_php_target, install_lib + install_source)

@@ -12,6 +12,8 @@ import SCons.Script
 Import('env')
 clone = env.Clone()
 
+tcl_sml_alias = clone['SML_TCL_ALIAS']
+
 libname = 'Tcl_sml_ClientInterface'
 
 # Make sure tcl header file exists before proceeding
@@ -157,6 +159,6 @@ clone.Depends(clone.File('#Core/SoarKernel/src/shared/soar_instance.h'), swig_tc
 clone.Clean(lib, [swig_tcl_wrapper_cpp, pkgindex])
 
 # Set up alias to compile everything
-clone.Alias('sml_tcl', tclstep3)
+clone.Alias(tcl_sml_alias, tclstep3)
 
 

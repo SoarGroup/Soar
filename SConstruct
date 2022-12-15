@@ -26,16 +26,22 @@ print(SOAR_VERSION, file=soarversionFile)
 soarversionFile.close()
 
 COMPILE_DB_ALIAS = 'cdb'
+SML_CSHARP_ALIAS = 'sml_csharp'
+SML_JAVA_ALIAS = 'sml_java'
+SML_PYTHON_ALIAS = 'sml_python'
+SML_TCL_ALIAS = 'sml_tcl'
+SML_PHP_ALIAS = 'sml_php'
+
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
-DEF_TARGETS = ['kernel', 'cli', 'sml_java', 'debugger', 'headers', 'scripts', COMPILE_DB_ALIAS]
+DEF_TARGETS = ['kernel', 'cli', SML_JAVA_ALIAS, 'debugger', 'headers', 'scripts', COMPILE_DB_ALIAS]
 
 print("================================================================================")
 print("Building Soar", SOAR_VERSION, "                      * will be built if no target specified")
 print("Targets available:")
 print("   Core:              kernel* cli* scripts*")
 print("   Testing:           performance_tests tests")
-print("   SWIG:              sml_python sml_tcl sml_java*")
+print(f"   SWIG:              {SML_PYTHON_ALIAS} {SML_TCL_ALIAS} {SML_JAVA_ALIAS}* {SML_CSHARP_ALIAS}")
 print(f"   Extras:            debugger* headers* tclsoarlib {COMPILE_DB_ALIAS}*")
 print("Custom Settings available:                                              *default")
 print("   Build Type:        --dbg, --opt*, --static")
@@ -172,6 +178,11 @@ env = Environment(
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
 	JAVAVERSION='1.8',
+    SML_CSHARP_ALIAS = SML_CSHARP_ALIAS,
+    SML_JAVA_ALIAS = SML_JAVA_ALIAS,
+    SML_PYTHON_ALIAS = SML_PYTHON_ALIAS,
+    SML_TCL_ALIAS = SML_TCL_ALIAS,
+    SML_PHP_ALIAS = SML_PHP_ALIAS,
 )
 
 # must be specified first or else the resulting file will not contain all compile commands

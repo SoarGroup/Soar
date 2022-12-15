@@ -17,13 +17,14 @@ if env.WhereIs('csc') == None:
 
 clone = env.Clone()
 
-lib_install_dir = env['OUT_DIR']
+lib_install_dir = clone['OUT_DIR']
+sml_csharp_target = clone['SML_CSHARP_ALIAS']
+
 name = 'CSharp_sml_ClientInterface'
 interface = clone.File(name + '.i')
 wrapper = clone.File(name + '_wrap.cpp')
 srcdir = clone.Dir('src').abspath
 assembly = clone.File('sml_csharp.dll').abspath
-sml_csharp_target = 'sml_csharp'
 fake_target = '#fake-csharp-target'
 
 # This builder will insert extra dependencies during the COMPILATION stage

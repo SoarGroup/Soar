@@ -14,6 +14,7 @@ clone['SWIGPATH'] = clone['CPPPATH']
 clone['SWIGFLAGS'] = ['-c++', '-python']
 if GetOption('nosvs'):
     clone['SWIGFLAGS'].append('-DNO_SVS')
+python_sml_alias = clone['SML_PYTHON_ALIAS']
 
 python_exe = GetOption('python')
 if os.name == 'nt':
@@ -57,4 +58,4 @@ else:
 install_source = env.Install(lib_install_dir, source)
 install_lib = env.Install(lib_install_dir, shlib)
 
-env.Alias('sml_python', install_lib + install_source)
+env.Alias(python_sml_alias, install_lib + install_source)
