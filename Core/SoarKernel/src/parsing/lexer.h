@@ -134,7 +134,9 @@ namespace soar
         /**
          * Inserts an exec lexeme in front of the current lexeme, resets the lexer to before
          * the exec lexeme, then reads back up to the exec lexeme. We use this to change undefined
-         * RHS function calls into exec calls.
+         * RHS function calls into exec calls so that clients can use arbitrary RHS functions defined
+         * in their language of choice. The implementation here is hacky, but necessary to match the
+         * behavior of JSoar.
         */
         void addExec();
 
