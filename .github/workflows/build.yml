@@ -96,12 +96,24 @@ jobs:
       # falls back on a combo of Mingw with MSVC libs and then fails to build.
       - name: switch to VS command prompt
         uses: ilammy/msvc-dev-cmd@v1
+
+      # No easy quick way to install TCL on Windows, so we download and build it ourselves.
+      - name: build and install Tcl
+        run: |
+          (new-object System.Net.WebClient).DownloadFile('https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip', 'tcl8613-src.zip')
+          Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
+          cd tcl8613-src\tcl8.6.13\win
+          &nmake -f makefile.vc release install INSTALLDIR=c:\progra~1\tcl
+          if ($lastexitcode -ne 0) {
+             throw "nmake exit code: $lastexitcode"
+          }
+
       - name: build
         env:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: |
-          ./build.bat --scu --opt --verbose all
+          ./build.bat --scu --opt --verbose --tcl=c:\progra~1\tcl all
           if ($lastexitcode -ne 0) {
              throw "build.bat exit code: $lastexitcode"
           }
