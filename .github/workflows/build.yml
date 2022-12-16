@@ -76,6 +76,7 @@ jobs:
           annotate_only: true
       # TODO: run Python SML test
 
+# Using powershell means we need to explicitly stop on failure
   Windows:
     name: build-windows
     runs-on: [windows-latest]
@@ -99,8 +100,11 @@ jobs:
         env:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
-        run: ./build.bat --scu --opt --verbose all
-
+        run: |
+          ./build.bat --scu --opt --verbose all
+          if ($lastexitcode -ne 0) {
+             throw "build.bat exit code: $lastexitcode"
+          }
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -114,7 +118,11 @@ jobs:
 
       - name: unit tests
         working-directory: ./out
-        run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
+        run: |
+          ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
+          if ($lastexitcode -ne 0) {
+             throw "UnitTests exit code: $lastexitcode"
+          }
 
       # reports JUnit test results as GitHub PR check.
       - name: publish test report
