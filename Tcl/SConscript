@@ -13,174 +13,48 @@ Import('env', 'InstallDir')
 clone = env.Clone()
 
 # Set up variables (some are hardcoded for now)
-LIBNAME = 'tclsoarlib'
+LIB_NAME = 'tclsoarlib'
 
-INDENT = '    '
-NO_TCL_MSG = 'Tcl cannot be built: no Tcl found'
+if clone.PrepareForCompilingWithTcl(GetOption('tcl')):
+    print(f'{env["INDENT"]}TclSoarLib is buildable')
+else:
+    print(f'{env["INDENT"]}TclSoarLib is *not* buildable')
+    Return()
 
-@dataclass
-class TclInstallInfo:
-    home: Path
-    lib_dir: Path
-    include_dir: Path
-    # the name of the library to use in -l... directives
-    dyn_lib_name: str
-    # The name of the library to use in #include <...> directives
-    include_lib_name: str
-    using_framework: bool = False
-
-    def is_valid(self):
-        if not self.lib_dir.exists():
-            return False, f'lib dir does not exist: "{self.lib_dir}"'
-        if not (self.lib_dir / self.dyn_lib_name).exists():
-            return False, f'lib dir does not contain {self.dyn_lib_name}: "{self.lib_dir}"'
-        if not self.include_dir.exists():
-            return False, f'include dir does not exist: "{self.include_dir}"'
-        if not (self.include_dir / 'tcl.h').exists():
-            return False, f'include dir does not contain tcl.h: "{self.include_dir}"'
-        return True, ''
-
-def get_tcl_from_local_dir_mac(local_compiled_dir=None) -> TclInstallInfo:
-    if not local_compiled_dir:
-        return None
-
-    home_dir = Path(local_compiled_dir)
-    install_info = TclInstallInfo(
-        home=home_dir,
-        lib_dir=home_dir / 'lib',
-        include_dir=home_dir / 'include',
-        dyn_lib_name='libtcl8.6.dylib',
-        include_lib_name='tcl8.6',
-    )
-    valid, msg = install_info.is_valid()
-    if not valid:
-        print(f'{INDENT}Tcl not found in directory: {msg}')
-        return None
-
-    return install_info
-
-def get_tcl_install_info_mac(local_compiled_dir=None) -> TclInstallInfo:
-    install_info = get_tcl_from_local_dir_mac(local_compiled_dir)
-    if not install_info:
-        # brew-installed?
-        try:
-            brew_installed_dir = subprocess.check_output(['brew', '--prefix', 'tcl-tk']).decode().strip()
-        except subprocess.CalledProcessError:
-            print(f"{INDENT}Tcl not brew-installed")
-        install_info = get_tcl_from_local_dir_mac(brew_installed_dir)
-
-    if not install_info:
-        # Otherwise, try using the system-installed Tcl
-        tcl_home = Path('/Library/Frameworks/Tcl.framework/Versions/Current')
-        install_info = TclInstallInfo(
-            home=tcl_home,
-            lib_dir=tcl_home,
-            include_dir=tcl_home / 'Headers',
-            dyn_lib_name='Tcl',
-            include_lib_name='Tcl',
-            using_framework=True,
-        )
-        valid, msg = install_info.is_valid()
-        if valid:
-            return install_info
-        print(f'{INDENT}System Tcl not found: {msg}')
-
-    return install_info
-
-
-def append_tcl_compile_flags(env, install_info):
-    env.Append(CXXFLAGS = ['-I' + str(install_info.include_dir.absolute())])
-    env.Append(CPPPATH = [str(install_info.include_dir.absolute())])
-    env.Append(LIBPATH = [install_info.lib_dir.absolute()])
-
-
-# Find Tcl and add necessary compiler/linker flags
-print("Looking for Tcl...")
-if sys.platform == 'darwin':
-    install_info = get_tcl_install_info_mac(GetOption('tcl'))
-    if not install_info:
-        print(f'{INDENT}{NO_TCL_MSG}')
-        Return()
-    print(f"{INDENT}Building TclSoarLib using Tcl from: " + str(install_info.home))
-
-    append_tcl_compile_flags(clone, install_info)
-    if install_info.using_framework:
-        clone.Append(LINKFLAGS = ['-framework', install_info.dyn_lib_name])
-    else:
-        clone.Append(LIBS = [install_info.dyn_lib_name])
-
-elif sys.platform.startswith('linux'):
-    # TODO: currently not supporting --tcl param with custom tcl path
-    try:
-        clone.ParseConfig('pkg-config tcl --libs --cflags')
-    except OSError:
-        print(f"{INDENT}pkg-config didn't find tcl package; try `apt-get install tcl-dev`")
-        print(f"{INDENT}{NO_TCL_MSG}")
-        Return()
-    print(f"{INDENT}Building TclSoarLib using tcl found with pkg-config")
-
-elif sys.platform == 'win32':
-    if GetOption('tcl'):
-        home_dir = Path(GetOption('tcl'))
-    else:
-        home_dir = Path('C:/ActiveTcl')
-
-    install_info = TclInstallInfo(
-        home=home_dir,
-        lib_dir=home_dir / 'lib',
-        include_dir=home_dir / 'include',
-        dyn_lib_name='tcl86t.lib',
-        include_lib_name='tcl86t',
-    )
-    valid, msg = install_info.is_valid()
-    if not valid:
-        print(f'{INDENT}Tcl not found in {home_dir}: {msg}')
-        print(f'{INDENT}{NO_TCL_MSG}')
-        Return()
-    print(f"{INDENT}Building TclSoarLib using Tcl from: " + str(install_info.home))
-
-    append_tcl_compile_flags(clone, install_info)
-    # Windows DLLs need to get linked to dependencies, whereas Linux and Mac shared objects do not
-    # (not sure if this is really needed for TclSoarLib)
-    clone.Append(LIBS = [install_info.include_lib_name])
-
-# Add include directories for Soar code
+# Add include directories not related to Tcl
 include_dirs = [ clone.Dir(('#Core/%s/src') % d).abspath for d in 'ElementXML'.split() ]
 includes = ' '.join(' -I%s' % d for d in include_dirs)
 cpps = ' '.join(' %s' % d for d in include_dirs)
 clone.Append(CXXFLAGS = Split('-I' + includes))
 clone.Append(CPPPATH = Split(cpps))
 
-# Set up other required compiler flags
+# Set up non-Tcl-related compiler flags
 clone.Append(CPPFLAGS = ['-w'])
 if os.name == 'posix':
-  clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
-  #-fPic is needed to make the code position independent.  Necessary for Tcl.
-  clone.Append(CPPFLAGS = ['-fPIC'])
+    clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
 
 if sys.platform == 'darwin':
-  # Link error occurs if we include the -bundle flag with -flat_namespace, so we removed it
-  clone.Append(SHLINKFLAGS=Split('$LINKFLAGS -flat_namespace -undefined suppress -fmessage-length=0'))
-  install_name = os.path.join('@loader_path', clone['LIBPREFIX'] + 'TclSoarLib' + clone['SHLIBSUFFIX'])
-  clone.Append(LINKFLAGS = ['-install_name', install_name])
+    install_name = os.path.join('@loader_path', clone['LIBPREFIX'] + 'TclSoarLib' + clone['SHLIBSUFFIX'])
+    clone.Append(LINKFLAGS = ['-install_name', install_name])
 
 elif sys.platform.startswith('linux'):
-  clone.Append(LIBS = ['Soar'])
-  # Currently requires Tcl 8.6 b/c it supports multiple threads without manual compilation.  The following line
-  # hard-codes the path of the current Tcl 8.6 path on this system into the executable
-  # TODO: why? Wouldn't that make Soar impossible to distribute?
-  clone.Append(LINKFLAGS = ['-Wl,-rpath'])
+    clone.Append(LIBS = ['Soar'])
+    # Currently requires Tcl 8.6 b/c it supports multiple threads without manual compilation.  The following line
+    # hard-codes the path of the current Tcl 8.6 path on this system into the executable (it's used as the first,
+    # but not only, search path for the Tcl library)
+    # TODO: is this still needed?
+    clone.Append(LINKFLAGS = ['-Wl,-rpath'])
 elif sys.platform == 'win32':
-  # Windows DLLs need to get linked to dependencies, whereas Linux and Mac shared objects do not
-  # (not sure if this is really needed for TclSoarLib)
-  clone.Append(LIBS = ['advapi32'])
-  clone.Append(LIBS = ['Soar'])
+    # Windows DLLs need to get linked to dependencies, whereas Linux and Mac shared objects do not
+    # (not sure if this is really needed for TclSoarLib)
+    clone.Append(LIBS = ['advapi32'])
+    clone.Append(LIBS = ['Soar'])
 
 # Copy tcl scripts that library needs
 tcl_scripts = InstallDir(clone, clone['OUT_DIR'] + '/tcl', 'tcl')
 
 # Create the TclSoarLib dll and tclindex file
-lib = clone.SharedLibrary(LIBNAME, Glob('src/*.cpp'))[0]
+lib = clone.SharedLibrary(LIB_NAME, Glob('src/*.cpp'))[0]
 
 # Install TclSoarLib and return
 t = clone.Install(clone.Dir(clone['OUT_DIR']), lib)

@@ -16,6 +16,10 @@ import SCons.Script
 import shutil
 import time
 
+# Add the current directory to the path so we can from build_support
+sys.path.append(Dir('.').srcnode().abspath)
+from build_support.tcl import prepare_for_compiling_with_tcl
+
 join = os.path.join
 
 SOAR_VERSION = "9.6.1"
@@ -183,7 +187,11 @@ env = Environment(
     SML_PYTHON_ALIAS = SML_PYTHON_ALIAS,
     SML_TCL_ALIAS = SML_TCL_ALIAS,
     SML_PHP_ALIAS = SML_PHP_ALIAS,
+    # indentation for log formatting
+    INDENT = '    ',
 )
+
+env.AddMethod(prepare_for_compiling_with_tcl, 'PrepareForCompilingWithTcl')
 
 # must be specified first or else the resulting file will not contain all compile commands
 env.Tool('compilation_db')

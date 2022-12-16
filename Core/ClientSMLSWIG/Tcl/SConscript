@@ -14,67 +14,18 @@ clone = env.Clone()
 
 tcl_sml_alias = clone['SML_TCL_ALIAS']
 
-libname = 'Tcl_sml_ClientInterface'
+LIB_NAME = 'Tcl_sml_ClientInterface'
 
-# Make sure tcl header file exists before proceeding
-
-if sys.platform == 'win32':
-    tcl_platform_dir = os.path.join('C:/Tcl')
-
-    tcl_user_platform_dir = GetOption('tcl')
-
-    if tcl_user_platform_dir:
-        tcl_platform_dir = tcl_user_platform_dir
-
-    tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))
-    tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'include'))
-    tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
-    tcl_libname = 'tcl86t.lib'
-    tcl_lib = 'tcl86t'
-    tcl_shname = 'tclsh86'
-    tcl_pkgindex_name = 'pkgIndex_win.tcl'
-elif sys.platform == 'darwin':
-    tcl_platform_dir = os.path.join('/Library/Frameworks/Tcl.framework/Versions/Current')
-
-    tcl_user_platform_dir = GetOption('tcl')
-
-    if tcl_user_platform_dir:
-        tcl_platform_dir = tcl_user_platform_dir
-
-    tcl_libs = clone.Dir(tcl_platform_dir)
-    tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'Headers'))
-    tcl_bins = clone.Dir(tcl_platform_dir)
-    tcl_libname = 'Tcl'
-    tcl_lib = 'Tcl'
-    tcl_shname = 'tclsh8.6'
-    tcl_pkgindex_name = 'pkgIndex_mac.tcl'
+if clone.PrepareForCompilingWithTcl(GetOption('tcl')):
+    print(f'{env["INDENT"]}Tcl SML library is buildable')
 else:
-    tcl_platform_dir = os.path.join('/opt/ActiveTcl-8.6')
-
-    tcl_user_platform_dir = GetOption('tcl')
-
-    if tcl_user_platform_dir:
-         tcl_platform_dir = tcl_user_platform_dir
-
-    tcl_libs = clone.Dir(os.path.join(tcl_platform_dir, 'lib'))
-    tcl_headers = clone.Dir(os.path.join(tcl_platform_dir, 'include'))
-    tcl_bins = clone.Dir(os.path.join(tcl_platform_dir, 'bin'))
-    tcl_libname = 'libtcl8.6.so'
-    tcl_lib = 'tcl8.6'
-    tcl_shname = 'tclsh8.6'
-    tcl_pkgindex_name = 'pkgIndex_linux.tcl'
-
-if ((not tcl_libs.exists()) or (not tcl_headers.exists()) or
-    (not File(os.path.join(tcl_headers.abspath, 'tcl.h')).exists()) or
-    (not File(os.path.join(tcl_libs.abspath, tcl_libname)).exists())) :
-    print('Tcl headers and libraries not found at ' + tcl_platform_dir + ', not building Tcl SML wrappers.')
+    print(f'{env["INDENT"]}Tcl SML library is *not* buildable')
     Return()
-else:
-    print('Tcl SML wrappers are buildable.')
+
 
 # dirs
 lib_install_dir = clone.Dir('$OUT_DIR')
-include_dirs = [ clone.Dir('#Core/%s/src' % d).abspath for d in 'ClientSML ElementXML ConnectionSML SoarKernel'.split() ]
+include_dirs = [ clone.Dir(f'#Core/{d}/src').abspath for d in 'ClientSML ElementXML ConnectionSML SoarKernel'.split() ]
 include_dirs.append(clone.Dir('#Core/shared').abspath)
 include_dirs.append(clone.Dir('#Core/SoarKernel/src/debug').abspath)
 include_dirs.append(clone.Dir('#Core/SoarKernel/src/decision_process').abspath)
@@ -96,12 +47,12 @@ pkgindex = os.path.join(lib_install_dir.abspath, 'pkgIndex.tcl')
 soar_dll = clone.File(os.path.join(lib_install_dir.abspath, 'Soar'))
 
 # Create commands to create SWIG wrapper file and pkgIndex file
-includes = ' '.join('-I%s' % d for d in include_dirs)
+includes = ' '.join(f'-I{d}' for d in include_dirs)
 nosvs = ''
 if GetOption('nosvs'):
   nosvs = '-DNO_SVS'
 wrap_cmd = f'swig -o {swig_tcl_wrapper_cpp.abspath} -c++ -tcl -pkgversion {clone["SOAR_VERSION"]} -Wall {includes} {nosvs} {swig_tcl_interface}'
-makepkg_cmd = '%s %s %s' % (os.path.join(tcl_bins.abspath, tcl_shname), makepkg_script, lib_install_dir)
+
 
 # Set up SWIGScanner to find dependencies for .i file
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan", ".i", "CPPPATH", '^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
@@ -109,36 +60,31 @@ clone.Append(SCANNERS=[SWIGScanner])
 
 # Create the SWIG wrapper cpp file
 tclstep1 = clone.Command(swig_tcl_wrapper_cpp, swig_tcl_interface, wrap_cmd)
-clone.Append(
-  LIBPATH=[tcl_libs],
-  CPPPATH=[tcl_headers],
-  CPPFLAGS=['-w']
-)
 
 # clone.Append(CPPFLAGS = ['-w', '-DUSE_TCL_STUBS'])
 
 if os.name == 'posix':
   clone.Append(CXXFLAGS=Split('-Wno-unused -fno-strict-aliasing'))
 
-if sys.platform == 'darwin':
-  # including the -bundle flag with -flat_namespace now gives an error, so we removed it
-  clone.Append(SHLINKFLAGS=Split('$LINKFLAGS -flat_namespace -undefined suppress'))
-  clone.Append(LINKFLAGS=['-framework', tcl_lib])
-elif sys.platform.startswith('linux'):
-  clone.Append(CPPFLAGS = ['-fPIC'])
-  clone.Append(LIBS = [tcl_lib])
-else:
-  clone.Append(LIBS=[tcl_lib])
-
 # Prevent "Command line warning D9025 : overriding '/W2' with '/w'"
 if '/W2' in clone['CPPFLAGS']:
   clone['CPPFLAGS'].remove('/W2')
 
 # Create the SWIG dll for tcl
-tclstep2 = clone.SharedLibrary(libname, swig_tcl_wrapper_cpp)
+tclstep2 = clone.SharedLibrary(LIB_NAME, swig_tcl_wrapper_cpp)
 lib = clone.Install(lib_install_dir, tclstep2)
 
 # Create the pkgIndex file for the SWIG dll (so tcl can find it with a package require command)
+if sys.platform == 'win32':
+    tcl_shname = 'tclsh86t'
+    tcl_pkgindex_name = 'pkgIndex_win.tcl'
+elif sys.platform == 'darwin':
+    tcl_shname = 'tclsh8.6'
+    tcl_pkgindex_name = 'pkgIndex_mac.tcl'
+else:
+    tcl_shname = 'tclsh8.6'
+    tcl_pkgindex_name = 'pkgIndex_linux.tcl'
+# makepkg_cmd = f'{os.path.join(tcl_bins.abspath, tcl_shname)} {makepkg_script} {lib_install_dir}'
 # tclstep3 = clone.Command(pkgindex, lib, makepkg_cmd)
 
 # Note: Disabled script that manually generated pkgindex.  Unless it's being put in a directory with

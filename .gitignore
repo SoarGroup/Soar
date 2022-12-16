@@ -505,7 +505,7 @@ local.properties
 
 ### Soar ###
 out/
-build*/
+build/
 /.sconf_temp/
 /.externalToolBuilders/
 /.settings/
