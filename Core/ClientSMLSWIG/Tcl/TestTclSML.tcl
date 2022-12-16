@@ -18,11 +18,23 @@
 #  SoarIO/bin, this means appending the current directory.  Other platforms may
 #  require some other directory to be there.  Modify the line below appropriately.
 #
-# 
-#load the sml stuff
+#
+# load the sml stuff
 lappend auto_path .
 lappend auto_path [pwd]
 package require tcl_sml_clientinterface
+
+
+set towersOfHanoiFile [file join [pwd] .. Agents towers-of-hanoi-simple towers-of-hanoi.soar]
+set tohTestFile [file join [pwd] test_agents TOHtest.soar]
+
+if {[expr {![file exists $towersOfHanoiFile]}]} {
+    puts stderr "Error: $towersOfHanoiFile does not exist"
+    exit 1
+} elseif {[expr {![file exists $tohTestFile]}]} {
+    puts stderr "Error: $tohTestFile does not exist"
+    exit 1
+}
 
 proc PrintCallback {id userData agent message} {
 	puts -nonewline $message
@@ -103,9 +115,9 @@ set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED Pha
 set structuredCallbackId [$agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT StructuredTraceCallback ""]
 
 #load the TOH productions
-set result [$agent LoadProductions [file join [pwd] .. Agents towers-of-hanoi-simple towers-of-hanoi.soar]]
+set result [$agent LoadProductions $towersOfHanoiFile]
 #loads a function to test the user-defined RHS function stuff
-set result [$agent LoadProductions [file join [pwd] test_agents TOHtest.soar]]
+set result [$agent LoadProductions $tohTestFile]
 
 $kernel SendClientMessage $agent "TestMessage" "This is a \"quoted\"\" message"
 $kernel UnregisterForClientMessageEvent $messageCallbackId
