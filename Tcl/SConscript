@@ -155,6 +155,8 @@ clone.Append(CPPPATH = Split(cpps))
 clone.Append(CPPFLAGS = ['-w'])
 if os.name == 'posix':
   clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
+  #-fPic is needed to make the code position independent.  Necessary for Tcl.
+  clone.Append(CPPFLAGS = ['-fPIC'])
 
 if sys.platform == 'darwin':
   # Link error occurs if we include the -bundle flag with -flat_namespace, so we removed it
@@ -163,8 +165,6 @@ if sys.platform == 'darwin':
   clone.Append(LINKFLAGS = ['-install_name', install_name])
 
 elif sys.platform.startswith('linux'):
-  #-fPic is needed to make the code position independent.  Necessary for Tcl.
-  clone.Append(CPPFLAGS = ['-fPIC'])
   clone.Append(LIBS = ['Soar'])
   # Currently requires Tcl 8.6 b/c it supports multiple threads without manual compilation.  The following line
   # hard-codes the path of the current Tcl 8.6 path on this system into the executable
