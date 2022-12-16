@@ -5,6 +5,7 @@
 #  several kinds of callbacks, reinitializing, agent destruction, and kernel
 #  destruction (and maybe some other things, too).
 #
+import atexit
 from pathlib import Path
 import sys
 import time
@@ -63,6 +64,15 @@ kernel = Kernel.CreateKernelInNewThread()
 if not kernel:
 	print('kernel creation failed', file=sys.stderr)
 	sys.exit(1)
+
+def __cleanup():
+    # Neglecting to shut down the kernel causes a segfault, so we use atexit to guarantee proper cleanup
+    global kernel
+    if kernel:
+        kernel.Shutdown()
+        del kernel
+
+atexit.register(__cleanup)
 
 agentCallbackId0 = kernel.RegisterForAgentEvent(smlEVENT_AFTER_AGENT_CREATED, AgentCreatedCallback, None)
 agentCallbackId1 = kernel.RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, AgentReinitializedCallback, None)
@@ -125,7 +135,7 @@ result = kernel.ExecuteCommandLine("init-soar", "Soar1")
 kernel.DestroyAgent(agent)
 
 #remove all the remaining kernel callback functions (not required, just to test)
-print("removing callbacks")
+print("Removing callbacks...")
 kernel.UnregisterForAgentEvent(agentCallbackId0)
 kernel.UnregisterForAgentEvent(agentCallbackId1)
 kernel.UnregisterForAgentEvent(agentCallbackId2)
@@ -134,6 +144,5 @@ kernel.RemoveRhsFunction(rhsCallbackId)
 
 #shutdown the kernel; this makes sure agents are deleted and events fire correctly
 kernel.Shutdown()
-
 #delete kernel object
 del kernel
