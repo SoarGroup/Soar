@@ -74,7 +74,7 @@ jobs:
           # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
           # fail_on_failure: true
           annotate_only: true
-      # TODO: run Python SML test
+      # TODO: run SML tests (Python, Tcl, Java)
 
 # Using powershell means we need to explicitly stop on failure
   Windows:
@@ -147,4 +147,4 @@ jobs:
           # fail_on_failure: true
           annotate_only: true
 
-      # TODO: run Python SML test
+      # TODO: run SML tests (Python, Tcl, Java)
