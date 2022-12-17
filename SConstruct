@@ -16,6 +16,7 @@ import time
 script_dir = Dir('.').srcnode().abspath
 sys.path.append(script_dir)
 from build_support.tcl import prepare_for_compiling_with_tcl
+from build_support.glfw import prepare_for_compiling_with_glfw
 
 join = os.path.join
 
@@ -135,6 +136,7 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable; defaults to same executable used to run SCons')
 AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Path to Tcl installation (ActiveTcl or otherwise)')
 AddOption('--tcl-suffix', action='store', type='string', dest='tcl_suffix', default="t", nargs=1, help='Tcl binary suffix (defaults to "t", which is used to indicate full threading support in the standard Tcl build)')
+AddOption('--glfw', action='store', type='string', dest='glfw', nargs=1, help='Path to GLFW (3) library (used for SVS)')
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Enable debug build.  Disables compiler optimizations, includes debugging symbols, debug trace statements and assertions')
 AddOption('--opt', action='store_false', dest='dbg', default=False, help='Enable optimized build.  Enables compiler optimizations, removes debugging symbols, debug trace statements and assertions')
@@ -170,6 +172,7 @@ env = Environment(
 )
 
 env.AddMethod(prepare_for_compiling_with_tcl, 'PrepareForCompilingWithTcl')
+env.AddMethod(prepare_for_compiling_with_glfw, 'PrepareForCompilingWithGlfw')
 
 # must be specified first or else the resulting file will not contain all compile commands
 env.Tool('compilation_db')
