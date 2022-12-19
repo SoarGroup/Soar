@@ -74,12 +74,12 @@ bool CommandLineInterface::Find_Closest_Help_Command(const std::string pCmd)
 bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
 {
     std::map<std::string, const char*>::iterator i;
-    
+
     if (docstrings.size() == 0)
     {
         initdocstrings();
     }
-    
+
     if (argv.size() == 1)
     {
         m_Result << "Soar " << sml_Names::kSoarVersionValue << " Command List:" << std::endl << std::endl;
@@ -168,7 +168,7 @@ bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
 
 void initdocstrings()
 {
-	docstrings["alias"] = 
+	docstrings["alias"] =
 		"Define a new alias of existing commands and arguments.\n"
 		"\n"
 		"Synopsis\n"
@@ -224,7 +224,7 @@ void initdocstrings()
 		"  a               alias\n"
 		"  unalias, un     alias -r\n"
 	;
-	docstrings["chunk"] = 
+	docstrings["chunk"] =
 		"Sets the parameters for explanation-based chunking.\n"
 		"\n"
 		"Synopsis\n"
@@ -471,7 +471,7 @@ void initdocstrings()
 		"\n"
 		"explain trace visualize\n"
 	;
-	docstrings["debug"] = 
+	docstrings["debug"] =
 		"Contains commands that provide access to Soar's internals. Most users will not\n"
 		"need to access these commands.\n"
 		"\n"
@@ -527,7 +527,7 @@ void initdocstrings()
 		"\n"
 		"stats\n"
 	;
-	docstrings["decide"] = 
+	docstrings["decide"] =
 		"Commands and settings related to the selection of operators during the Soar\n"
 		"decision process\n"
 		"\n"
@@ -696,7 +696,7 @@ void initdocstrings()
 		"\n"
 		"rl\n"
 	;
-	docstrings["echo"] = 
+	docstrings["echo"] =
 		"Print a string to the current output device.\n"
 		"\n"
 		"Synopsis\n"
@@ -727,7 +727,7 @@ void initdocstrings()
 		"\n"
 		"clog\n"
 	;
-	docstrings["epmem"] = 
+	docstrings["epmem"] =
 		"Control the behavior of episodic memory.\n"
 		"\n"
 		"Synopsis\n"
@@ -982,7 +982,7 @@ void initdocstrings()
 		"\n"
 		"trace wm\n"
 	;
-	docstrings["explain"] = 
+	docstrings["explain"] =
 		"Allows you to explore how rules were learned.\n"
 		"\n"
 		"Synopsis\n"
@@ -1383,7 +1383,7 @@ void initdocstrings()
 		"\n"
 		"chunk visualize\n"
 	;
-	docstrings["file-system"] = 
+	docstrings["file-system"] =
 		"File System\n"
 		"\n"
 		"Soar can handle the following Unix-style file system navigation commands\n"
@@ -1424,7 +1424,7 @@ void initdocstrings()
 		"  dir          ls\n"
 		"  topd         pwd\n"
 	;
-	docstrings["gp"] = 
+	docstrings["gp"] =
 		"Generate productions according to a specified pattern.\n"
 		"\n"
 		"Synopsis\n"
@@ -1500,7 +1500,7 @@ void initdocstrings()
 		"\n"
 		"sp\n"
 	;
-	docstrings["help"] = 
+	docstrings["help"] =
 		"Provide formatted usage information about Soar commands.\n"
 		"\n"
 		"Synopsis\n"
@@ -1517,7 +1517,7 @@ void initdocstrings()
 		"This command prints formatted help for the given command name. Issue alone to\n"
 		"see what topics have help available.\n"
 	;
-	docstrings["load"] = 
+	docstrings["load"] =
 		"Loads soar files, rete networks, saved percept streams and external libraries.\n"
 		"\n"
 		"Synopsis\n"
@@ -1728,7 +1728,7 @@ void initdocstrings()
 		"\n"
 		"file_system decide production save\n"
 	;
-	docstrings["output"] = 
+	docstrings["output"] =
 		"Controls settings related to Soar's output\n"
 		"\n"
 		"Synopsis\n"
@@ -1910,7 +1910,7 @@ void initdocstrings()
 		"  verbose                    output verbose\n"
 		"  warnings                   output warnings\n"
 	;
-	docstrings["preferences"] = 
+	docstrings["preferences"] =
 		"Examine details about the preferences that support the specified identifier and\n"
 		"attribute.\n"
 		"\n"
@@ -2048,7 +2048,7 @@ void initdocstrings()
 		"\n"
 		"decide\n"
 	;
-	docstrings["print"] = 
+	docstrings["print"] =
 		"Print items in working memory or production memory.\n"
 		"\n"
 		"Synopsis\n"
@@ -2186,7 +2186,7 @@ void initdocstrings()
 		"\n"
 		"output trace wm\n"
 	;
-	docstrings["production"] = 
+	docstrings["production"] =
 		"Commands to manipulate Soar rules and analyze their usage.\n"
 		"\n"
 		"Synopsis\n"
@@ -2209,7 +2209,7 @@ void initdocstrings()
 		"                                [--chunks --nochunks ]\n"
 		"  ------------------------------------------------------------------\n"
 		"  production firing-counts      [--all --chunks --default --rl]  [n]\n"
-		"                                [--task --templates --user --fired]\n"
+		"                                [--templates --user --fired]\n"
 		"  production firing-counts      <prod-name>\n"
 		"  ------------------------------------------------------------------\n"
 		"  production matches            [--names --count  ]  <prod-name>\n"
@@ -2652,7 +2652,7 @@ void initdocstrings()
 		"soar_init\n"
 		"sp trace\n"
 	;
-	docstrings["rl"] = 
+	docstrings["rl"] =
 		"Control how numeric indifferent preference values in RL rules are updated via\n"
 		"reinforcement learning.\n"
 		"\n"
@@ -2849,7 +2849,7 @@ void initdocstrings()
 		"\n"
 		"excise print trace\n"
 	;
-	docstrings["run"] = 
+	docstrings["run"] =
 		"Begin Soar's execution cycle.\n"
 		"\n"
 		"Synopsis\n"
@@ -2955,7 +2955,7 @@ void initdocstrings()
 		"  e             run -e 1\n"
 		"  step          run -d 1\n"
 	;
-	docstrings["save"] = 
+	docstrings["save"] =
 		"Saves chunks, rete networks and percept streams.\n"
 		"\n"
 		"Synopsis\n"
@@ -3037,7 +3037,7 @@ void initdocstrings()
 		"\n"
 		"production soar load\n"
 	;
-	docstrings["smem"] = 
+	docstrings["smem"] =
 		"Controls the behavior of and displays information about semantic memory.\n"
 		"\n"
 		"Synopsis\n"
@@ -3435,7 +3435,7 @@ void initdocstrings()
 		"\n"
 		"print trace visualize\n"
 	;
-	docstrings["soar"] = 
+	docstrings["soar"] =
 		"Commands and settings related to running Soar\n"
 		"\n"
 		"Synopsis\n"
@@ -3713,7 +3713,7 @@ void initdocstrings()
 		"\n"
 		"production_excise run stats\n"
 	;
-	docstrings["sp"] = 
+	docstrings["sp"] =
 		"Define a Soar production.\n"
 		"\n"
 		"Synopsis\n"
@@ -3807,7 +3807,7 @@ void initdocstrings()
 		"\n"
 		"production chunk trace\n"
 	;
-	docstrings["stats"] = 
+	docstrings["stats"] =
 		"Print information on Soar's runtime statistics.\n"
 		"\n"
 		"Synopsis\n"
@@ -3957,7 +3957,7 @@ void initdocstrings()
 		"\n"
 		"timers init-soar command-to-file\n"
 	;
-	docstrings["svs"] = 
+	docstrings["svs"] =
 		"Control the behavior of the Spatial Visual System\n"
 		"\n"
 		"Synopsis\n"
@@ -4034,7 +4034,7 @@ void initdocstrings()
 		"\n"
 		"  svs S1.scene.sgel add ball3 world ball .5 position 1 1 1\n"
 	;
-	docstrings["trace"] = 
+	docstrings["trace"] =
 		"Control the run-time tracing of Soar.\n"
 		"\n"
 		"Synopsis\n"
@@ -4306,7 +4306,7 @@ void initdocstrings()
 		"\n"
 		"epmem production output print run wm\n"
 	;
-	docstrings["visualize"] = 
+	docstrings["visualize"] =
 		"Creates visualizations of Soar's memory systems or processing.\n"
 		"\n"
 		"Synopsis\n"
@@ -4434,7 +4434,7 @@ void initdocstrings()
 		"\n"
 		"explain epmem smem chunk\n"
 	;
-	docstrings["wm"] = 
+	docstrings["wm"] =
 		"Commands and settings related to working memory and working memory activation.\n"
 		"There are four sub-commands: add, remove, activation, and watch.\n"
 		"\n"
