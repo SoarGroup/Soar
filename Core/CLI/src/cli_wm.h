@@ -47,7 +47,7 @@ namespace cli
                     {'R', "reset-filter",   OPTARG_NONE},
                     {'s', "set",            OPTARG_NONE},
                     {'S', "stats",          OPTARG_NONE},
-                    {'T', "template",       OPTARG_NONE},
+                    {'T', "templates",      OPTARG_NONE},
                     {'x', "timers",         OPTARG_NONE},
                     {'t', "type",           OPTARG_REQUIRED},
                     {'u', "user",           OPTARG_NONE},

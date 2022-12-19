@@ -54,7 +54,7 @@ namespace cli
                     {'s', "set",                OPTARG_NONE},
                     {'x', "show-bindings",      OPTARG_NONE},
                     {'t', "task",               OPTARG_NONE},
-                    {'T', "template",           OPTARG_NONE},
+                    {'T', "templates",          OPTARG_NONE},
                     {'y', "timetags",           OPTARG_NONE},
                     {'u', "user",               OPTARG_NONE},
                     {'w', "wmes",               OPTARG_NONE},
