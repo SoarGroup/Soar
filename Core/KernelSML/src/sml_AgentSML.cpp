@@ -1013,7 +1013,7 @@ bool AgentSML::AddIntInputWME(char const* pID, char const* pAttribute, int64_t v
 
 bool AgentSML::AddDoubleInputWME(char const* pID, char const* pAttribute, double value, int64_t clientTimeTag)
 {
-    // Creating a wme with an int constant value
+    // Creating a wme with a double constant value
     Symbol* pValueSymbol = get_io_float_constant(m_agent, value) ;
 
     if (CaptureQuery())
@@ -1025,8 +1025,8 @@ bool AgentSML::AddDoubleInputWME(char const* pID, char const* pAttribute, double
         ca.CreateAdd();
         ca.Add()->id = pID;
         ca.Add()->attr = pAttribute;
-        std::stringstream valueString;
-        valueString << value;
+        std::ostringstream valueString;
+        valueString << std::setprecision(std::numeric_limits<double>::max_digits10) << value;
         ca.Add()->value = valueString.str();
         ca.Add()->type = sml_Names::kTypeDouble;
         CaptureInputWME(ca);
