@@ -155,7 +155,7 @@ bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
             else if (argv[1] == std::string("watch-wmes")) Print_9_4_Help_Mapping(argv[1], "wm", "wm watch");
             else if (!Find_Closest_Help_Command(argv[1]))
             {
-                m_Result << "No such command '" << argv[1] << "'." << std::endl;
+                m_Result << "No help file for '" << argv[1] << "'." << std::endl;
                 return false;
             }
             return true;
