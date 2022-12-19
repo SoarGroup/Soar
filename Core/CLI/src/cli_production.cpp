@@ -101,7 +101,7 @@ bool CommandLineInterface::ParseExcise(std::vector< std::string >& argv)
     {
         {'a', "all",            OPTARG_NONE},
         {'c', "chunks",         OPTARG_NONE},
-        {'d', "default",        OPTARG_NONE},
+        {'d', "defaults",        OPTARG_NONE},
         {'n', "never-fired",    OPTARG_NONE},
         {'r', "rl",             OPTARG_NONE},
         {'t', "task",           OPTARG_NONE},
@@ -1868,7 +1868,7 @@ bool CommandLineInterface::ParseMemories(std::vector< std::string >& argv)
     OptionsData optionsData[] =
     {
         {'c', "chunks",          OPTARG_NONE},
-        {'d', "default",         OPTARG_NONE},
+        {'d', "defaults",         OPTARG_NONE},
         {'j', "justifications",  OPTARG_NONE},
         {'T', "templates",       OPTARG_NONE},
         {'u', "user",            OPTARG_NONE},

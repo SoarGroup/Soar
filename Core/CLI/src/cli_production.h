@@ -34,14 +34,20 @@ namespace cli
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
+                // Maintainer Note: because we parse the options once here and once in DoProduction, we have to declare all options
+                // used by subcommands here as well.
+                // TODO: that's double-maintenance. We should only have to declare options to the top-level command here.
                 OptionsData optionsData[] =
                 {
                     {'a', "all",                OPTARG_NONE},
                     {'b', "assertions",         OPTARG_NONE},
                     {'c', "chunks",             OPTARG_NONE},
+                    // TODO: it's actually -c for count, but -c is taken by chunks already,
+                    // and we have to declare this somewhere for the subcommands to use it.
+                    {'z', "count",              OPTARG_NONE},
                     {'e', "clear",              OPTARG_NONE},
-                    {'f', "count",              OPTARG_NONE},
-                    {'d', "default",            OPTARG_NONE},
+                    {'f', "fired",              OPTARG_NONE},
+                    {'d', "defaults",           OPTARG_NONE},
                     {'j', "justifications",     OPTARG_NONE},
                     {'l', "lhs",                OPTARG_NONE},
                     {'n', "names",              OPTARG_NONE},
