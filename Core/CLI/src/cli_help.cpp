@@ -1383,41 +1383,29 @@ void initdocstrings()
 		"\n"
 		"chunk visualize\n"
 	;
+    docstrings["cd"] =
+		"Change the current working directory. If run with no arguments, returns to the\n"
+		"directory that the command line interface was started in, often referred to as\n"
+		"the home directory.\n";
+    docstrings["pwd"] =
+        "Print the current working directory.\n";
+    docstrings["ls"] =
+        "List the contents of the current working directory.\n";
+    docstrings["dirs"] =
+		"This command lists the directory stack created by an agent while moving through\n"
+        "a directory structure via pushd and popd.\n";
+    docstrings["pushd"] =
+        "Push the directory on to the stack. Can be relative path name or a fully\n"
+        "specified one.\n";
+    docstrings["popd"] =
+        "Pop the current working directory off the stack and change to the next\n"
+        "directory on the stack. Can be relative pathname or a fully specified path.\n";
 	docstrings["file-system"] =
 		"File System\n"
 		"\n"
-		"Soar can handle the following Unix-style file system navigation commands\n"
-		"\n"
-		"pwd\n"
-		"\n"
-		"Print the current working directory.\n"
-		"\n"
-		"ls\n"
-		"\n"
-		"List the contents of the current working directory.\n"
-		"\n"
-		"cd\n"
-		"\n"
-		"Change the current working directory. If run with no arguments, returns to the\n"
-		"directory that the command line interface was started in, often referred to as\n"
-		"the home directory.\n"
-		"\n"
-		"dirs\n"
-		"\n"
-		"This command lists the directory stack. Agents can move through a directory\n"
-		"structure by pushing and popping directory names. The dirs command returns the\n"
-		"stack.\n"
-		"\n"
-		"pushd\n"
-		"\n"
-		"Push the directory on to the stack. Can be relative path name or a fully\n"
-		"specified one.\n"
-		"\n"
-		"popd\n"
-		"\n"
-		"Pop the current working directory off the stack and change to the next\n"
-		"directory on the stack. Can be relative pathname or a fully specified path.\n"
-		"\n"
+		"Soar can handle the following Unix-style file system navigation commands:\n"
+		"cd, pwd, ls, dirs, pushd, popd\n"
+        "For more details, see the help pages for each of these commands.\n"
 		"Default Aliases\n"
 		"\n"
 		"  chdir        cd\n"
