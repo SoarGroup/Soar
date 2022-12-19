@@ -35,7 +35,7 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     stop_phase->add_mapping(DECISION_PHASE, "decision");
     stop_phase->add_mapping(INPUT_PHASE, "input");
     stop_phase->add_mapping(OUTPUT_PHASE, "output");
-    stop_phase->add_mapping(PROPOSE_PHASE, "proposal");
+    stop_phase->add_mapping(PROPOSE_PHASE, "propose");
     add(stop_phase);
 
     keep_all_top_oprefs = new soar_module::boolean_param("keep-all-top-oprefs", pDecider_settings[DECIDER_KEEP_TOP_OPREFS] ? on : off, new soar_module::f_predicate<boolean>());

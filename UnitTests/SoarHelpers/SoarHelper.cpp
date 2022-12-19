@@ -162,34 +162,34 @@ int SoarHelper::getINNER_E_CYCLE_COUNT(sml::Agent* agent)
 int SoarHelper::getUserProductionCount(sml::Agent* agent)
 {
 	std::string rules = agent->ExecuteCommandLine("print --user");
-	
+
 	std::stringstream ss(rules);
 	std::string line;
-	
+
 	int count = 0;
-	
+
 	while (std::getline(ss, line, '\n'))
 	{
 		++count;
 	}
-	
+
 	return count;
 }
 
 int SoarHelper::getChunkProductionCount(sml::Agent* agent)
 {
 	std::string rules = agent->ExecuteCommandLine("print --chunks");
-	
+
 	std::stringstream ss(rules);
 	std::string line;
-	
+
 	int count = 0;
-	
+
 	while (std::getline(ss, line, '\n'))
 	{
 		++count;
 	}
-	
+
 	return count;
 }
 
@@ -202,7 +202,7 @@ int SoarHelper::parseForCount(std::string search, std::string countString)
 {
 	std::stringstream ss(countString);
 	std::string line;
-	
+
 	while (std::getline(ss, line, '\n'))
 	{
 		if (line.size() > 0 && isdigit(line.front()))
@@ -210,99 +210,99 @@ int SoarHelper::parseForCount(std::string search, std::string countString)
 			// Potential match
 			// Check for match first
 			size_t first_space = line.find(' ');
-			
+
 			if (first_space != std::string::npos)
 			{
 				++first_space;
-				
+
 				int matchCount = 0;
 				for (size_t i = first_space;i < line.size() && line[i] == search[i-first_space];++i,++matchCount);
-				
+
 				if (matchCount == search.size())
 				{
 					// Match
 					// Get the number
-					
+
 					// Get the number first
 					std::string s_number = line.substr(0, first_space-1);
 					int number;
-					
+
 					std::stringstream ss_number(s_number);
 					ss_number >> number;
-					
+
 					return number;
 				}
 			}
 		}
 	}
-	
+
 	return -1;
 }
 
 std::tuple<SoarHelper::StopPhase, bool> SoarHelper::getStopPhase(sml::Agent* agent)
 {
 	std::istringstream iss(agent->ExecuteCommandLine("soar stop-phase"));
-	
+
 	std::string s_phase;
 	std::string temp;
-	
+
 	iss >> temp >> temp >> s_phase;
-	
+
 	StopPhase phase = StopPhase::INPUT;
 	if (s_phase == "input")
 		phase = StopPhase::INPUT;
-	else if (s_phase == "proposal")
-		phase = StopPhase::PROPOSAL;
+	else if (s_phase == "propose")
+		phase = StopPhase::PROPOSE;
 	else if (s_phase == "decision")
 		phase = StopPhase::DECISION;
 	else if (s_phase == "apply")
 		phase = StopPhase::APPLY;
 	else if (s_phase == "output")
 		phase = StopPhase::OUTPUT;
-	
+
 	return std::make_tuple(phase, true);
 }
 
 void SoarHelper::setStopPhase(sml::Agent* agent, StopPhase phase, bool before)
 {
 	std::string s_phase = "--input";
-	
+
 	if (phase == StopPhase::INPUT)
 		s_phase = "input";
-	else if (phase == StopPhase::PROPOSAL)
-		s_phase = "proposal";
+	else if (phase == StopPhase::PROPOSE)
+		s_phase = "propose";
 	else if (phase == StopPhase::DECISION)
 		s_phase = "decision";
 	else if (phase == StopPhase::APPLY)
 		s_phase = "apply";
 	else if (phase == StopPhase::OUTPUT)
 		s_phase = "output";
-	
+
 	agent->ExecuteCommandLine(std::string("soar stop-phase " + s_phase).c_str());
 }
 
 std::vector<std::string> SoarHelper::getGoalStack(sml::Agent* agent)
 {
 	std::string s_result = agent->ExecuteCommandLine("p --stack");
-	
+
 	std::stringstream ss(s_result);
-	
+
 	std::vector<std::string> v_result;
 	std::string line;
-	
+
 	while (std::getline(ss, line, '\n'))
 	{
 		size_t start = line.find("==>S: ")+6;
 		size_t end = line.find(" ", start);
-		
+
 		if (end == std::string::npos)
 			end = line.size();
-		
+
 		std::string goal = line.substr(start, end-start);
-		
+
 		v_result.push_back(goal);
 	}
-	
+
 	return v_result;
 }
 
@@ -311,12 +311,12 @@ std::ostream& operator<<(std::ostream& os, SoarHelper::StopPhase phase)
 	switch (phase)
 	{
 		case SoarHelper::StopPhase::INPUT: os << "INPUT";
-		case SoarHelper::StopPhase::PROPOSAL: os << "PROPOSAL";
+		case SoarHelper::StopPhase::PROPOSE: os << "PROPOSE";
 		case SoarHelper::StopPhase::DECISION: os << "DECISION";
 		case SoarHelper::StopPhase::APPLY: os << "APPLY";
 		case SoarHelper::StopPhase::OUTPUT: os << "OUTPUT";
 	}
-	
+
 	return os;
 }
 
@@ -325,43 +325,43 @@ std::string SoarHelper::GetResource(std::string resource)
 	std::string path =  FindFile(resource, ResourceDirectory);
 	const char* workingDirectory = getenv("WORKING_DIRECTORY");
 	const char* soarHome = getenv("SOAR_HOME");
-	
+
 	if (path.length() == 0 && workingDirectory)
 	{
 		path = FindFile(resource, workingDirectory);
 	}
-	
+
 	if (path.length() == 0 && soarHome)
 	{
 		path = FindFile(resource, soarHome);
 	}
-	
+
 	if (path.length() == 0)
 	{
 		path = FindFile(resource, "./");
 	}
-	
+
 	return path;
 }
 
 std::string SoarHelper::FindFile(std::string filename, std::string path)
 {
 	DIR* dir = opendir(path.c_str());
-	
+
 	if (!dir)
 		return "";
-	
+
 	struct dirent* entry;
-	
+
 	while ((entry = readdir(dir)) != nullptr)
 	{
 #ifndef _WIN32
 		if (entry->d_type == DT_UNKNOWN)
 		{
 			struct stat file_info;
-			
+
 			lstat((path + std::string(entry->d_name)).c_str(), &file_info);
-			
+
 			if (S_ISDIR(file_info.st_mode))
 			{
 				entry->d_type = DT_DIR;
@@ -372,17 +372,17 @@ std::string SoarHelper::FindFile(std::string filename, std::string path)
 			}
 		}
 #endif
-		
+
 		if (entry->d_type == DT_DIR)
 		{
 			// Another directory
 			std::string directory = entry->d_name;
-			
+
 			if (directory == "." || directory == "..")
 				continue;
-			
+
 			std::string result = FindFile(filename, path + directory + "/");
-			
+
 			if (result.size() != 0)
 			{
 				closedir(dir);
@@ -393,7 +393,7 @@ std::string SoarHelper::FindFile(std::string filename, std::string path)
 		else
 		{
 			std::string result = entry->d_name;
-						
+
 			if (filename == result)
 			{
 				closedir(dir);
@@ -402,8 +402,8 @@ std::string SoarHelper::FindFile(std::string filename, std::string path)
 			}
 		}
 	}
-	
+
 	closedir(dir);
-	
+
 	return "";
 }

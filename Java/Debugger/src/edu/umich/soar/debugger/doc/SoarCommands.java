@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SoarCommands.java
- * 
+ *
  * Created on 	Nov 23, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc;
@@ -14,9 +14,9 @@ package edu.umich.soar.debugger.doc;
 import sml.smlPhase;
 
 /********************************************************************************************
- * 
+ *
  * Information about strings used for Soar Commands is stored here.
- * 
+ *
  ********************************************************************************************/
 public class SoarCommands
 {
@@ -306,7 +306,7 @@ public class SoarCommands
         if (phase == smlPhase.sml_OUTPUT_PHASE)
             return "output";
         if (phase == smlPhase.sml_PROPOSAL_PHASE)
-            return "proposal";
+            return "propose";
         return "";
     }
 
@@ -314,8 +314,8 @@ public class SoarCommands
     {
     	//BADBAD this will only work with the default aliases for run commands
     	command = command.trim();
-    	if (command.startsWith("time") 
-    			|| command.startsWith("command-to-file") 
+    	if (command.startsWith("time")
+    			|| command.startsWith("command-to-file")
     			|| command.startsWith("ctf"))
     	{
     		int x = command.indexOf(" ");
