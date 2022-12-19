@@ -192,7 +192,7 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'n', "no-newline", OPTARG_NONE},
+                    {'n', "nonewline", OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
