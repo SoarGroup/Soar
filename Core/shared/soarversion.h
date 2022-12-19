@@ -7,9 +7,9 @@
 /*
 Many places to change the version number (this list is shorter than it used to be):
 
-Core/shared/soarversion.h
-rename Java/Debugger/src/main/resources/.dlf files
-Java/SMLJava/ edu.umich.soar.SoarProperties.VERSION
+Core/shared/soarversion.h (2 places)
+rename Java/Debugger/manifest1
+Java/SMLJava/src edu.umich.soar.SoarProperties#VERSION
 Inside the root SConstruct file
 Inside all Java launchers in Release/ subfolders
 soar-vars.bat in root
@@ -17,7 +17,7 @@ soar-vars.bat in root
 */
 #define MAJOR_VERSION_NUMBER 9
 #define MINOR_VERSION_NUMBER 6
-#define MICRO_VERSION_NUMBER 0
+#define MICRO_VERSION_NUMBER 1
 #define GREEK_VERSION_NUMBER 0
 inline const char* VERSION_STRING()
 {
@@ -26,7 +26,7 @@ inline const char* VERSION_STRING()
 
 #define SML_MAJOR_VERSION_NUMBER 9
 #define SML_MINOR_VERSION_NUMBER 6
-#define SML_MICRO_VERSION_NUMBER 0
+#define SML_MICRO_VERSION_NUMBER 1
 #define SML_GREEK_VERSION_NUMBER 0
 inline const char* SML_VERSION_STRING()
 {
