@@ -25,7 +25,7 @@ jobs:
       fail-fast: false
       matrix:
         # TODO: put linux back before merging, obviously
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -74,77 +74,4 @@ jobs:
           # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
           # fail_on_failure: true
           annotate_only: true
-      # TODO: run SML tests (Python, Tcl, Java)
-
-# Using powershell means we need to explicitly stop on failure
-  Windows:
-    name: build-windows
-    runs-on: [windows-latest]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-
-      # This does not install MSVC or Visual Studio! We rely on the software installed already on the
-      # GH action runner, and this step just prepares the environment. We pin the VS version here because
-      # the error messages are much more helpful than the mess we get from SCons, which automatically
-      # falls back on a combo of Mingw with MSVC libs and then fails to build.
-      - name: switch to VS command prompt
-        uses: ilammy/msvc-dev-cmd@v1
-
-      # No easy quick way to install TCL on Windows, so we download and build it ourselves.
-      - name: build and install Tcl
-        run: |
-          (new-object System.Net.WebClient).DownloadFile('https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip', 'tcl8613-src.zip')
-          Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
-          cd tcl8613-src\tcl8.6.13\win
-          &nmake -f makefile.vc release install INSTALLDIR=c:\progra~1\tcl
-          if ($lastexitcode -ne 0) {
-             throw "nmake exit code: $lastexitcode"
-          }
-
-      - name: build
-        env:
-          # instructs SCons to print debug statements to stdout
-          SCONS_MSCOMMON_DEBUG: '-'
-        run: |
-          ./build.bat --scu --opt --verbose --tcl=c:\progra~1\tcl all
-          if ($lastexitcode -ne 0) {
-             throw "build.bat exit code: $lastexitcode"
-          }
-      - name: compress artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: out/
-          dest: build.zip
-      - name: upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Soar-linux
-          path: ./build.zip
-
-      - name: unit tests
-        working-directory: ./out
-        run: |
-          ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
-          if ($lastexitcode -ne 0) {
-             throw "UnitTests exit code: $lastexitcode"
-          }
-
-      # reports JUnit test results as GitHub PR check.
-      - name: publish test report
-        uses: mikepenz/action-junit-report@v3
-        # always run even if the previous step fails
-        if: always()
-        with:
-          report_paths: './out/TestResults.xml'
-          # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
-          # fail_on_failure: true
-          annotate_only: true
-
       # TODO: run SML tests (Python, Tcl, Java)
