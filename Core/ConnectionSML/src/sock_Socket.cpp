@@ -66,7 +66,7 @@ Socket::Socket(SOCKET hSocket)
 {
     m_hSocket = hSocket ;
     m_bTraceCommunications = false ;
-	
+
 #ifndef _MSC_VER
 	ignore_sigpipe();
 #endif
@@ -89,13 +89,13 @@ char* sock::GetLocalIPAddress()
 {
     // Look up the local host's IP address
     uint32_t hostID = GetLocalIP() ;
-    
+
     in_addr addr ;
     addr.s_addr = hostID ;
-    
+
     // Convert to the string form of the IP address
     char* pHost = inet_ntoa(addr) ;
-    
+
     return pHost ;
 }
 
@@ -119,10 +119,10 @@ uint32_t sock::GetLocalIP()
     int nAddrSize = sizeof(SOCKADDR);
     SOCKET hSock;
     int nRet;
-    
+
     /* Init local address (to zero) */
     stLclAddr.sin_addr.s_addr = INADDR_ANY;
-    
+
     /* Get the local hostname */
     nRet = gethostname(szLclHost, sizeof(szLclHost));
     if (nRet != SOCKET_ERROR)
@@ -134,7 +134,7 @@ uint32_t sock::GetLocalIP()
             stLclAddr.sin_addr.s_addr = *((u_int*)(lpstHostent->h_addr));
         }
     }
-    
+
     /* If still not resolved, then try second strategy */
     if (stLclAddr.sin_addr.s_addr == INADDR_ANY)
     {
@@ -163,7 +163,7 @@ uint32_t sock::GetLocalIP()
             NET_CLOSESOCKET(hSock);   /* we're done with the socket */
         }
     }
-    
+
     return stLclAddr.sin_addr.s_addr;
 }
 
@@ -197,7 +197,7 @@ std::string sock::GetLocalSocketDir()
 static bool IsErrorWouldBlock()
 {
     int error = ERROR_NUMBER ;
-    
+
     return (error == NET_EWOULDBLOCK) ;
 }
 #endif
@@ -216,11 +216,11 @@ static bool IsErrorWouldBlock()
 bool Socket::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
 {
     CTDEBUG_ENTER_METHOD("Socket::SendBuffer");
-    
+
     CHECK_RET_FALSE(pSendBuffer && bufferSize > 0) ;
-    
+
     SOCKET hSock = m_hSocket ;
-    
+
     if (!hSock)
     {
         if (m_bTraceCommunications)
@@ -229,17 +229,17 @@ bool Socket::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
         }
         return false;
     }
-    
+
     size_t bytesSent = 0 ;
     size_t   thisSend = 0 ;
-    
+
     // May need repeated calls to send all of the data.
     while (bytesSent < bufferSize)
     {
         do
         {
             thisSend = send(hSock, pSendBuffer, static_cast<int>(bufferSize - bytesSent), 0) ;
-            
+
             // Check if there was an error
             if (thisSend == SOCKET_ERROR)
             {
@@ -265,16 +265,16 @@ bool Socket::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
             }
         }
         while (thisSend == SOCKET_ERROR) ;
-        
+
         if (m_bTraceCommunications)
         {
-            sml::PrintDebugFormat("Sent %d bytes", thisSend) ;
+            sml::PrintDebugFormat("Sent %d bytes", static_cast<int64_t>(thisSend));
         }
-        
+
         bytesSent   += thisSend ;
         pSendBuffer += thisSend ;
     }
-    
+
     return true ;
 }
 
@@ -294,11 +294,11 @@ bool Socket::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
 bool Socket::IsReadDataAvailable(int secondsWait, int millisecondsWait)
 {
     assert(millisecondsWait < 1000 && "specified milliseconds must be less than 1000");
-    
+
     CTDEBUG_ENTER_METHOD("Socket::IsReadDataAvailable");
-    
+
     SOCKET hSock = m_hSocket ;
-    
+
     if (!hSock)
     {
         if (m_bTraceCommunications)
@@ -307,10 +307,10 @@ bool Socket::IsReadDataAvailable(int secondsWait, int millisecondsWait)
         }
         return false;
     }
-    
+
     fd_set set ;
     FD_ZERO(&set) ;
-    
+
     //////
     // This _MSC_VER test is legit, for a warning C4127: conditional expression is constant in a
     // windows-defined FD_SET macro below
@@ -324,15 +324,15 @@ bool Socket::IsReadDataAvailable(int secondsWait, int millisecondsWait)
 #pragma warning(pop)
 #endif
     //////
-    
+
     // Wait for milliseconds for select to return (can be 0 to just poll)
     TIMEVAL zero ;
     zero.tv_sec = secondsWait ;
     zero.tv_usec = millisecondsWait * 1000 ;
-    
+
     // Check if anything is waiting to be read
     int res = select(static_cast<int>(hSock) + 1, &set, NULL, NULL, &zero) ;
-    
+
     // Did an error occur?
     if (res == SOCKET_ERROR)
     {
@@ -344,7 +344,7 @@ bool Socket::IsReadDataAvailable(int secondsWait, int millisecondsWait)
         Close() ;   // If the socket has an error we'll shut it down
         return false ;
     }
-    
+
     bool bIsSet = FD_ISSET(hSock, &set) ? true : false ;
     /*
         if (bIsSet)
@@ -368,11 +368,11 @@ bool Socket::IsReadDataAvailable(int secondsWait, int millisecondsWait)
 bool Socket::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
 {
     CTDEBUG_ENTER_METHOD("Socket::ReceiveBuffer");
-    
+
     CHECK_RET_FALSE(pRecvBuffer && bufferSize > 0) ;
-    
+
     SOCKET hSock = m_hSocket ;
-    
+
     if (!hSock)
     {
         if (m_bTraceCommunications)
@@ -381,24 +381,24 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
         }
         return false;
     }
-    
+
     size_t bytesRead = 0 ;
     size_t   thisRead  = 0 ;
-    
+
     // Check our incoming data is valid
     if (!pRecvBuffer || !hSock)
     {
         assert(pRecvBuffer && hSock) ;
         return false ;
     }
-    
+
     // May need to make repeated calls to read all of the data
     while (bytesRead < bufferSize)
     {
         do
         {
             thisRead = recv(hSock, pRecvBuffer, static_cast<int>(bufferSize - bytesRead), 0) ;
-            
+
             // Check if there was an error
             if (thisRead == SOCKET_ERROR)
             {
@@ -418,9 +418,9 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
                     {
                         sml::PrintDebug("Error: Error receiving message (socket)") ;
                     }
-                    
+
                     sml::ReportSystemErrorMessage() ;
-                    
+
                     // We treat these errors as all being fatal, which they all appear to be.
                     // If we later decide we can survive certain ones, we should test for them here
                     // and not always close the socket.
@@ -429,11 +429,11 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
                         sml::PrintDebug("Closing our side of the socket because of error") ;
                     }
                     Close() ;
-                    
+
                     return false ;
                 }
             }
-            
+
             // Check for 0 bytes read--which is the behavior if the remote socket is
             // closed gracefully.
             if (thisRead == 0)
@@ -442,29 +442,29 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
                 {
                     sml::PrintDebug("Remote socket has closed gracefully") ;
                 }
-                
+
                 // Now close down our socket
                 if (m_bTraceCommunications)
                 {
                     sml::PrintDebug("Closing our side of the socket") ;
                 }
-                
+
                 Close() ;
-                
+
                 return false ;  // No message received.
             }
         }
         while (thisRead == SOCKET_ERROR) ;
-        
+
         if (m_bTraceCommunications)
         {
-            sml::PrintDebugFormat("Received %d bytes", thisRead) ;
+            sml::PrintDebugFormat("Received %d bytes", static_cast<int64_t>(thisRead));
         }
-        
+
         bytesRead   += thisRead ;
         pRecvBuffer += thisRead ;
     }
-    
+
     return true ;
 }
 
@@ -482,7 +482,7 @@ void Socket::CloseInternal()
     {
         // Let the other side know we're shutting down
         shutdown(m_hSocket, NET_SD_BOTH);
-        
+
         NET_CLOSESOCKET(m_hSocket) ;
         m_hSocket = NO_CONNECTION ;
     }

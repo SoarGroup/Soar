@@ -127,7 +127,7 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
 
     if (stateCount > maxStates)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "...Stack goes on for another %d states\n", stateCount - maxStates);
+        thisAgent->outputManager->printa_sf(thisAgent,  "...Stack goes on for another %d states\n", static_cast<int64_t>(stateCount - maxStates));
     }
 }
 
@@ -706,7 +706,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
             }
             if (!w)
             {
-                thisAgent->outputManager->printa_sf(thisAgent,  "No wme %u in working memory.", lexeme.int_val);
+                thisAgent->outputManager->printa_sf(thisAgent,  "No wme %d in working memory.", lexeme.int_val);
             }
             break;
 

@@ -287,9 +287,9 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
     {
         tempString = "";
         outputManager->rhs_value_to_string(pAction->value, tempString, true, NULL, NULL, true);
-        outputManager->printa_sf(thisAgent, "%d:%-%s", lActionCount,  tempString.c_str());
+        outputManager->printa_sf(thisAgent, "%d:%-%s", static_cast<int64_t>(lActionCount),  tempString.c_str());
     } else {
-        outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
+        outputManager->printa_sf(thisAgent, "%d:%-(", static_cast<int64_t>(lActionCount));
         print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), true);
         outputManager->printa(thisAgent, " ^");
         print_rhs_chunk_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), true);
@@ -327,9 +327,9 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
     {
         tempString = "";
         outputManager->rhs_value_to_string(pAction->value, tempString, true, NULL, NULL, true);
-        outputManager->printa_sf(thisAgent, "%d:%-%s", lActionCount,  tempString.c_str());
+        outputManager->printa_sf(thisAgent, "%d:%-%s", static_cast<int64_t>(lActionCount),  tempString.c_str());
     } else {
-        outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
+        outputManager->printa_sf(thisAgent, "%d:%-(", static_cast<int64_t>(lActionCount));
         print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->inst_identities.id, instantiated_pref->chunk_inst_identities.id, true);
         outputManager->printa(thisAgent, " ^");
         print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->inst_identities.attr, instantiated_pref->chunk_inst_identities.attr, true);

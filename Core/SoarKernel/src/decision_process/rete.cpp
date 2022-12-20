@@ -5912,7 +5912,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     /* initialize goal regardless of run mode */
     msc->level = NO_WME_LEVEL;
     msc->goal = NIL;
-    
+
     /*  (this is a RCHONG comment, but might also apply to Operand2...?)
 
     what we have to do now is to, essentially, determine the kind of
@@ -6011,7 +6011,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 elaborations (<o> ^attr ^value) are IE_PROD.  If prod has
                 both operator applications and <o> elabs, then it's PE_PROD
                 and the user is warned that <o> elabs will be o-supported. */
-                
+
                 op_elab = false;
                 lowest_goal_wme = NIL;
 
@@ -6172,7 +6172,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         // on the assertion list, Soar will still halt, but the production
         // named will be inaccurate.
         thisAgent->outputManager->printa_sf(thisAgent, "\n*** Production match-time interrupt (:interrupt), probably from %y\n", node->b.p.prod->name);
-        thisAgent->outputManager->printa_sf(thisAgent, "    [Phase] (Interrupt, Stop) is [%d] (%d,%d)\n", thisAgent->current_phase, node->b.p.prod->interrupt, thisAgent->stop_soar);
+        thisAgent->outputManager->printa_sf(thisAgent, "    [Phase] (Interrupt, Stop) is [%d] (%d,%d)\n", static_cast<int64_t>(thisAgent->current_phase), static_cast<int64_t>(node->b.p.prod->interrupt), static_cast<int64_t>(thisAgent->stop_soar));
 
         thisAgent->reason_for_stopping = ":interrupt";
     }
@@ -6220,7 +6220,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 thisAgent->stop_soar = false;
                 if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
                 {
-                    thisAgent->outputManager->printa_sf(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", node->b.p.prod->interrupt, thisAgent->stop_soar);
+                    thisAgent->outputManager->printa_sf(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", static_cast<int64_t>(node->b.p.prod->interrupt), static_cast<int64_t>(thisAgent->stop_soar));
                 }
             }
 
@@ -6312,7 +6312,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             for (assertion = thisAgent->ms_retractions;  assertion; assertion = assertion->next)
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ", assertion->p_node->b.p.prod->name);
-                thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", assertion->level);
+                thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", static_cast<int64_t>(assertion->level));
             }
 
             if (thisAgent->nil_goal_retractions)
@@ -6322,7 +6322,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 for (assertion = thisAgent->nil_goal_retractions; assertion; assertion = assertion->next_in_level)
                 {
                     thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ", assertion->p_node->b.p.prod->name);
-                    thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", assertion->level);
+                    thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", static_cast<int64_t>(assertion->level));
                     if (assertion->goal)
                     {
                         thisAgent->outputManager->printa_sf(thisAgent, "This assertion has non-NIL goal pointer.\n");
@@ -7897,7 +7897,7 @@ bool load_rete_net(agent* thisAgent, FILE* source_file)
             rete_net_64 = true; // used by reteload_eight_bytes
             break;
         default:
-            thisAgent->outputManager->printa_sf(thisAgent, "This file is in a format (version %d) I don't understand.\n", format_version_num);
+            thisAgent->outputManager->printa_sf(thisAgent, "This file is in a format (version %d) I don't understand.\n", static_cast<int64_t>(format_version_num));
             return false;
     }
 
@@ -8044,7 +8044,7 @@ void get_all_node_count_stats(agent* thisAgent)
     //for (i=0; i<256; i++)
     //  if (thisAgent->rete_node_counts[i] &&
     //      (*bnode_type_names[i] == 0)) {
-    //    thisAgent->OutputManager->print( "Internal eror: unknown node type [%d] has nonzero count.\n",i);
+    //    thisAgent->OutputManager->print( "Internal eror: unknown node type [%d] has nonzero count.\n", static_cast<int64_t>(i));
     //  }
     init_bnode_type_names(thisAgent);
 
@@ -8496,7 +8496,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 if (tmp->count > 1)
                 {
-                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", tmp->count);
+                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", static_cast<int64_t>(tmp->count));
                 }
                 else
                 {
@@ -8558,7 +8558,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 if (tmp->count > 1)
                 {
-                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", tmp->count);
+                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", static_cast<int64_t>(tmp->count));
                 }
                 else
                 {
@@ -8626,7 +8626,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 }
                 if (tmp->count > 1)
                 {
-                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", tmp->count);
+                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", static_cast<int64_t>(tmp->count));
                 }
                 else
                 {
@@ -9061,7 +9061,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 //if (tmp->count > 1)
-                //  print(thisAgent, "(%d)\n", tmp->count);
+                //  print(thisAgent, "(%d)\n", static_cast<int64_t>(tmp->count));
                 //else
                 //  print(thisAgent, "\n");
                 thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
@@ -9134,7 +9134,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 //if (tmp->count > 1)
-                //  print(thisAgent, "(%d)\n", tmp->count);
+                //  print(thisAgent, "(%d)\n", static_cast<int64_t>(tmp->count));
                 //else
                 //  print(thisAgent, "\n");
 
@@ -9211,7 +9211,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 //else
                 //  print(thisAgent, " [NIL] ");
                 //if(tmp->count > 1)
-                //  print(thisAgent, "(%d)\n", tmp->count);
+                //  print(thisAgent, "(%d)\n", static_cast<int64_t>(tmp->count));
                 //else
                 //  print(thisAgent, "\n");
                 thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);

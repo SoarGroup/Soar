@@ -773,8 +773,8 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
     }
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-    printf("\nHighest level of activity is....%d", thisAgent->active_level);
-    printf("\n   Previous level of activity is....%d", thisAgent->previous_active_level);
+    printf("\nHighest level of activity is....%d", static_cast<int64_t>(thisAgent->active_level));
+    printf("\n   Previous level of activity is....%d", static_cast<int64_t>(thisAgent->previous_active_level));
 #endif
 
     if (!thisAgent->active_goal)
@@ -831,7 +831,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
             if (minor_quiescence_at_goal(thisAgent, thisAgent->previous_active_goal))
             {
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-                printf("\nMinor quiescence at level %d", thisAgent->previous_active_level);
+                printf("\nMinor quiescence at level %d", static_cast<int64_t>(thisAgent->previous_active_level));
 #endif
                 if (!goal_stack_consistent_through_goal(thisAgent, thisAgent->previous_active_goal))
                 {
@@ -888,7 +888,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
             if (minor_quiescence_at_goal(thisAgent, thisAgent->active_goal))
             {
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-                printf("\nMinor quiescence at level %d", thisAgent->active_level);
+                printf("\nMinor quiescence at level %d", static_cast<int64_t>(thisAgent->active_level));
 #endif
                 if (!goal_stack_consistent_through_goal(thisAgent, thisAgent->active_goal))
                 {
@@ -931,7 +931,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
                productions there */
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            printf("\nMinor quiescence at level %d", thisAgent->active_level);
+            printf("\nMinor quiescence at level %d", static_cast<int64_t>(thisAgent->active_level));
 #endif
             if (!goal_stack_consistent_through_goal(thisAgent, thisAgent->active_goal))
             {
@@ -1042,8 +1042,8 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
     }
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-    printf("\nHighest level of activity is....%d", thisAgent->active_level);
-    printf("\n   Previous level of activity is....%d", thisAgent->previous_active_level);
+    printf("\nHighest level of activity is....%d", static_cast<int64_t>(thisAgent->active_level));
+    printf("\n   Previous level of activity is....%d", static_cast<int64_t>(thisAgent->previous_active_level));
 #endif
 
     if (!thisAgent->active_goal)
@@ -1145,7 +1145,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
                productions there */
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            printf("\nMinor quiescence at level %d", thisAgent->active_level);
+            printf("\nMinor quiescence at level %d",static_cast<int64_t>( thisAgent->active_level));
 #endif
             if (!goal_stack_consistent_through_goal(thisAgent, thisAgent->active_goal))
             {

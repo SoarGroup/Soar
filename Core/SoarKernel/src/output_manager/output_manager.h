@@ -269,7 +269,8 @@ inline const char* field_to_string(WME_Field f)
 }
 
 /* ------------------------------------
- *    Format strings for Soar printing:
+ *    Format strings for Soar printing; note that some of these do
+ *    not match their meaning in printf, etc.:
  *
  *       %c   character
  *       %d   int64_t

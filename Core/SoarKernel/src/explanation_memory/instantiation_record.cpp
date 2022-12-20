@@ -257,7 +257,7 @@ void instantiation_record::print_for_wme_trace(bool isChunk, bool printFooter)
                     lInNegativeConditions = true;
                 }
             }
-            outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
+            outputManager->printa_sf(thisAgent, "%d:%-", static_cast<int64_t>(lConditionCount));
 
             id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
 
@@ -324,7 +324,7 @@ void instantiation_record::print_for_explanation_trace(bool isChunk, bool printF
                 assert(rhs);
             } else {
                 outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
-                    instantiationID, production_name, match_level);
+                    instantiationID, production_name, static_cast<int64_t>(match_level));
                 outputManager->printa_sf(thisAgent,
                     "\nWarning:  Cannot print explanation trace for this instantiation because no underlying\n"
                     "            rule found in RETE.  Printing working memory trace instead.\n\n");
@@ -358,7 +358,7 @@ void instantiation_record::print_for_explanation_trace(bool isChunk, bool printF
             outputManager->set_column_indent(2, 100);
             outputManager->set_column_indent(3, 115);
             outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n\n",
-                instantiationID, production_name, match_level);
+                instantiationID, production_name, static_cast<int64_t>(match_level));
             outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Operational %-Creator\n\n");
         }
         thisAgent->outputManager->set_print_test_format(true, false);
@@ -373,7 +373,7 @@ void instantiation_record::print_for_explanation_trace(bool isChunk, bool printF
                 lInNegativeConditions = true;
             }
 
-            outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
+            outputManager->printa_sf(thisAgent, "%d:%-", static_cast<int64_t>(lConditionCount));
 
             /* Get the next condition from the explanation trace.  This is tricky because NCCs are condition lists within condition lists */
             if (currentNegativeCond)
@@ -477,7 +477,7 @@ void instantiation_record::print_arch_inst_for_explanation_trace(bool isChunk, b
         outputManager->set_column_indent(3, 115);
         thisAgent->outputManager->set_print_test_format(true, false);
         outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
-            instantiationID, production_name, match_level);
+            instantiationID, production_name, static_cast<int64_t>(match_level));
         thisAgent->explanationMemory->print_path_to_base(path_to_base, false, " (produced chunk result)", "- Shortest path to a result: ");
         outputManager->printa_sf(thisAgent, "\n%- %-Identities instead of variables %-Operational %-Creator\n\n");
 
@@ -495,7 +495,7 @@ void instantiation_record::print_arch_inst_for_explanation_trace(bool isChunk, b
                 lInNegativeConditions = false;
             }
 
-            outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
+            outputManager->printa_sf(thisAgent, "%d:%-", static_cast<int64_t>(lConditionCount));
 
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%-",
                 lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),

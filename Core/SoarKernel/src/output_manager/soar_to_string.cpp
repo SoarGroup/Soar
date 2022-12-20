@@ -584,7 +584,7 @@ void Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_con
 void Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* inst, std::string &destString)
 {
     sprinta_sf(thisAgent, destString, "%sInstantiation (i %u) matched %y in state %y (level %d)\n",
-        m_pre_string, inst->i_id, inst->prod_name, inst->match_goal, inst->match_goal_level);
+        m_pre_string, inst->i_id, inst->prod_name, inst->match_goal, static_cast<int64_t>(inst->match_goal_level));
     cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, destString);
 }
 
@@ -615,7 +615,7 @@ void Output_Manager::print_all_inst(TraceMode mode)
 
     for (int y = 0; y < instantiation_list.size(); y++)
     {
-        print_sf("- Instantiation %d:\n", y);
+        print_sf("- Instantiation %d:\n", static_cast<int64_t>(y));
         print_sf("%7", instantiation_list[y]);
     }
 }
@@ -793,9 +793,9 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
                "  refcount = %d\n"
                "  tc_num   = %d\n",
                newSym,
-               newSym->symbol_type,
+               static_cast<int64_t>(newSym->symbol_type),
                newSym->reference_count,
-               newSym->tc_num);
+               static_cast<int64_t>(newSym->tc_num));
     }
     else
     {
@@ -809,7 +809,7 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return false;
 
-    Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%d)\n", static_cast<symbol_struct*>(item), static_cast<symbol_struct*>(item)->reference_count);
+    Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%u)\n", static_cast<symbol_struct*>(item), static_cast<symbol_struct*>(item)->reference_count);
     return false;
 }
 

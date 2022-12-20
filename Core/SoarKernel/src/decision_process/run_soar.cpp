@@ -161,7 +161,7 @@ void set_trace_setting(agent* thisAgent, int param_number, int64_t new_value)
 {
     if ((param_number < 0) || (param_number > HIGHEST_SYSPARAM_NUMBER))
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: tried to set bad trace param #: %d\n", param_number);
+        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: tried to set bad trace param #: %d\n", static_cast<int64_t>(param_number));
         return;
     }
     thisAgent->trace_settings[param_number] = new_value;

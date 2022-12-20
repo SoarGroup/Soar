@@ -66,7 +66,7 @@ smlRunStepSize RunScheduler::DefaultInterleaveStepSize(bool forever, smlRunStepS
     {
         return sml_PHASE;
     }
-    
+
     switch (runStepSize)
     {
         case sml_PHASE:
@@ -101,7 +101,7 @@ bool RunScheduler::VerifyStepSizeForRunType(bool forever, smlRunStepSize runStep
                 sml_DECISION == interleave ||
                 sml_UNTIL_OUTPUT == interleave) ;
     }
-    
+
     switch (runStepSize)
     {
         case sml_PHASE:
@@ -139,15 +139,15 @@ static bool IsPhaseLater(smlPhase phase1, smlPhase phase2)
 AgentSML* RunScheduler::GetAgentToSynchronizeWith()
 {
     AgentSML* pSynchAgent = NULL ;
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             AgentSML* pAgent = pAgentSML ;
-            
+
             // What this says is:
             // If we don't have a current synch agent or
             // if this agent is later in decision cycle count or
@@ -161,7 +161,7 @@ AgentSML* RunScheduler::GetAgentToSynchronizeWith()
             }
         }
     }
-    
+
     return pSynchAgent ;
 }
 
@@ -174,14 +174,14 @@ bool RunScheduler::AreAgentsSynchronized(AgentSML* pSynchAgent)
     {
         return true ;
     }
-    
+
     bool same = true ;
     smlPhase phase = pSynchAgent->GetCurrentPhase() ;
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             if (pAgentSML->GetCurrentPhase() != phase)
@@ -190,7 +190,7 @@ bool RunScheduler::AreAgentsSynchronized(AgentSML* pSynchAgent)
             }
         }
     }
-    
+
     return same ;
 }
 
@@ -203,7 +203,7 @@ bool RunScheduler::AllAgentsAtStopBeforePhase()
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             if (pAgentSML->GetCurrentPhase() != m_StopBeforePhase)
@@ -225,26 +225,26 @@ bool RunScheduler::IsAgentFinished(AgentSML* pAgentSML, bool forever, smlRunStep
 {
     uint64_t current = pAgentSML->GetRunCounter(runStepSize) ;
     uint64_t initial = pAgentSML->GetInitialRunCount() ;
-    
+
     uint64_t difference = current - initial ;
-    
-    //fprintf(stdout, "Agent %s current is %d initial is %d diff is %d\n", pAgent->GetName(), current, initial, difference) ; fflush(stdout) ;
-    
+
+    //fprintf(stdout, "Agent %s current is %d initial is %d diff is %d\n", pAgent->GetName(), static_cast<int64_t>(current), static_cast<int64_t>(initial), static_cast<int64_t>(difference)) ; fflush(stdout) ;
+
     bool finished = (difference >= count) && !forever;
-    
-    
+
+
     // if a sml_STOP_AFTER_DECISION_CYCLE is requested,  then
     // agents that are running by Decisions should get marked as finished.
     // They will generate interrupt in MoveTo_StopBeforePhase
-    
+
     if (((sml_DECISION == runStepSize) || forever) && (pAgentSML->GetInterruptFlags() & sml_STOP_AFTER_DECISION_CYCLE))
     {
         finished = true;
     }
-    
+
     // The code that runs an agent to its appropriate StopBeforePhase only runs
     // after all agents Finish the run.  See MoveTo_StopBeforePhase.   KJC 12/05
-    
+
     return finished ;
 }
 
@@ -257,13 +257,13 @@ void RunScheduler::InitializeStepList()
     // We only check the agents that are scheduled to run.
     // This allows us to start <n> agents and have them drop out as they
     // finish one "runStepSize"
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         pAgentSML->PutAgentOnStepList(pAgentSML->IsAgentScheduledToRun()) ;
-        
+
     }
 }
 
@@ -276,17 +276,17 @@ bool RunScheduler::AgentsStillStepping()
     // We only check the agents that are scheduled to run.
     // This allows us to start <n> agents and have them drop out as they
     // finish one "runStepSize"
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun() && pAgentSML->IsAgentOnStepList())
         {
             return true ;
         }
     }
-    
+
     return false ;
 }
 
@@ -298,7 +298,7 @@ void RunScheduler::FireBeforeRunStartsEvents()
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             pAgentSML->FireRunEvent(smlEVENT_BEFORE_RUN_STARTS) ;
@@ -335,7 +335,7 @@ void RunScheduler::InitializeRunCounters(smlRunStepSize runStepSize)
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             pAgentSML->ResetLastOutputCount() ;
@@ -361,11 +361,11 @@ void RunScheduler::InitializeUpdateWorldEvents(bool addListeners)
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         pAgentSML->SetCompletedOutputPhase(false) ;
         pAgentSML->SetGeneratedOutput(false) ;
         pAgentSML->SetInitialOutputCount(pAgentSML->GetNumOutputsGenerated()) ;
-        
+
         // We register a listener so that the agent counters/flags get updated at the end of Output.
         if (addListeners)
         {
@@ -385,11 +385,11 @@ bool RunScheduler::AreAllOutputPhasesComplete()
     // generate the event.  However, it also means if we do a "run --self" to only run some agents this event will
     // still fire, so we'll need to know not to update the world based on the runFlags.
     bool agents_running = false;
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         // Agents that are halted or interrupted are no longer m_ScheduledToRun
         // Agents that are paused waiting for other agents finish a RunType, are still m_ScheduledToRun
         if (pAgentSML->IsAgentScheduledToRun())
@@ -401,10 +401,10 @@ bool RunScheduler::AreAllOutputPhasesComplete()
             }
         }
     }
-    
+
     // If all running agents completed output, we'll get here.  BUT we could also reach this
     // point if ALL agents are interrupted/halted, and none are m_ScheduledToRun
-    
+
     if (agents_running)
     {
         return true;    // we got here only if there are running agents and they all completed output
@@ -426,11 +426,11 @@ bool RunScheduler::AreAllOutputPhasesComplete()
             }
         }
     }
-    
+
     // IF we're interrupted at the end of Decision_cycle, then we SHOULD return true above,
     // although if somehow we don't, it's possible that agents will SNC one cycle waiting for
     // I/O to catch up.  But if we returned true here, we could get many false positive events.
-    
+
     return false ;
 }
 
@@ -447,7 +447,7 @@ bool RunScheduler::HaveAllGeneratedOutput()
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         // Agents that are halted or interrupted are no longer m_ScheduledToRun
         // Agents that are paused waiting for other agents finish a RunType, are still m_ScheduledToRun
         if (pAgentSML->IsAgentScheduledToRun() && !pAgentSML->HasGeneratedOutput())
@@ -455,7 +455,7 @@ bool RunScheduler::HaveAllGeneratedOutput()
             return false ;
         }
     }
-    
+
     return true ;
 }
 /********************************************************************
@@ -481,7 +481,7 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
     // cross the I/O boundary.  So we'll try stepping til OUTPUT done, then generate
     // Update events, then step again til StopBeforePt is reached.  Note:  when we support
     // StopBeforeUpdateWorld, we'll need to explicitly check for that before generating events.
-    
+
     if ((runStepSize == sml_DECISION) || forever)
     {
         for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
@@ -492,7 +492,7 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
                 AgentSML* pAgent = pAgentSML ;
                 smlPhase phase = pAgentSML->GetCurrentPhase() ;
                 smlRunResult runResult = pAgentSML->GetResultOfLastRun() ;
-                
+
                 // as in Bug 648, it's possible that a client has requested STOP_AFTER_DECISION
                 // while the agent was stopped at the m_StopBeforePhase, yet the agent run logic has
                 // dropped thru to this point without generating the interrupt yet.
@@ -502,7 +502,7 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
                     pAgent->SetRunState(sml_RUNSTATE_INTERRUPTED);
                     runResult = pAgent->StepInClientThread(sml_PHASE) ; // force interrupt
                 }
-                
+
                 while ((phase != m_StopBeforePhase) && (sml_RUN_COMPLETED == runResult))
                 {
                     runResult = pAgent->StepInClientThread(sml_PHASE) ;
@@ -514,7 +514,7 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
                     }
                 }
                 pAgentSML->SetResultOfRun(runResult) ;
-                
+
                 // Notify listeners that this agent is finished running
                 /* pAgent->FireRunEndsEvent() ; */   // not if supporting run0 over O/I boundary
             }
@@ -523,7 +523,7 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
         // and we need to possibly generate the UpdateWorld events before stepping any further.
         // If not all agents finished output, then nothing will fire.
         TestForFiringUpdateWorldEvents();
-        
+
         // This second While loop is only needed if we allow agents to cross the
         // output-update-input boundary on a "run 0" command.  If we don't allow that
         // then all that is left to do is generate the RunEndsEvents. (and we shouldn't
@@ -537,7 +537,7 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
                 AgentSML* pAgent = pAgentSML ;
                 smlPhase phase = pAgentSML->GetCurrentPhase() ;
                 smlRunResult runResult = pAgentSML->GetResultOfLastRun() ;
-                
+
                 while ((phase != m_StopBeforePhase) && (sml_RUN_COMPLETED == runResult))
                 {
                     runResult = pAgent->StepInClientThread(sml_PHASE) ;
@@ -545,9 +545,9 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
                     // We should never get to this point again, so we need to generate ERROR
                     assert(sml_INPUT_PHASE != phase);
                 }
-                
+
                 pAgentSML->SetResultOfRun(runResult) ;
-                
+
                 // Notify listeners that this agent is finished running
                 pAgent->FireRunEvent(smlEVENT_AFTER_RUN_ENDS) ;
             }
@@ -566,7 +566,7 @@ void RunScheduler::TestForFiringUpdateWorldEvents()
     {
         // If so fire the after_all_output_phases event
         m_pKernelSML->FireUpdateListenerEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, m_RunFlags) ;
-        
+
         // Then clear the completed output flags so we can repeat the process.
         for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
         {
@@ -578,7 +578,7 @@ void RunScheduler::TestForFiringUpdateWorldEvents()
         {
             // If so fire the after_all_generated_output event
             m_pKernelSML->FireUpdateListenerEvent(smlEVENT_AFTER_ALL_GENERATED_OUTPUT, m_RunFlags) ;
-            
+
             // Then clear the generated output flags and repeat the process.
             for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
             {
@@ -597,7 +597,7 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (removeListeners)
         {
             pAgentSML->GetAgentRunCallback()->UnregisterWithKernel(smlEVENT_AFTER_OUTPUT_PHASE) ;
@@ -616,7 +616,7 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
 smlRunResult RunScheduler::GetOverallRunResult()
 {
     smlRunResult overallResult = sml_RUN_COMPLETED;
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
@@ -661,19 +661,19 @@ bool RunScheduler::AnAgentHaltedDuringRun()
 bool RunScheduler::TestIfAllFinished(bool forever, smlRunStepSize runStepSize, uint64_t count)
 {
     bool allDone = true ;
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         bool agentFinishedRun = IsAgentFinished(pAgentSML, forever, runStepSize, count) ;
-        
+
         if (!agentFinishedRun)
         {
             allDone = false ;
         }
     }
-    
+
     return allDone ;
 }
 
@@ -710,40 +710,40 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
     {
         return sml_RUN_ERROR_ALREADY_RUNNING;
     }
-    
+
     // Agents were already appropriately added (or not) to the RunList before calling this method.
     // For every Run Command issued, we can find out if agent is still scheduled to run,
     // and/or whether it was scheduled to run at all.  When agents stop or Halt, the
     // AgentScheduledToRun bool is set to false, but WasScheduledToRun is unchanged.
-    
+
     // We store this as a member so we can access it in gSKI event handlers
     m_RunFlags = runFlags ;
-    
+
     // Stored as a member so agents created on the fly can init themselves with it
     m_CurrentRunStepSize = runStepSize;
-    
+
     // Make sure the args of the Run command are valid.
     VerifyStepSizeForRunType(forever, runStepSize, interleaveStepSize) ;
-    
+
     // Record initial counts and zero the local "run" counter (that we're about to be incrementing)
     InitializeRunCounters(runStepSize) ;
-    
+
     // Depending on RunType, set the stop location for gSKI_STOP_AFTER_DECISION_CYCLE interrupts
     m_pKernelSML->SetStopPoint(forever, runStepSize, m_StopBeforePhase);
-    
+
     // Fire one event to indicate the entire system is starting
     m_pKernelSML->FireSystemEvent(smlEVENT_SYSTEM_START) ;
-    
+
     // IF we did a StopBeforeUpdate, this is where we need to test and generate update events...
     TestForFiringUpdateWorldEvents();
-    
+
     // Initialize state required for update world events
     // Should we do this even if previous Run was interrupted?  Probably not.
     InitializeUpdateWorldEvents(true) ;
-    
+
     // Send event for each agent to signal its about to start running
     FireBeforeRunStartsEvents() ;
-    
+
     bool runFinished = false ;
     uint64_t stepCount   = 0 ;
     //uint64_t runCount    = 0 ;
@@ -756,14 +756,14 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
             pAgentSML->SetResultOfRun(sml_RUN_COMPLETED) ;
         }
     }
-    
+
     m_pKernelSML->ClearAllInterrupts();
-    
+
     // Record that we're now running, so we can poll for our status during a run.
     m_IsRunning = true ;
-    
+
     int interruptCheckRate = m_pKernelSML->GetInterruptCheckRate() ;
-    
+
     // If we need to synchronize agents, we'll set the synchAgent pointer.
     // Otherwise, we'll clear it to indicate no synch needed.
     // This only matters when interleaving by Phases, since SoarKernel methods
@@ -774,13 +774,13 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
     {
         AgentSML* pSynchAgentSML = this->GetAgentToSynchronizeWith() ;
         bool inSynch = AreAgentsSynchronized(pSynchAgentSML) ;
-        
+
         if (!inSynch)
         {
             m_pSynchAgentSML = pSynchAgentSML ;
         }
     }
-    
+
     //  Before running, check to see if an agent is at a point other than the StopBeforePhase.
     //  If so, we'll decrement  the RunCount before entering the Run loop so
     //  as not to run more Decision phases than specified in the runCount.  See bug #710.
@@ -789,28 +789,28 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
         {
             count--;
         }
-        
-        
+
+
     // If we issue a "run 0" and all agents are synched and in the correct state we're done.
     if (!m_pSynchAgentSML && TestIfAllFinished(forever, runStepSize, count))
     {
         runFinished = true ;
     }
-    
+
     if (0 == count)
     {
         runFinished = true;
     }
-    
+
     // Run all agents that have previously been marked as "scheduled to run".
     while (!runFinished)
     {
         // Assume it is finished until proven otherwise
         runFinished = true ;
-        
+
         //initialize stepList = copy of agentRunList
         InitializeStepList();
-        
+
         // while not all agents have complete one RunType (agents still on stepList)
         while (AgentsStillStepping())
         {
@@ -821,31 +821,31 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
             {
                 m_pKernelSML->FireSystemEvent(smlEVENT_INTERRUPT_CHECK) ;
             }
-            
+
             // Handy place to pump messages
             m_pKernelSML->ReceiveAllMessages();
-            
+
             stepCount++ ;
-            
+
             // Notify listeners that Soar is going to run.  This event is a kernel level (agent manager) event
             // which allows a single listener to check for client driven interrupts for all agents.
             // Sometimes that's easier to work with than the agent specific events (where you get <n> events from <n> agents)
             //    note that there is not a corresponding AFTER_AGENTS_RUN_STEP event...
             m_pKernelSML->FireSystemEvent(smlEVENT_BEFORE_AGENTS_RUN_STEP) ;
-            
+
             for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
             {
                 AgentSML* pAgentSML = iter->second ;
-                
+
                 if (pAgentSML->IsAgentOnStepList())
                 {
                     // Run all agents one "interleaveStepSize".
                     smlRunResult runResult = pAgentSML->StepInClientThread(interleaveStepSize) ;
                     // ?? pAgentSML->IncrementLocalStepCounter();
-                    
+
                     // halted and running agents will return an error from StepInClientThread
                     //
-                    
+
                     // if agent finished one runType, incr counter and remove from stepList
                     if (pAgentSML->CompletedRunType(pAgentSML->GetRunCounter(runStepSize)) /* || pAgent->MaxNilOutputCyclesReached */)
                     {
@@ -856,16 +856,16 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
                     {
                         runFinished = false;
                     }
-                    
+
                     // if agent finished count runTypes, remove from RunList, else runFinished = false;
                     // can also return true if a gSKI_STOP_AFTER_DECISION_CYCLE interrupt occurred
                     // or is pending on agents with RunType DECISION or FOREVER.
                     bool agentFinishedRun = IsAgentFinished(pAgentSML, forever, runStepSize, count) ;
-                    
+
                     // Have to test the run state to find out if we are still ok to keep running
                     // (not sure if runResult provides this as well, but they're from different enums).
                     smlRunState runState = pAgentSML->GetRunState() ;
-                    
+
                     // An agent should return "stopped" if it's just pausing in the middle of a run
                     // before we run it for the next phase.  Anything else means this agent is done running.
                     if (runState != sml_RUNSTATE_STOPPED || agentFinishedRun)
@@ -892,31 +892,31 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
         //  KJC Is this where we might want to add a "phase" for StopBeforePhase?
         //  We'd need to use m_AllGeneratedOutputEventFired
         TestForFiringUpdateWorldEvents();
-        
+
         // Check for whether the kernel events requested a stop-soar.
         if (TestIfAllFinished(forever, runStepSize, count))
         {
             runFinished = true ;
         }
-        
+
     }  // END of While (!runFinished)
-    
+
     // kernel events might fire in next method...
     MoveTo_StopBeforePhase(forever, runStepSize);  // agents will have done FireRunEndsEvent() here or above.
-    
+
     // Fire one event to indicate the entire system should stop.
     m_pKernelSML->FireSystemEvent(smlEVENT_SYSTEM_STOP) ;
-    
+
     // clean up
     m_IsRunning = false ;
-    
+
     // Clean up anything stored for update world events
     TerminateUpdateWorldEvents(true) ;
-    
+
     // Not sure how to quantify the results of running <n> agents in a single value
     // You can query each agent for its GetResultOfRun() to know more.
-    
+
     overallResult = GetOverallRunResult();
-    
+
     return overallResult ;
 }
