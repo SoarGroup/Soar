@@ -49,6 +49,42 @@ jobs:
           SCONS_MSCOMMON_DEBUG: '-'
         run: python3 scons/scons.py --scu --opt --verbose all
 
+      # we don't use any Apple services or distribute in a store, so there's no provisioning profile
+      - name: code signing
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          PROD_MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output $CERTIFICATE_PATH
+
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          codesign -vvvv out/_Python_sml_ClientInterface.so
+          codesign -vvvv out/libJava_sml_ClientInterface.jnilib
+          codesign -vvvv out/libSoar.dylib
+          codesign -vvvv out/libTcl_sml_ClientInterface.dylib
+          codesign -vvvv out/libtclsoarlib.dylib
+          # TODO: enable if we get the build working
+          # codesign -vvvv out/svs_viewer
+
+      - name: Clean up keychain
+        if: ${{ always() }}
+        run: |
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
+
       - name: compress artifacts
         uses: vimtor/action-zip@v1
         with:
