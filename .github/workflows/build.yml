@@ -29,33 +29,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '6.0.X'
-      # TODO: install on other platforms, too
-      - name: Setup tcl (ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install tcl-dev
+      # - name: setup Java
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     distribution: 'temurin'
+      #     java-version: '11'
+      # - name: Setup dotnet
+      #   uses: actions/setup-dotnet@v3
+      #   with:
+      #     dotnet-version: '6.0.X'
+      # # TODO: install on other platforms, too
+      # - name: Setup tcl (ubuntu)
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: sudo apt-get update && sudo apt-get install tcl-dev
 
-      - name: build
-        env:
-          # instructs SCons to print debug statements to stdout
-          SCONS_MSCOMMON_DEBUG: '-'
-        run: python3 scons/scons.py --scu --opt --verbose all
+      # - name: build
+      #   env:
+      #     # instructs SCons to print debug statements to stdout
+      #     SCONS_MSCOMMON_DEBUG: '-'
+      #   run: python3 scons/scons.py --scu --opt --verbose all
 
       # we don't use any Apple services or distribute in a store, so there's no provisioning profile
       - name: code signing
+      # TODO: only run on master
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
           PROD_MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
         run: |
+          set -x
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
@@ -72,42 +74,42 @@ jobs:
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-          codesign -vvvv out/_Python_sml_ClientInterface.so
-          codesign -vvvv out/libJava_sml_ClientInterface.jnilib
-          codesign -vvvv out/libSoar.dylib
-          codesign -vvvv out/libTcl_sml_ClientInterface.dylib
-          codesign -vvvv out/libtclsoarlib.dylib
-          # TODO: enable if we get the build working
-          # codesign -vvvv out/svs_viewer
+          # codesign -vvvv out/_Python_sml_ClientInterface.so
+          # codesign -vvvv out/libJava_sml_ClientInterface.jnilib
+          # codesign -vvvv out/libSoar.dylib
+          # codesign -vvvv out/libTcl_sml_ClientInterface.dylib
+          # codesign -vvvv out/libtclsoarlib.dylib
+          # # TODO: enable if we get the build working
+          # # codesign -vvvv out/svs_viewer
 
       - name: Clean up keychain
         if: ${{ always() }}
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
 
-      - name: compress artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: out/
-          dest: build.zip
-      - name: upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Soar-${{ matrix.os }}
-          path: ./build.zip
+      # - name: compress artifacts
+      #   uses: vimtor/action-zip@v1
+      #   with:
+      #     files: out/
+      #     dest: build.zip
+      # - name: upload artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: Soar-${{ matrix.os }}
+      #     path: ./build.zip
 
-      - name: unit tests
-        working-directory: ./out
-        run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
+      # - name: unit tests
+      #   working-directory: ./out
+      #   run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
 
-      # reports JUnit test results as GitHub PR check.
-      - name: publish test report
-        uses: mikepenz/action-junit-report@v3
-        # always run even if the previous step fails
-        if: always()
-        with:
-          report_paths: './out/TestResults.xml'
-          # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
-          # fail_on_failure: true
-          annotate_only: true
-      # TODO: run SML tests (Python, Tcl, Java)
+      # # reports JUnit test results as GitHub PR check.
+      # - name: publish test report
+      #   uses: mikepenz/action-junit-report@v3
+      #   # always run even if the previous step fails
+      #   if: always()
+      #   with:
+      #     report_paths: './out/TestResults.xml'
+      #     # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
+      #     # fail_on_failure: true
+      #     annotate_only: true
+      # # TODO: run SML tests (Python, Tcl, Java)
