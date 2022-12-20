@@ -369,15 +369,15 @@ void Explanation_Memory::print_chunk_stats(chunk_record* pChunkRecord, bool pPri
     {
     outputManager->printa_sf(thisAgent, "\nStatistics for learned rule %y (c %u):\n\n",   pChunkRecord->name, pChunkRecord->chunkID);
     }
-    outputManager->printa_sf(thisAgent, "Number of conditions:           %-%u\n",          pChunkRecord->chunkInstantiation->conditions->size());
+    outputManager->printa_sf(thisAgent, "Number of conditions:           %-%u\n",          static_cast<uint64_t>(pChunkRecord->chunkInstantiation->conditions->size()));
     outputManager->printa_sf(thisAgent, "- Operational constraints:              %-%u\n", pChunkRecord->stats.operational_constraints);
     outputManager->printa_sf(thisAgent, "- Non-operational constraints detected: %-%u\n", pChunkRecord->stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "- Non-operational constraints enforced: %-%u\n\n", pChunkRecord->stats.constraints_attached);
-    outputManager->printa_sf(thisAgent, "Number of actions:              %-%u\n",          pChunkRecord->chunkInstantiation->actions->size());
+    outputManager->printa_sf(thisAgent, "Number of actions:              %-%u\n",          static_cast<uint64_t>(pChunkRecord->chunkInstantiation->actions->size()));
     outputManager->printa_sf(thisAgent, "Base instantiation:             %-i %u (%y)\n",    pChunkRecord->baseInstantiation->instantiationID, pChunkRecord->baseInstantiation->production_name);
     if (pChunkRecord->result_inst_records->size() > 0)
     {
-        outputManager->printa_sf(thisAgent, "Number of child result instantiations:  %-%u\n",          pChunkRecord->result_inst_records->size());
+        outputManager->printa_sf(thisAgent, "Number of child result instantiations:  %-%u\n",          static_cast<uint64_t>(pChunkRecord->result_inst_records->size()));
         outputManager->printa_sf(thisAgent, "Child result instantiations: " );
         for (auto it = pChunkRecord->result_inst_records->begin(); it != pChunkRecord->result_inst_records->end(); ++it)
         {
@@ -445,7 +445,7 @@ void Explanation_Memory::list_explained_rules(short pNumToPrint, bool pChunks, b
     {
         if (pNumToPrint && (lNumPrinted < chunks->size()))
         {
-            outputManager->printa_sf(thisAgent, "\n* Note:  Only listed the first %d %s recorded.  Type 'explain list-%s' to see the other %d %s.\n", pNumToPrint, lRuleTypeString.c_str(), lRuleTypeString.c_str(), (chunks->size() - lNumPrinted), lRuleTypeString.c_str());
+            outputManager->printa_sf(thisAgent, "\n* Note:  Only listed the first %d %s recorded.  Type 'explain list-%s' to see the other %d %s.\n", static_cast<int64_t>(pNumToPrint), lRuleTypeString.c_str(), lRuleTypeString.c_str(), static_cast<int64_t>(chunks->size() - lNumPrinted), lRuleTypeString.c_str());
         }
     }
 }
@@ -502,7 +502,7 @@ void Explanation_Memory::print_rules_watched(short pNumToPrint)
     }
     if (lThereWasMore)
     {
-        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d rules.  Type 'explain watch' to see the other %d rules.\n", pNumToPrint, lNumLeftToPrint);
+        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d rules.  Type 'explain watch' to see the other %d rules.\n", static_cast<int64_t>(pNumToPrint), static_cast<int64_t>(lNumLeftToPrint));
     }
 }
 
@@ -537,7 +537,7 @@ void Explanation_Memory::print_involved_instantiations()
     //    std::copy(std::begin(instantiations_for_current_chunk), std::end(instantiations_for_current_chunk), std::inserter(sorted_set));
     assert(current_discussed_chunk);
 
-    outputManager->printa_sf(thisAgent, "This chunk summarizes the problem-solving involved in the following %d rule firings:\n\n", current_discussed_chunk->backtraced_inst_records->size());
+    outputManager->printa_sf(thisAgent, "This chunk summarizes the problem-solving involved in the following %d rule firings:\n\n", static_cast<int64_t>(current_discussed_chunk->backtraced_inst_records->size()));
 
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end();++it)
     {
