@@ -710,8 +710,30 @@ Symbol* trim_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
     returnSym = thisAgent->symbolManager->make_str_constant(str.c_str());
     free(symbol_to_trim);
     return returnSym;
-
 }
+
+Symbol* string_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    char* symbol_to_convert;
+
+    if (!args)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'string' function called with no arguments.\n");
+        return NIL;
+    }
+    if (args->rest)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'string' takes exactly 1 argument.\n");
+        return NIL;
+    }
+
+    Symbol* sym_to_stringify = (Symbol*) args->first;
+
+    Symbol *returnSym = thisAgent->symbolManager->make_str_constant(sym_to_stringify->to_string());
+
+    return returnSym;
+}
+
 
 Symbol* strlen_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -1020,6 +1042,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code, 1, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),  timestamp_rhs_function_code, 0, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),  trim_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("string"), string_rhs_function_code, 1, true, false, 0, true);
 
     /* RHS functions that are more elaborate */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code, 0, true, false, 0, false);
@@ -1052,6 +1075,7 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("strlen"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("timestamp"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trim"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("string"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("accept"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("deep-copy"));

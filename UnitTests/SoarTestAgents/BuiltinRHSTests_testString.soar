@@ -1,0 +1,22 @@
+sp {set-values
+(state <s> ^superstate nil <sup>)
+-->
+(<s> ^v1 0.01 ^v2 42 ^v3 |hello|)
+}
+
+sp {stringify-values
+(state <s> ^superstate nil <sup>)
+(<s> ^v1 <v1> ^v2 <v2> ^v3 <v3>)
+-->
+(<s> ^sup-string (string <sup>))
+(<s> ^v1-string (string <v1>))
+(<s> ^v2-string (string <v2>))
+(<s> ^v3-string (string <v3>))
+}
+
+sp {monitor*contents
+(state <s1> ^sup-string |nil| ^v1-string |0.010000| ^v2-string |42| ^v3-string |hello|)
+-->
+(succeeded)
+}
+
