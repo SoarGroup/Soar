@@ -63,7 +63,7 @@ NamedPipe::~NamedPipe()
 static bool IsErrorWouldBlock()
 {
     int error = PIPE_ERROR_NUMBER ;
-    
+
     return (error == PIPE_NO_DATA) ;
 }
 #endif
@@ -82,21 +82,21 @@ static bool IsErrorWouldBlock()
 bool NamedPipe::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
 {
     CTDEBUG_ENTER_METHOD("NamedPipe::SendBuffer");
-    
+
     CHECK_RET_FALSE(pSendBuffer && bufferSize > 0) ;
-    
+
     HANDLE hPipe = m_hPipe ;
-    
+
     if (!hPipe)
     {
         sml::PrintDebug("Error: Can't send because this pipe is closed") ;
         return false;
     }
-    
+
     DWORD thisSend = 0;
     uint32_t bytesSent = 0 ;
     int    success = 0 ;
-    
+
     // May need repeated calls to send all of the data.
     while (bytesSent < bufferSize)
     {
@@ -108,7 +108,7 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
                           bufferSize, // number of bytes to write
                           &thisSend,   // number of bytes written
                           NULL);        // not overlapped I/O
-                          
+
             // Check if there was an error
             if (!success)
             {
@@ -131,16 +131,16 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
             }
         }
         while (!success) ;
-        
+
         if (m_bTraceCommunications)
         {
-            sml::PrintDebugFormat("Sent %d bytes", thisSend) ;
+            sml::PrintDebugFormat("Sent %d bytes", static_cast<int64_t>(thisSend));
         }
-        
+
         bytesSent   += thisSend ;
         pSendBuffer += thisSend ;
     }
-    
+
     return true ;
 }
 
@@ -160,21 +160,21 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
 bool NamedPipe::IsReadDataAvailable(int /*secondsWait*/, int /*millisecondsWait*/)
 {
     CTDEBUG_ENTER_METHOD("NamedPipe::IsReadDataAvailable");
-    
+
     HANDLE hPipe = m_hPipe ;
-    
+
     if (hPipe == INVALID_HANDLE_VALUE)
     {
         sml::PrintDebug("Error: Can't check for read data because this pipe is closed") ;
         return false;
     }
-    
+
     // Check if anything is waiting to be read
     DWORD bytesAvail = 0;
     int res = 0;
-    
+
     res = PeekNamedPipe(hPipe, NULL, NULL, NULL, &bytesAvail, NULL);
-    
+
     // Did an error occur?
     if (res == 0)
     {
@@ -183,26 +183,26 @@ bool NamedPipe::IsReadDataAvailable(int /*secondsWait*/, int /*millisecondsWait*
         {
             return false;
         }
-        
+
         if (GetLastError() == ERROR_BROKEN_PIPE)
         {
             //sml::PrintDebug("Remote pipe has closed gracefully") ;
             Close() ;
             return false;
         }
-        
+
         //sml::PrintDebug("Error: Error checking if data is available to be read") ;
         sml::ReportSystemErrorMessage() ;
-        
+
         // We treat these errors as all being fatal, which they all appear to be.
         // If we later decide we can survive certain ones, we should test for them here
         // and not always close the socket.
         //sml::PrintDebug("Closing our side of the pipe because of error") ;
         Close() ;
-        
+
         return false ;
     }
-    
+
     return bytesAvail > 0 ;
 }
 
@@ -219,44 +219,44 @@ bool NamedPipe::IsReadDataAvailable(int /*secondsWait*/, int /*millisecondsWait*
 bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
 {
     CTDEBUG_ENTER_METHOD("Socket::ReceiveBuffer");
-    
+
     CHECK_RET_FALSE(pRecvBuffer && bufferSize > 0) ;
-    
+
     HANDLE hPipe = m_hPipe ;
-    
+
     if (hPipe == INVALID_HANDLE_VALUE)
     {
         sml::PrintDebug("Error: Can't read because this pipe is closed") ;
         return false;
     }
-    
+
     uint32_t bytesRead = 0 ;
     DWORD thisRead  = 0 ;
     int success = 0;
-    
+
     // Check our incoming data is valid
     if (!pRecvBuffer || hPipe == INVALID_HANDLE_VALUE)
     {
         assert(pRecvBuffer && hPipe == INVALID_HANDLE_VALUE) ;
         return false ;
     }
-    
+
     // May need to make repeated calls to read all of the data
     while (bytesRead < bufferSize)
     {
         long tries = 0 ;
-        
+
         do
         {
             tries++ ;
-            
+
             success = ReadFile(
                           hPipe,        // handle to pipe
                           pRecvBuffer,    // buffer to receive data
                           bufferSize, // size of buffer
                           &thisRead, // number of bytes read
                           NULL);        // not overlapped I/O
-                          
+
             // Check if there was an error
             if (!success)
             {
@@ -272,19 +272,19 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
                 else
 #endif
                 {
-                
+
                     // We treat these errors as all being fatal, which they all appear to be.
                     // If we later decide we can survive certain ones, we should test for them here
                     // and not always close the socket.
                     //sml::PrintDebug("Closing our side of the pipe because of error") ;
                     //Close() ;
-                    
+
                     //return false ;
-                    
+
                     sml::Sleep(0, 1);
                 }
             }
-            
+
             // Check for 0 bytes read--which is the behavior if the remote pipe is
             // closed gracefully.
             if (thisRead == 0)
@@ -293,18 +293,18 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
                 {
                     sml::PrintDebug("Remote pipe has closed gracefully") ;
                 }
-                
+
                 // Now close down our socket
                 //sml::PrintDebug("Closing our side of the pipe") ;
-                
+
                 Close() ;
-                
+
                 return false ;  // No message received.
             }
-            
+
         }
         while (!success && tries < 3) ;
-        
+
         if (!success)
         {
             if (m_bTraceCommunications)
@@ -314,18 +314,18 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
             }
             return false;
         }
-        
-        //if(tries>1)   sml::PrintDebugFormat("Number tries %d",tries) ;
-        
+
+        //if(tries>1)   sml::PrintDebugFormat("Number tries %d", static_cast<int64_t>(tries));
+
         if (m_bTraceCommunications)
         {
-            sml::PrintDebugFormat("Received %d bytes", thisRead) ;
+            sml::PrintDebugFormat("Received %d bytes", static_cast<int64_t>(thisRead));
         }
-        
+
         bytesRead   += thisRead ;
         pRecvBuffer += thisRead ;
     }
-    
+
     return true ;
 }
 
@@ -344,7 +344,7 @@ void NamedPipe::CloseInternal()
         FlushFileBuffers(m_hPipe);
         DisconnectNamedPipe(m_hPipe);
         CloseHandle(m_hPipe);
-        
+
         m_hPipe = INVALID_HANDLE_VALUE ;
     }
 }

@@ -752,7 +752,7 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
                 {
                     thisAgent->outputManager->printa(thisAgent, "%right[");
                 }
-                thisAgent->outputManager->printa_sf(thisAgent,  "%d,", tf->num);
+                thisAgent->outputManager->printa_sf(thisAgent,  "%d,", static_cast<int64_t>(tf->num));
                 print_trace_format_list(thisAgent, tf->data.subformat);
                 thisAgent->outputManager->printa(thisAgent, "]");
                 break;

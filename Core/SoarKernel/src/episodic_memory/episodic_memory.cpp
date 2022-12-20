@@ -2941,7 +2941,7 @@ void epmem_new_episode(agent* thisAgent)
     epmem_time_id time_counter = thisAgent->EpMem->epmem_stats->time->get_value();
 
     // provide trace output
-    print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM,  "New episodic memory recorded for time %u.\n", static_cast<long int>(time_counter));
+    print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM,  "New episodic memory recorded for time %u.\n", static_cast<uint64_t>(time_counter));
 
     // perform storage
     {
@@ -4840,7 +4840,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                     epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
                 }
 
-                print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Considering episode (time, cardinality, score) (%u, %u, %f)\n", static_cast<long long int>(current_episode), current_cardinality, current_score);
+                print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Considering episode (time, cardinality, score) (%u, %u, %f)\n", static_cast<uint64_t>(current_episode), static_cast<uint64_t>(current_cardinality), current_score);
 
                 // if
                 // * the current time is still before any new intervals

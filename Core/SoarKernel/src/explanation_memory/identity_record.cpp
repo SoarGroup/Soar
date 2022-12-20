@@ -147,7 +147,7 @@ void identity_record::print_identity_mappings_for_instantiation(instantiation_re
 
 void identity_record::print_identities_in_chunk()
 {
-    thisAgent->outputManager->printa_sf(thisAgent, "\nLearned rule contained %u identities: ", identities_in_chunk->size());
+    thisAgent->outputManager->printa_sf(thisAgent, "\nLearned rule contained %u identities: ", static_cast<uint64_t>(identities_in_chunk->size()));
     for (auto it = identities_in_chunk->begin(); it != identities_in_chunk->end(); ++it)
     {
         thisAgent->outputManager->printa_sf(thisAgent, "%u ", (*it));

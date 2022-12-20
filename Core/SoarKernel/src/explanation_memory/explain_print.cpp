@@ -41,20 +41,20 @@ void Explanation_Memory::print_formation_explanation()
     if (current_discussed_chunk->result_inst_records->size() > 0)
     {
         outputManager->printa_sf(thisAgent, "The following %d instantiations fired to produce results...\n\n------\n\n",
-        current_discussed_chunk->result_inst_records->size() + 1);
+        static_cast<int64_t>(current_discussed_chunk->result_inst_records->size() + 1));
     }
 
     outputManager->printa_sf(thisAgent, "Initial base instantiation (i %u) that fired when %y matched at level %d at time %u:\n\n",
         current_discussed_chunk->baseInstantiation->instantiationID,
         current_discussed_chunk->baseInstantiation->production_name,
-        current_discussed_chunk->baseInstantiation->match_level,
+        static_cast<int64_t>(current_discussed_chunk->baseInstantiation->match_level),
         current_discussed_chunk->time_formed);
 
     print_instantiation_explanation(current_discussed_chunk->baseInstantiation, false);
 
     if (current_discussed_chunk->result_inst_records->size() > 0)
     {
-        outputManager->printa_sf(thisAgent, "\n%d instantiation(s) that created extra results indirectly because they were connected to the results of the base instantiation:\n\n", (current_discussed_chunk->result_inst_records->size() - 1));
+        outputManager->printa_sf(thisAgent, "\n%d instantiation(s) that created extra results indirectly because they were connected to the results of the base instantiation:\n\n", static_cast<int64_t>((current_discussed_chunk->result_inst_records->size() - 1)));
         for (auto it = current_discussed_chunk->result_inst_records->begin(); it != current_discussed_chunk->result_inst_records->end(); ++it)
         {
             print_instantiation_explanation((*it), false);
@@ -158,7 +158,7 @@ void Explanation_Memory::print_chunk_actions(action_record_list* pActionRecords,
             ++lActionCount;
             if (!print_explanation_trace)
             {
-                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
+                outputManager->printa_sf(thisAgent, "%d:%-%p\n", static_cast<int64_t>(lActionCount), lAction->instantiated_pref);
             } else {
                 while (rhs && (rhs->type == FUNCALL_ACTION))
                 {
@@ -211,7 +211,7 @@ void Explanation_Memory::print_instantiation_actions(action_record_list* pAction
             ++lActionCount;
             if (!print_explanation_trace)
             {
-                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
+                outputManager->printa_sf(thisAgent, "%d:%-%p\n", static_cast<int64_t>(lActionCount), lAction->instantiated_pref);
             } else {
                 while (rhs && (rhs->type == FUNCALL_ACTION))
                 {
@@ -270,7 +270,7 @@ void Explanation_Memory::print_explain_summary()
     outputManager->printa(thisAgent,      "=======================================================\n");
     outputManager->printa_sf(thisAgent,   "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent,   "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent,   "Number of specific rules watched  %-%d\n", num_rules_watched);
+    outputManager->printa_sf(thisAgent,   "Number of specific rules watched  %-%d\n", static_cast<int64_t>(num_rules_watched));
 
     /* Print specific watched rules and time interval when watch all disabled */
     if (!m_all_enabled)

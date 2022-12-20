@@ -583,7 +583,7 @@ test parse_test(agent* thisAgent, Lexer* lexer)
         }
     }
     while (lexer->current_lexeme.type != R_BRACE_LEXEME);
-    if (!lexer->get_lexeme()) 
+    if (!lexer->get_lexeme())
     {
         deallocate_test(thisAgent, t);
         return NULL;
@@ -1520,7 +1520,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     if ((rf->num_args_expected != -1) && (rf->num_args_expected != num_args))
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "Wrong number of arguments to function %s (expected %d)\n",
-              rf->name->sc->name, rf->num_args_expected);
+              rf->name->sc->name, static_cast<int64_t>(rf->num_args_expected));
         deallocate_rhs_value(thisAgent, funcall_list_to_rhs_value(fl));
         return NIL;
     }

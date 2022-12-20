@@ -71,7 +71,7 @@ void print_candidates(agent* thisAgent, preference* candidates)
     for (cand = candidates; cand != NIL; cand = cand->next_candidate)
     {
         max_count++;
-        thisAgent->outputManager->printa_sf(thisAgent, "\n Candidate %d", cand);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n Candidate %p", cand);
         thisAgent->outputManager->printa_sf(thisAgent, "\n    %y %y %y", cand->id, cand->attr, cand->value);
         if (max_count > 10)
         {
