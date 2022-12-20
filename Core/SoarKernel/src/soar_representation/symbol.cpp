@@ -227,7 +227,7 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
                  }
              }
 
-            string_stream << std::setprecision(decimal_precision) << fc->value;
+            string_stream << std::setprecision(decimal_precision) <<  std::fixed << fc->value;
             allocated = make_memory_block_for_string(fc->thisAgent, string_stream.str().c_str());
 
             if (decimal_precision == DEFAULT_DECIMAL_PRECISION)
