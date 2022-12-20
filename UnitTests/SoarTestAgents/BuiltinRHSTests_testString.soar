@@ -1,0 +1,13 @@
+# test string RHS function, including round-trip conversion between string and float/int
+# for floats, we test as many decimal places as possible to make sure we are preserving full precision
+sp {stringify-values
+   (state <s> ^superstate nil <sup>)
+-->
+   (<s> ^sup-string (string <sup>) ^v1 (float (string -1.12345678912345678)) ^v2 (int (string 42)) ^v3 (string |hello|))
+}
+
+sp {check-values
+   (state <s1> ^sup-string |nil| ^v1 -1.12345678912345678 ^v2 42 ^v3 |hello|)
+-->
+   (succeeded)
+}

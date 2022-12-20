@@ -1026,7 +1026,7 @@ bool AgentSML::AddDoubleInputWME(char const* pID, char const* pAttribute, double
         ca.Add()->id = pID;
         ca.Add()->attr = pAttribute;
         std::ostringstream valueString;
-        valueString << std::setprecision(std::numeric_limits<double>::max_digits10) << value;
+        valueString << std::setprecision(std::numeric_limits<double>::max_digits10) << std::fixed << value;
         ca.Add()->value = valueString.str();
         ca.Add()->type = sml_Names::kTypeDouble;
         CaptureInputWME(ca);
