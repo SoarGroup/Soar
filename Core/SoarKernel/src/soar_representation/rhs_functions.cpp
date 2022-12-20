@@ -56,6 +56,7 @@
 #include "working_memory.h"
 #include "xml.h"
 
+#include <iomanip>
 #include <map>
 #include <stdlib.h>
 #include <string>
@@ -712,6 +713,10 @@ Symbol* trim_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
     return returnSym;
 }
 
+/**
+ * Convert a symbol of any type to a string symbol representation. Uses Symbol::to_string for all
+ * types except floats, which need special handling to avoid losing precision.
+*/
 Symbol* string_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     char* symbol_to_convert;
@@ -729,7 +734,7 @@ Symbol* string_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data
 
     Symbol* sym_to_stringify = (Symbol*) args->first;
 
-    Symbol *returnSym = thisAgent->symbolManager->make_str_constant(sym_to_stringify->to_string());
+    Symbol *returnSym = thisAgent->symbolManager->make_str_constant(sym_to_stringify->to_string(false, false, NIL, 0, std::numeric_limits<double>::max_digits10));
 
     return returnSym;
 }

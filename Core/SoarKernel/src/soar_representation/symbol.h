@@ -16,11 +16,15 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
 
+// default precision used by std::to_string(double)
+#define DEFAULT_DECIMAL_PRECISION 6
+
 #include "kernel.h"
 
 #include "Export.h"
 
 #include <sstream>
+
 
 /* -- Forward declarations needed for symbol base struct -- */
 
@@ -102,7 +106,7 @@ typedef struct EXPORT symbol_struct
 
     bool        get_id_name(std::string& n);
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
-    char*       to_string(bool rereadable = false, bool showLTILink = false, char* dest = NIL, size_t dest_size = 0);
+    char*       to_string(bool rereadable = false, bool showLTILink = false, char* dest = NIL, size_t dest_size = 0, const int decimal_precision=DEFAULT_DECIMAL_PRECISION);
     void        update_cached_lti_print_str(bool force_creation = false);
 
     struct symbol_struct*   get_parent_state();
@@ -370,7 +374,5 @@ double get_number_from_symbol(Symbol* sym);
  * ms_retractions              DLL of all retractions at this level
  * associated_output_links     Used by the output module
  * input_wmes                  DLL of wmes added by input functions --*/
-
-
 
 #endif
