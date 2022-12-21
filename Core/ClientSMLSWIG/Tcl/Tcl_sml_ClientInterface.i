@@ -134,7 +134,7 @@
 		Tcl_ThreadAlert(threadId);
 
 		// Pump the event queue so the event is handled synchronously
-		// Without this the call because asynchronous which is trouble.
+		// Without this the call becomes asynchronous which is trouble.
 		// BUGBUG? Should this be while (DoOneEvent() == 1) { } - i.e. clear the queue.
 		Tcl_DoOneEvent(TCL_DONT_WAIT) ;
 
@@ -161,6 +161,7 @@
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 
+    // RHS function used to exec Tcl code from Soar
 	const char *TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
 	                    char const* pArgument, int *bufSize, char *buf)
 	{
@@ -169,7 +170,7 @@
 		if ( !prevResult.empty() )
 		{
 			strncpy( buf, prevResult.c_str(), *bufSize );
-			
+
 			prevResult = "";
 
 			return buf;
@@ -203,7 +204,7 @@
 			return NULL;
 		}
 		strcpy( buf, sres.c_str() );
-		
+
 		return buf;
 	}
 
@@ -215,7 +216,7 @@
 		if ( !prevResult.empty() )
 		{
 			strncpy( buf, prevResult.c_str(), *bufSize );
-			
+
 			prevResult = "";
 
 			return buf;
@@ -250,7 +251,7 @@
 			return NULL;
 		}
 		strcpy( buf, sres.c_str() );
-		
+
 		return buf;
 	}
 

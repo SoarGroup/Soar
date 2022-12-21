@@ -699,13 +699,13 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
     void* pUserData = handlerWithData.getUserData() ;
 
     // Call the handler
-		char buffer[1024] = {0};
+		char buffer[SML_INITIAL_BUFFER_SIZE] = {0};
 		char *buff = buffer;
 		std::string result;
 		int buffSize = sizeof(buffer);
 
 		const char *retVal = handler(id, pUserData, pAgent, pFunctionName, pArgument, &buffSize, buff) ;
-		
+
 		if ( !retVal )
 		{
 			buff = new char[buffSize];
@@ -716,7 +716,7 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 		}
 		else
 			result = buff;
-		
+
     // If we got back a result then fill in the value in the response message.
     GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
 }
