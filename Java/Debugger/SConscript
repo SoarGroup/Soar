@@ -11,22 +11,31 @@ depjars = [
 	'lib/swtgraphics2d.jar',
 ]
 
-swt_jars = {
-	('linux', 32) : 'gtk32',
-	('linux', 64) : 'gtk64',
-	('linux2', 32) : 'gtk32',
-	('linux2', 64) : 'gtk64',
-	('darwin', 32) : 'osx32',
-	('darwin', 64) : 'osx64',
-	('win32',  32) : 'win32',
-	('win32',  64) : 'win64',
-}
+def get_swt_path():
+    swt_intel_jars = {
+        ('linux', 32) : 'gtk32',
+        ('linux', 64) : 'gtk64',
+        ('linux2', 32) : 'gtk32',
+        ('linux2', 64) : 'gtk64',
+        ('darwin', 32) : 'osx32',
+        ('darwin', 64) : 'osx64/i386',
+        ('win32',  32) : 'win32',
+        ('win32',  64) : 'win64',
+    }
+    swt_arm_jars = {
+        ('darwin', 64) : 'osx64/arm',
+    }
+
+    if platform.processor() == 'arm':
+        return swt_arm_jars[(sys.platform, 64 if '64' in platform.machine() else 32)]
+    else:
+        return swt_intel_jars[(sys.platform, 64 if '64' in platform.machine() else 32)]
 
 Import('java_env', 'AddResources')
 
 jar_name = 'soar-debugger.jar'
 shortcut_name = 'SoarJavaDebugger.jar'
-swt = 'lib/swt/%s/swt.jar' % swt_jars[(sys.platform, 64 if '64' in platform.machine() else 32)]
+swt = f'lib/swt/{get_swt_path()}/swt.jar'
 api_jar = java_env.File('$OUT_DIR/java/soar-debugger-api.jar')
 
 clone = java_env.Clone()
