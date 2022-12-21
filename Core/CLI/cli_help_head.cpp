@@ -73,12 +73,12 @@ bool CommandLineInterface::Find_Closest_Help_Command(const std::string pCmd)
 bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
 {
     std::map<std::string, const char*>::iterator i;
-    
+
     if (docstrings.size() == 0)
     {
         initdocstrings();
     }
-    
+
     if (argv.size() == 1)
     {
         m_Result << "Soar " << sml_Names::kSoarVersionValue << " Command List:" << std::endl << std::endl;
@@ -142,7 +142,7 @@ bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
             else if (argv[1] == std::string("max-goal-depth")) Print_9_4_Help_Mapping(argv[1], "soar", "soar max-goal-depth");
             else if (argv[1] == std::string("max-memory-usage")) Print_9_4_Help_Mapping(argv[1], "soar", "soar max-memory-usage");
             else if (argv[1] == std::string("max-nil-output-cycles")) Print_9_4_Help_Mapping(argv[1], "soar", "soar max-nil-output-cycles");
-            else if (argv[1] == std::string("srand")) Print_9_4_Help_Mapping(argv[1], "soar", "soar srand");
+            else if (argv[1] == std::string("srand")) Print_9_4_Help_Mapping(argv[1], "decide", "decide srand");
             else if (argv[1] == std::string("stop-soar")) Print_9_4_Help_Mapping(argv[1], "soar", "soar stop-soar");
             else if (argv[1] == std::string("set-stop-phase")) Print_9_4_Help_Mapping(argv[1], "soar", "soar set-stop-phase");
             else if (argv[1] == std::string("timers")) Print_9_4_Help_Mapping(argv[1], "soar", "soar timers");
@@ -155,7 +155,7 @@ bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
             else if (argv[1] == std::string("watch-wmes")) Print_9_4_Help_Mapping(argv[1], "wm", "wm watch");
             else if (!Find_Closest_Help_Command(argv[1]))
             {
-                m_Result << "No such command '" << argv[1] << "'." << std::endl;
+                m_Result << "No help file for '" << argv[1] << "'." << std::endl;
                 return false;
             }
             return true;

@@ -74,12 +74,12 @@ bool CommandLineInterface::Find_Closest_Help_Command(const std::string pCmd)
 bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
 {
     std::map<std::string, const char*>::iterator i;
-    
+
     if (docstrings.size() == 0)
     {
         initdocstrings();
     }
-    
+
     if (argv.size() == 1)
     {
         m_Result << "Soar " << sml_Names::kSoarVersionValue << " Command List:" << std::endl << std::endl;
@@ -168,7 +168,7 @@ bool CommandLineInterface::DoHelp(const std::vector<std::string>& argv)
 
 void initdocstrings()
 {
-	docstrings["alias"] = 
+	docstrings["alias"] =
 		"Define a new alias of existing commands and arguments.\n"
 		"\n"
 		"Synopsis\n"
@@ -224,7 +224,7 @@ void initdocstrings()
 		"  a               alias\n"
 		"  unalias, un     alias -r\n"
 	;
-	docstrings["chunk"] = 
+	docstrings["chunk"] =
 		"Sets the parameters for explanation-based chunking.\n"
 		"\n"
 		"Synopsis\n"
@@ -471,7 +471,7 @@ void initdocstrings()
 		"\n"
 		"explain trace visualize\n"
 	;
-	docstrings["debug"] = 
+	docstrings["debug"] =
 		"Contains commands that provide access to Soar's internals. Most users will not\n"
 		"need to access these commands.\n"
 		"\n"
@@ -527,7 +527,7 @@ void initdocstrings()
 		"\n"
 		"stats\n"
 	;
-	docstrings["decide"] = 
+	docstrings["decide"] =
 		"Commands and settings related to the selection of operators during the Soar\n"
 		"decision process\n"
 		"\n"
@@ -696,7 +696,7 @@ void initdocstrings()
 		"\n"
 		"rl\n"
 	;
-	docstrings["echo"] = 
+	docstrings["echo"] =
 		"Print a string to the current output device.\n"
 		"\n"
 		"Synopsis\n"
@@ -727,7 +727,7 @@ void initdocstrings()
 		"\n"
 		"clog\n"
 	;
-	docstrings["epmem"] = 
+	docstrings["epmem"] =
 		"Control the behavior of episodic memory.\n"
 		"\n"
 		"Synopsis\n"
@@ -982,7 +982,7 @@ void initdocstrings()
 		"\n"
 		"trace wm\n"
 	;
-	docstrings["explain"] = 
+	docstrings["explain"] =
 		"Allows you to explore how rules were learned.\n"
 		"\n"
 		"Synopsis\n"
@@ -1383,48 +1383,36 @@ void initdocstrings()
 		"\n"
 		"chunk visualize\n"
 	;
-	docstrings["file-system"] = 
-		"File System\n"
-		"\n"
-		"Soar can handle the following Unix-style file system navigation commands\n"
-		"\n"
-		"pwd\n"
-		"\n"
-		"Print the current working directory.\n"
-		"\n"
-		"ls\n"
-		"\n"
-		"List the contents of the current working directory.\n"
-		"\n"
-		"cd\n"
-		"\n"
+    docstrings["cd"] =
 		"Change the current working directory. If run with no arguments, returns to the\n"
 		"directory that the command line interface was started in, often referred to as\n"
-		"the home directory.\n"
+		"the home directory.\n";
+    docstrings["pwd"] =
+        "Print the current working directory.\n";
+    docstrings["ls"] =
+        "List the contents of the current working directory.\n";
+    docstrings["dirs"] =
+		"This command lists the directory stack created by an agent while moving through\n"
+        "a directory structure via pushd and popd.\n";
+    docstrings["pushd"] =
+        "Push the directory on to the stack. Can be relative path name or a fully\n"
+        "specified one.\n";
+    docstrings["popd"] =
+        "Pop the current working directory off the stack and change to the next\n"
+        "directory on the stack. Can be relative pathname or a fully specified path.\n";
+	docstrings["file-system"] =
+		"File System\n"
 		"\n"
-		"dirs\n"
-		"\n"
-		"This command lists the directory stack. Agents can move through a directory\n"
-		"structure by pushing and popping directory names. The dirs command returns the\n"
-		"stack.\n"
-		"\n"
-		"pushd\n"
-		"\n"
-		"Push the directory on to the stack. Can be relative path name or a fully\n"
-		"specified one.\n"
-		"\n"
-		"popd\n"
-		"\n"
-		"Pop the current working directory off the stack and change to the next\n"
-		"directory on the stack. Can be relative pathname or a fully specified path.\n"
-		"\n"
+		"Soar can handle the following Unix-style file system navigation commands:\n"
+		"cd, pwd, ls, dirs, pushd, popd\n"
+        "For more details, see the help pages for each of these commands.\n"
 		"Default Aliases\n"
 		"\n"
 		"  chdir        cd\n"
 		"  dir          ls\n"
 		"  topd         pwd\n"
 	;
-	docstrings["gp"] = 
+	docstrings["gp"] =
 		"Generate productions according to a specified pattern.\n"
 		"\n"
 		"Synopsis\n"
@@ -1500,7 +1488,7 @@ void initdocstrings()
 		"\n"
 		"sp\n"
 	;
-	docstrings["help"] = 
+	docstrings["help"] =
 		"Provide formatted usage information about Soar commands.\n"
 		"\n"
 		"Synopsis\n"
@@ -1517,7 +1505,7 @@ void initdocstrings()
 		"This command prints formatted help for the given command name. Issue alone to\n"
 		"see what topics have help available.\n"
 	;
-	docstrings["load"] = 
+	docstrings["load"] =
 		"Loads soar files, rete networks, saved percept streams and external libraries.\n"
 		"\n"
 		"Synopsis\n"
@@ -1728,7 +1716,7 @@ void initdocstrings()
 		"\n"
 		"file_system decide production save\n"
 	;
-	docstrings["output"] = 
+	docstrings["output"] =
 		"Controls settings related to Soar's output\n"
 		"\n"
 		"Synopsis\n"
@@ -1910,7 +1898,7 @@ void initdocstrings()
 		"  verbose                    output verbose\n"
 		"  warnings                   output warnings\n"
 	;
-	docstrings["preferences"] = 
+	docstrings["preferences"] =
 		"Examine details about the preferences that support the specified identifier and\n"
 		"attribute.\n"
 		"\n"
@@ -2048,7 +2036,7 @@ void initdocstrings()
 		"\n"
 		"decide\n"
 	;
-	docstrings["print"] = 
+	docstrings["print"] =
 		"Print items in working memory or production memory.\n"
 		"\n"
 		"Synopsis\n"
@@ -2068,7 +2056,7 @@ void initdocstrings()
 		"                     loaded\n"
 		"-j, --justifications print the names of all justifications currently loaded.\n"
 		"-r, --rl             Print Soar-RL rules\n"
-		"-T, --template       Print Soar-RL templates\n"
+		"-T, --templates      Print Soar-RL templates\n"
 		"-u, --user           print the names of all user productions currently loaded\n"
 		"production_name      print the production named production-name\n"
 		"\n"
@@ -2186,7 +2174,7 @@ void initdocstrings()
 		"\n"
 		"output trace wm\n"
 	;
-	docstrings["production"] = 
+	docstrings["production"] =
 		"Commands to manipulate Soar rules and analyze their usage.\n"
 		"\n"
 		"Synopsis\n"
@@ -2200,7 +2188,7 @@ void initdocstrings()
 		"  production break              --set <prod-name>\n"
 		"  ------------------------------------------------------------------\n"
 		"  production excise             <production-name>\n"
-		"  production excise             [--all --chunks --default ]\n"
+		"  production excise             [--all --chunks --defaults ]\n"
 		"                                [--never-fired --rl       ]\n"
 		"                                [--task --templates --user]\n"
 		"  ------------------------------------------------------------------\n"
@@ -2208,8 +2196,8 @@ void initdocstrings()
 		"                                [--show-bindings     ]\n"
 		"                                [--chunks --nochunks ]\n"
 		"  ------------------------------------------------------------------\n"
-		"  production firing-counts      [--all --chunks --default --rl]  [n]\n"
-		"                                [--task --templates --user --fired]\n"
+		"  production firing-counts      [--all --chunks --defaults --rl]  [n]\n"
+		"                                [--templates --user --fired]\n"
 		"  production firing-counts      <prod-name>\n"
 		"  ------------------------------------------------------------------\n"
 		"  production matches            [--names --count  ]  <prod-name>\n"
@@ -2289,7 +2277,7 @@ void initdocstrings()
 		"                  command\n"
 		"-c, --chunks      Remove all chunks (learned productions) and justifications\n"
 		"                  from memory\n"
-		"-d, --default     Remove all default productions (:default) from memory\n"
+		"-d, --defaults    Remove all default productions (:default) from memory\n"
 		"-n, --never-fired Excise rules that have a firing count of 0\n"
 		"-r, --rl          Excise Soar-RL rules\n"
 		"-t, --task        Remove chunks, justifications, and user productions from\n"
@@ -2392,7 +2380,7 @@ void initdocstrings()
 		"-f, --fired          Prints only rules that have fired\n"
 		"-c, --chunks         Print how many times chunks (learned rules) fired\n"
 		"-j, --justifications Print how many times justifications fired\n"
-		"-d, --default        Print how many times default productions (:default) fired\n"
+		"-d, --defaults        Print how many times default productions (:default) fired\n"
 		"-r, --rl             Print how many times Soar-RL rules fired\n"
 		"-T, --templates      Print how many times Soar-RL templates fired\n"
 		"-u, --user           Print how many times user productions (but not chunks or\n"
@@ -2521,7 +2509,7 @@ void initdocstrings()
 		"production_name      Print memory usage for a specific production.\n"
 		"number               Number of productions to print, sorted by those that use\n"
 		"                     the most memory.\n"
-		"-T, --template       Print memory usage of Soar-RL templates.\n"
+		"-T, --templates      Print memory usage of Soar-RL templates.\n"
 		"\n"
 		"Description\n"
 		"\n"
@@ -2586,8 +2574,10 @@ void initdocstrings()
 		"optimize-attribute declares a symbol to be an attribute which can take on\n"
 		"multiple values. The optional n is an integer (greater than 1) indicating an\n"
 		"upper limit on the number of expected values that will appear for an attribute.\n"
-		"If n is not specified, the value 10 is used for each declared multi-attribute.\n"
+		"If n is not specified or is 0, the value 10 is used for each declared multi-attribute.\n"
 		"More informed values will tend to result in greater efficiency.\n"
+        "If neither symbol nor n are specified, all previously declared multi-attributes\n"
+        "are printed.\n"
 		"Note that optimize-attribute declarations must be made before productions are\n"
 		"loaded into soar or this command will have no effect.\n"
 		"\n"
@@ -2652,7 +2642,7 @@ void initdocstrings()
 		"soar_init\n"
 		"sp trace\n"
 	;
-	docstrings["rl"] = 
+	docstrings["rl"] =
 		"Control how numeric indifferent preference values in RL rules are updated via\n"
 		"reinforcement learning.\n"
 		"\n"
@@ -2849,7 +2839,7 @@ void initdocstrings()
 		"\n"
 		"excise print trace\n"
 	;
-	docstrings["run"] = 
+	docstrings["run"] =
 		"Begin Soar's execution cycle.\n"
 		"\n"
 		"Synopsis\n"
@@ -2955,7 +2945,7 @@ void initdocstrings()
 		"  e             run -e 1\n"
 		"  step          run -d 1\n"
 	;
-	docstrings["save"] = 
+	docstrings["save"] =
 		"Saves chunks, rete networks and percept streams.\n"
 		"\n"
 		"Synopsis\n"
@@ -3037,7 +3027,7 @@ void initdocstrings()
 		"\n"
 		"production soar load\n"
 	;
-	docstrings["smem"] = 
+	docstrings["smem"] =
 		"Controls the behavior of and displays information about semantic memory.\n"
 		"\n"
 		"Synopsis\n"
@@ -3435,7 +3425,7 @@ void initdocstrings()
 		"\n"
 		"print trace visualize\n"
 	;
-	docstrings["soar"] = 
+	docstrings["soar"] =
 		"Commands and settings related to running Soar\n"
 		"\n"
 		"Synopsis\n"
@@ -3453,7 +3443,7 @@ void initdocstrings()
 		"  max-dc-time                                       0    Interrupt after this much time\n"
 		"  max-memory-usage                          100000000    Threshold for memory warning\n"
 		"  max-gp                                        20000    Max rules gp can generate\n"
-		"  stop-phase   [input|proposal|decision|APPLY|output]    Phase before which Soar will stop\n"
+		"  stop-phase   [input|propose|decision|APPLY|output]    Phase before which Soar will stop\n"
 		"  tcl                                    [ on | OFF ]    Allow Tcl code in commands\n"
 		"  timers                                 [ ON | off ]    Profile Soar\n"
 		"  wait-snc                               [ on | OFF ]    Wait instead of impasse\n"
@@ -3617,7 +3607,7 @@ void initdocstrings()
 		"in its execution cycle. The precise definition is that \"running for n decisions\n"
 		"and stopping before phase ph means to run until the decision cycle counter has\n"
 		"increased by n and then stop when the next phase is ph\". The phase sequence (as\n"
-		"of this writing) is: input, proposal, decision, apply, output. Stopping after\n"
+		"of this writing) is: input, propose, decision, apply, output. Stopping after\n"
 		"one phase is exactly equivalent to stopping before the next phase.\n"
 		"\n"
 		"soar tcl\n"
@@ -3713,7 +3703,7 @@ void initdocstrings()
 		"\n"
 		"production_excise run stats\n"
 	;
-	docstrings["sp"] = 
+	docstrings["sp"] =
 		"Define a Soar production.\n"
 		"\n"
 		"Synopsis\n"
@@ -3807,7 +3797,7 @@ void initdocstrings()
 		"\n"
 		"production chunk trace\n"
 	;
-	docstrings["stats"] = 
+	docstrings["stats"] =
 		"Print information on Soar's runtime statistics.\n"
 		"\n"
 		"Synopsis\n"
@@ -3957,7 +3947,7 @@ void initdocstrings()
 		"\n"
 		"timers init-soar command-to-file\n"
 	;
-	docstrings["svs"] = 
+	docstrings["svs"] =
 		"Control the behavior of the Spatial Visual System\n"
 		"\n"
 		"Synopsis\n"
@@ -4034,7 +4024,7 @@ void initdocstrings()
 		"\n"
 		"  svs S1.scene.sgel add ball3 world ball .5 position 1 1 1\n"
 	;
-	docstrings["trace"] = 
+	docstrings["trace"] =
 		"Control the run-time tracing of Soar.\n"
 		"\n"
 		"Synopsis\n"
@@ -4169,7 +4159,7 @@ void initdocstrings()
 		"                                        retract\n"
 		"-j, --justifications remove (optional)  Control only justifications as they\n"
 		"                                        fire and retract\n"
-		"-T, --template       remote (optional)  Soar-RL template firing trace\n"
+		"-T, --templates      remote (optional)  Soar-RL template firing trace\n"
 		"\n"
 		"Note: The production_watch command is used to trace individual productions\n"
 		"specified by name rather than trace a type of productions, such as --user.\n"
@@ -4306,7 +4296,7 @@ void initdocstrings()
 		"\n"
 		"epmem production output print run wm\n"
 	;
-	docstrings["visualize"] = 
+	docstrings["visualize"] =
 		"Creates visualizations of Soar's memory systems or processing.\n"
 		"\n"
 		"Synopsis\n"
@@ -4434,7 +4424,7 @@ void initdocstrings()
 		"\n"
 		"explain epmem smem chunk\n"
 	;
-	docstrings["wm"] = 
+	docstrings["wm"] =
 		"Commands and settings related to working memory and working memory activation.\n"
 		"There are four sub-commands: add, remove, activation, and watch.\n"
 		"\n"

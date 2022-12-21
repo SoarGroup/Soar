@@ -64,7 +64,7 @@ namespace cli
                     {'R', "rl",                          OPTARG_OPTIONAL},
                     {'s', "smem",                        OPTARG_OPTIONAL},
                     {'t', "timetags",                    OPTARG_NONE},
-                    {'T', "template",                    OPTARG_OPTIONAL},
+                    {'T', "templates",                   OPTARG_OPTIONAL},
                     {'u', "user-productions",            OPTARG_OPTIONAL},
                     {'w', "wmes",                        OPTARG_OPTIONAL},
                     {'W', "waterfall",                   OPTARG_OPTIONAL},

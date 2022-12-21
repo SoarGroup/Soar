@@ -192,7 +192,7 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'n', "no-newline", OPTARG_NONE},
+                    {'n', "nonewline", OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -789,7 +789,7 @@ namespace cli
                     {'s', "stack",          OPTARG_NONE},
                     {'S', "states",         OPTARG_NONE},
                     {'t', "tree",           OPTARG_NONE},
-                    {'T', "template",       OPTARG_NONE},
+                    {'T', "templates",      OPTARG_NONE},
                     {'u', "user",           OPTARG_NONE},
                     {'v', "varprint",       OPTARG_NONE},
                     {0, 0, OPTARG_NONE}

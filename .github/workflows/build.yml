@@ -125,7 +125,7 @@ jobs:
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: Soar-linux
+          name: Soar-Windows
           path: ./build.zip
 
       - name: unit tests
