@@ -44,16 +44,16 @@ ListenerSocket::~ListenerSocket()
 bool ListenerSocket::CreateListener(int port, bool local)
 {
     CTDEBUG_ENTER_METHOD("ListenerSocket::CreateListener");
-    
+
     // Should only call this once
     if (m_hSocket)
     {
         sml::PrintDebug("Error: Already listening--closing the existing listener") ;
-        
+
         NET_CLOSESOCKET(m_hSocket) ;
         m_hSocket = NO_CONNECTION ;
     }
-    
+
     SOCKET hListener = INVALID_SOCKET;
     if (local)
     {
@@ -65,23 +65,23 @@ bool ListenerSocket::CreateListener(int port, bool local)
     {
         hListener = socket(AF_INET, SOCK_STREAM, 0) ;
     }
-    
+
     if (hListener == INVALID_SOCKET)
     {
         sml::PrintDebug("Error: Error creating the listener socket") ;
         return false;
     }
-    
+
     // Record the listener socket so we'll clean
     // up properly when the object is destroyed.
     m_hSocket = hListener ;
-    
+
     // Reuse the address for this socket
     int reuse_addr = 1 ;
     setsockopt(hListener, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse_addr, sizeof(reuse_addr)) ;
-    
+
     int res;
-    
+
 #ifdef ENABLE_LOCAL_SOCKETS
     if (local)
     {
@@ -93,15 +93,15 @@ bool ListenerSocket::CreateListener(int port, bool local)
             // use PID
             port = getpid();
         }
-        sprintf(local_address.sun_path, "%s%d", sock::GetLocalSocketDir().c_str(), port); // buffer is 108 chars long, so this is safe
-        
+        SNPRINTF(local_address.sun_path, sizeof(local_address.sun_path), "%s%d", sock::GetLocalSocketDir().c_str(), port);
+
         // set the name of the datasender
         this->name = "file ";
         this->name.append(local_address.sun_path);
-        
+
         // BADBAD: should check to see if it's in use?
         unlink(local_address.sun_path); // in case it already exists
-        
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
@@ -110,12 +110,12 @@ bool ListenerSocket::CreateListener(int port, bool local)
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-        
+
         // create directory where socket file will live (if the directory already exists, this will fail, but we don't care)
         res = mkdir(sock::GetLocalSocketDir().c_str(), 0700);
-        
+
         res = bind(hListener, (sockaddr*)&local_address, len) ;
-        
+
         if (res != 0)
         {
             sml::PrintDebug("Error: Error binding the local listener socket to its file") ;
@@ -137,16 +137,16 @@ bool ListenerSocket::CreateListener(int port, bool local)
             address.sin_port = htons(static_cast<unsigned short>(port)) ;
         }
         address.sin_addr.s_addr = htonl(INADDR_ANY) ;
-        
+
         // Bind the socket to the local port we're listening on
         res = bind(hListener, (sockaddr*)&address, sizeof(address)) ;
-        
+
         if (res != 0)
         {
             sml::PrintDebug("Error: Error binding the listener socket to its port number") ;
             return false;
         }
-        
+
         if (port == -1)
         {
             memset(&address, 0, sizeof(address)) ;
@@ -154,13 +154,13 @@ bool ListenerSocket::CreateListener(int port, bool local)
             getsockname(m_hSocket, (sockaddr*)&address, &len);
             port = ntohs(address.sin_port);
         }
-        
+
         // set the name of the datasender
         this->name = "port ";
         std::string temp;
         this->name.append(to_string(port, temp));
     }
-    
+
 #ifdef NON_BLOCKING
     bool ok = MakeSocketNonBlocking(hListener) ;
     if (!ok)
@@ -169,18 +169,18 @@ bool ListenerSocket::CreateListener(int port, bool local)
         return false;
     }
 #endif
-    
+
     const int kMaxBacklog = 10 ;
-    
+
     // Listen for connections on this socket
     res = listen(hListener, kMaxBacklog) ;
-    
+
     if (res != 0)
     {
         sml::PrintDebug("Error: Error listening on the listener socket") ;
         return false;
     }
-    
+
     m_Port = port;
     return true;
 }
@@ -200,7 +200,7 @@ bool ListenerSocket::CreateListener(int port, bool local)
 Socket* ListenerSocket::CheckForClientConnection()
 {
     CTDEBUG_ENTER_METHOD("ListenerSocket::CheckForClientConnection");
-    
+
     // If this is a blocking socket make sure
     // a connection is available before attempting to accept.
 #ifndef NON_BLOCKING
@@ -209,23 +209,23 @@ Socket* ListenerSocket::CheckForClientConnection()
         return NULL ;
     }
 #endif
-    
+
     //sml::PrintDebug("About to check for a connection") ;
     SOCKET connectedSocket = accept(m_hSocket, NULL, NULL) ;
-    
+
     // If we failed to find a valid socket we're done.
     if (connectedSocket == INVALID_SOCKET)
     {
         return NULL ;
     }
-    
+
     //sml::PrintDebug("Received a connection") ;
-    
+
     // Create a generic CTSocket because once the connection has been
     // made all sockets are both servers and clients.  No need to distinguish.
     Socket* pConnection = new Socket(connectedSocket) ;
-    
+
     pConnection->name = this->name;
-    
+
     return pConnection ;
 }
