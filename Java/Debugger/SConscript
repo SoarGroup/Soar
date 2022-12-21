@@ -12,21 +12,23 @@ depjars = [
 ]
 
 swt_jars = {
-	('linux', 32) : 'gtk32',
-	('linux', 64) : 'gtk64',
-	('linux2', 32) : 'gtk32',
-	('linux2', 64) : 'gtk64',
-	('darwin', 32) : 'osx32',
-	('darwin', 64) : 'osx64',
-	('win32',  32) : 'win32',
-	('win32',  64) : 'win64',
+	('linux', 'i386', 32) : 'gtk32',
+	('linux', 'i386', 64) : 'gtk64',
+	('linux2', 'i386', 32) : 'gtk32',
+	('linux2', 'i386', 64) : 'gtk64',
+	('darwin', 'i386', 32) : 'osx32',
+	('darwin', 'i386', 64) : 'osx64',
+	('darwin', 'arm', 64) : 'osx64',
+	('win32',  'i386', 32) : 'win32',
+	('win32',  64, 'i386') : 'win64',
 }
 
 Import('java_env', 'AddResources')
 
 jar_name = 'soar-debugger.jar'
 shortcut_name = 'SoarJavaDebugger.jar'
-swt = 'lib/swt/%s/swt.jar' % swt_jars[(sys.platform, 64 if '64' in platform.machine() else 32)]
+swt = 'lib/swt/%s/swt.jar' % swt_jars[(sys.platform, platform.processor(), 64 if '64' in platform.machine() else 32)]
+print(f"swt is {swt}")
 api_jar = java_env.File('$OUT_DIR/java/soar-debugger-api.jar')
 
 clone = java_env.Clone()
