@@ -194,11 +194,7 @@
 	// RhsEvent
 	//
 	//////////////////////////////////////////////////////////////////////////////////
-	// C++ equivalent:
-	// Handler for RHS (right hand side) function firings
-	// pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
-	// The return value is a string which allows the RHS function to create a symbol: e.g. ^att (exec plus 2 2) producting ^att 4
-	// typedef std::string (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) ;
+	// C++ equivalent: RhsEventHandler
 	public delegate System.String RhsFunction(smlRhsEventId eventID, System.IntPtr callbackData, System.IntPtr kernel, System.String agentName, System.String functionName, System.String argument);
 
 	[System.Runtime.InteropServices.DllImport ("CSharp_sml_ClientInterface")]
@@ -228,11 +224,7 @@
 	// ClientMessageEvent
 	//
 	//////////////////////////////////////////////////////////////////////////////////
-	// C++ equivalent:
-	// Handler for a generic "client message".  The content is determined by the client sending this data.
-	// The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,
-	// such as a simple series of integers up to a complete XML message.
-	// typedef std::string (*ClientMessageHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pClientName, char const* pMessage) ;
+	// C++ equivalent: ClientMessageHandler
 	public delegate System.String ClientMessageCallback(smlRhsEventId eventID, System.IntPtr callbackData, System.IntPtr kernel, System.String agentName, System.String clientName, System.String message);
 
 	[System.Runtime.InteropServices.DllImport ("CSharp_sml_ClientInterface")]

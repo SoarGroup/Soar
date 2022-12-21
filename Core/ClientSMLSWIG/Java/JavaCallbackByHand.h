@@ -1041,7 +1041,7 @@ static std::string StringEventHandler(sml::smlStringEventId id, void* pUserData,
                 // Release the Java string
                 jenv->ReleaseStringUTFChars(result, pResult);
         }
-        
+
         // Cleaning up the local references just in case
         jenv->DeleteLocalRef(data);
 
@@ -1098,19 +1098,22 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForStringEvent(JNIEnv *
         return result ;
 }
 
-// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
-// exposed in a DLL with C naming (not C++ mangled names).  However, RhsEventHandler (below) returns a std::string
-// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
-// The solution is to turn off extern "C" for this method and turn it back on afterwards.
-#ifdef __cplusplus
-}
-#endif
-
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
 static const char *RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
                                                         char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
+        static std::string prevResult;
+
+        if ( !prevResult.empty() )
+        {
+            strncpy( buf, prevResult.c_str(), *bufSize );
+
+            prevResult = "";
+
+            return buf;
+        }
+
         // The user data is the class we declared above, where we store the Java data to use in the callback.
         JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
 
@@ -1170,14 +1173,15 @@ static const char *RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::
                 jenv->ReleaseStringUTFChars(result, pResult);
         }
 
-				if ( resultStr.size() + 1 > *bufSize )
-				{
-					*bufSize = resultStr.size() + 1;
-					return NULL;
-				}
-				strcpy( buf, resultStr.c_str() );
+        if ( resultStr.length() + 1 > *bufSize )
+        {
+            *bufSize = resultStr.length() + 1;
+            prevResult = resultStr;
+            return NULL;
+        }
+        strcpy( buf, resultStr.c_str() );
 
-				return buf;
+        return buf;
 }
 
 // This is the C++ handler which will be called by clientSML when the event fires.
@@ -1185,6 +1189,17 @@ static const char *RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::
 static const char *ClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
                                                         char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
+        static std::string prevResult;
+
+        if ( !prevResult.empty() )
+        {
+            strncpy( buf, prevResult.c_str(), *bufSize );
+
+            prevResult = "";
+
+            return buf;
+        }
+
         // The user data is the class we declared above, where we store the Java data to use in the callback.
         JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
 
@@ -1244,23 +1259,17 @@ static const char *ClientMessageHandler(sml::smlRhsEventId id, void* pUserData, 
                 jenv->ReleaseStringUTFChars(result, pResult);
         }
 
-				if ( resultStr.size() + 1 > *bufSize )
-				{
-					*bufSize = resultStr.size() + 1;
-					return NULL;
-				}
-				strcpy( buf, resultStr.c_str() );
+        if ( resultStr.length() + 1 > *bufSize )
+        {
+            *bufSize = resultStr.length() + 1;
+            prevResult = resultStr;
+            return NULL;
+        }
+        strcpy( buf, resultStr.c_str() );
 
-				return buf;
+        return buf;
 }
 
-// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
-// exposed in a DLL with C naming (not C++ mangled names).  However, RhsEventHandler (above) returns a std::string
-// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
-// The solution is to turn off extern "C" for this method and turn it back on afterwards.
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.

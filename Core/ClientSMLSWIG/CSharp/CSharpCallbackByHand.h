@@ -16,6 +16,8 @@
 #define STDCALL
 #endif
 
+#include <string>
+
 typedef int agentPtr ;
 typedef int CallbackDataPtr ;
 typedef int kernelPtr ;
@@ -803,33 +805,25 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForStringEvent(void* jarg1, 
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-// The callback we want to support
-// Handler for RHS (right hand side) function firings
-// pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
-// The return value is a string which allows the RHS function to create a symbol: e.g. ^att (exec plus 2 2) producting ^att 4
-// typedef std::string (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) ;
-
-// Handler for a generic "client message".  The content is determined by the client sending this data.
-// The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,
-// such as a simple series of integers up to a complete XML message.
-//typedef std::string (*ClientMessageHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pClientName, char const* pMessage) ;
-
 // The C# callback equivalent that we'll eventually call (we pass back the name of the agent so we don't have to locate the C# Agent object)
 typedef char const* (STDCALL* RhsFunction)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const* pFunctionName, char const* pArgument) ;
 typedef char const* (STDCALL* ClientMessageCallback)(int eventID, CallbackDataPtr callbackData, kernelPtr jKernel, char const* agentName, char const* pClientName, char const* pMessage) ;
-
-// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
-// exposed in a DLL with C naming (not C++ mangled names).  However, RhsEventHandler (below) returns a std::string
-// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
-// The solution is to turn off extern "C" for this method and turn it back on afterwards.  Here is where we turn off extern "C".
-#ifdef __cplusplus
-}
-#endif
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
 static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
+    static std::string prevResult;
+
+    if ( !prevResult.empty() )
+    {
+        strncpy( buf, prevResult.c_str(), *bufSize );
+
+        prevResult = "";
+
+        return buf;
+    }
+
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
 
@@ -843,9 +837,10 @@ static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, s
     // Now try to call back to CSharp
     std::string res = callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpFunctionName, csharpArgument) ;
 
-    if ( res.size() + 1 > *bufSize )
+    if ( res.length() + 1 > *bufSize )
     {
-        *bufSize = res.size() + 1;
+        *bufSize = res.length() + 1;
+        prevResult = res;
         return NULL;
     }
     strcpy( buf, res.c_str() );
@@ -857,6 +852,17 @@ static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, s
 // Then from here we need to call back to C# to pass back the message.
 static const char *ClientEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage, int *bufSize, char *buf )
 {
+    static std::string prevResult;
+
+    if ( !prevResult.empty() )
+    {
+        strncpy( buf, prevResult.c_str(), *bufSize );
+
+        prevResult = "";
+
+        return buf;
+    }
+
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
 
@@ -870,23 +876,16 @@ static const char *ClientEventHandler(sml::smlRhsEventId /*id*/, void* pUserData
     // Now try to call back to CSharp
     std::string res = callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpClientName, csharpMessage) ;
 
-		if ( res.size() + 1 > *bufSize )
-		{
-			*bufSize = res.size() + 1;
-			return NULL;
-		}
-		strcpy( buf, res.c_str() );
+    if ( res.length() + 1 > *bufSize )
+    {
+        *bufSize = res.length() + 1;
+        prevResult = res;
+        return NULL;
+    }
+    strcpy( buf, res.c_str() );
 
-		return buf;
+    return buf;
 }
-
-// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
-// exposed in a DLL with C naming (not C++ mangled names).  However, RhsEventHandler (above) returns a std::string
-// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
-// The solution is to turn off extern "C" for this method and turn it back on afterwards.  Here is where we turn extern "C" back on.
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_AddRhsFunction(void* jarg1, char const* pFunctionName, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
 {
