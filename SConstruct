@@ -32,7 +32,6 @@ SML_CSHARP_ALIAS = 'sml_csharp'
 SML_JAVA_ALIAS = 'sml_java'
 SML_PYTHON_ALIAS = 'sml_python'
 SML_TCL_ALIAS = 'sml_tcl'
-SML_PHP_ALIAS = 'sml_php'
 
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
@@ -169,7 +168,6 @@ env = Environment(
     SML_JAVA_ALIAS = SML_JAVA_ALIAS,
     SML_PYTHON_ALIAS = SML_PYTHON_ALIAS,
     SML_TCL_ALIAS = SML_TCL_ALIAS,
-    SML_PHP_ALIAS = SML_PHP_ALIAS,
     # indentation for log formatting
     INDENT = '    ',
 )

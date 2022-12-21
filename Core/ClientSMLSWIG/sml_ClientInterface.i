@@ -17,12 +17,8 @@
 %rename(SetCharacterDataConst) soarxml::ElementXML::SetCharacterData(char const* characterData);
 %rename(SetBinaryCharacterDataConst) soarxml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
 
-//
 // These static functions create a new Kernel object that should be destroyed later.
-// For compatibility with PHP, these have been copied to the end of every
-// language except PHP.
-//
-// voigtjr 9/2012: Moved these back in to here since they had no effect in the other .i files. This presumably breaks PHP.
+
 %newobject sml::Kernel::CreateKernelInCurrentThread;
 %newobject sml::Kernel::CreateKernelInNewThread;
 %newobject sml::Kernel::CreateRemoteConnection;
