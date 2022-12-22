@@ -132,7 +132,7 @@ def InstallDir(env, tgt, src, globstring="*"):
     return targets
 
 def InstallDLLs(env):
-  if sys.platform == 'win32' and not GetOption('dbg'):
+  if sys.platform == 'win32' and not env['DEBUG']:
     indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\' + cl_target_arch() + '\\Microsoft.VC*.CRT\*')
     outdir = os.path.realpath(GetOption('outdir')) + '\\'
     if os.path.isfile(outdir):
@@ -153,7 +153,7 @@ AddOption('--no-default-flags', action='store_false', dest='defflags', default=T
 AddOption('--no-scu', action='store_false', dest='scu', default=False, help='Don\'t build using single compilation units.')
 AddOption('--no-scu-kernel', action='store_true', dest='no_scu_kernel', default=False, help='Never build kernel in a single compilation unit.')
 AddOption('--no-scu-cli', action='store_true', dest='no_scu_cli', default=False, help='Never build CLI in a single compilation unit.')
-AddOption('--scu', action='store_true', dest='scu', default=False, help='Build using single compilation units.')
+AddOption('--scu', action='store_true', dest='scu', default=True, help='Build using single compilation units.')
 AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR', help='Directory to install binaries. Defaults to "out".')
 AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR', help='Directory to store intermediate (object) files. Defaults to "build".')
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable; defaults to same executable used to run SCons')
@@ -175,6 +175,7 @@ env = Environment(
     MSVC_VERSION=msvc_version,
     ENV=os.environ.copy(),
     SCU=GetOption('scu'),
+    DEBUG=GetOption('dbg'),
     NO_SCU_KERNEL=GetOption('no_scu_kernel'),
     NO_SCU_CLI=GetOption('no_scu_cli'),
     BUILD_DIR=GetOption('build-dir'),
@@ -203,7 +204,7 @@ env.Alias(COMPILE_DB_ALIAS, compile_db_target)
 # extra compilation time.  (for some reason, this will build it the first two times you compile after
 # it exists.)
 
-if ((GetOption('dbg') == None) or (GetOption('dbg') == False) or (FindFile('build_time_date.h', 'Core/shared/') == None)):
+if ((env['DEBUG'] == None) or (env['DEBUG'] == False) or (FindFile('build_time_date.h', 'Core/shared/') == None)):
     cli_version_dep = open('Core/shared/build_time_date.h', 'w')
     print("const char* kTimestamp = __TIME__;", file=cli_version_dep)
     print("const char* kDatestamp = __DATE__;", file=cli_version_dep)
@@ -243,7 +244,7 @@ if compiler == 'g++':
         cflags.append('-DNO_SVS')
     if GetOption('defflags'):
         cflags.append('-Wreturn-type')
-        if GetOption('dbg'):
+        if env['DEBUG']:
             cflags.extend(['-g'])
         else:
             cflags.extend(['-O3', '-DNDEBUG'])
@@ -278,7 +279,7 @@ elif compiler == 'msvc':
     if GetOption('nosvs'):
         cflags.extend(' /D NO_SVS'.split())
     if GetOption('defflags'):
-        if GetOption('dbg'):
+        if env['DEBUG']:
             cflags.extend(' /MDd /Z7 /DEBUG'.split())
             lnflags.extend(['/DEBUG'])
         else:
@@ -352,12 +353,12 @@ if 'MSVSSolution' in env['BUILDERS']:
     Export('msvs_projs')
 
     if (cl_target_architecture == 'x64'):
-        if GetOption('dbg'):
+        if env['DEBUG']:
             g_msvs_variant = 'Debug|x64'
         else:
             g_msvs_variant = 'Release|x64'
     else:
-        if GetOption('dbg'):
+        if env['DEBUG']:
             g_msvs_variant = 'Debug|Win32'
         else:
             g_msvs_variant = 'Release|Win32'
