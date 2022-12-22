@@ -81,9 +81,11 @@ void unserialize(int& v, std::istream& is)
 */
 void serialize(double v, std::ostream& os)
 {
-    static char buf[100];
+    static const size_t buf_len = 100;
+    static char buf[buf_len];
 
-    if (sprintf(buf, "%a", v) == 40)
+    int res = SNPRINTF(buf, buf_len, "%a", v);
+    if (res >= buf_len)
     {
         std::cerr << "buffer overflow when serializing a double" << std::endl;
         assert(false);
