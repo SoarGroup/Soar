@@ -63,7 +63,7 @@ void ChunkingTests::No_Topstate_Match()                               { check_ch
 void ChunkingTests::Opaque_State_Barrier()                            { check_chunk("Opaque_State_Barrier", 8, 1); }
 void ChunkingTests::Operator_Selection_Knowledge_Ghost_Operator()     { check_chunk("Operator_Selection_Knowledge_Ghost_Operator", 4, 1); }
 void ChunkingTests::Operator_Selection_Knowledge_Mega_Test()          { check_chunk("Operator_Selection_Knowledge", 75, 14); }      // Should be 18.  2 could be because of uncertainty of numeric preferences.  Other 2 could be re-ordering issue.
-void ChunkingTests::Operator_Selection_Knowledge_In_Proposal()        { check_chunk("Operator_Selection_Knowledge_In_Proposal", 7, 2); }
+void ChunkingTests::Operator_Selection_Knowledge_In_Propose()        { check_chunk("Operator_Selection_Knowledge_In_Propose", 7, 2); }
 void ChunkingTests::Promoted_STI()                                    { check_chunk("Promoted_STI", 8, 1); }
 void ChunkingTests::Reorderer_Bad_Conjunction()                       { check_chunk("Reorderer_Bad_Conjunction", 8, 1); }
 void ChunkingTests::Repair_NOR_Temporal_Constraint()                  { check_chunk("Repair_NOR_Temporal_Constraint", 8, 3); }

@@ -371,7 +371,7 @@ smlPhase AgentSML::GetCurrentPhase()
         case INPUT_PHASE:
             return sml_INPUT_PHASE;
         case PROPOSE_PHASE:
-            return sml_PROPOSAL_PHASE;
+            return sml_PROPOSE_PHASE;
         case DECISION_PHASE:
             return sml_DECISION_PHASE;
         case APPLY_PHASE:

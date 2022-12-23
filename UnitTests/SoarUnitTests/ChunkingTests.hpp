@@ -15,13 +15,13 @@ class ChunkingTests : public FunctionalTestHarness
 {
 public:
 	TEST_CATEGORY(ChunkingTests);
-	
+
 	void before() { setUp(); }
 	void setUp();
-	
+
 	void after(bool caught) { tearDown(caught); }
 	void tearDown(bool caught);
-	
+
 	/* These 3 like to be first */
     TEST(SMem_Chunked_Query, -1);
     TEST(SMem_Chunked_Query2, -1);
@@ -73,7 +73,7 @@ public:
 
     TEST(Operator_Selection_Knowledge_Ghost_Operator, -1);
     TEST(Operator_Selection_Knowledge_Mega_Test, -1);
-    TEST(Operator_Selection_Knowledge_In_Proposal, -1);
+    TEST(Operator_Selection_Knowledge_In_Propose, -1);
 
     TEST(Rhs_Func_Literalization, -1);
     TEST(RHS_Math, -1);
@@ -165,7 +165,7 @@ public:
     void No_Topstate_Match();
     void Opaque_State_Barrier();
     void Operator_Selection_Knowledge_Ghost_Operator();
-    void Operator_Selection_Knowledge_In_Proposal();
+    void Operator_Selection_Knowledge_In_Propose();
     void Operator_Selection_Knowledge_Mega_Test();
     void Promoted_STI();
     void Reorderer_Bad_Conjunction();

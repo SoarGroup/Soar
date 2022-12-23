@@ -93,6 +93,7 @@ public class MainFrame
     public static final FontData kDefaultFontData = new FontData("Courier New",
             8, SWT.NORMAL);
 
+
     private static final String kNoAgent = "<no agent>";
 
     private static final String kWindowLayoutFile = "SoarDebuggerWindows.dlf";

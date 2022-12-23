@@ -985,7 +985,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
     // code change required #define, but it was never defined.
 
     /* We are only checking for i_assertions, not o_assertions, since we don't
-     *  want operators to fire in the proposal phase
+     *  want operators to fire in the propose phase
      */
     if (!(thisAgent->ms_retractions || thisAgent->ms_i_assertions))
     {

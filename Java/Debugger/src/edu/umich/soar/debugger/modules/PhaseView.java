@@ -265,7 +265,7 @@ public class PhaseView extends AbstractFixedView implements
             x = 31;
             y = 50;
         }
-        if (phase == smlPhase.sml_PROPOSAL_PHASE)
+        if (phase == smlPhase.sml_PROPOSE_PHASE)
         {
             x += 36 * 0;
         }

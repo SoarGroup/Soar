@@ -62,7 +62,7 @@ namespace sml
         smlEVENT_SYSTEM_PROPERTY_CHANGED,           // A kernel-level parameter has been changed (note: no longer includes sysparams which are agent-level)
         smlEVENT_LAST_SYSTEM_EVENT = smlEVENT_SYSTEM_PROPERTY_CHANGED
     } ;
-    
+
     enum smlRunEventId
     {
         smlRUN_EVENT_BAD = -1,
@@ -99,7 +99,7 @@ namespace sml
         smlEVENT_AFTER_RUNNING,             // After running one step (phase)
         smlEVENT_LAST_RUN_EVENT = smlEVENT_AFTER_RUNNING
     } ;
-    
+
     enum smlProductionEventId
     {
         smlPRODUCTION_EVENT_BAD = -1,
@@ -111,7 +111,7 @@ namespace sml
         smlEVENT_BEFORE_PRODUCTION_RETRACTED,
         smlEVENT_LAST_PRODUCTION_EVENT = smlEVENT_BEFORE_PRODUCTION_RETRACTED
     } ;
-    
+
     enum smlAgentEventId
     {
         smlAGENT_EVENT_BAD = -1,
@@ -123,7 +123,7 @@ namespace sml
         smlEVENT_AFTER_AGENT_REINITIALIZED,     // DJP: I'm not making the change today as I'm removing gSKI and want to minimize other changes, but it should be a simple change once gSKI has been fully removed.
         smlEVENT_LAST_AGENT_EVENT = smlEVENT_AFTER_AGENT_REINITIALIZED
     }  ;
-    
+
     enum smlWorkingMemoryEventId
     {
         smlWORKING_MEMORY_EVENT_BAD = -1,
@@ -132,7 +132,7 @@ namespace sml
         smlEVENT_INPUT_PHASE_CALLBACK,          // This event is not currently available to clients -- listen for before/after input phase instead
         smlEVENT_LAST_WM_EVENT = smlEVENT_OUTPUT_PHASE_CALLBACK
     } ;
-    
+
     enum smlPrintEventId
     {
         smlPRINT_EVENT_BAD = -1,
@@ -142,7 +142,7 @@ namespace sml
         smlEVENT_PRINT,
         smlEVENT_LAST_PRINT_EVENT = smlEVENT_PRINT
     } ;
-    
+
     enum smlRhsEventId
     {
         // Used to provide user handler functions for RHS (right hand side) functions
@@ -154,7 +154,7 @@ namespace sml
         smlEVENT_CLIENT_MESSAGE,        // A generic message from one client to another (not really involving Soar/kernel directly)
         smlEVENT_LAST_RHS_EVENT = smlEVENT_CLIENT_MESSAGE
     } ;
-    
+
     enum smlXMLEventId
     {
         smlXML_EVENT_BAD = -1,
@@ -162,7 +162,7 @@ namespace sml
         smlEVENT_XML_INPUT_RECEIVED,        // Echo event for input wmes added by a client (so others can listen in)
         smlEVENT_LAST_XML_EVENT = smlEVENT_XML_INPUT_RECEIVED
     } ;
-    
+
 // Events that can be used by environments to trigger when the world should update
     enum smlUpdateEventId
     {
@@ -171,7 +171,7 @@ namespace sml
         smlEVENT_AFTER_ALL_GENERATED_OUTPUT,                        // All agents have generated output (since run began)
         smlEVENT_LAST_UPDATE_EVENT = smlEVENT_AFTER_ALL_GENERATED_OUTPUT
     } ;
-    
+
 // Events that pass a string as an argument
     enum smlStringEventId
     {
@@ -180,27 +180,27 @@ namespace sml
         smlEVENT_LOAD_LIBRARY,
         smlEVENT_LAST_STRING_EVENT = smlEVENT_LOAD_LIBRARY
     } ;
-    
+
     enum smlGenericEventId
     {
         // Used to indicate an error in some cases
         smlEVENT_INVALID_EVENT              = 0,
-        
+
         // Marker for end of sml event list
         // Must always be at the end of the enum
         smlEVENT_LAST = smlEVENT_LAST_STRING_EVENT + 1
     } ;
-    
+
     static inline bool IsStringEventID(int id)
     {
         return (id >= smlEVENT_TCL_LIBRARY_MESSAGE && id <= smlEVENT_LAST_STRING_EVENT) ;
     }
-    
+
     static inline bool IsSystemEventID(int id)
     {
         return (id >= smlEVENT_BEFORE_SHUTDOWN && id <= smlEVENT_LAST_SYSTEM_EVENT) ;
     }
-    
+
     static inline bool IsRunEventID(int id)
     {
         return (id >= smlEVENT_BEFORE_SMALLEST_STEP && id <= smlEVENT_LAST_RUN_EVENT) ;
@@ -217,53 +217,53 @@ namespace sml
     {
         return (id >= smlEVENT_AFTER_INPUT_PHASE && id < smlEVENT_AFTER_PHASE_EXECUTED) ;
     }
-    
+
     static inline bool IsProductionEventID(int id)
     {
         return (id >= smlEVENT_AFTER_PRODUCTION_ADDED && id <= smlEVENT_LAST_PRODUCTION_EVENT) ;
     }
-    
+
     static inline bool IsAgentEventID(int id)
     {
         return (id >= smlEVENT_AFTER_AGENT_CREATED && id <= smlEVENT_LAST_AGENT_EVENT) ;
     }
-    
+
     static inline bool IsWorkingMemoryEventID(int id)
     {
         return (id >= smlEVENT_OUTPUT_PHASE_CALLBACK && id <= smlEVENT_LAST_WM_EVENT) ;
     }
-    
+
     static inline bool IsPrintEventID(int id)
     {
         return (id >= smlEVENT_ECHO && id <= smlEVENT_LAST_PRINT_EVENT) ;
     }
-    
+
     static inline bool IsRhsEventID(int id)
     {
         return (id >= smlEVENT_RHS_USER_FUNCTION && id <= smlEVENT_LAST_RHS_EVENT) ;
     }
-    
+
     static inline bool IsXMLEventID(int id)
     {
         return (id >= smlEVENT_XML_TRACE_OUTPUT && id <= smlEVENT_XML_INPUT_RECEIVED) ;
     }
-    
+
     static inline bool IsUpdateEventID(int id)
     {
         return (id >= smlEVENT_AFTER_ALL_OUTPUT_PHASES && id <= smlEVENT_LAST_UPDATE_EVENT) ;
     }
-    
+
     enum smlPhase
     {
         sml_INPUT_PHASE,        // NOTE: This enum MUST be kept in synch with egSKIPhaseType defined in gSKI_Enumerations.h
-        sml_PROPOSAL_PHASE,
+        sml_PROPOSE_PHASE,
         sml_DECISION_PHASE,
         sml_APPLY_PHASE,
         sml_OUTPUT_PHASE,
         sml_PREFERENCE_PHASE,   // Soar 7 mode only
         sml_WM_PHASE            // Soar 7 mode only
     };
-    
+
     enum smlRunStepSize
     {
         // Note: phase moved before elaboration because that's how gSKI was doing things
@@ -272,7 +272,7 @@ namespace sml
         sml_DECISION,
         sml_UNTIL_OUTPUT
     };
-    
+
     enum smlRunFlags
     {
         sml_NONE                =  0,       // No special flags set
@@ -281,7 +281,7 @@ namespace sml
         sml_UPDATE_WORLD        =  1 << 2,  // User explicitly requested world to update
         sml_DONT_UPDATE_WORLD   =  1 << 3   // User explicitly requested world to not update
     };
-    
+
     enum smlRunResult
     {
         sml_RUN_ERROR,
@@ -291,7 +291,7 @@ namespace sml
         sml_RUN_COMPLETED_AND_INTERRUPTED,  // Stop was requested but run completed before agent was interrupted.
         sml_RUN_ERROR_ALREADY_RUNNING
     };
-    
+
     enum smlRunState
     {
         sml_RUNSTATE_STOPPED,
@@ -299,14 +299,14 @@ namespace sml
         sml_RUNSTATE_RUNNING,
         sml_RUNSTATE_HALTED
     };
-    
+
     enum smlStopLocationFlags
     {
         sml_STOP_AFTER_SMALLEST_STEP            = 1 << 0,   // Keep in synch with egSKIStopLocation
         sml_STOP_AFTER_PHASE                    = 1 << 1,
         sml_STOP_AFTER_DECISION_CYCLE           = 1 << 2
     } ;
-    
+
 /////////////////////////////////////////////////////////////////
 // Map event ids to and from strings
 //
@@ -322,12 +322,12 @@ namespace sml
             // We keep two maps, one for each direction
             typedef std::map<int, std::string> ToStringMap ;
             typedef std::map<std::string, int> ToEventMap  ;
-            
+
             ToStringMap m_ToStringMap ;
             ToEventMap  m_ToEventMap ;
-            
+
             void        RegisterEvent(int id, char const* pStr) ;
-            
+
             /*************************************************************
             * @brief Convert from a string version of an event to the int (enum) version.
             *        Returns smlEVENT_INVALID_EVENT (== 0) if the string is not recognized.
@@ -335,15 +335,15 @@ namespace sml
             inline int InternalConvertToEvent(char const* pStr)
             {
                 Events::ToEventMap::iterator mapIter = m_ToEventMap.find(pStr);
-                
+
                 if (mapIter == m_ToEventMap.end())
                 {
                     return smlEVENT_INVALID_EVENT ;
                 }
-                
+
                 return mapIter->second ;
             }
-            
+
             /*************************************************************
             * @brief Convert from int version of an event to the string form.
             *        Returns NULL if the id is not recognized.
@@ -351,25 +351,25 @@ namespace sml
             inline char const* InternalConvertToString(int id)
             {
                 Events::ToStringMap::iterator mapIter = m_ToStringMap.find(id);
-                
+
                 if (mapIter == m_ToStringMap.end())
                 {
                     return NULL ;
                 }
-                
+
                 return mapIter->second.c_str() ;
             }
-            
+
         public:
             // Construction is expensive, so do this once and then use the methods repeatedly
             Events() ;
-            
+
             // Methods to convert event IDs from int to string values and back.
             // We do this because the list of IDs will likely change from one version of Soar to another
             // but we'd like the list of names to remain largely constant (and just be added to).
             // This will allow clients built with an earlier version to work with later Soar kernels.
             // As a side effect it makes the XML much more human readable as you get event "init-soar" not event 23.
-            
+
             /*************************************************************
             * @brief Convert from a string version of an event to the int (enum) version.
             *        Returns smlEVENT_INVALID_EVENT (== 0) if the string is not recognized.
@@ -378,7 +378,7 @@ namespace sml
             {
                 return InternalConvertToEvent(pStr) ;
             }
-            
+
             /*************************************************************
             * @brief Convert from int version of an event to the string form.
             *        Returns NULL if the id is not recognized.
@@ -386,14 +386,14 @@ namespace sml
             inline char const* ConvertToString(int id)
             {
                 char const* pName = InternalConvertToString(id) ;
-                
+
                 // This event ID needs to be added to the list registered in the constructor
                 assert(pName != NULL) ;
-                
+
                 return pName ;
             }
     } ;
-    
+
 }   // End of namespace
 
 #endif  // Header

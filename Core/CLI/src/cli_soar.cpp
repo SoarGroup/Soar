@@ -210,8 +210,8 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
             }
             else if (thisAgent->Decider->params->stop_phase->get_value() == PROPOSE_PHASE)
             {
-                m_pKernelSML->SetStopBefore(sml::sml_PROPOSAL_PHASE) ;
-                PrintCLIMessage("Soar will now stop before the proposal phase.");
+                m_pKernelSML->SetStopBefore(sml::sml_PROPOSE_PHASE) ;
+                PrintCLIMessage("Soar will now stop before the propose phase.");
             }
         }
         else if (my_param == thisAgent->Decider->params->keep_all_top_oprefs)

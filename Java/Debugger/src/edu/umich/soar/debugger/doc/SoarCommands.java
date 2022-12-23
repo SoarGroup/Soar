@@ -305,7 +305,7 @@ public class SoarCommands
             return "input";
         if (phase == smlPhase.sml_OUTPUT_PHASE)
             return "output";
-        if (phase == smlPhase.sml_PROPOSAL_PHASE)
+        if (phase == smlPhase.sml_PROPOSE_PHASE)
             return "propose";
         return "";
     }
