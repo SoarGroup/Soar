@@ -129,6 +129,20 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
         {
             thisAgent->Decider->params->print_settings(thisAgent);
         }
+        else if (my_param == thisAgent->Decider->params->stop_phase)
+        {
+            if (m_RawOutput)
+            {
+                m_Result << "Stop before " << my_param->get_string();
+            }
+            else
+            {
+                smlPhase stopPhase = m_pKernelSML->GetStopBefore();
+                std::ostringstream buffer;
+                buffer << stopPhase;
+                AppendArgTagFast(sml_Names::kParamPhase, sml_Names::kTypeInt, buffer.str());
+            }
+        }
         else {
             /* Command was a valid ebc_param name, so print it's value */
             tempStringStream << my_param->get_name() << " is" ;

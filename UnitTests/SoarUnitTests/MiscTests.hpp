@@ -15,7 +15,7 @@ class MiscTests : public FunctionalTestHarness
 {
 public:
 	TEST_CATEGORY(MiscTests);
-	
+
 //	TEST(testInstiationDeallocationStackOverflow, -1)
 	void testInstiationDeallocationStackOverflow();
 	TEST(test_clog, -1)
@@ -26,11 +26,11 @@ public:
 	void test_echo();
 	TEST(test_ls, -1)
 	void test_ls();
-	
+
 	// TODO: Update for linux & Windows (32 + 64)
 	TEST(test_stats, -1)
 	void test_stats();
-	
+
 	TEST(testWrongAgentWmeFunctions, -1)
 	void testWrongAgentWmeFunctions();
 	TEST(testRHSRand, -1)
@@ -39,15 +39,18 @@ public:
 	void testMultipleKernels();
 	TEST(testSmemArithmetic, -1)
 	void testSmemArithmetic();
-	
+
 	TEST(testSource, -1)
 	void testSource();
-	
+
 	TEST(testSoarRand, -1)
 	void testSoarRand();
 	TEST(testPreferenceDeallocation, -1)
 	void testPreferenceDeallocation();
-	
+
+	TEST(testStopPhaseRetrieval, -1)
+    void testStopPhaseRetrieval();
+
 	TEST(testGDS_Failed_Justification_Crash, -1);
 	TEST(testIsupported_Smem_Chunk_Crash, -1);
 	TEST(testNegated_Operator_Crash, -1);
@@ -62,7 +65,7 @@ public:
 	// It may or may not work but should unless you're running without a GUI.
 //	TEST(testSoarDebugger, -1)
 //	void testSoarDebugger();
-	
+
 	void source(const std::string& path);
 };
 

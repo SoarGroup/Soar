@@ -74,10 +74,10 @@ void MiscTests::test_clog()
 	agent->RunSelf(5);
 	agent->InitSoar();
 	agent->RunSelf(5);
-	
+
 	tearDown(false);
 	setUp();
-	
+
 	assertTrue(agent != NULL);
 	agent->ExecuteCommandLine("clog clog-test.txt");
 	assertTrue_msg("clog clog-test.txt", agent->GetLastCommandLineResult());
@@ -94,16 +94,16 @@ void MiscTests::test_clog()
 void MiscTests::test_gp()
 {
 	source("testgp.soar");
-	
+
 	agent->ExecuteCommandLine("gp {gp*test10 (state <s> ^operator <o> + ^someflag [ <var> true false ] ^<< [ a1 a2 a3 a4 a5] [a6 a7 a8 a9 a10] >> << [v1 v2 v3] [v4 v5 v6] [v7 v8 v9 v10] >>) (<o> ^name foo ^att [ val1 1.3 |another val| |\\|another val\\|| ] ^[ att1 att2 att3 att4 att5] [val1 val2 val3 val4 <var>]) --> (<s> ^[<var> att] <var>) }");
 	assertTrue_msg("valid but too large (540000) gp production didn't fail", agent->GetLastCommandLineResult() == false);
-	
+
 	agent->ExecuteCommandLine("gp {gp*fail1 (state <s> ^att []) --> (<s> ^operator <o> = 5) }");
 	assertTrue_msg("'need at least one value in list' didn't fail", agent->GetLastCommandLineResult() == false);
-	
+
 	agent->ExecuteCommandLine("gp {gp*fail2 (state <s> ^[att1 att2][val1 val2]) --> (<s> ^operator <o> = 5) }");
 	assertTrue_msg("'need space between value lists' didn't fail", agent->GetLastCommandLineResult() == false);
-	
+
 	agent->ExecuteCommandLine("gp {gp*fail3 (state <s> ^foo bar[) --> (<s> ^foo bar) }");
 	assertTrue_msg("'unmatched [' didn't fail", agent->GetLastCommandLineResult() == false);
 	SoarHelper::init_check_to_find_refcount_leaks(agent);
@@ -113,34 +113,34 @@ void MiscTests::test_echo()
 {
 	agent->ExecuteCommandLine("echo sp \\{my*prod"); // bug 987
 	assertTrue_msg("bug 987", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo \"#########################################################\""); // bug 1013
 	assertTrue_msg("bug 1013", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo \\\"");
 	assertTrue_msg("quote", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo [");
 	assertTrue_msg("left brace", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo ]");
 	assertTrue_msg("right brace", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo \\{");
 	assertTrue_msg("left bracket", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo }");
 	assertTrue_msg("right bracket", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo <");
 	assertTrue_msg("less than", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo >");
 	assertTrue_msg("greater than", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo |#|");
 	assertTrue_msg("pound in pipes", agent->GetLastCommandLineResult());
-	
+
 	agent->ExecuteCommandLine("echo ~!@#$%^&*()_+`1234567890-=\\:,.?/");
 	assertTrue_msg("misc chars", agent->GetLastCommandLineResult());
 }
@@ -156,7 +156,7 @@ void MiscTests::test_stats()
 	sml::ClientAnalyzedXML stats;
 	agent->ExecuteCommandLineXML("stats", &stats);
 	assertTrue(agent->GetLastCommandLineResult());
-	
+
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountDefault, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountUser, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountChunk, -1), 0);
@@ -224,31 +224,31 @@ void MiscTests::test_stats()
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleWMChangesValue, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountCycle, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountValue, -1), 0);
-	
+
 	agent->ExecuteCommandLine("stats -t");
 	assertTrue(agent->GetLastCommandLineResult());
 	agent->RunSelf(10);
 	std::string res = agent->ExecuteCommandLine("stats -c");
 	assertTrue(!res.empty());
-	
+
 	agent->ExecuteCommandLine("stats -t");
 	assertTrue(agent->GetLastCommandLineResult());
 	agent->RunSelf(10);
 	res = agent->ExecuteCommandLine("stats -c");
 	assertTrue(!res.empty());
-	
+
 	agent->ExecuteCommandLine("stats -T");
 	assertTrue(agent->GetLastCommandLineResult());
 	agent->RunSelf(10);
 	res = agent->ExecuteCommandLine("stats -c");
 	assertTrue(res.empty());
-	
+
 	agent->ExecuteCommandLine("stats -t");
 	assertTrue(agent->GetLastCommandLineResult());
 	agent->RunSelf(10);
 	res = agent->ExecuteCommandLine("stats -c");
 	assertTrue(!res.empty());
-	
+
 	agent->ExecuteCommandLine("stats -T");
 	assertTrue(agent->GetLastCommandLineResult());
 }
@@ -258,27 +258,27 @@ void MiscTests::testWrongAgentWmeFunctions()
 	sml::Agent* agent2 = 0;
 	agent2 = kernel->CreateAgent("soar2");
 	assertTrue(agent2 != NULL);
-	
+
 	sml::Identifier* il1 = agent->GetInputLink();
 	sml::Identifier* il2 = agent2->GetInputLink();
-	
+
 	sml::Identifier* foo1 = il1->CreateIdWME("foo");
 	sml::Identifier* foo2 = il2->CreateIdWME("foo");
-	
+
 	assertTrue(agent->CreateStringWME(foo2, "fail", "fail") == 0);
 	assertTrue(agent->CreateIntWME(foo2, "fail", 1) == 0);
 	assertTrue(agent->CreateFloatWME(foo2, "fail", 1.0f) == 0);
 	assertTrue(agent->CreateIdWME(foo2, "fail") == 0);
 	assertTrue(agent->CreateSharedIdWME(foo2, "fail", il1) == 0);
 	assertTrue(agent->DestroyWME(foo2) == 0);
-	
+
 	assertTrue(agent2->CreateStringWME(foo1, "fail", "fail") == 0);
 	assertTrue(agent2->CreateIntWME(foo1, "fail", 1) == 0);
 	assertTrue(agent2->CreateFloatWME(foo1, "fail", 1.0f) == 0);
 	assertTrue(agent2->CreateIdWME(foo1, "fail") == 0);
 	assertTrue(agent2->CreateSharedIdWME(foo1, "fail", il2) == 0);
 	assertTrue(agent2->DestroyWME(foo1) == 0);
-	
+
 	SoarHelper::init_check_to_find_refcount_leaks(agent);
 	SoarHelper::init_check_to_find_refcount_leaks(agent2);
 	kernel->DestroyAgent(agent2);
@@ -298,13 +298,13 @@ void MiscTests::testMultipleKernels()
 	sml::Kernel* kernel2 = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultSMLPort - 1);
 	assertTrue(kernel2 != NULL);
 	assertTrue_msg(kernel2->GetLastErrorDescription(), !kernel2->HadError());
-	
+
 	sml::Agent* agent2 = kernel2->CreateAgent("soar2");
 	assertTrue(agent2 != NULL);
-	
+
 	kernel2->Shutdown();
 	delete kernel2;
-	
+
 	agent->ExecuteCommandLine("p s1");
 	assertTrue(agent->GetLastCommandLineResult());
 }
@@ -314,9 +314,9 @@ void MiscTests::testSmemArithmetic()
 	source("arithmetic.soar") ;
 	agent->ExecuteCommandLine("watch 0");
 	agent->ExecuteCommandLine("srand 1080");
-	
+
 	agent->RunSelfForever();
-	
+
 	sml::ClientAnalyzedXML stats;
 	agent->ExecuteCommandLineXML("stats", &stats);
 	assertTrue(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
@@ -347,11 +347,19 @@ void MiscTests::testPreferenceDeallocation()
 	source("testPreferenceDeallocation.soar");
     SoarHelper::check_learning_override(agent);
 	agent->ExecuteCommandLine("run 10");
-	
+
 	sml::ClientAnalyzedXML response;
 	agent->ExecuteCommandLineXML("stats", &response);
 	assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 6);
 	SoarHelper::init_check_to_find_refcount_leaks(agent);
+}
+
+void MiscTests::testStopPhaseRetrieval()
+{
+    // The debugger relies on this particular XML command return value
+	sml::ClientAnalyzedXML response;
+	agent->ExecuteCommandLineXML("soar stop-phase", &response);
+	assertTrue(response.GetArgInt(sml::sml_Names::kParamPhase, -1) == sml::smlPhase::sml_APPLY_PHASE);
 }
 
 //void MiscTests::testSoarDebugger()
