@@ -381,7 +381,7 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, cons* args, voi
 
 Symbol* dc_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)
 {
-    return thisAgent->symbolManager->make_int_constant(thisAgent->decision_phases_count);
+    return thisAgent->symbolManager->make_int_constant(thisAgent->decide_phases_count);
 }
 
 Symbol* timestamp_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)

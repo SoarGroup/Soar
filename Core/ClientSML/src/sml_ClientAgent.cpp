@@ -61,15 +61,15 @@ namespace
                 HMODULE soarModule = GetModuleHandle("Soar.dll");
                 char* str = new char[256];
                 int libNameLength = GetModuleFileName(soarModule, str, 256);
-                
+
                 std::string path(str);
                 libraryPath = path.substr(0, path.find_last_of("\\"));
-                
+
                 delete[] str;
 #else
                 Dl_info dl_info;
                 dladdr((void*) initialize, &dl_info);
-                
+
                 std::string path(dl_info.dli_fname);
                 libraryPath = path.substr(0, path.find_last_of("/") + 1);
 #endif
@@ -111,11 +111,11 @@ Agent::Agent(Kernel* pKernel, char const* pName)
     m_CallbackIDCounter = 0 ;
     m_XMLCallback = -1 ;
     m_BlinkIfNoChange = true ;
-    
+
     m_WorkingMemory.SetAgent(this) ;
-    
+
     m_pDPI = 0;
-    
+
     ClearError() ;
 }
 
@@ -137,16 +137,16 @@ void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
     char const* pEventName = pIncoming->GetArgString(sml_Names::kParamEventID) ;
-    
+
     // This event had no event id field
     if (!pEventName)
     {
         return ;
     }
-    
+
     // Go from the string form of the event back to the integer ID
     int id = GetKernel()->m_pEventMap->ConvertToEvent(pEventName) ;
-    
+
     if (IsRunEventID(id))
     {
         ReceivedRunEvent(smlRunEventId(id), pIncoming, pResponse) ;
@@ -168,24 +168,24 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
     smlPhase phase = smlPhase(pIncoming->GetArgInt(sml_Names::kParamPhase, -1)) ;
-    
+
     // Look up the handler(s) from the map
     RunEventMap::ValueList* pHandlers = m_RunEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (RunEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
     {
         RunEventHandlerPlusData handlerWithData = *iter ;
         iter++ ;
-        
+
         RunEventHandler handler = handlerWithData.m_Handler ;
         void* pUserData = handlerWithData.m_UserData ;
-        
+
         // Call the handler
         handler(id, pUserData, this, phase) ;
     }
@@ -194,24 +194,24 @@ void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML
 void Agent::FireOutputNotification()
 {
     smlWorkingMemoryEventId id = smlEVENT_OUTPUT_PHASE_CALLBACK ;
-    
+
     // Look up the handler(s) from the map
     OutputNotificationMap::ValueList* pHandlers = m_OutputNotificationMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (OutputNotificationMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
     {
         OutputNotificationHandlerPlusData handlerWithData = *iter ;
         iter++ ;
-        
+
         OutputNotificationHandler handler = handlerWithData.m_Handler ;
         void* pUserData = handlerWithData.m_UserData ;
-        
+
         // Call the handler
         handler(pUserData, this) ;
     }
@@ -220,33 +220,33 @@ void Agent::FireOutputNotification()
 void Agent::ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
     char const* pMessage = pIncoming->GetArgString(sml_Names::kParamMessage) ;
-    
+
     // This argument is only present on echo messages.
     bool self = pIncoming->GetArgBool(sml_Names::kParamSelf, false) ;
-    
+
     // Look up the handler(s) from the map
     PrintEventMap::ValueList* pHandlers = m_PrintEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (PrintEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
     {
         PrintEventHandlerPlusData handlerPlus = *iter ;
         PrintEventHandler handler = handlerPlus.m_Handler ;
         bool ignoreOwnEchos = handlerPlus.m_IgnoreOwnEchos ;
-        
+
         // If this is an echo event triggered by a command issued by ourselves ignore it.
         if (id == smlEVENT_ECHO && ignoreOwnEchos && self)
         {
             continue ;
         }
-        
+
         void* pUserData = handlerPlus.m_UserData ;
-        
+
         // Call the handler
         handler(id, pUserData, this, pMessage) ;
     }
@@ -256,23 +256,23 @@ void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncomi
 {
     char const* pProductionName = pIncoming->GetArgString(sml_Names::kParamName) ;
     char const* pInstance = 0 ; // gSKI defines this but doesn't support it yet.
-    
+
     // Look up the handler(s) from the map
     ProductionEventMap::ValueList* pHandlers = m_ProductionEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (ProductionEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
     {
         ProductionEventHandlerPlusData handlerPlus = *iter ;
-        
+
         ProductionEventHandler handler = handlerPlus.m_Handler ;
         void* pUserData = handlerPlus.m_UserData ;
-        
+
         // Call the handler
         handler(id, pUserData, this, pProductionName, pInstance) ;
     }
@@ -284,7 +284,7 @@ bool Agent::LoadProductions(char const* pFilename, bool echoResults)
     {
         return false;
     }
-    
+
     // remove quotes or braces if they exist
     std::string cmd("source {");
     size_t len = strlen(pFilename);
@@ -297,12 +297,12 @@ bool Agent::LoadProductions(char const* pFilename, bool echoResults)
         cmd.append(pFilename, len);
     }
     cmd.push_back('}');
-    
+
     // Execute the source command, insert braces
     char const* pResult = ExecuteCommandLine(cmd.c_str(), echoResults) ;
-    
+
     bool ok = GetLastCommandLineResult() ;
-    
+
     if (ok)
     {
         ClearError() ;
@@ -311,7 +311,7 @@ bool Agent::LoadProductions(char const* pFilename, bool echoResults)
     {
         SetDetailedError(Error::kDetailedError, pResult) ;
     }
-    
+
     return ok ;
 }
 
@@ -325,7 +325,7 @@ class Agent::TestRunCallback : public RunEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(RunEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -338,7 +338,7 @@ class Agent::TestRunCallbackFull : public RunEventMap::ValueTest
         int             m_EventID ;
         RunEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestRunCallbackFull(int id, RunEventHandler handler, void* pUserData)
         {
@@ -346,7 +346,7 @@ class Agent::TestRunCallbackFull : public RunEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(RunEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -364,7 +364,7 @@ class Agent::TestOutputNotificationCallback : public OutputNotificationMap::Valu
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(OutputNotificationHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -377,7 +377,7 @@ class Agent::TestOutputNotificationCallbackFull : public OutputNotificationMap::
         int             m_EventID ;
         OutputNotificationHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestOutputNotificationCallbackFull(int id, OutputNotificationHandler handler, void* pUserData)
         {
@@ -385,7 +385,7 @@ class Agent::TestOutputNotificationCallbackFull : public OutputNotificationMap::
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(OutputNotificationHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -403,7 +403,7 @@ class Agent::TestOutputCallback : public OutputEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(OutputEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -416,7 +416,7 @@ class Agent::TestOutputCallbackFull : public OutputEventMap::ValueTest
         std::string         m_AttributeName ;
         OutputEventHandler  m_Handler ;
         void*               m_UserData ;
-        
+
     public:
         TestOutputCallbackFull(char const* attributeName, OutputEventHandler handler, void* pUserData)
         {
@@ -424,9 +424,9 @@ class Agent::TestOutputCallbackFull : public OutputEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         virtual ~TestOutputCallbackFull() { } ;
-        
+
         bool isEqual(OutputEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_AttributeName.compare(m_AttributeName) == 0 &&
@@ -444,7 +444,7 @@ class Agent::TestProductionCallback : public ProductionEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(ProductionEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -457,7 +457,7 @@ class Agent::TestProductionCallbackFull : public ProductionEventMap::ValueTest
         int             m_EventID ;
         ProductionEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestProductionCallbackFull(int id, ProductionEventHandler handler, void* pUserData)
         {
@@ -465,7 +465,7 @@ class Agent::TestProductionCallbackFull : public ProductionEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(ProductionEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -483,7 +483,7 @@ class Agent::TestPrintCallback : public PrintEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(PrintEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -496,7 +496,7 @@ class Agent::TestPrintCallbackFull : public PrintEventMap::ValueTest
         int             m_EventID ;
         PrintEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestPrintCallbackFull(int id, PrintEventHandler handler, void* pUserData)
         {
@@ -504,7 +504,7 @@ class Agent::TestPrintCallbackFull : public PrintEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(PrintEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -522,7 +522,7 @@ class Agent::TestXMLCallback : public XMLEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(XMLEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -535,7 +535,7 @@ class Agent::TestXMLCallbackFull : public XMLEventMap::ValueTest
         int             m_EventID ;
         XMLEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestXMLCallbackFull(int id, XMLEventHandler handler, void* pUserData)
         {
@@ -543,7 +543,7 @@ class Agent::TestXMLCallbackFull : public XMLEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(XMLEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -556,31 +556,31 @@ int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* 
 {
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestRunCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     RunEventHandlerPlusData plus(0, 0, 0, 0) ;
     bool found = m_RunEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     if (m_RunEventMap.getListSize(id) == 0)
     {
         GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     // Record the handler
     m_CallbackIDCounter++ ;
-    
+
     // We use a struct rather than a pointer to a struct, so there's no need to new/delete
     // everything as the objects are added and deleted.
     RunEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
     m_RunEventMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -589,43 +589,43 @@ bool Agent::UnregisterForRunEvent(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestRunCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlRunEventId id = m_RunEventMap.findFirstKeyByTest(&test, smlRUN_EVENT_BAD) ;
-    
+
     if (id == smlRUN_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_RunEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (m_RunEventMap.getListSize(id) == 0)
     {
         GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     return true ;
 }
 
 int Agent::RegisterForOutputNotification(OutputNotificationHandler handler, void* pUserData, bool addToBack)
 {
     smlWorkingMemoryEventId id = smlEVENT_OUTPUT_PHASE_CALLBACK ;
-    
+
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestOutputNotificationCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     OutputNotificationHandlerPlusData plus(0, 0, 0, 0) ;
     bool found = m_OutputNotificationMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     // (Only do this if we were ignoring output from the kernel already--otherwise we'll get two copies of everything
@@ -634,15 +634,15 @@ int Agent::RegisterForOutputNotification(OutputNotificationHandler handler, void
     {
         GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     // Record the handler
     m_CallbackIDCounter++ ;
-    
+
     // We use a struct rather than a pointer to a struct, so there's no need to new/delete
     // everything as the objects are added and deleted.
     OutputNotificationHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
     m_OutputNotificationMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -651,48 +651,48 @@ bool Agent::UnregisterForOutputNotification(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestOutputNotificationCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlWorkingMemoryEventId id = m_OutputNotificationMap.findFirstKeyByTest(&test, smlWORKING_MEMORY_EVENT_BAD) ;
-    
+
     if (id == smlWORKING_MEMORY_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_OutputNotificationMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (GetKernel()->m_bIgnoreOutput && m_OutputNotificationMap.getListSize(id) == 0)
     {
         GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     return true ;
 }
 
 int Agent::AddOutputHandler(char const* pAttributeName, OutputEventHandler handler, void* pUserData, bool addToBack)
 {
     m_WorkingMemory.SetOutputLinkChangeTracking(true);
-    
+
     // Start by checking if this attributeName, handler, pUSerData combination has already been registered
     TestOutputCallbackFull test(pAttributeName, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     OutputEventHandlerPlusData plus(0, 0, 0, 0, 0) ;
     bool found = m_OutputEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // Record the handler
     m_CallbackIDCounter++ ;
     OutputEventHandlerPlusData handlerPlus(0, pAttributeName, handler, pUserData, m_CallbackIDCounter) ;
     m_OutputEventMap.add(pAttributeName, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -701,18 +701,18 @@ bool Agent::RemoveOutputHandler(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestOutputCallback test(callbackID) ;
-    
+
     // Find the function for this callbackID (for RHS functions the key is a function name not an event id)
     std::string functionName = m_OutputEventMap.findFirstKeyByTest(&test, "") ;
-    
+
     if (functionName.length() == 0)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_OutputEventMap.removeAllByTest(&test) ;
-    
+
     return true ;
 }
 
@@ -724,24 +724,24 @@ bool Agent::IsRegisteredForOutputEvent()
 void Agent::ReceivedOutputEvent(WMElement* pWmeAdded)
 {
     char const* pAttributeName = pWmeAdded->GetAttribute() ;
-    
+
     // Look up the handler(s) from the map
     OutputEventMap::ValueList* pHandlers = m_OutputEventMap.getList(pAttributeName) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (OutputEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
     {
         OutputEventHandlerPlusData handlerWithData = *iter ;
         iter++ ;
-        
+
         OutputEventHandler handler = handlerWithData.m_Handler ;
         void* pUserData = handlerWithData.getUserData() ;
-        
+
         // Call the handler
         handler(pUserData, this, pAttributeName, pWmeAdded) ;
     }
@@ -751,28 +751,28 @@ int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHa
 {
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestProductionCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     ProductionEventHandlerPlusData plus(0, 0, 0, 0) ;
     bool found = m_ProductionEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     if (m_ProductionEventMap.getListSize(id) == 0)
     {
         GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     // Record the handler
     m_CallbackIDCounter++ ;
     ProductionEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
     m_ProductionEventMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -781,24 +781,24 @@ bool Agent::UnregisterForProductionEvent(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestProductionCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlProductionEventId id = m_ProductionEventMap.findFirstKeyByTest(&test, smlPRODUCTION_EVENT_BAD) ;
-    
+
     if (id == smlPRODUCTION_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_ProductionEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (m_ProductionEventMap.getListSize(id) == 0)
     {
         GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     return true ;
 }
 
@@ -806,29 +806,29 @@ int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, 
 {
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestPrintCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     PrintEventHandlerPlusData plus(0, 0, 0, false, 0) ;
     bool found = m_PrintEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     if (m_PrintEventMap.getListSize(id) == 0)
     {
         GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     // Record the handler
     m_CallbackIDCounter++ ;
-    
+
     PrintEventHandlerPlusData handlerPlus(id, handler, pUserData, ignoreOwnEchos, m_CallbackIDCounter) ;
     m_PrintEventMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -837,24 +837,24 @@ bool Agent::UnregisterForPrintEvent(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestPrintCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlPrintEventId id = m_PrintEventMap.findFirstKeyByTest(&test, smlPRINT_EVENT_BAD) ;
-    
+
     if (id == smlPRINT_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_PrintEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (m_PrintEventMap.getListSize(id) == 0)
     {
         GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     return true ;
 }
 
@@ -862,30 +862,30 @@ void Agent::ReceivedXMLEvent(smlXMLEventId id, AnalyzeXML* pIncoming, ElementXML
 {
     // Retrieve the original message
     ElementXML* pXMLMessage = new ElementXML(pIncoming->GetElementXMLHandle()) ;
-    
+
     // Need to record our new reference to this handle.
     pXMLMessage->AddRefOnHandle() ;
-    
+
     // NOTE: This object needs to stay in scope for as long as we're calling clients
     // and then when it is deleted it will delete pXMLMessage.
     ClientXML clientXML(pXMLMessage) ;
-    
+
     // Look up the handler(s) from the map
     XMLEventMap::ValueList* pHandlers = m_XMLEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (XMLEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
     {
         XMLEventHandlerPlusData handlerPlus = *iter ;
         XMLEventHandler handler = handlerPlus.m_Handler ;
-        
+
         void* pUserData = handlerPlus.m_UserData ;
-        
+
         // Call the handler
         handler(id, pUserData, this, &clientXML) ;
     }
@@ -897,7 +897,7 @@ void Agent::ReceivedXMLTraceEvent(smlXMLEventId id, ElementXML* pIncoming, Eleme
     char* pStr = pIncoming->GenerateXMLString(true) ;
     pIncoming->DeleteString(pStr) ;
 #endif
-    
+
     // For speed we don't analyze incoming XML trace messages.  Instead we just
     // look for the correct parts of the original message.  This makes these messages a bit
     // more brittle than the rest of the system but speed really counts on these messages and
@@ -905,35 +905,35 @@ void Agent::ReceivedXMLTraceEvent(smlXMLEventId id, ElementXML* pIncoming, Eleme
     // If this assert fails we've changed the structure of the XML event messages and we'll
     // need to update the code to match.
     assert(pIncoming->GetNumberChildren() == 2) ;
-    
+
     //  Get the trace tag (again, we rely on the order for speed).
     ElementXML* pTrace = new ElementXML(NULL) ;
     pIncoming->GetChild(pTrace, 1) ;
-    
+
     // NOTE: This object needs to stay in scope for as long as we're calling clients
     // and then when it is deleted it will delete pTrace.
     ClientXML clientXML(pTrace) ;
-    
+
     // Look up the handler(s) from the map
     XMLEventMap::ValueList* pHandlers = m_XMLEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (XMLEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
     {
         XMLEventHandlerPlusData handlerPlus = *iter ;
         XMLEventHandler handler = handlerPlus.m_Handler ;
-        
+
         // Advance to the next handler before we make the callback, in case
         // the callback deletes the current handler from the list, invalidating the iterator.
         iter++ ;
-        
+
         void* pUserData = handlerPlus.m_UserData ;
-        
+
         // Call the handler
         handler(id, pUserData, this, &clientXML) ;
     }
@@ -943,16 +943,16 @@ int Agent::RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* 
 {
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestXMLCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     XMLEventHandlerPlusData plus(0, 0, 0, 0) ;
     bool found = m_XMLEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for the print event (which we'll then parse to create XML objects).
     // No need to do this multiple times.
@@ -960,13 +960,13 @@ int Agent::RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* 
     {
         GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     // Record the handler
     m_CallbackIDCounter++ ;
-    
+
     XMLEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
     m_XMLEventMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -975,25 +975,25 @@ bool Agent::UnregisterForXMLEvent(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestXMLCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlXMLEventId id = m_XMLEventMap.findFirstKeyByTest(&test, smlXML_EVENT_BAD) ;
-    
+
     if (id == smlXML_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_XMLEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister
     // for the matching print event (that we use to implement XML)
     if (m_XMLEventMap.getListSize(id) == 0)
     {
         GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
     }
-    
+
     return true ;
 }
 
@@ -1017,12 +1017,12 @@ WMElement* Agent::GetOutputLinkChange(int index)
 {
     OutputDeltaList* pDeltas = GetWM()->GetOutputLinkChanges() ;
     WMDelta* pDelta = pDeltas->GetDeltaWME(index) ;
-    
+
     if (!pDelta)
     {
         return NULL ;
     }
-    
+
     return pDelta->getWME() ;
 }
 
@@ -1030,14 +1030,14 @@ bool Agent::IsOutputLinkChangeAdd(int index)
 {
     OutputDeltaList* pDeltas = GetWM()->GetOutputLinkChanges() ;
     WMDelta* pDelta = pDeltas->GetDeltaWME(index) ;
-    
+
     if (!pDelta)
     {
         return false ;
     }
-    
+
     bool isAddition = (pDelta->getChangeType() == WMDelta::kAdded) ;
-    
+
     return isAddition ;
 }
 
@@ -1051,24 +1051,24 @@ int Agent::GetNumberCommands()
     // Method is to search all top level output link wmes and see which have
     // just been added and are identifiers.
     int count = 0 ;
-    
+
     Identifier* pOutputLink = GetOutputLink() ;
-    
+
     if (!pOutputLink)
     {
         return 0 ;
     }
-    
+
     for (Identifier::ChildrenIter iter = pOutputLink->GetChildrenBegin() ; iter != pOutputLink->GetChildrenEnd() ; iter++)
     {
         WMElement* pWME = *iter ;
-        
+
         if (pWME->IsIdentifier() && pWME->IsJustAdded())
         {
             count++ ;
         }
     }
-    
+
     return count ;
 }
 
@@ -1077,16 +1077,16 @@ Identifier* Agent::GetCommand(int index)
     // Method is to search all top level output link wmes and see which have
     // just been added and are identifiers.
     Identifier* pOutputLink = GetOutputLink() ;
-    
+
     if (!pOutputLink)
     {
         return NULL ;
     }
-    
+
     for (Identifier::ChildrenIter iter = pOutputLink->GetChildrenBegin() ; iter != pOutputLink->GetChildrenEnd() ; iter++)
     {
         WMElement* pWME = *iter ;
-        
+
         if (pWME->IsIdentifier() && pWME->IsJustAdded())
         {
             if (index == 0)
@@ -1096,7 +1096,7 @@ Identifier* Agent::GetCommand(int index)
             index-- ;
         }
     }
-    
+
     return NULL ;
 }
 
@@ -1106,7 +1106,7 @@ StringElement* Agent::CreateStringWME(Identifier* parent, char const* pAttribute
     {
         return NULL ;
     }
-    
+
     return GetWM()->CreateStringWME(parent, pAttribute, pValue) ;
 }
 
@@ -1116,7 +1116,7 @@ Identifier* Agent::CreateIdWME(Identifier* parent, char const* pAttribute)
     {
         return NULL ;
     }
-    
+
     return GetWM()->CreateIdWME(parent, pAttribute) ;
 }
 
@@ -1126,7 +1126,7 @@ Identifier* Agent::CreateSharedIdWME(Identifier* parent, char const* pAttribute,
     {
         return NULL ;
     }
-    
+
     return GetWM()->CreateSharedIdWME(parent, pAttribute, pSharedValue) ;
 }
 
@@ -1136,7 +1136,7 @@ IntElement* Agent::CreateIntWME(Identifier* parent, char const* pAttribute, long
     {
         return NULL ;
     }
-    
+
     return GetWM()->CreateIntWME(parent, pAttribute, value) ;
 }
 
@@ -1146,7 +1146,7 @@ FloatElement* Agent::CreateFloatWME(Identifier* parent, char const* pAttribute, 
     {
         return NULL ;
     }
-    
+
     return GetWM()->CreateFloatWME(parent, pAttribute, value) ;
 }
 
@@ -1169,7 +1169,7 @@ bool Agent::DestroyWME(WMElement* pWME)
     {
         return false ;
     }
-    
+
     return GetWM()->DestroyWME(pWME) ;
 }
 
@@ -1192,9 +1192,9 @@ char const* Agent::InitSoar()
 {
     // Must commit everything before doing an init-soar.
     assert(!GetWM()->IsCommitRequired()) ;
-    
+
     std::string cmd = "init-soar" ;
-    
+
     // Execute the command.
     // The init-soar causes an event to be sent back from the kernel and when
     // we get that, we'll queue up the input link information to be sent over again
@@ -1207,7 +1207,7 @@ char const* Agent::InitSoar()
 char const* Agent::StopSelf()
 {
     std::string cmd = "stop-soar --self" ;
-    
+
     // Execute the command.
     char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
     return pResult ;
@@ -1220,7 +1220,7 @@ char const* Agent::RunSelf(int numberSteps, smlRunStepSize stepSize)
         assert(false) ;
         return "Need to commit changes before calling a run method" ;
     }
-    
+
 #ifdef SML_DIRECT
     if (GetConnection()->IsDirectConnection())
     {
@@ -1229,18 +1229,18 @@ char const* Agent::RunSelf(int numberSteps, smlRunStepSize stepSize)
         return "DirectRun completed" ;
     }
 #endif
-    
+
     // Convert int to a string
     std::ostringstream ostr ;
     ostr << numberSteps ;
-    
+
     // Create the command line for the run command
     // Create the command line for the run command
     std::string step ;
-    
+
     switch (stepSize)
     {
-        case sml_DECISION:
+        case sml_DECIDE:
             step = "-d" ;
             break ;
         case sml_PHASE:
@@ -1255,9 +1255,9 @@ char const* Agent::RunSelf(int numberSteps, smlRunStepSize stepSize)
         default:
             return "Unrecognized step size parameter passed to RunSelf" ;
     }
-    
+
     std::string cmd = "run --self " + step + " " + ostr.str() ;
-    
+
     // Execute the run command.
     char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
     return pResult ;
@@ -1270,19 +1270,19 @@ char const* Agent::RunSelfForever()
         assert(false) ;
         return "Need to commit changes before calling a run method" ;
     }
-    
+
 #ifdef SML_DIRECT
     if (GetConnection()->IsDirectConnection())
     {
         EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
-        ec->DirectRun(this->GetAgentName(), true, sml_DECISION, sml_PHASE, 1) ;
+        ec->DirectRun(this->GetAgentName(), true, sml_DECIDE, sml_PHASE, 1) ;
         return "DirectRun completed" ;
     }
 #endif
-    
+
     // Create the command line for the run command
     std::string cmd = "run --self" ;
-    
+
     // Execute the run command.
     char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
     return pResult ;
@@ -1291,14 +1291,14 @@ char const* Agent::RunSelfForever()
 bool Agent::WasAgentOnRunList()
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_WasAgentOnRunList, GetAgentName()) ;
-    
+
     if (!ok)
     {
         return false ;
     }
-    
+
     bool wasRun = response.GetResultBool(false) ;
     return wasRun ;
 }
@@ -1306,16 +1306,16 @@ bool Agent::WasAgentOnRunList()
 smlRunResult Agent::GetResultOfLastRun()
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetResultOfLastRun, GetAgentName()) ;
-    
+
     if (!ok)
     {
         return sml_RUN_ERROR ;
     }
-    
+
     smlRunResult result = smlRunResult(response.GetResultInt(int(sml_RUN_ERROR))) ;
-    
+
     return result ;
 }
 
@@ -1336,7 +1336,7 @@ char const* Agent::RunSelfTilOutput()
         assert(false) ;
         return "Need to commit changes before calling a run method" ;
     }
-    
+
 #ifdef SML_DIRECT
     if (GetConnection()->IsDirectConnection())
     {
@@ -1345,12 +1345,12 @@ char const* Agent::RunSelfTilOutput()
         return "DirectRun completed" ;
     }
 #endif
-    
+
     // Run this agent until it generates output.
     // For now, maxDecisions is being ignored.  We should make this a separate call
     // to set this parameter.
     std::string cmd = "run --self --output" ;
-    
+
     return ExecuteCommandLine(cmd.c_str()) ;
 }
 
@@ -1361,51 +1361,51 @@ void Agent::Refresh()
     // as all working memory changes should be committed before other user-input (e.g. init-soar)
     // can be called.
     assert(!IsCommitRequired()) ;
-    
+
     GetWM()->Refresh() ;
 }
 
 smlPhase Agent::GetCurrentPhase()
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetRunState, GetAgentName(), sml_Names::kParamValue, sml_Names::kParamPhase) ;
-    
+
     if (!ok)
     {
         return sml_INPUT_PHASE ;
     }
-    
+
     smlPhase phase = smlPhase(response.GetResultInt(int(sml_INPUT_PHASE))) ;
-    
+
     return phase ;
 }
 
 int Agent::GetDecisionCycleCounter()
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetRunState, GetAgentName(), sml_Names::kParamValue, sml_Names::kParamDecision) ;
-    
+
     if (!ok)
     {
         return 0 ;
     }
-    
+
     return response.GetResultInt(0) ;
 }
 
 smlRunState Agent::GetRunState()
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetRunState, GetAgentName(), sml_Names::kParamValue, sml_Names::kParamRunState) ;
-    
+
     if (!ok)
     {
         return smlRunState(0) ;
     }
-    
+
     return smlRunState(response.GetResultInt(0)) ;
 }
 
@@ -1430,16 +1430,16 @@ bool Agent::IsProductionLoaded(char const* pProductionName)
     {
         return false ;
     }
-    
+
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_IsProductionLoaded, GetAgentName(), sml_Names::kParamName, pProductionName) ;
-    
+
     if (!ok)
     {
         return false ;
     }
-    
+
     return response.GetResultBool(false) ;
 }
 
@@ -1480,107 +1480,107 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     {
         p = DEBUGGER_NAME;
     }
-    
+
     char* soarHome = getenv("SOAR_HOME");
-    
+
     // Check SOAR_HOME
     if (p.length() == 0)
     {
         std::string h;
-        
+
         if (soarHome)
         {
             h = soarHome;
-            
+
             if (h.find_last_of("/\\") != h.size() - 1)
     {
                 h += '/';
             }
             h += DEBUGGER_NAME;
-            
+
             if (isfile(h.c_str()))
         {
                 p = h;
             }
         }
         }
-    
+
     // Check the location where the library is
     if (p.length() == 0)
     {
         std::string h;
-        
+
         // Last resort, Library path
         h = libraryPath;
-        
+
         if (h.find_last_of("/\\") != h.size() - 1)
         {
             h += '/';
         }
-        
+
         h += DEBUGGER_NAME;
-        
+
         if (isfile(h.c_str()))
         {
             p = h;
         }
     }
-    
+
     // Check current working directory
     if (p.length() == 0)
     {
         char buffer[4096 + 1];
-        
+
 #ifdef _MSC_VER
         GetCurrentDirectory(4096, buffer);
 #else
         getcwd(buffer, 4096);
 #endif
-        
+
         std::string debuggerPath = buffer;
         debuggerPath += "/";
         debuggerPath += DEBUGGER_NAME;
-        
+
         if (isfile(debuggerPath.c_str()))
         {
             p = debuggerPath;
         }
     }
-    
+
     if (p.length() == 0)
         {
             return false;
         }
-    
+
     if (port == -1)
     {
         port = m_Kernel->GetListenerPort();
     }
-    
+
     if (m_pDPI)
     {
         return false;
     }
     m_pDPI = new DebuggerProcessInformation();
-    
+
 #ifdef _WIN32
     enum { ParentRead, ParentWrite, ChildWrite, ChildRead, NumPipeTypes };
-    
+
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(sa);
     sa.bInheritHandle = TRUE;
     sa.lpSecurityDescriptor = nullptr;
-    
+
     HANDLE pipes[NumPipeTypes];
     if (!CreatePipe(&pipes[ParentWrite], &pipes[ChildRead], &sa, 0))
     { return 0; }
     if (!CreatePipe(&pipes[ParentRead], &pipes[ChildWrite], &sa, 0))
     { return 0; }
-    
+
     // make sure the handles the parent will use aren't inherited.
     SetHandleInformation(pipes[ParentRead], HANDLE_FLAG_INHERIT, 0);
     SetHandleInformation(pipes[ParentWrite], HANDLE_FLAG_INHERIT, 0);
-    
+
     ZeroMemory(&m_pDPI->debuggerStartupInfo, sizeof(m_pDPI->debuggerStartupInfo));
     m_pDPI->debuggerStartupInfo.cb = sizeof(m_pDPI->debuggerStartupInfo);
     m_pDPI->debuggerStartupInfo.wShowWindow = SW_SHOW;
@@ -1588,35 +1588,35 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     m_pDPI->debuggerStartupInfo.hStdOutput = pipes[ChildWrite];
     m_pDPI->debuggerStartupInfo.hStdError = pipes[ChildWrite];
     m_pDPI->debuggerStartupInfo.hStdInput = pipes[ChildRead];
-    
+
     ZeroMemory(&m_pDPI->debuggerProcessInformation, sizeof(m_pDPI->debuggerProcessInformation));
-    
+
     // Start the child process.
     std::stringstream commandLine;
-    
+
     std::string path = "";
     char* pathC = getenv("PATH");
     char buffer[4096 + 1];
-    
+
     GetCurrentDirectory(4096, buffer);
-    
+
     if (pathC)
     {
         path = pathC;
     }
-    
+
     path += ";";
     path += buffer;
-    
+
     path += ";";
     path += libraryPath;
-    
+
     if (soarHome)
     {
         path += ";";
         path += soarHome;
     }
-    
+
     for (size_t i = 0; i < path.length(); ++i)
     {
         if (path[i] == ';' && i > 0 && path[i - 1] == '\\')
@@ -1625,14 +1625,14 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
             path.erase(i, 1);
         }
     }
-    
+
     if (path[path.length() - 1] == '\\')
     {
         path.erase(path.length() - 1, 1);
     }
-    
+
     commandLine << "java.exe -Djava.library.path=\"" << path << "\" -jar \"" << p << "\" -remote -port " << port << " -agent \"" << this->GetAgentName() << "\"";
-    
+
     BOOL ret = CreateProcess(
                    0,
                    const_cast< LPSTR >(commandLine.str().c_str()),      // Command line
@@ -1644,11 +1644,11 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
                    0,                              // Use parent's starting directory
                    &m_pDPI->debuggerStartupInfo,           // Pointer to STARTUPINFO structure
                    &m_pDPI->debuggerProcessInformation);   // Pointer to PROCESS_INFORMATION structure
-                   
+
     CloseHandle(pipes[ChildRead]);
     CloseHandle(pipes[ChildWrite]);
     CloseHandle(pipes[ParentWrite]);
-    
+
     if (ret == 0)
     {
         std::cout << "Error code: " << GetLastError() << std::endl;
@@ -1656,11 +1656,11 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
         m_pDPI = 0;
         return false;
     }
-    
+
     char ReadBuff[4096 + 1];
     DWORD ReadNum;
     bool wait = true;
-    
+
     while (wait)
     {
         auto success = ReadFile(pipes[ParentRead], ReadBuff, sizeof(ReadBuff) - 1, &ReadNum, NULL);
@@ -1669,55 +1669,55 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
         ReadBuff[ReadNum] = 0;
         std::cout << ReadBuff;
     }
-    
+
     return true;
-    
+
 #else // _WIN32
     m_pDPI->debuggerPid = fork();
-    
+
     if (m_pDPI->debuggerPid < 0)
     {
         delete m_pDPI;
         m_pDPI = 0;
         return false;
     }
-    
-    
+
+
     if (m_pDPI->debuggerPid == 0)
     {
         // child
         std::string portstring;
         to_string(port, portstring);
-    
+
         std::string path;
         char* pathC;
-    
+
 #if (defined(__APPLE__) && defined(__MACH__))
         pathC = getenv("DYLD_LIBRARY_PATH");
 #else
         pathC = getenv("LD_LIBRARY_PATH");
 #endif
-    
+
         if (pathC)
         {
             path = pathC;
         }
-    
+
         char buffer[4096 + 1];
         getcwd(buffer, 4096);
-    
+
         path += ":";
         path += buffer;
         path += ":";
         path += buffer;
         path += "/java";
-    
+
         path += ":";
         path += libraryPath;
         path += ":";
         path += libraryPath;
         path += "/java";
-    
+
         if (soarHome)
         {
             path += ":";
@@ -1726,7 +1726,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
             path += soarHome;
             path += "/java";
         }
-    
+
         for (size_t i = 0; i < path.length(); ++i)
         {
             if (path[i] == ':' && i > 0 && path[i - 1] == '/')
@@ -1734,19 +1734,19 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
                 --i;
                 path.erase(i, 1);
             }
-    
+
             if (path[i] == '/' && i > 0 && path[i - 1] == '/')
             {
                 --i;
                 path.erase(i, 1);
             }
         }
-    
+
         if (path[path.length() - 1] == '/')
         {
             path.erase(path.length() - 1, 1);
         }
-    
+
 #ifdef __APPLE__
         execlp("java", "java", ("-Djava.library.path=\"" + path + "\"").c_str(), "-cp", ("\"" + path + "\"").c_str(), "-XstartOnFirstThread", "-jar", p.c_str(), "-remote",
                "-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL);
@@ -1754,13 +1754,13 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
         execlp("java", "java", ("-Djava.library.path=" + path).c_str(), "-jar", p.c_str(), "-remote",
                "-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL);
 #endif
-    
+
         // does not return on success
-    
+
         std::cerr << "Debugger spawn failed: " << strerror(errno) << std::endl;
         exit(1);
     }
-    
+
     // parent
     return true;
 #endif // _WIN32
@@ -1773,7 +1773,7 @@ bool Agent::KillDebugger()
         return false;
     }
     bool successful = false;
-    
+
 #ifdef _WIN32
     // Wait until child process exits.
     BOOL ret = TerminateProcess(m_pDPI->debuggerProcessInformation.hProcess, 0);
@@ -1783,14 +1783,14 @@ bool Agent::KillDebugger()
     {
         successful = true;
     }
-    
+
 #else // _WIN32
     if (!kill(m_pDPI->debuggerPid, SIGTERM))
     {
         successful = true;
     }
 #endif // _WIN32
-    
+
     delete m_pDPI;
     m_pDPI = 0;
     return successful;
@@ -1801,12 +1801,12 @@ char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
     // need to keep the result around after the function returns
     // bad
     static std::string kernelIdentifier;
-    
+
     AnalyzeXML response;
-    
+
     // Send the command to the kernel
     bool ret = m_Kernel->GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_ConvertIdentifier, GetAgentName(), sml_Names::kParamName, pClientIdentifier);
-    
+
     if (ret)
     {
         // Get the result as a string

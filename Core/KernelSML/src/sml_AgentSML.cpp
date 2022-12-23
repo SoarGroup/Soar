@@ -315,7 +315,7 @@ uint64_t AgentSML::GetNumDecisionCyclesExecuted()
 //=============================
 uint64_t AgentSML::GetNumDecisionsExecuted()
 {
-    return m_agent->decision_phases_count;
+    return m_agent->decide_phases_count;
 }
 
 //=============================
@@ -372,8 +372,8 @@ smlPhase AgentSML::GetCurrentPhase()
             return sml_INPUT_PHASE;
         case PROPOSE_PHASE:
             return sml_PROPOSE_PHASE;
-        case DECISION_PHASE:
-            return sml_DECISION_PHASE;
+        case DECIDE_PHASE:
+            return sml_DECIDE_PHASE;
         case APPLY_PHASE:
             return sml_APPLY_PHASE;
         case OUTPUT_PHASE:
@@ -397,7 +397,7 @@ uint64_t AgentSML::GetRunCounter(smlRunStepSize runStepSize)
             return GetNumPhasesExecuted() ;
         case sml_ELABORATION:
             return GetNumElaborationsExecuted() ;
-        case sml_DECISION:
+        case sml_DECIDE:
             return GetNumDecisionCyclesExecuted() ;
         case sml_UNTIL_OUTPUT:
             return GetNumOutputsGenerated() ;
@@ -515,7 +515,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
             case  sml_PHASE:
                 run_for_n_phases(m_agent, count);
                 break;
-            case  sml_DECISION:
+            case  sml_DECIDE:
                 run_for_n_decision_cycles(m_agent, count);
                 break;
             case  sml_UNTIL_OUTPUT:

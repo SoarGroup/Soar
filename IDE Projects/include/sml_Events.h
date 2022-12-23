@@ -74,14 +74,14 @@ namespace sml
         smlEVENT_BEFORE_PHASE_EXECUTED,
         smlEVENT_BEFORE_INPUT_PHASE,
         smlEVENT_BEFORE_PROPOSE_PHASE,
-        smlEVENT_BEFORE_DECISION_PHASE,
+        smlEVENT_BEFORE_DECIDE_PHASE,
         smlEVENT_BEFORE_APPLY_PHASE,
         smlEVENT_BEFORE_OUTPUT_PHASE,
         smlEVENT_BEFORE_PREFERENCE_PHASE,   // Soar-7 mode only
         smlEVENT_BEFORE_WM_PHASE,           // Soar-7 mode only
         smlEVENT_AFTER_INPUT_PHASE,
         smlEVENT_AFTER_PROPOSE_PHASE,
-        smlEVENT_AFTER_DECISION_PHASE,
+        smlEVENT_AFTER_DECIDE_PHASE,
         smlEVENT_AFTER_APPLY_PHASE,
         smlEVENT_AFTER_OUTPUT_PHASE,
         smlEVENT_AFTER_PREFERENCE_PHASE,    // Soar-7 mode only
@@ -257,7 +257,7 @@ namespace sml
     {
         sml_INPUT_PHASE,        // NOTE: This enum MUST be kept in synch with egSKIPhaseType defined in gSKI_Enumerations.h
         sml_PROPOSE_PHASE,
-        sml_DECISION_PHASE,
+        sml_DECIDE_PHASE,
         sml_APPLY_PHASE,
         sml_OUTPUT_PHASE,
         sml_PREFERENCE_PHASE,   // Soar 7 mode only
@@ -269,7 +269,7 @@ namespace sml
         // Note: phase moved before elaboration because that's how gSKI was doing things
         sml_PHASE,                      // keep in synch with egSKIRunType
         sml_ELABORATION,
-        sml_DECISION,
+        sml_DECIDE,
         sml_UNTIL_OUTPUT
     };
 

@@ -54,8 +54,8 @@ const char* soar_callback_names[] =
     stringify(BEFORE_OUTPUT_PHASE_CALLBACK),
     stringify(OUTPUT_PHASE_CALLBACK),
     stringify(AFTER_OUTPUT_PHASE_CALLBACK),
-    stringify(BEFORE_DECISION_PHASE_CALLBACK),
-    stringify(AFTER_DECISION_PHASE_CALLBACK),
+    stringify(BEFORE_DECIDE_PHASE_CALLBACK),
+    stringify(AFTER_DECIDE_PHASE_CALLBACK),
     stringify(BEFORE_PROPOSE_PHASE_CALLBACK),
     stringify(AFTER_PROPOSE_PHASE_CALLBACK),
     stringify(BEFORE_APPLY_PHASE_CALLBACK),
@@ -293,9 +293,9 @@ void soar_invoke_callbacks(agent* thisAgent,
         case BEFORE_WM_PHASE_CALLBACK:
         case AFTER_WM_PHASE_CALLBACK:
         /* for above two: thisAgent->current_phase = WM_PHASE soar7 only */
-        case BEFORE_DECISION_PHASE_CALLBACK:
-        case AFTER_DECISION_PHASE_CALLBACK:
-        /* for above two: thisAgent->current_phase = DECISION_PHASE */
+        case BEFORE_DECIDE_PHASE_CALLBACK:
+        case AFTER_DECIDE_PHASE_CALLBACK:
+        /* for above two: thisAgent->current_phase = DECIDE_PHASE */
         case BEFORE_PROPOSE_PHASE_CALLBACK:
         case AFTER_PROPOSE_PHASE_CALLBACK:
         /* for above two: thisAgent->current_phase = PROPOSE_PHASE  soar8 only */
@@ -303,7 +303,7 @@ void soar_invoke_callbacks(agent* thisAgent,
         case AFTER_APPLY_PHASE_CALLBACK:
         /* for above two: thisAgent->current_phase = APPLY_PHASE soar8 only */
         case AFTER_DECISION_CYCLE_CALLBACK:
-            /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
+            /* for soar7: thisAgent->current_phase = DECIDE_PHASE; for soar8 it's OUTPUT_PHASE */
             thisAgent->timers_phase.stop();
             thisAgent->timers_kernel.stop();
             thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
@@ -354,14 +354,14 @@ void soar_invoke_callbacks(agent* thisAgent,
         case AFTER_PREFERENCE_PHASE_CALLBACK:
         case BEFORE_WM_PHASE_CALLBACK:
         case AFTER_WM_PHASE_CALLBACK:
-        case BEFORE_DECISION_PHASE_CALLBACK:
-        case AFTER_DECISION_PHASE_CALLBACK:
+        case BEFORE_DECIDE_PHASE_CALLBACK:
+        case AFTER_DECIDE_PHASE_CALLBACK:
         case BEFORE_PROPOSE_PHASE_CALLBACK:
         case AFTER_PROPOSE_PHASE_CALLBACK:
         case BEFORE_APPLY_PHASE_CALLBACK:
         case AFTER_APPLY_PHASE_CALLBACK:
         case AFTER_DECISION_CYCLE_CALLBACK:
-            /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
+            /* for soar7: thisAgent->current_phase = DECIDE_PHASE; for soar8 it's OUTPUT_PHASE */
             thisAgent->timers_phase.stop();
             thisAgent->timers_monitors_cpu_time[thisAgent->current_phase].update(thisAgent->timers_phase);
             thisAgent->callback_timers[callback_type].update(thisAgent->timers_phase);
@@ -417,9 +417,9 @@ void soar_invoke_first_callback(agent* thisAgent,
         case BEFORE_WM_PHASE_CALLBACK:
         case AFTER_WM_PHASE_CALLBACK:
         /* for these two: thisAgent->current_phase = WM_PHASE */
-        case BEFORE_DECISION_PHASE_CALLBACK:
-        case AFTER_DECISION_PHASE_CALLBACK:
-        /* for above two: thisAgent->current_phase = DECISION_PHASE */
+        case BEFORE_DECIDE_PHASE_CALLBACK:
+        case AFTER_DECIDE_PHASE_CALLBACK:
+        /* for above two: thisAgent->current_phase = DECIDE_PHASE */
         case BEFORE_PROPOSE_PHASE_CALLBACK:
         case AFTER_PROPOSE_PHASE_CALLBACK:
         /* for above two: thisAgent->current_phase = PROPOSE_PHASE  soar8 only */
@@ -427,7 +427,7 @@ void soar_invoke_first_callback(agent* thisAgent,
         case AFTER_APPLY_PHASE_CALLBACK:
         /* for above two: thisAgent->current_phase = APPLY_PHASE soar8 only */
         case AFTER_DECISION_CYCLE_CALLBACK:
-            /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
+            /* for soar7: thisAgent->current_phase = DECIDE_PHASE; for soar8 it's OUTPUT_PHASE */
             thisAgent->timers_phase.stop();
             thisAgent->timers_kernel.stop();
             thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
@@ -470,8 +470,8 @@ void soar_invoke_first_callback(agent* thisAgent,
         case AFTER_PREFERENCE_PHASE_CALLBACK:
         case BEFORE_WM_PHASE_CALLBACK:
         case AFTER_WM_PHASE_CALLBACK:
-        case BEFORE_DECISION_PHASE_CALLBACK:
-        case AFTER_DECISION_PHASE_CALLBACK:
+        case BEFORE_DECIDE_PHASE_CALLBACK:
+        case AFTER_DECIDE_PHASE_CALLBACK:
         case BEFORE_PROPOSE_PHASE_CALLBACK:
         case AFTER_PROPOSE_PHASE_CALLBACK:
         case BEFORE_APPLY_PHASE_CALLBACK:

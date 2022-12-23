@@ -155,7 +155,7 @@ extern preference* run_non_context_preference_semantics(agent* thisAgent, slot* 
    Do_buffered_wm_and_ownership_changes() does the end-of-phase processing
    of WM changes, ownership calculations, garbage collection, etc.
 
-   Do_working_memory_phase() and do_decision_phase() are called from
+   Do_working_memory_phase() and do_decide_phase() are called from
    the top level to run those phases.
 
    Create_top_goal() creates the top goal in the goal stack.
@@ -170,7 +170,7 @@ extern void remove_wmes_for_context_slot(agent* thisAgent, slot* s);  /* added t
 extern void init_decider(agent* thisAgent);
 extern void do_buffered_wm_and_ownership_changes(agent* thisAgent);
 extern void do_working_memory_phase(agent* thisAgent);
-extern void do_decision_phase(agent* thisAgent, bool predict = false);
+extern void do_decide_phase(agent* thisAgent, bool predict = false);
 extern void do_preference_phase(agent* thisAgent);
 extern void create_top_goal(agent* thisAgent);
 extern void clear_goal_stack(agent* thisAgent);

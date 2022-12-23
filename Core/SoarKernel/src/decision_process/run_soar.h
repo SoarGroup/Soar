@@ -81,7 +81,7 @@ void init_agent_memory(agent* thisAgent);
      - Run_for_n_phases() runs Soar for a given number (n) of top-level
        phases.  (If n==-1, it runs forever.)
      - Run_for_n_elaboration_cycles() runs Soar for a given number (n)
-       of elaboration cycles.  (Here, decision phase is counted as
+       of elaboration cycles.  (Here, decide phase is counted as
        an elaboration cycle.)  (If n==-1, it runs forever.)
      - Run_for_n_decision_cycles() runs Soar for a given number (n) of
        decision cycles.  (If n==-1, it runs forever.)

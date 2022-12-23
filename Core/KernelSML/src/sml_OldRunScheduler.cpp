@@ -112,7 +112,7 @@ bool RunScheduler::VerifyStepSizeForRunType(egSKIRunType runStepSize, egSKIInter
                    gSKI_INTERLEAVE_ELABORATION_PHASE == interleave ||
                    gSKI_INTERLEAVE_DECISION_CYCLE == interleave ||
                    gSKI_INTERLEAVE_OUTPUT == interleave) ;
-                   
+
         default:
             return false;
     }
@@ -203,15 +203,15 @@ static bool IsPhaseLater(egSKIPhaseType phase1, egSKIPhaseType phase2)
 AgentSML* RunScheduler::GetAgentToSynchronizeWith()
 {
     AgentSML* pSynchAgent = NULL ;
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
-            
+
             // What this says is:
             // If we don't have a current synch agent or
             // if this agent is later in decision cycle count or
@@ -225,7 +225,7 @@ AgentSML* RunScheduler::GetAgentToSynchronizeWith()
             }
         }
     }
-    
+
     return pSynchAgent ;
 }
 
@@ -238,25 +238,25 @@ bool RunScheduler::AreAgentsSynchronized(AgentSML* pSynchAgent)
     {
         return true ;
     }
-    
+
     bool same = true ;
     egSKIPhaseType phase = pSynchAgent->GetIAgent()->GetCurrentPhase() ;
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
-            
+
             if (pAgent->GetCurrentPhase() != phase)
             {
                 same = false ;
             }
         }
     }
-    
+
     return same ;
 }
 
@@ -269,9 +269,9 @@ bool RunScheduler::IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, eg
     unsigned long initial = pAgentSML->GetInitialStepCount() ;
     unsigned long difference = current - initial ;
     //fprintf(stdout, "Agent %s current is %d initial is %d diff is %d\n", pAgent->GetName(), current, initial, difference) ; fflush(stdout) ;
-    
+
     bool finished = difference >= count && runStepSize != gSKI_RUN_FOREVER ;
-    
+
     egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
     if (finished && runStepSize == gSKI_RUN_DECISION_CYCLE && m_StopBeforePhase != phase)
     {
@@ -289,13 +289,13 @@ void RunScheduler::InitializeStepList()
     // We only check the agents that are scheduled to run.
     // This allows us to start <n> agents and have them drop out as they
     // finish one "runStepSize"
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         pAgentSML->PutAgentOnStepList(pAgentSML->IsAgentScheduledToRun()) ;
-        
+
     }
 }
 
@@ -308,17 +308,17 @@ bool RunScheduler::AgentsStillStepping()
     // We only check the agents that are scheduled to run.
     // This allows us to start <n> agents and have them drop out as they
     // finish one "runStepSize"
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun() && pAgentSML->IsAgentOnStepList())
         {
             return true ;
         }
     }
-    
+
     return false ;
 }
 
@@ -330,7 +330,7 @@ void RunScheduler::FireBeforeRunStartsEvents()
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
@@ -349,7 +349,7 @@ void RunScheduler::RecordInitialRunCounters(egSKIRunType runStepSize)
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
@@ -366,7 +366,7 @@ void RunScheduler::InitializeRunCounters(egSKIRunType runStepSize, egSKIInterlea
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun())
         {
             gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
@@ -395,11 +395,11 @@ void RunScheduler::InitializeUpdateWorldEvents(bool addListeners)
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         pAgentSML->SetCompletedOutputPhase(false) ;
         pAgentSML->SetGeneratedOutput(false) ;
         pAgentSML->SetInitialOutputCount(pAgentSML->GetIAgent()->GetNumOutputsExecuted()) ;
-        
+
         if (addListeners)
         {
             gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
@@ -411,7 +411,7 @@ void RunScheduler::InitializeUpdateWorldEvents(bool addListeners)
             pAgent->AddRunListener(gSKIEVENT_AFTER_ELABORATION_CYCLE, this) ;
             pAgent->AddRunListener(gSKIEVENT_AFTER_INPUT_PHASE, this) ;
             pAgent->AddRunListener(gSKIEVENT_AFTER_PROPOSE_PHASE, this) ;
-            pAgent->AddRunListener(gSKIEVENT_AFTER_DECISION_PHASE, this) ;
+            pAgent->AddRunListener(gSKIEVENT_AFTER_DECIDE_PHASE, this) ;
             pAgent->AddRunListener(gSKIEVENT_AFTER_APPLY_PHASE, this) ;
             pAgent->AddRunListener(gSKIEVENT_AFTER_OUTPUT_PHASE, this) ;
             pAgent->AddRunListener(gSKIEVENT_AFTER_PREFERENCE_PHASE, this) ;  // Soar-7 mode only
@@ -433,13 +433,13 @@ bool RunScheduler::AreAllOutputPhasesComplete()
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (pAgentSML->IsAgentScheduledToRun() && !pAgentSML->HasCompletedOutputPhase())
         {
             return false ;
         }
     }
-    
+
     return true ;
 }
 
@@ -453,7 +453,7 @@ bool RunScheduler::HaveAllGeneratedOutput()
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         // By testing agents that are still scheduled to run this lets us more closely mimic the
         // regular "RunTilOutput" semantics--where agents either drop out because they've generated output OR
         // because they have reached a maximum number of decisions (by default 15) without generating output.
@@ -462,7 +462,7 @@ bool RunScheduler::HaveAllGeneratedOutput()
             return false ;
         }
     }
-    
+
     return true ;
 }
 /********************************************************************
@@ -481,7 +481,7 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
     // agents in turn.  UNLESS we were interrupted.  Then we'd need to cross the
     // Output-Input Boundary together and generate events...  For now, if interrupted,
     // or error or halted, we won't do anything here.
-    
+
     if ((runStepSize == gSKI_RUN_DECISION_CYCLE) && (m_StopBeforePhase != gSKI_INPUT_PHASE))
     {
         for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
@@ -490,7 +490,7 @@ void RunScheduler::CheckStopBeforePhase(egSKIRunType runStepSize)
             gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
             egSKIPhaseType phase = pAgent->GetCurrentPhase() ;
             egSKIRunResult runResult = pAgentSML->GetResultOfLastRun() ;
-            
+
             while ((phase != m_StopBeforePhase) && (gSKI_RUN_COMPLETED == runResult))
             {
                 runResult = pAgent->StepInClientThread(gSKI_INTERLEAVE_PHASE, 1) ;
@@ -512,22 +512,22 @@ void RunScheduler::HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* pAgent, eg
     {
         AgentSML* pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
         pAgentSML->SetCompletedOutputPhase(true) ;
-        
+
         // See if this was the last agent to complete the output phase
         if (AreAllOutputPhasesComplete())
         {
             // If so fire the after_all_output_phases event
             m_pKernelSML->FireUpdateListenerEvent(gSKIEVENT_AFTER_ALL_OUTPUT_PHASES, m_RunFlags) ;
-            
+
             // Then clear the completed output flags and repeat the process.
             for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
             {
                 AgentSML* pAgentSML = iter->second ;
-                
+
                 pAgentSML->SetCompletedOutputPhase(false) ;
             }
         }
-        
+
         // If the number of outputs generated by this agent has changed record it as
         // having generated output and possibly fire a notification event.
         // InitialOutputCount is updated when the OutputGenerated event is fired.
@@ -552,21 +552,21 @@ void RunScheduler::TestForFiringGeneratedOutputEvent()
     {
         return ;
     }
-    
+
     // See if this was the last agent to generate output
     if (HaveAllGeneratedOutput())
     {
         // If all agents have generated output fire the event and reset the counters
         m_AllGeneratedOutputEventFired = true ;
-        
+
         // If so fire the after_all_generated_output event
         m_pKernelSML->FireUpdateListenerEvent(gSKIEVENT_AFTER_ALL_GENERATED_OUTPUT, m_RunFlags) ;
-        
+
         // Then clear the generated output flags and repeat the process.
         for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
         {
             AgentSML* pAgentSML = iter->second ;
-            
+
             pAgentSML->SetGeneratedOutput(false) ;
             pAgentSML->SetInitialOutputCount(pAgentSML->GetIAgent()->GetNumOutputsExecuted()) ;
         }
@@ -581,7 +581,7 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         if (removeListeners)
         {
             gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
@@ -590,16 +590,16 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
             // because the gSKI event handler has to increment counters on these events.
             // Added here for now because I couldn't reconcile the code for making
             // a gSKI agent a RunListener too.  (might be circular...)
-            
+
             pAgent->RemoveRunListener(gSKIEVENT_AFTER_ELABORATION_CYCLE, this) ;
             pAgent->RemoveRunListener(gSKIEVENT_AFTER_INPUT_PHASE, this) ;
             pAgent->RemoveRunListener(gSKIEVENT_AFTER_PROPOSE_PHASE, this) ;
-            pAgent->RemoveRunListener(gSKIEVENT_AFTER_DECISION_PHASE, this) ;
+            pAgent->RemoveRunListener(gSKIEVENT_AFTER_DECIDE_PHASE, this) ;
             pAgent->RemoveRunListener(gSKIEVENT_AFTER_APPLY_PHASE, this) ;
             pAgent->RemoveRunListener(gSKIEVENT_AFTER_OUTPUT_PHASE, this) ;
             pAgent->RemoveRunListener(gSKIEVENT_AFTER_PREFERENCE_PHASE, this) ;  // Soar-7 mode only
             pAgent->RemoveRunListener(gSKIEVENT_AFTER_WM_PHASE, this) ;          // Soar-7 mode only
-            
+
         }
     }
 }
@@ -611,19 +611,19 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
 bool RunScheduler::TestIfAllFinished(egSKIRunType runStepSize, unsigned long count)
 {
     bool allDone = true ;
-    
+
     for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         bool agentFinishedRun = IsAgentFinished(pAgentSML->GetIAgent(), pAgentSML, runStepSize, count) ;
-        
+
         if (!agentFinishedRun)
         {
             allDone = false ;
         }
     }
-    
+
     return allDone ;
 }
 
@@ -658,41 +658,41 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
     {
         assert(interleaveStepSize == gSKI_RUN_ELABORATION_CYCLE) ;
     }
-    
+
     // If we want to synchronize the agents to the same phase, we need to run them by phase (or they'll never synch)
     if (synchronize)
     {
         assert(interleaveStepSize == gSKI_RUN_PHASE) ;
     }
-    
+
     // We store this as a member so we can access it in gSKI event handlers
     m_RunFlags = runFlags ;
-    
+
     // Record the current counter (that we're about to be incrementing)
     RecordInitialRunCounters(runStepSize) ;
-    
+
     // Initialize state required for update world events
     InitializeUpdateWorldEvents(true) ;
-    
+
     gSKI::IKernel* pKernel = m_pKernelSML->GetKernel() ;
-    
+
     // Fire one event to indicate the entire system is starting
     pKernel->FireSystemStart() ;
-    
+
     // Send event for each agent to signal its about to start running
     FireBeforeRunStartsEvents() ;
-    
+
     bool runFinished = false ;
     long stepCount   = 0 ;
     egSKIRunResult overallResult = gSKI_RUN_COMPLETED ;
-    
+
     pKernel->GetAgentManager()->ClearAllInterrupts();
-    
+
     // Record that we're now running, so we can poll for our status during a run.
     m_IsRunning = true ;
-    
+
     int interruptCheckRate = pKernel->GetInterruptCheckRate() ;
-    
+
     // If we need to synchronize agents, we'll set the synchAgent pointer.
     // Otherwise, we'll clear it to indicate no synch needed.
     m_pSynchAgentSML = NULL ;
@@ -700,25 +700,25 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
     {
         AgentSML* pSynchAgentSML = this->GetAgentToSynchronizeWith() ;
         bool inSynch = AreAgentsSynchronized(pSynchAgentSML) ;
-        
+
         if (!inSynch)
         {
             m_pSynchAgentSML = pSynchAgentSML ;
         }
     }
-    
+
     // If we issue a "run 0" and all agents are synched and in the correct state we're done.
     if (!m_pSynchAgentSML && TestIfAllFinished(runStepSize, count))
     {
         runFinished = true ;
     }
-    
+
     // Run all agents that have previously been marked as "scheduled to run".
     while (!runFinished)
     {
         // Assume it is finished until proven otherwise
         runFinished = true ;
-        
+
         // Callback to clients to see if they wish to stop this run.
         // A client can use any event, but this one is designed to allow clients
         // to throttle back the frequency of the event to control performance.
@@ -727,49 +727,49 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
             pKernel->FireInterruptCheckEvent() ;
         }
         stepCount++ ;
-        
+
         // Use a flag to make sure we only fire the all generated event once per step.
         // Otherwise, if the last agent generates output and then stops running we might try to fire it twice.
         m_AllGeneratedOutputEventFired = false ;
-        
+
         // Notify listeners that Soar is running.  This event is a kernel level (agent manager) event
         // which allows a single listener to check for client driven interrupts for all agents.
         // Sometimes that's easier to work with than the agent specific events (where you get <n> events from <n> agents)
         pKernel->GetAgentManager()->FireBeforeAgentsRunStepEvent() ;
-        
+
         for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
         {
             AgentSML* pAgentSML = iter->second ;
-            
+
             // This is only true if we are in the process of synching up to one agent and this agent is at the correct phase
             // In that case we don't run this agent for a step--which eventually means all agents will synch to the same point.
             bool synched = (m_pSynchAgentSML != NULL && pAgentSML->GetIAgent()->GetCurrentPhase() == m_pSynchAgentSML->GetIAgent()->GetCurrentPhase()) ;
-            
+
             if (pAgentSML->IsAgentScheduledToRun() && !synched)
             {
                 // Run all agents one "interleaveStepSize".
                 gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
                 egSKIRunResult runResult = pAgent->RunInClientThread(interleaveStepSize, 1, pError) ;
-                
+
                 // Have to test the run state to find out if we are still ok to keep running
                 // (not sure if runResult provides this as well, but they're from different enums).
                 egSKIRunState runState = pAgent->GetRunState() ;
-                
+
                 // Decide if this agent has reached its run limit
                 // Usually all agents will reach this limit at the same time.
                 bool agentFinishedRun = IsAgentFinished(pAgent, pAgentSML, runStepSize, count) ;
-                
+
                 // An agent should return "stopped" if it's just pausing in the middle of a run
                 // before we run it for the next phase.  Anything else means this agent is done running.
                 if (runState != gSKI_RUNSTATE_STOPPED || agentFinishedRun)
                 {
                     pAgentSML->ScheduleAgentToRun(false) ;
                     pAgentSML->SetResultOfRun(runResult) ;
-                    
+
                     // If an agent stops running and the others have either stopped or have all generated output
                     // we should fire the "ALL_GENERATED_OUTPUT" event.
                     TestForFiringGeneratedOutputEvent() ;
-                    
+
                     // Notify listeners that this agent is finished running
                     pAgent->FireRunEndsEvent() ;
                 }
@@ -780,7 +780,7 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
                 }
             }
         }
-        
+
         // If we're synching to an agent (i.e. matching the phases of all agents) see if we're done now.
         if (m_pSynchAgentSML)
         {
@@ -793,15 +793,15 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
             }
         }
     }
-    
+
     m_IsRunning = false ;
-    
+
     // Clean up anything stored for update world events
     TerminateUpdateWorldEvents(true) ;
-    
+
     // Fire one event to indicate the entire system should stop.
     pKernel->FireSystemStop() ;
-    
+
     // Not sure how to quantify the results of running <n> agents in a single value
     // You can query each agent for its GetResultOfRun() to know more.
     return overallResult ;

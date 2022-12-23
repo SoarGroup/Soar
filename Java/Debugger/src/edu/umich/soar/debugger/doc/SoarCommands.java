@@ -299,7 +299,7 @@ public class SoarCommands
     {
         if (phase == smlPhase.sml_APPLY_PHASE)
             return "apply";
-        if (phase == smlPhase.sml_DECISION_PHASE)
+        if (phase == smlPhase.sml_DECIDE_PHASE)
             return "decision";
         if (phase == smlPhase.sml_INPUT_PHASE)
             return "input";

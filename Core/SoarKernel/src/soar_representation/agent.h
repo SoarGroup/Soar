@@ -189,7 +189,7 @@ typedef struct EXPORT agent_struct
     uint64_t            max_dc_production_firing_count_value;  /* max # of prod. firings per dc */
     uint64_t            max_dc_production_firing_count_cycle;  /* cycle of max_dc_production_firing_count_value */
     uint64_t            d_cycle_last_output;    /* last time agent produced output */  //KJC 11.17.05
-    uint64_t            decision_phases_count;  /* can differ from d_cycle_count.  want for stats */
+    uint64_t            decide_phases_count;  /* can differ from d_cycle_count.  want for stats */
     //?? uint64_t            out_cycle_count;       /* # of output phases have gen'd output */
     //?? uint64_t            phase_count;       /* # of phases run so far */
     /* DJP 2/22/07: These counts are based around the counts that the run command understands and are intended to capture the same semantics as run expects.
@@ -233,7 +233,7 @@ typedef struct EXPORT agent_struct
 
     The decision_cycle_phase_timers measure the kernel time for each phase of the
     decision cycle (ie, INPUT_PHASE, PREFERENCE_PHASE, WM_PHASE, OUTPUT_PHASE,
-    and DECISION_PHASE).  Each is turned on at the beginning of its corresponding
+    and DECIDE_PHASE).  Each is turned on at the beginning of its corresponding
     phase in do_one_top_level_phase and turned off at the end of that phase.
     These timers are also turned off for callbacks and during the execution of
     the input and output functions.

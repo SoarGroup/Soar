@@ -155,7 +155,7 @@ void predict_set(agent* thisAgent, const char* prediction)
 const char* predict_get(agent* thisAgent)
 {
     predict_srand_store_snapshot(thisAgent);
-    do_decision_phase(thisAgent, true);
+    do_decide_phase(thisAgent, true);
 
     return thisAgent->prediction->c_str();
 }

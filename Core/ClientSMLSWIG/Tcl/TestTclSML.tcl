@@ -128,7 +128,7 @@ $agent UnregisterForProductionEvent $productionCallbackId
 $agent UnregisterForRunEvent $runCallbackId
 
 $kernel RunAllAgents 3
-#$agent RunSelf 3 $sml_DECISION
+#$agent RunSelf 3 $sml_DECIDE
 
 $kernel UnregisterForUpdateEvent $updateCallbackId
 

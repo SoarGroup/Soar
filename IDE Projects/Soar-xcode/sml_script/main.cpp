@@ -153,14 +153,14 @@ sp {apply*store-result-removal
 
 	std::map<std::string, double> query, store_result;
 
-	agent->RunSelf(20, sml_DECISION);
+	agent->RunSelf(20, sml_DECIDE);
 
 	reset_timers();
-	agent->RunSelf(1, sml_DECISION);
+	agent->RunSelf(1, sml_DECIDE);
 	query = get_timers();
 
 	reset_timers();
-	agent->RunSelf(1, sml_DECISION);
+	agent->RunSelf(1, sml_DECIDE);
 	store_result = get_timers();
 
 	*output << "Query";
@@ -177,7 +177,7 @@ sp {apply*store-result-removal
 	for (int i = 0;;++i)
 	{
 		reset_timers();
-		agent->RunSelf(1, sml_DECISION);
+		agent->RunSelf(1, sml_DECIDE);
 
 		auto timer = get_timers();
 

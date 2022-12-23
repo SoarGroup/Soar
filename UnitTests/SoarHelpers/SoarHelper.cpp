@@ -254,7 +254,7 @@ std::tuple<SoarHelper::StopPhase, bool> SoarHelper::getStopPhase(sml::Agent* age
 	else if (s_phase == "propose")
 		phase = StopPhase::PROPOSE;
 	else if (s_phase == "decision")
-		phase = StopPhase::DECISION;
+		phase = StopPhase::DECIDE;
 	else if (s_phase == "apply")
 		phase = StopPhase::APPLY;
 	else if (s_phase == "output")
@@ -271,8 +271,8 @@ void SoarHelper::setStopPhase(sml::Agent* agent, StopPhase phase, bool before)
 		s_phase = "input";
 	else if (phase == StopPhase::PROPOSE)
 		s_phase = "propose";
-	else if (phase == StopPhase::DECISION)
-		s_phase = "decision";
+	else if (phase == StopPhase::DECIDE)
+		s_phase = "decide";
 	else if (phase == StopPhase::APPLY)
 		s_phase = "apply";
 	else if (phase == StopPhase::OUTPUT)
@@ -312,7 +312,7 @@ std::ostream& operator<<(std::ostream& os, SoarHelper::StopPhase phase)
 	{
 		case SoarHelper::StopPhase::INPUT: os << "INPUT";
 		case SoarHelper::StopPhase::PROPOSE: os << "PROPOSE";
-		case SoarHelper::StopPhase::DECISION: os << "DECISION";
+		case SoarHelper::StopPhase::DECIDE: os << "DECIDE";
 		case SoarHelper::StopPhase::APPLY: os << "APPLY";
 		case SoarHelper::StopPhase::OUTPUT: os << "OUTPUT";
 	}

@@ -179,14 +179,14 @@
     This is called even if the output cycle is effectively null because
     there is no top state.  The "call_data" argument is given as NULL.
 
-  BEFORE_DECISION_PHASE_CALLBACK
+  BEFORE_DECIDE_PHASE_CALLBACK
 
-    This function is called at the start of each decision phase.
+    This function is called at the start of each decide phase.
     The "call_data" argument is given as NULL.
 
-  AFTER_DECISION_PHASE_CALLBACK
+  AFTER_DECIDE_PHASE_CALLBACK
 
-    This function is called at the end of each decision phase.
+    This function is called at the end of each decide phase.
     The "call_data" argument is given as NULL.
 
   WM_CHANGES_CALLBACK

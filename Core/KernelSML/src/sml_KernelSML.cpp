@@ -57,35 +57,35 @@ KernelSML::KernelSML(int portToListenOn)
 {
     // Initalize the event map
     m_pEventMap = new Events() ;
-    
+
     // Give the command line interface a reference to the kernel interface
     m_CommandLineInterface.SetKernel(this);
-    
+
     // Create the map from command name to handler function
     BuildCommandMap() ;
-    
+
     // Start listening for incoming connections
     m_pConnectionManager = new ConnectionManager(portToListenOn, this) ;
-    
+
     // Start the kernel listener listening for events from gSKI
     m_AgentListener.Init(this);
     m_RhsListener.Init(this);
     m_SystemListener.Init(this);
     m_UpdateListener.Init(this) ;
     m_StringListener.Init(this) ;
-    
+
     // We'll use this to make sure only one connection is executing commands
     // in the kernel at a time.
     m_pKernelMutex = new soar_thread::Mutex() ;
-    
+
     m_SuppressSystemStart = false ;
     m_SuppressSystemStop  = false ;
     m_RequireSystemStop   = false ;
-    
+
     m_pRunScheduler = new RunScheduler(this) ;
-    
+
     m_EchoCommands = false ;
-    
+
     m_InterruptCheckRate = 10;
 }
 
@@ -103,9 +103,9 @@ void KernelSML::DeleteAllAgents(bool waitTillDeleted)
     {
         AgentSML* pAgentSML = m_AgentMap.begin()->second ;
         size_t agentCount = m_AgentMap.size() ;
-        
+
         HandleDestroyAgent(pAgentSML, 0, 0, 0, 0);
-        
+
         // Now wait for the agent to be deleted (if we were requested to do so)
         int maxTries = 100 ;    // Wait for a second then abort anyway
         while (waitTillDeleted && agentCount == m_AgentMap.size() && maxTries > 0)
@@ -122,21 +122,21 @@ KernelSML::~KernelSML()
     // (This should have already been done before we get to the destructor,
     //  but this is a safety valve).
     Shutdown() ;
-    
+
     DeleteAllAgents(true) ;
-    
+
     m_SystemListener.Clear();
     m_AgentListener.Clear();
     m_RhsListener.Clear();
     m_UpdateListener.Clear() ;
     m_StringListener.Clear() ;
-    
+
     delete m_pConnectionManager ;
-    
+
     delete m_pKernelMutex ;
-    
+
     delete m_pEventMap ;
-    
+
     delete m_pRunScheduler;
 }
 
@@ -151,7 +151,7 @@ void KernelSML::Shutdown()
 
 void KernelSML::SetStopPoint(bool forever, smlRunStepSize runStepSize, smlPhase m_StopBeforePhase)
 {
-    if ((sml_DECISION == runStepSize) || forever)
+    if ((sml_DECIDE == runStepSize) || forever)
     {
         m_StopPoint = m_StopBeforePhase ;
     }
@@ -170,25 +170,25 @@ std::string KernelSML::FireLoadLibraryEvent(char const* pLibraryCommand)
     const int kBufferLength = 10000;
     char response[kBufferLength] ;
     response[0] = 0 ;
-    
+
     StringListenerCallbackData callbackData;
-    
+
     callbackData.pData = pLibraryCommand;
     callbackData.maxLengthReturnStringBuffer = kBufferLength;
     callbackData.pReturnStringBuffer = response;
-    
+
     m_StringListener.OnKernelEvent(smlEVENT_LOAD_LIBRARY, 0, &callbackData);
-    
+
     // This next bit of code is completely redundant, the strcpy below is basically a no-op:
-    
+
     //if ( response[0] == 0 )
     //{
     //  // return zero length string for success
     //  strcpy(response, "") ;
     //}
-    
+
     return response ;
-    
+
 }
 
 std::string KernelSML::FireCliExtensionMessageEvent(char const* pCliExtCommand)
@@ -197,17 +197,17 @@ std::string KernelSML::FireCliExtensionMessageEvent(char const* pCliExtCommand)
     const int kBufferLength = 10000;
     char response[kBufferLength] ;
     response[0] = 0 ;
-    
+
     StringListenerCallbackData callbackData;
-    
+
     callbackData.pData = pCliExtCommand;
     callbackData.maxLengthReturnStringBuffer = kBufferLength;
     callbackData.pReturnStringBuffer = response;
-    
+
     m_StringListener.OnKernelEvent(smlEVENT_TCL_LIBRARY_MESSAGE, 0, &callbackData);
-    
+
     return response ;
-    
+
 }
 //////////////////////////////////////
 
@@ -220,14 +220,14 @@ std::string KernelSML::SendClientMessage(AgentSML* pAgentSML, char const* pMessa
 {
     char response[10000] ;
     response[0] = 0 ;
-    
+
     bool ok = m_RhsListener.HandleEvent(smlEVENT_CLIENT_MESSAGE, pAgentSML, false, pMessageType, pMessage, sizeof(response), response) ;
     if (!ok)
     {
         // There was listening to this message
         strcpy(response, "**NOBODY RESPONDED**") ;
     }
-    
+
     return response ;
 }
 
@@ -240,9 +240,9 @@ std::string KernelSML::SendClientMessage(AgentSML* pAgentSML, char const* pMessa
 bool KernelSML::SendFilterMessage(AgentSML* pAgent, char const* pCommandLine, std::string* pResult)
 {
     std::string s_response;
-    
+
     bool ok = m_RhsListener.HandleFilterEvent(smlEVENT_FILTER, pAgent, pCommandLine, s_response);
-    
+
     if (!ok)
     {
         // Nobody was listening, so just return the original command line
@@ -264,7 +264,7 @@ bool KernelSML::SendFilterMessage(AgentSML* pAgent, char const* pCommandLine, st
 bool KernelSML::HasFilterRegistered()
 {
     ConnectionList* pListeners = m_RhsListener.GetRhsListeners(sml_Names::kFilterName) ;
-    
+
     return (pListeners && pListeners->size() > 0) ;
 }
 
@@ -293,7 +293,7 @@ char const* KernelSML::ConvertEventToString(int id)
 void KernelSML::AddConnection(Connection* pConnection)
 {
     m_pConnectionManager->AddConnection(pConnection) ;
-    
+
     // Notify listeners that we have a new connection.
     this->FireSystemEvent(smlEVENT_AFTER_CONNECTION) ;
 }
@@ -323,7 +323,7 @@ Connection* KernelSML::GetEmbeddedConnection()
             return pConnection ;
         }
     }
-    
+
     return NULL ;
 }
 
@@ -371,10 +371,10 @@ void KernelSML::RemoveAllListeners(Connection* pConnection)
     for (AgentMapIter iter = m_AgentMap.begin() ; iter != m_AgentMap.end() ; iter++)
     {
         AgentSML* pAgentSML = iter->second ;
-        
+
         pAgentSML->RemoveAllListeners(pConnection) ;
     }
-    
+
     // Remove any kernel event listeners
     m_AgentListener.RemoveAllListeners(pConnection);
     m_RhsListener.RemoveAllListeners(pConnection);
@@ -390,12 +390,12 @@ bool KernelSML::DeleteAgentSML(const char* agentName)
 {
     // See if we already have an object in our map
     AgentMapIter iter = m_AgentMap.find(agentName) ;
-    
+
     if (iter == m_AgentMap.end())
     {
         return false ;
     }
-    
+
     KernelAgentMapIter kiter = m_KernelAgentMap.find(iter->second->GetSoarAgent()) ;
     if (kiter == m_KernelAgentMap.end())
     {
@@ -403,16 +403,16 @@ bool KernelSML::DeleteAgentSML(const char* agentName)
         assert(false) ;
         return false ;
     }
-    
+
     // Delete the agent sml information
     // This is instead left up to the caller to do
     //AgentSML* pResult = iter->second ;
     //delete pResult ;
-    
+
     // Erase the entry from the map
     m_AgentMap.erase(iter) ;
     m_KernelAgentMap.erase(kiter) ;
-    
+
     return true ;
 }
 
@@ -428,9 +428,9 @@ bool KernelSML::ReturnResult(Connection* pConnection, soarxml::ElementXML* pResp
     {
         return false ;
     }
-    
+
     pConnection->AddSimpleResultToSMLResponse(pResponse, pResult) ;
-    
+
     return true ;
 }
 
@@ -441,7 +441,7 @@ bool KernelSML::ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pR
 {
     char buf[TO_C_STRING_BUFSIZE];
     pConnection->AddSimpleResultToSMLResponse(pResponse, to_c_string(result, buf)) ;
-    
+
     return true ;
 }
 
@@ -462,9 +462,9 @@ bool KernelSML::InvalidArg(Connection* pConnection, soarxml::ElementXML* pRespon
 {
     std::stringstream msg;
     msg << "Invalid arguments for command : " << pCommandName << pErrorDescription ;
-    
+
     AddErrorMsg(pConnection, pResponse, msg.str().c_str()) ;
-    
+
     // Return true because we've already added the error message.
     return true ;
 }
@@ -478,9 +478,9 @@ AgentSML* KernelSML::GetAgentSML(char const* pAgentName)
     {
         return NULL ;
     }
-    
+
     AgentMapIter iter = m_AgentMap.find(pAgentName) ;
-    
+
     if (iter == m_AgentMap.end())
     {
         return NULL ;
@@ -513,7 +513,7 @@ top_level_phase KernelSML::ConvertSMLToSoarPhase(smlPhase phase)
     // check a few
     assert(INPUT_PHASE == static_cast< top_level_phase >(sml_INPUT_PHASE));
     assert(PREFERENCE_PHASE == static_cast< top_level_phase >(sml_PREFERENCE_PHASE));
-    
+
     // just cast
     return static_cast< top_level_phase >(phase);
 }
@@ -548,26 +548,26 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
 {
     // Look up the function that handles this command
     CommandFunction pFunction = m_CommandMap[pCommandName] ;
-    
+
     if (!pFunction)
     {
         // There is no handler for this command
         std::stringstream msg;
         msg << "Command " << pCommandName << " is not recognized by the kernel" ;
-        
+
         AddErrorMsg(pConnection, pResponse, msg.str().c_str()) ;
         return false ;
     }
-    
+
     // Look up the agent name parameter (most commands have this)
     char const* pAgentName = pIncoming->GetArgString(sml_Names::kParamAgent) ;
-    
+
     AgentSML* pAgentSML = NULL ;
-    
+
     if (pAgentName)
     {
         pAgentSML = GetAgentSML(pAgentName) ;
-        
+
         if (!pAgentSML)
         {
             // Failed to find this agent
@@ -577,10 +577,10 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
             return false ;
         }
     }
-    
+
     // Call to the handler (this is a pointer to member call so it's a bit odd)
     bool result = (this->*pFunction)(pAgentSML, pCommandName, pConnection, pIncoming, pResponse) ;
-    
+
     // If we return false, we report a generic error about the call.
     if (!result)
     {
@@ -589,7 +589,7 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
         AddErrorMsg(pConnection, pResponse, msg.str().c_str()) ;
         return false ;
     }
-    
+
     return true ;
 }
 
@@ -606,34 +606,34 @@ soarxml::ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, soar
     {
         return NULL ;
     }
-    
+
     // Make sure only one thread is executing commands in the kernel at a time.
     // This is really just an insurance policy as I don't think we'll ever execute
     // commands on different threads within kernelSML because we
     // only allow one embedded connection to the kernel, but it's nice to be sure.
     soar_thread::Lock lock(m_pKernelMutex) ;
-    
+
     // For debugging, it's helpful to be able to look at the incoming message as an XML string.  Enable in kernel.h
     #ifdef DEBUG_INCOMING_SML
         char* pIncomingXML = pIncomingMsg->GenerateXMLString(true) ;
         fprintf(stderr, "Processing incoming message %s", pIncomingXML);
     #endif
-    
+
     soarxml::ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;
-    
+
     // Fatal error creating the response
     if (!pResponse)
     {
         return NULL ;
     }
-    
+
     // Analyze the message and find important tags
     AnalyzeXML msg ;
     msg.Analyze(pIncomingMsg) ;
-    
+
     // Get the "name" attribute from the <command> tag
     char const* pCommandName = msg.GetCommandName() ;
-    
+
     if (pCommandName)
     {
         ProcessCommand(pCommandName, pConnection, &msg, pResponse) ;
@@ -650,17 +650,17 @@ soarxml::ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, soar
             AddErrorMsg(pConnection, pResponse, "Incoming message did not contain a name attribute in the <command> tag") ;
         }
     }
-    
+
 #ifdef DEBUG
     // For debugging, it's helpful to be able to look at the response as XML
     char* pResponseXML = pResponse->GenerateXMLString(true) ;
-    
+
     // Set a break point on this next line if you wish to see the incoming
     // and outgoing as XML before they get deleted.
     soarxml::ElementXML::DeleteString(pIncomingXML) ;
     soarxml::ElementXML::DeleteString(pResponseXML) ;
 #endif
-    
+
     return pResponse ;
 }
 
@@ -687,7 +687,7 @@ void KernelSML::Symbol2String(Symbol* pSymbol,  bool refCounts, std::ostringstre
     {
         buffer << pSymbol->fc->value ;
     }
-    
+
     if (refCounts)
     {
         buffer << "[" << pSymbol->reference_count << "]" ;
@@ -697,15 +697,15 @@ void KernelSML::Symbol2String(Symbol* pSymbol,  bool refCounts, std::ostringstre
 std::string KernelSML::Wme2String(wme* pWME, bool refCounts)
 {
     std::ostringstream buffer ;
-    
+
     buffer << pWME->timetag << ":" ;
-    
+
     Symbol2String(pWME->id, refCounts, buffer) ;
     buffer << " ^" ;
     Symbol2String(pWME->attr, refCounts, buffer) ;
     buffer << " " ;
     Symbol2String(pWME->value, refCounts, buffer) ;
-    
+
     return buffer.str() ;
 }
 
@@ -720,7 +720,7 @@ void KernelSML::PrintDebugSymbol(Symbol* pSymbol, bool refCounts)
     std::ostringstream buffer ;
     Symbol2String(pSymbol, refCounts, buffer) ;
     std::string str = buffer.str() ;
-    
+
     PrintDebugFormat("%s", str.c_str()) ;
 }
 
@@ -731,16 +731,16 @@ void KernelSML::PrintDebugSymbol(Symbol* pSymbol, bool refCounts)
 void KernelSML::DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, uint64_t count)
 {
     smlRunStepSize interleaveSize = static_cast<smlRunStepSize>(interleaveSizeIn);
-    
+
     RunScheduler* pScheduler = GetRunScheduler() ;
     smlRunFlags runFlags = sml_NONE ;
-    
+
     // Decide on the type of run.
-    smlRunStepSize runType = (forever) ? sml_DECISION : static_cast<smlRunStepSize>(stepSize) ;
-    
+    smlRunStepSize runType = (forever) ? sml_DECIDE : static_cast<smlRunStepSize>(stepSize) ;
+
     // Decide how large of a step to run each agent before switching to the next agent
     pScheduler->VerifyStepSizeForRunType(forever, runType, interleaveSize) ;
-    
+
     if (pAgentName)
     {
         AgentSML* pAgentSML = GetAgentSML(pAgentName);
@@ -748,9 +748,9 @@ void KernelSML::DirectRun(char const* pAgentName, bool forever, int stepSize, in
         {
             return ;
         }
-        
+
         runFlags = smlRunFlags(runFlags | sml_RUN_SELF) ;
-        
+
         // Schedule just this one agent to run
         pScheduler->ScheduleAllAgentsToRun(false) ;
         pScheduler->ScheduleAgentToRun(pAgentSML, true) ;
@@ -758,14 +758,14 @@ void KernelSML::DirectRun(char const* pAgentName, bool forever, int stepSize, in
     else
     {
         runFlags = smlRunFlags(runFlags | sml_RUN_ALL) ;
-        
+
         // Ask all agents to run
         pScheduler->ScheduleAllAgentsToRun(true) ;
     }
-    
+
     // If we're running by decision cycle synchronize up the agents to the same phase before we start
-    bool synchronizeAtStart = (runType == sml_DECISION) ;
-    
+    bool synchronizeAtStart = (runType == sml_DECIDE) ;
+
     // Do the run
     pScheduler->RunScheduledAgents(forever, runType, count, runFlags, smlRunStepSize(interleaveSize), synchronizeAtStart) ;
     return ;

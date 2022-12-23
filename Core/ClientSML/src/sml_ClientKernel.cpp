@@ -1341,7 +1341,7 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
 
     switch (stepSize)
     {
-        case sml_DECISION:
+        case sml_DECIDE:
             step = "-d" ;
             break ;
         case sml_PHASE:
@@ -1367,7 +1367,7 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
         case sml_PHASE:
             interleave = "-i p" ;
             break ;
-        case sml_DECISION:
+        case sml_DECIDE:
             interleave = "-i d" ;
             break ;
         case sml_UNTIL_OUTPUT:
@@ -1401,7 +1401,7 @@ char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
     if (GetConnection()->IsDirectConnection())
     {
         EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
-        ec->DirectRun(NULL, true, sml_DECISION, interleaveStepSize, 1) ;
+        ec->DirectRun(NULL, true, sml_DECIDE, interleaveStepSize, 1) ;
         return "DirectRun completed" ;
     }
 #endif
@@ -1416,7 +1416,7 @@ char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
         case sml_PHASE:
             interleave = "-i p" ;
             break ;
-        case sml_DECISION:
+        case sml_DECIDE:
             interleave = "-i d" ;
             break ;
         case sml_UNTIL_OUTPUT:
@@ -1465,7 +1465,7 @@ char const* Kernel::RunAllTilOutput(smlRunStepSize interleaveStepSize)
         case sml_PHASE:
             interleave = "-i p" ;
             break ;
-        case sml_DECISION:
+        case sml_DECIDE:
             interleave = "-i d" ;
             break ;
         case sml_UNTIL_OUTPUT:

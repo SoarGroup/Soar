@@ -193,10 +193,10 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
                 PrintCLIMessage("Soar will now stop before the apply phase.");
 
             }
-            else if (thisAgent->Decider->params->stop_phase->get_value() == DECISION_PHASE)
+            else if (thisAgent->Decider->params->stop_phase->get_value() == DECIDE_PHASE)
             {
-                m_pKernelSML->SetStopBefore(sml::sml_DECISION_PHASE) ;
-                PrintCLIMessage("Soar will now stop before the decision phase.");
+                m_pKernelSML->SetStopBefore(sml::sml_DECIDE_PHASE) ;
+                PrintCLIMessage("Soar will now stop before the decide phase.");
             }
             else if (thisAgent->Decider->params->stop_phase->get_value() == INPUT_PHASE)
             {

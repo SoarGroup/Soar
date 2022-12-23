@@ -73,12 +73,12 @@ smlRunStepSize RunScheduler::DefaultInterleaveStepSize(bool forever, smlRunStepS
             return sml_PHASE;
         case sml_ELABORATION:
             return sml_ELABORATION;
-        case sml_DECISION:
+        case sml_DECIDE:
             //return sml_PHASE;      // tested ok in SoarJavaDebugger 01/18/06
-            return sml_DECISION;
+            return sml_DECIDE;
         case sml_UNTIL_OUTPUT:
             //return sml_PHASE;      // tested ok in SoarJavaDebugger 01/18/06
-            //return sml_DECISION;  // tested ok in SoarJavaDebugger 01/18/06
+            //return sml_DECIDE;  // tested ok in SoarJavaDebugger 01/18/06
             return sml_UNTIL_OUTPUT;
         default:
             assert(false);
@@ -98,7 +98,7 @@ bool RunScheduler::VerifyStepSizeForRunType(bool forever, smlRunStepSize runStep
         // can interleave by any smlRunStepSize
         return (sml_PHASE == interleave ||
                 sml_ELABORATION == interleave ||
-                sml_DECISION == interleave ||
+                sml_DECIDE == interleave ||
                 sml_UNTIL_OUTPUT == interleave) ;
     }
 
@@ -108,14 +108,14 @@ bool RunScheduler::VerifyStepSizeForRunType(bool forever, smlRunStepSize runStep
             return (sml_PHASE == interleave) ;
         case sml_ELABORATION:
             return (sml_ELABORATION == interleave) ;
-        case sml_DECISION:
+        case sml_DECIDE:
             return (sml_PHASE == interleave ||
                     sml_ELABORATION == interleave ||
-                    sml_DECISION == interleave) ;
+                    sml_DECIDE == interleave) ;
         case sml_UNTIL_OUTPUT:
             return (sml_PHASE == interleave ||
                     sml_ELABORATION == interleave ||
-                    sml_DECISION == interleave ||
+                    sml_DECIDE == interleave ||
                     sml_UNTIL_OUTPUT == interleave) ;
         default:
             assert(0);
@@ -237,7 +237,7 @@ bool RunScheduler::IsAgentFinished(AgentSML* pAgentSML, bool forever, smlRunStep
     // agents that are running by Decisions should get marked as finished.
     // They will generate interrupt in MoveTo_StopBeforePhase
 
-    if (((sml_DECISION == runStepSize) || forever) && (pAgentSML->GetInterruptFlags() & sml_STOP_AFTER_DECISION_CYCLE))
+    if (((sml_DECIDE == runStepSize) || forever) && (pAgentSML->GetInterruptFlags() & sml_STOP_AFTER_DECISION_CYCLE))
     {
         finished = true;
     }
@@ -482,7 +482,7 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
     // Update events, then step again til StopBeforePt is reached.  Note:  when we support
     // StopBeforeUpdateWorld, we'll need to explicitly check for that before generating events.
 
-    if ((runStepSize == sml_DECISION) || forever)
+    if ((runStepSize == sml_DECIDE) || forever)
     {
         for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
         {
@@ -784,7 +784,7 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
     //  Before running, check to see if an agent is at a point other than the StopBeforePhase.
     //  If so, we'll decrement  the RunCount before entering the Run loop so
     //  as not to run more Decision phases than specified in the runCount.  See bug #710.
-    if ((sml_DECISION == runStepSize) && !forever)
+    if ((sml_DECIDE == runStepSize) && !forever)
         if (!AllAgentsAtStopBeforePhase() && (count > 0))
         {
             count--;
@@ -859,7 +859,7 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
 
                     // if agent finished count runTypes, remove from RunList, else runFinished = false;
                     // can also return true if a gSKI_STOP_AFTER_DECISION_CYCLE interrupt occurred
-                    // or is pending on agents with RunType DECISION or FOREVER.
+                    // or is pending on agents with RunType DECIDE or FOREVER.
                     bool agentFinishedRun = IsAgentFinished(pAgentSML, forever, runStepSize, count) ;
 
                     // Have to test the run state to find out if we are still ok to keep running
@@ -874,7 +874,7 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
                         pAgentSML->SetResultOfRun(runResult) ;
                         // If we know we won't have to step to StopBefore phase
                         // notify listeners that this agent is finished running
-                        if ((runStepSize != sml_DECISION) && !forever)
+                        if ((runStepSize != sml_DECIDE) && !forever)
                         {
                             pAgentSML->FireRunEvent(smlEVENT_AFTER_RUN_ENDS) ;
                         }

@@ -649,7 +649,7 @@ void print_preference(agent* thisAgent, preference* pref, bool add_lf)
     }
     if (add_lf) thisAgent->outputManager->printa(thisAgent, "\n");
 
-    
+
     // <preference id="s1" attr="foo" value="123" pref_type=">"></preference>
     xml_begin_tag(thisAgent, kTagPreference);
     xml_att_val(thisAgent, kWME_Id, pref->id);
@@ -917,7 +917,7 @@ void print_phase(agent* thisAgent, const char* s, bool end_of_phase)
                     break;
             }
             break;
-        case DECISION_PHASE:
+        case DECIDE_PHASE:
             xml_att_val(thisAgent, kPhase_Name, kPhaseName_Decision);
             break;
         case OUTPUT_PHASE:

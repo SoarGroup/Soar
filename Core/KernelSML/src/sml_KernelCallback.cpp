@@ -27,11 +27,11 @@ using namespace sml ;
 void KernelCallback::KernelCallbackStatic(agent* pAgent, int eventID, void* pData, void* pCallData)
 {
     KernelCallback* pThis = static_cast<KernelCallback*>(pData) ;
-    
+
     // Make sure everything matches up correctly.
     (void)pAgent; // silences warning in release mode
     assert(pThis->m_pCallbackAgentSML->GetSoarAgent() == pAgent) ;
-    
+
     // Make the callback to the non-static method
     pThis->OnKernelEvent(eventID, pThis->m_pCallbackAgentSML, pCallData) ;
 }
@@ -50,7 +50,7 @@ int KernelCallback::InternalGetCallbackFromEventID(int eventID)
             return FIRING_CALLBACK ;
         case smlEVENT_BEFORE_PRODUCTION_RETRACTED:
             return RETRACTION_CALLBACK ;
-            
+
         case smlEVENT_BEFORE_SMALLEST_STEP:
             return BEFORE_ELABORATION_CALLBACK ;    // Elaboration cycle is the smallest step
         case smlEVENT_AFTER_SMALLEST_STEP:
@@ -67,10 +67,10 @@ int KernelCallback::InternalGetCallbackFromEventID(int eventID)
             return BEFORE_PROPOSE_PHASE_CALLBACK ;
         case smlEVENT_AFTER_PROPOSE_PHASE:
             return AFTER_PROPOSE_PHASE_CALLBACK ;
-        case smlEVENT_BEFORE_DECISION_PHASE:
-            return BEFORE_DECISION_PHASE_CALLBACK ;
-        case smlEVENT_AFTER_DECISION_PHASE:
-            return AFTER_DECISION_PHASE_CALLBACK ;
+        case smlEVENT_BEFORE_DECIDE_PHASE:
+            return BEFORE_DECIDE_PHASE_CALLBACK ;
+        case smlEVENT_AFTER_DECIDE_PHASE:
+            return AFTER_DECIDE_PHASE_CALLBACK ;
         case smlEVENT_BEFORE_APPLY_PHASE:
             return BEFORE_APPLY_PHASE_CALLBACK ;
         case smlEVENT_AFTER_APPLY_PHASE:
@@ -87,12 +87,12 @@ int KernelCallback::InternalGetCallbackFromEventID(int eventID)
             return BEFORE_WM_PHASE_CALLBACK ;
         case smlEVENT_AFTER_WM_PHASE:
             return AFTER_WM_PHASE_CALLBACK ;
-            
+
         case smlEVENT_BEFORE_DECISION_CYCLE:
             return BEFORE_DECISION_CYCLE_CALLBACK ;
         case smlEVENT_AFTER_DECISION_CYCLE:
             return AFTER_DECISION_CYCLE_CALLBACK ;
-            
+
         case smlEVENT_MAX_MEMORY_USAGE_EXCEEDED:
             return MAX_MEMORY_USAGE_CALLBACK ;
         case smlEVENT_AFTER_INTERRUPT:
@@ -107,18 +107,18 @@ int KernelCallback::InternalGetCallbackFromEventID(int eventID)
             return BEFORE_RUNNING_CALLBACK ;    // Implemented in SML
         case smlEVENT_AFTER_RUNNING:
             return AFTER_RUNNING_CALLBACK ;     // Implemented in SML
-            
+
         case smlEVENT_OUTPUT_PHASE_CALLBACK:
             return OUTPUT_PHASE_CALLBACK ;
         case smlEVENT_INPUT_PHASE_CALLBACK:
             return INPUT_PHASE_CALLBACK ;
-            
+
         case smlEVENT_PRINT:
             return PRINT_CALLBACK ;
         case smlEVENT_XML_TRACE_OUTPUT:
             return XML_GENERATION_CALLBACK ;
     }
-    
+
     return smlEVENT_INVALID_EVENT ;
 }
 
@@ -131,9 +131,9 @@ bool KernelCallback::IsCallbackImplementedInKernel(int eventID)
     {
         return true ;
     }
-    
+
     int callback = InternalGetCallbackFromEventID(eventID) ;
-    
+
     return (callback != smlEVENT_INVALID_EVENT) ;
 }
 
@@ -141,7 +141,7 @@ int KernelCallback::GetCallbackFromEventID(int eventID)
 {
     int callback = InternalGetCallbackFromEventID(eventID) ;
     assert(callback != smlEVENT_INVALID_EVENT);
-    
+
     return callback ;
 }
 
@@ -156,7 +156,7 @@ void KernelCallback::ClearKernelCallback()
     {
         int eventID = mapIter->first ;
         bool registered = mapIter->second ;
-        
+
         if (registered)
         {
             UnregisterWithKernel(eventID) ;
@@ -175,17 +175,17 @@ void KernelCallback::RegisterWithKernel(int eventID)
     // Should only register once
     assert(m_Registered[eventID] != true) ;
     m_Registered[eventID] = true ;
-    
+
     // Base the id on the address of this object which ensures it's unique
     std::ostringstream buffer;
     buffer << "id_0x" << this << "_evt_" << eventID;
     std::string callbackID = buffer.str() ;
-    
+
     // Did you remember to call SetAgentSML() before registering this callback?
     assert(m_pCallbackAgentSML) ;
-    
+
     agent* pAgent = m_pCallbackAgentSML->GetSoarAgent() ;
-    
+
     if (eventID == smlEVENT_OUTPUT_PHASE_CALLBACK)
     {
         add_output_function(pAgent, KernelCallbackStatic, this, NULL, smlEVENT_OUTPUT_PHASE_CALLBACK, "output-link") ;
@@ -199,11 +199,11 @@ void KernelCallback::RegisterWithKernel(int eventID)
     else
     {
         // BEFORE_PHASE and AFTER_PHASE are implemented by listening for all lower level phase events
-        int beforePhaseEvents[] = { smlEVENT_BEFORE_INPUT_PHASE, smlEVENT_BEFORE_PROPOSE_PHASE, smlEVENT_BEFORE_DECISION_PHASE, smlEVENT_BEFORE_APPLY_PHASE, smlEVENT_BEFORE_OUTPUT_PHASE, smlEVENT_BEFORE_PREFERENCE_PHASE, smlEVENT_BEFORE_WM_PHASE } ;
-        int afterPhaseEvents[]  = { smlEVENT_AFTER_INPUT_PHASE, smlEVENT_AFTER_PROPOSE_PHASE, smlEVENT_AFTER_DECISION_PHASE, smlEVENT_AFTER_APPLY_PHASE, smlEVENT_AFTER_OUTPUT_PHASE, smlEVENT_AFTER_PREFERENCE_PHASE, smlEVENT_AFTER_WM_PHASE } ;
-        
+        int beforePhaseEvents[] = { smlEVENT_BEFORE_INPUT_PHASE, smlEVENT_BEFORE_PROPOSE_PHASE, smlEVENT_BEFORE_DECIDE_PHASE, smlEVENT_BEFORE_APPLY_PHASE, smlEVENT_BEFORE_OUTPUT_PHASE, smlEVENT_BEFORE_PREFERENCE_PHASE, smlEVENT_BEFORE_WM_PHASE } ;
+        int afterPhaseEvents[]  = { smlEVENT_AFTER_INPUT_PHASE, smlEVENT_AFTER_PROPOSE_PHASE, smlEVENT_AFTER_DECIDE_PHASE, smlEVENT_AFTER_APPLY_PHASE, smlEVENT_AFTER_OUTPUT_PHASE, smlEVENT_AFTER_PREFERENCE_PHASE, smlEVENT_AFTER_WM_PHASE } ;
+
         int* events = (eventID == smlEVENT_BEFORE_PHASE_EXECUTED) ? beforePhaseEvents : afterPhaseEvents ;
-        
+
         for (int i = 0 ; i < 7 ; i++)
         {
             // Note that we register with the kernel for a specific phase event, while passing in the more general BEFORE_PHASE_EXECUTED or AFTER_PHASE_EXECUTED
@@ -222,15 +222,15 @@ void KernelCallback::UnregisterWithKernel(int eventID)
     {
         return ;
     }
-    
+
     m_Registered[eventID] = false ;
-    
+
     std::ostringstream buffer;
     buffer << "id_0x" << this << "_evt_" << eventID;
     std::string callbackID = buffer.str() ;
-    
+
     agent* pAgent = m_pCallbackAgentSML->GetSoarAgent() ;
-    
+
     if (eventID != smlEVENT_BEFORE_PHASE_EXECUTED && eventID != smlEVENT_AFTER_PHASE_EXECUTED)
     {
         SOAR_CALLBACK_TYPE callbackType = SOAR_CALLBACK_TYPE(GetCallbackFromEventID(eventID));
@@ -239,11 +239,11 @@ void KernelCallback::UnregisterWithKernel(int eventID)
     else
     {
         // BEFORE_PHASE and AFTER_PHASE are implemented by listening for all lower level phase events
-        int beforePhaseEvents[] = { smlEVENT_BEFORE_INPUT_PHASE, smlEVENT_BEFORE_PROPOSE_PHASE, smlEVENT_BEFORE_DECISION_PHASE, smlEVENT_BEFORE_APPLY_PHASE, smlEVENT_BEFORE_OUTPUT_PHASE, smlEVENT_BEFORE_PREFERENCE_PHASE, smlEVENT_BEFORE_WM_PHASE } ;
-        int afterPhaseEvents[]  = { smlEVENT_AFTER_INPUT_PHASE, smlEVENT_AFTER_PROPOSE_PHASE, smlEVENT_AFTER_DECISION_PHASE, smlEVENT_AFTER_APPLY_PHASE, smlEVENT_AFTER_OUTPUT_PHASE, smlEVENT_AFTER_PREFERENCE_PHASE, smlEVENT_AFTER_WM_PHASE } ;
-        
+        int beforePhaseEvents[] = { smlEVENT_BEFORE_INPUT_PHASE, smlEVENT_BEFORE_PROPOSE_PHASE, smlEVENT_BEFORE_DECIDE_PHASE, smlEVENT_BEFORE_APPLY_PHASE, smlEVENT_BEFORE_OUTPUT_PHASE, smlEVENT_BEFORE_PREFERENCE_PHASE, smlEVENT_BEFORE_WM_PHASE } ;
+        int afterPhaseEvents[]  = { smlEVENT_AFTER_INPUT_PHASE, smlEVENT_AFTER_PROPOSE_PHASE, smlEVENT_AFTER_DECIDE_PHASE, smlEVENT_AFTER_APPLY_PHASE, smlEVENT_AFTER_OUTPUT_PHASE, smlEVENT_AFTER_PREFERENCE_PHASE, smlEVENT_AFTER_WM_PHASE } ;
+
         int* events = (eventID == smlEVENT_BEFORE_PHASE_EXECUTED) ? beforePhaseEvents : afterPhaseEvents ;
-        
+
         for (int i = 0 ; i < 7 ; i++)
         {
             int phaseEvent = events[i] ;

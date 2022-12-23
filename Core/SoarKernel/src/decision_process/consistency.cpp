@@ -1003,7 +1003,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
             /* Decision phase is always next */
 
-            thisAgent->current_phase = DECISION_PHASE;
+            thisAgent->current_phase = DECIDE_PHASE;
             return;
         }
     }
@@ -1016,10 +1016,10 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
     {
         if (thisAgent->outputManager->settings[OM_WARNINGS])
         {
-            thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning: reached max-elaborations; proceeding to decision phase.");
-            xml_generate_warning(thisAgent, "Warning: reached max-elaborations; proceeding to decision phase.");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning: reached max-elaborations; proceeding to decide phase.");
+            xml_generate_warning(thisAgent, "Warning: reached max-elaborations; proceeding to decide phase.");
         }
-        thisAgent->current_phase = DECISION_PHASE;
+        thisAgent->current_phase = DECIDE_PHASE;
         return;
     }
 
@@ -1098,7 +1098,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
                in the propose phase, so check for consistency. */
             if (!goal_stack_consistent_through_goal(thisAgent, thisAgent->previous_active_goal))
             {
-                thisAgent->current_phase = DECISION_PHASE;
+                thisAgent->current_phase = DECIDE_PHASE;
                 break;
             }
             /* else: just do a preference phase */
@@ -1149,7 +1149,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 #endif
             if (!goal_stack_consistent_through_goal(thisAgent, thisAgent->active_goal))
             {
-                thisAgent->current_phase = DECISION_PHASE;
+                thisAgent->current_phase = DECIDE_PHASE;
                 break;
             }
 

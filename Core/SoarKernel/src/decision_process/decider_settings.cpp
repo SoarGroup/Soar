@@ -32,7 +32,7 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
 
     stop_phase = new soar_module::constant_param<top_level_phase>("stop-phase", APPLY_PHASE, new soar_module::f_predicate<top_level_phase>());
     stop_phase->add_mapping(APPLY_PHASE, "apply");
-    stop_phase->add_mapping(DECISION_PHASE, "decision");
+    stop_phase->add_mapping(DECIDE_PHASE, "decision");
     stop_phase->add_mapping(INPUT_PHASE, "input");
     stop_phase->add_mapping(OUTPUT_PHASE, "output");
     stop_phase->add_mapping(PROPOSE_PHASE, "propose");

@@ -108,7 +108,7 @@ void ChunkingDemoTests::check_chunk(const char* pTestName, int64_t decisions, in
     //        SoarHelper::agent_command(agent,"trace -CbL 2");
     //    }
     SoarHelper::check_learning_override(agent);
-    agent->RunSelf(decisions, sml::sml_DECISION);
+    agent->RunSelf(decisions, sml::sml_DECIDE);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
     verify_chunk(pTestName, expected_chunks, directSourceChunks);

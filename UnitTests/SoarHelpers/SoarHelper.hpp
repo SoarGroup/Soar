@@ -31,7 +31,7 @@ public:
 	{
 		INPUT,
 		PROPOSE,
-		DECISION,
+		DECIDE,
 		APPLY,
 		OUTPUT
 	};

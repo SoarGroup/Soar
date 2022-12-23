@@ -126,7 +126,7 @@ uint64_t get_derived_kernel_time_usec(agent* thisAgent)
            + thisAgent->timers_decision_cycle_phase[PREFERENCE_PHASE].get_usec()
            + thisAgent->timers_decision_cycle_phase[WM_PHASE].get_usec()
            + thisAgent->timers_decision_cycle_phase[OUTPUT_PHASE].get_usec()
-           + thisAgent->timers_decision_cycle_phase[DECISION_PHASE].get_usec();
+           + thisAgent->timers_decision_cycle_phase[DECIDE_PHASE].get_usec();
 #else
     return 0;
 #endif

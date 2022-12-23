@@ -72,7 +72,7 @@ const char* Output_Manager::phase_to_string(top_level_phase pPhase)
         case WM_PHASE:
             return soar_TraceNames::kPhaseName_WM;
             break;
-        case DECISION_PHASE:
+        case DECIDE_PHASE:
             return soar_TraceNames::kPhaseName_Decision;
             break;
         case OUTPUT_PHASE:

@@ -730,7 +730,7 @@ namespace sml
             * @returns The result of executing the run command.
             *          The output from during the run is sent to a different callback.
             *************************************************************/
-            char const* RunSelf(int numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
+            char const* RunSelf(int numberSteps, smlRunStepSize stepSize = sml_DECIDE) ;
             char const* RunSelfForever() ;
 
             /*************************************************************
