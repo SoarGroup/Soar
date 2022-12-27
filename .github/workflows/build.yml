@@ -48,17 +48,14 @@ jobs:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: python3 scons/scons.py --scu --opt --verbose all performance_tests
-
-      - name: compress artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: out/
-          dest: build.zip
+    
+      - name: Pack artifacts
+        run: tar -cvf build.tar out/
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Soar-${{ matrix.os }}
-          path: ./build.zip
+          path: ./build.tar
 
       - name: unit tests
         working-directory: ./out
@@ -127,16 +124,14 @@ jobs:
           if ($lastexitcode -ne 0) {
              throw "build.bat exit code: $lastexitcode"
           }
-      - name: compress artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: out/
-          dest: build.zip
+          
+      - name: Pack artifacts
+        run: tar -cvf build.tar out/
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Soar-Windows
-          path: ./build.zip
+          path: ./build.tar
 
       - name: unit tests
         working-directory: ./out
