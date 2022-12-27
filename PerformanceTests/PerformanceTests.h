@@ -10,6 +10,7 @@
 
 #include "portability.h"
 
+#include <algorithm>
 #include <assert.h>
 #include <iostream>
 #include <iomanip>
@@ -49,31 +50,13 @@ class StatsTracker
         double GetHigh(std::vector<double> numbers)
         {
             assert(numbers.size() > 0 && "GetHigh: Size of set must be non-zero");
-
-            double high = numbers[0];
-            for (unsigned int i = 0; i < numbers.size(); i++)
-            {
-                if (numbers[i] > high)
-                {
-                    high = numbers[i];
-                }
-            }
-            return high;
+            return *std::max_element(numbers.begin(), numbers.end());
         }
 
         double GetLow(std::vector<double> numbers)
         {
             assert(numbers.size() > 0 && "GetLow: Size of set must be non-zero");
-
-            double low = numbers[0];
-            for (unsigned int i = 0; i < numbers.size(); i++)
-            {
-                if (numbers[i] < low)
-                {
-                    low = numbers[i];
-                }
-            }
-            return low;
+            return *std::min_element(numbers.begin(), numbers.end());
         }
 
         void PrintResults(const char* testName)
@@ -108,7 +91,7 @@ class StatsTracker
             summary_string << std::resetiosflags(std::ios::left);
             PrintResultsHelper(summary_string, testName, 40, GetAverage(kerneltimes), GetLow(kerneltimes), GetHigh(kerneltimes));
 
-            std::ofstream resultFile("/Users/mazzin/Soar/SoarSandbox/PerformanceTestResults.txt", std::ofstream::out | std::ofstream::app);
+            std::ofstream resultFile("PerformanceTestResults.txt", std::ofstream::out | std::ofstream::app);
             resultFile << summary_string.str();
             resultFile.close();
 
