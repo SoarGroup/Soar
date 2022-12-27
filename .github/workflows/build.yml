@@ -50,12 +50,12 @@ jobs:
         run: python3 scons/scons.py --scu --opt --verbose all performance_tests
     
       - name: Pack artifacts
-        run: tar -cvf build.tar out/
+        run: tar -czvf build.tar.gz out/
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Soar-${{ matrix.os }}
-          path: ./build.tar
+          path: ./build.tar.gz
 
       - name: unit tests
         working-directory: ./out
@@ -127,12 +127,12 @@ jobs:
           
       - name: Pack artifacts
         shell: bash
-        run: tar -cvf build.tar out/
+        run: tar -czvf build.tar.gz out/
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Soar-Windows
-          path: ./build.tar
+          path: ./build.tar.gz
 
       - name: unit tests
         working-directory: ./out
