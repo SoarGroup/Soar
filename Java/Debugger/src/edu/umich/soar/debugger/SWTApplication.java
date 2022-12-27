@@ -237,6 +237,7 @@ public class SWTApplication
         if (display == null)
         {
             owned = false;
+            Display.setAppName("Soar Debugger");
             display = new Display();
         }
         Shell shell = new Shell(display);
