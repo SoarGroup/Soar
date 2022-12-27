@@ -6,13 +6,10 @@ from __future__ import print_function
 
 import os
 import sys
-import platform
-import socket
 import subprocess
 import re
 import fnmatch
 from SCons.Node.Alias import default_ans
-import SCons.Script
 import shutil
 import time
 
@@ -29,6 +26,7 @@ soarversionFile = open('soarversion', 'w')
 print(SOAR_VERSION, file=soarversionFile)
 soarversionFile.close()
 
+MSVS_ALIAS = 'msvs'
 COMPILE_DB_ALIAS = 'cdb'
 SML_CSHARP_ALIAS = 'sml_csharp'
 SML_JAVA_ALIAS = 'sml_java'
@@ -41,17 +39,18 @@ DEF_BUILD = 'build'
 DEF_TARGETS = ['kernel', 'cli', SML_JAVA_ALIAS, 'debugger', 'headers', 'scripts', COMPILE_DB_ALIAS]
 
 print("================================================================================")
-print("Building Soar", SOAR_VERSION, "                      * will be built if no target specified")
+print(f"Building Soar{SOAR_VERSION}              * will be built if no target specified")
 print("Targets available:")
 print("   Core:              kernel* cli* scripts*")
 print("   Testing:           performance_tests tests")
 print(f"   SWIG:              {SML_PYTHON_ALIAS} {SML_TCL_ALIAS} {SML_JAVA_ALIAS}* {SML_CSHARP_ALIAS}")
-print(f"   Extras:            debugger* headers* tclsoarlib {COMPILE_DB_ALIAS}*")
+print(f"   Extras:            debugger* headers* {COMPILE_DB_ALIAS}* tclsoarlib {MSVS_ALIAS}")
 print("Custom Settings available:                                              *default")
 print("   Build Type:        --dbg, --opt*, --static")
 print("   Custom Paths:      --out, --build, --tcl")
 print("   Compilation time:  --no-svs, --scu*, --no-scu, --no-scu-kernel, --no-scu-cli")
 print("   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags, --verbose,")
+print("Supported platforms are 64-bit Windows, Linux, and macOS (Intel and ARM)")
 print("================================================================================")
 
 def execute(cmd):
@@ -99,16 +98,6 @@ def vc_version():
     print('cannot identify compiler version')
     Exit(1)
 
-# run cl (MSVC compiler) and return the target architecture (x64 or x86)
-def cl_target_arch():
-    cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    for line in cl.stdout:
-        if re.search('x64', line.decode()):
-            return 'x64'
-    return 'x86'
-
-def Mac_m64_Capable():
-    return execute('sysctl -n hw.optional.x86_64'.split()).strip() == '1'
 
 # Install all files under source directory to target directory, keeping
 # subdirectory structure and ignoring hidden files
@@ -133,7 +122,7 @@ def InstallDir(env, tgt, src, globstring="*"):
 
 def InstallDLLs(env):
   if sys.platform == 'win32' and not env['DEBUG']:
-    indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\' + cl_target_arch() + '\\Microsoft.VC*.CRT\*')
+    indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\x64\\Microsoft.VC*.CRT\*')
     outdir = os.path.realpath(GetOption('outdir')) + '\\'
     if os.path.isfile(outdir):
         os.remove(outdir)
@@ -164,15 +153,8 @@ AddOption('--opt', action='store_false', dest='dbg', default=False, help='Enable
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Build Soar without SVS functionality')
 
-msvc_version = "12.0"
-cl_target_architecture = ''
-if sys.platform == 'win32':
-    msvc_version = vc_version()
-    cl_target_architecture = cl_target_arch()
-    print("MSVC compiler target architecture is", cl_target_architecture)
 
 env = Environment(
-    MSVC_VERSION=msvc_version,
     ENV=os.environ.copy(),
     SCU=GetOption('scu'),
     DEBUG=GetOption('dbg'),
@@ -352,16 +334,10 @@ if 'MSVSSolution' in env['BUILDERS']:
     msvs_projs = []
     Export('msvs_projs')
 
-    if (cl_target_architecture == 'x64'):
-        if env['DEBUG']:
-            g_msvs_variant = 'Debug|x64'
-        else:
-            g_msvs_variant = 'Release|x64'
+    if env['DEBUG']:
+        g_msvs_variant = 'Debug|x64'
     else:
-        if env['DEBUG']:
-            g_msvs_variant = 'Debug|Win32'
-        else:
-            g_msvs_variant = 'Release|Win32'
+        g_msvs_variant = 'Release|x64'
 
 Export('g_msvs_variant')
 
@@ -379,7 +355,7 @@ if 'MSVSSolution' in env['BUILDERS']:
         variant=g_msvs_variant,
     )
 
-    env.Alias('msvs', [msvs_solution] + msvs_projs)
+    env.Alias(MSVS_ALIAS, [msvs_solution] + msvs_projs)
 
 ALL_ALIAS = 'all'
 all_aliases = list(default_ans.keys())
