@@ -3,7 +3,7 @@
 #include "sml_Utils.h"
 #include <stdio.h>
 #include <stdarg.h>
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 
 

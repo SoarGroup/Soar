@@ -37,7 +37,7 @@
 #include "test.h"
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 
 using namespace cli;
 using namespace sml;

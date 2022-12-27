@@ -20,7 +20,7 @@
 #include <list>
 #include <map>
 
-#include <assert.h>
+#include <cassert>
 
 namespace sml
 {

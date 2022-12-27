@@ -32,7 +32,7 @@
 #include "working_memory.h"
 #include "xml.h"
 
-#include <assert.h>
+#include <cassert>
 #include <list>
 #include <stdlib.h>
 #include <string>

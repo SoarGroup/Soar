@@ -1,6 +1,6 @@
 #include "sgnode_algs.h"
 
-#include <assert.h>
+#include <cassert>
 #include <list>
 #include <vector>
 #include <iterator>

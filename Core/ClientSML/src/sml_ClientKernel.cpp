@@ -33,7 +33,7 @@
 #include "output_manager.h"
 #include "soar_instance.h"
 
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <sstream>
 #include <iomanip>

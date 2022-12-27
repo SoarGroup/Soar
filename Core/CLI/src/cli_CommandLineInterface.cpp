@@ -3,7 +3,7 @@
 #include "cli_CommandLineInterface.h"
 #include "sml_Utils.h"
 
-#include <assert.h>
+#include <cassert>
 
 #include <iostream>
 #include <fstream>

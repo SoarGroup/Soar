@@ -21,7 +21,7 @@
 #pragma warning (default : 4702)
 #endif
 
-#include <assert.h>
+#include <cassert>
 #include <map>
 
 // Forward definitions for kernel

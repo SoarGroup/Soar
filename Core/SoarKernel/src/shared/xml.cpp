@@ -31,7 +31,7 @@
 #include "working_memory.h"
 #include "XMLTrace.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace soar_TraceNames;
 namespace stn = soar_TraceNames;

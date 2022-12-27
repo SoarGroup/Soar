@@ -40,7 +40,7 @@
 #include "working_memory_activation.h"
 #include "xml.h"
 
-#include <assert.h>
+#include <cassert>
 #include <ctype.h>
 #include "run_soar.h"
 #include <stdlib.h>

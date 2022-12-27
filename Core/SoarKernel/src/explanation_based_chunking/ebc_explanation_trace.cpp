@@ -9,7 +9,7 @@
 #include "symbol_manager.h"
 #include "test.h"
 
-#include <assert.h>
+#include <cassert>
 
 /* Methods for generating variable identities during instantiation creation */
 

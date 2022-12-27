@@ -20,7 +20,7 @@
 #include "working_memory.h"
 #include "xml.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace soar_TraceNames;
 

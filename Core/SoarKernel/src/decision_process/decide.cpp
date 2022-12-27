@@ -56,7 +56,7 @@
 #include "svs_interface.h"
 #endif
 
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 #include <cmath>
 #include <list>

@@ -10,7 +10,7 @@
 
 #include "sml_AgentOutputFlusher.h"
 
-#include <assert.h>
+#include <cassert>
 
 #include "sml_Utils.h"
 #include "sml_PrintListener.h"

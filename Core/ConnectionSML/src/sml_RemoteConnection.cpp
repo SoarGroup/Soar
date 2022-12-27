@@ -20,7 +20,7 @@
 #include "sock_Socket.h"
 #include "thread_Thread.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace sml ;
 using namespace soarxml ;

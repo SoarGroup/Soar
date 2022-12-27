@@ -22,7 +22,7 @@
 #include "gSKI_Enumerations.h"
 #include "IgSKI_AgentManager.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace sml ;
 

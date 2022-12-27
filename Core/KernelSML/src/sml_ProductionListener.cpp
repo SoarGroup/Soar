@@ -29,7 +29,7 @@
 #include "production.h"
 #include "symbol.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace sml ;
 

@@ -37,7 +37,7 @@
 //#define DEBUG_UPDATE
 #endif
 
-#include <assert.h>
+#include <cassert>
 
 using namespace sml ;
 

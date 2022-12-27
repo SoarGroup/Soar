@@ -10,7 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <assert.h>
+#include <cassert>
 #include "thread_OSspecific.h"
 
 using namespace soar_thread ;

@@ -11,7 +11,7 @@
 #include "portability.h"
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 #include <string>
