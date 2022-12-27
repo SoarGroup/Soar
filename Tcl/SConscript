@@ -30,6 +30,11 @@ clone.Append(CPPPATH = Split(cpps))
 
 # Set up non-Tcl-related compiler flags
 clone.Append(CPPFLAGS = ['-w'])
+
+# Prevent "Command line warning D9025 : overriding '/W2' with '/w'"
+if '/W2' in clone['CPPFLAGS']:
+  clone['CPPFLAGS'].remove('/W2')
+
 if os.name == 'posix':
     clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
 

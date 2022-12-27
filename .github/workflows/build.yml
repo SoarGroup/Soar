@@ -47,7 +47,7 @@ jobs:
         env:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
-        run: python3 scons/scons.py --scu --opt --verbose all
+        run: python3 scons/scons.py --scu --opt --verbose all performance_tests
 
       - name: compress artifacts
         uses: vimtor/action-zip@v1
@@ -75,6 +75,16 @@ jobs:
           # fail_on_failure: true
           annotate_only: true
       # TODO: run SML tests (Python, Tcl, Java)
+
+      - name: performance tests
+        working-directory: ./out
+        run: ./do_performance_test.sh
+
+      - name: upload performance test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}-PerformanceTestResults.txt
+          path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
 
 # Using powershell means we need to explicitly stop on failure
   Windows:
@@ -113,7 +123,7 @@ jobs:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: |
-          ./build.bat --scu --opt --verbose --tcl=c:\progra~1\tcl all
+          ./build.bat --scu --opt --verbose --tcl=c:\progra~1\tcl all performance_tests
           if ($lastexitcode -ne 0) {
              throw "build.bat exit code: $lastexitcode"
           }
@@ -146,5 +156,19 @@ jobs:
           # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
           # fail_on_failure: true
           annotate_only: true
+
+      - name: performance tests
+        working-directory: ./out
+        run: |
+          bash ./do_performance_test.sh
+          if ($lastexitcode -ne 0) {
+             throw "do_performance_test exit code: $lastexitcode"
+          }
+
+      - name: upload performance test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows-PerformanceTestResults.txt
+          path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
 
       # TODO: run SML tests (Python, Tcl, Java)
