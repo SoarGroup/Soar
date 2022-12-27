@@ -126,6 +126,7 @@ jobs:
           }
           
       - name: Pack artifacts
+        shell: bash
         run: tar -cvf build.tar out/
       - name: upload artifacts
         uses: actions/upload-artifact@v3
