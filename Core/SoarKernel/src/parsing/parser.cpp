@@ -1238,7 +1238,6 @@ condition* parse_cond(agent* thisAgent, Lexer* lexer)
         /* --- read conjunctive condition --- */
         if (!lexer->get_lexeme())
         {
-            if (c) deallocate_condition_list(thisAgent, c);
             return NULL;
         }
         c = parse_cond_plus(thisAgent, lexer);
