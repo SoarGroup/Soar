@@ -14,25 +14,25 @@ namespace cli
     class AliasCommand : public cli::ParserCommand
     {
         public:
-            AliasCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~AliasCommand() {}
-            virtual const char* GetString() const
+            explicit AliasCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~AliasCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "alias";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: alias [--remove] [name [cmd args]]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 bool doRemove = false;
                 OptionsData optionsData[] =
                 {
                     {'r', "remove",             OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {0, nullptr, OPTARG_NONE}
                 };
 
                 for (;;)
@@ -75,27 +75,27 @@ namespace cli
                 }
             }
 
+        AliasCommand& operator=(const AliasCommand&) = delete;
+
         private:
             cli::CommandLineInterface& cli;
-
-            AliasCommand& operator=(const AliasCommand&);
     };
 
     class CDCommand : public cli::ParserCommand
     {
         public:
-            CDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~CDCommand() {}
-            virtual const char* GetString() const
+            explicit CDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~CDCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "cd";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: cd [directory]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 // Only takes one optional argument, the directory to change into
                 if (argv.size() > 2)
@@ -110,27 +110,27 @@ namespace cli
                 return cli.DoCD();
             }
 
+        CDCommand& operator=(const CDCommand&) = delete;
+
         private:
             cli::CommandLineInterface& cli;
-
-            CDCommand& operator=(const CDCommand&);
     };
 
     class DebugCommand : public cli::ParserCommand
     {
         public:
-            DebugCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~DebugCommand() {}
-            virtual const char* GetString() const
+            explicit DebugCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~DebugCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "debug";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: debug [ allocate | internal-symbols | port | time | ? ] [arguments*]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 if (argv.size() == 1)
                 {
@@ -142,58 +142,58 @@ namespace cli
                 return cli.DoDebug(&argv);
 
             }
+            DebugCommand& operator=(const DebugCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
-            DebugCommand& operator=(const DebugCommand&);
     };
 
 
     class DirsCommand : public cli::ParserCommand
     {
         public:
-            DirsCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~DirsCommand() {}
-            virtual const char* GetString() const
+            explicit DirsCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~DirsCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "dirs";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: dirs";
             }
 
-            virtual bool Parse(std::vector< std::string >&)
+            bool Parse(std::vector< std::string >&) override
             {
                 return cli.DoDirs();
             }
 
+            DirsCommand& operator=(const DirsCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            DirsCommand& operator=(const DirsCommand&);
     };
 
     class EchoCommand : public cli::ParserCommand
     {
         public:
-            EchoCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~EchoCommand() {}
-            virtual const char* GetString() const
+            explicit EchoCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~EchoCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "echo";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: echo [--nonewline] [string]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
                     {'n', "nonewline", OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {0, nullptr, OPTARG_NONE}
                 };
 
                 bool echoNewline(true);
@@ -227,27 +227,27 @@ namespace cli
                 return cli.DoEcho(argv, echoNewline);
             }
 
+            EchoCommand& operator=(const EchoCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            EchoCommand& operator=(const EchoCommand&);
     };
 
     class EpMemCommand : public cli::ParserCommand
     {
         public:
-            EpMemCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~EpMemCommand() {}
-            virtual const char* GetString() const
+            explicit EpMemCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~EpMemCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "epmem";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: epmem [options]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
@@ -265,7 +265,7 @@ namespace cli
                     {'S', "stats",        OPTARG_NONE},
                     {'t', "timers",       OPTARG_NONE},
                     {'v', "viz",          OPTARG_NONE},
-                    {0, 0, OPTARG_NONE} // null
+                    {0, nullptr, OPTARG_NONE} // null
                 };
 
                 char option = 0;
@@ -274,7 +274,7 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        return cli.SetError(opt.GetError());
                     }
 
                     if (opt.GetOption() == -1)
@@ -304,7 +304,7 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(0, 0))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoEpMem(option);
@@ -314,7 +314,7 @@ namespace cli
                         // case: backup requires one non-option argument
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoEpMem(option, &(argv[2]));
@@ -324,7 +324,7 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoEpMem(option, &(argv[2]));
@@ -335,7 +335,7 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         std::string temp_str(argv[2]);
@@ -346,7 +346,7 @@ namespace cli
                             return cli.SetError("Invalid epmem time tag.");
                         }
 
-                        return cli.DoEpMem(option, 0, 0, memory_id);
+                        return cli.DoEpMem(option, nullptr, nullptr, memory_id);
                     }
 
                     case 's':
@@ -354,34 +354,19 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(2, 2))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoEpMem('s', &(argv[2]), &(argv[3]));
                     }
 
                     case 'S':
-                        // case: stat can do zero or one non-option arguments
-                    {
-                        if (!opt.CheckNumNonOptArgs(0, 1))
-                        {
-                            return cli.SetError(opt.GetError().c_str());
-                        }
-
-                        if (opt.GetNonOptionArguments() == 0)
-                        {
-                            return cli.DoEpMem(option);
-                        }
-
-                        return cli.DoEpMem(option, &(argv[2]));
-                    }
-
                     case 't':
-                        // case: timer can do zero or one non-option arguments
+                        // case: stat and timer can do zero or one non-option arguments
                     {
                         if (!opt.CheckNumNonOptArgs(0, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         if (opt.GetNonOptionArguments() == 0)
@@ -397,7 +382,7 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         std::string temp_str(argv[2]);
@@ -408,7 +393,7 @@ namespace cli
                             return cli.SetError("Invalid epmem time tag.");
                         }
 
-                        return cli.DoEpMem(option, 0, 0, memory_id);
+                        return cli.DoEpMem(option, nullptr, nullptr, memory_id);
                     }
                 }
 
@@ -426,27 +411,27 @@ namespace cli
                 return cli.DoEpMem();
             }
 
+            EpMemCommand& operator=(const EpMemCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            EpMemCommand& operator=(const EpMemCommand&);
     };
 
     class GPCommand : public cli::ParserCommand
     {
         public:
-            GPCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~GPCommand() {}
-            virtual const char* GetString() const
+            explicit GPCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~GPCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "gp";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: gp { production_body }";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 // One argument
                 if (argv.size() < 2)
@@ -461,53 +446,53 @@ namespace cli
                 return cli.DoGP(argv[1]);
             }
 
+            GPCommand& operator=(const GPCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            GPCommand& operator=(const GPCommand&);
     };
 
     class HelpCommand : public cli::ParserCommand
     {
         public:
-            HelpCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~HelpCommand() {}
-            virtual const char* GetString() const
+            explicit HelpCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~HelpCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "help";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: help [command]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 return cli.DoHelp(argv);
             }
 
+            HelpCommand& operator=(const HelpCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            HelpCommand& operator=(const HelpCommand&);
     };
 
 
     class LearnCommand : public cli::ParserCommand
     {
         public:
-            LearnCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~LearnCommand() {}
-            virtual const char* GetString() const
+            explicit LearnCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~LearnCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "learn";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: learn [-abdeElonNpP]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
@@ -525,7 +510,7 @@ namespace cli
                     {'N', "no-local-negations", OPTARG_NONE},
                     {'p', "desirability-prefs", OPTARG_NONE},
                     {'P', "no-desirability-prefs", OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {0, nullptr, OPTARG_NONE}
                 };
 
                 cli::LearnBitset options(0);
@@ -534,9 +519,9 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        return cli.SetError(opt.GetError());
                     }
-                    ;
+
                     if (opt.GetOption() == -1)
                     {
                         break;
@@ -589,27 +574,27 @@ namespace cli
                 return cli.DoLearn(options);
             }
 
+            LearnCommand& operator=(const LearnCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            LearnCommand& operator=(const LearnCommand&);
     };
 
     class LSCommand : public cli::ParserCommand
     {
         public:
-            LSCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~LSCommand() {}
-            virtual const char* GetString() const
+            explicit LSCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~LSCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "ls";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: ls";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 // No arguments
                 if (argv.size() != 1)
@@ -619,27 +604,27 @@ namespace cli
                 return cli.DoLS();
             }
 
+            LSCommand& operator=(const LSCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            LSCommand& operator=(const LSCommand&);
     };
 
     class PopDCommand : public cli::ParserCommand
     {
         public:
-            PopDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~PopDCommand() {}
-            virtual const char* GetString() const
+            explicit PopDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~PopDCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "popd";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: popd";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 // No arguments
                 if (argv.size() != 1)
@@ -649,27 +634,27 @@ namespace cli
                 return cli.DoPopD();
             }
 
+            PopDCommand& operator=(const PopDCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            PopDCommand& operator=(const PopDCommand&);
     };
 
     class PreferencesCommand : public cli::ParserCommand
     {
         public:
-            PreferencesCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~PreferencesCommand() {}
-            virtual const char* GetString() const
+            explicit PreferencesCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~PreferencesCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "preferences";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: preferences [options] [identifier [attribute]]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
@@ -683,7 +668,7 @@ namespace cli
                     {'3', "wmes",        OPTARG_NONE},
                     {'w', "wmes",        OPTARG_NONE},
                     {'o', "object",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {0, nullptr, OPTARG_NONE}
                 };
 
                 cli::ePreferencesDetail detail = cli::PREFERENCES_ONLY;
@@ -693,9 +678,8 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        return cli.SetError(opt.GetError());
                     }
-                    ;
                     if (opt.GetOption() == -1)
                     {
                         break;
@@ -748,27 +732,27 @@ namespace cli
                 return cli.DoPreferences(detail, object);
             }
 
+            PreferencesCommand& operator=(const PreferencesCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            PreferencesCommand& operator=(const PreferencesCommand&);
     };
 
     class PrintCommand : public cli::ParserCommand
     {
         public:
-            PrintCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~PrintCommand() {}
-            virtual const char* GetString() const
+            explicit PrintCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~PrintCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "print";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: print [options] [production_name]\nprint [options] identifier|timetag|pattern";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
@@ -792,7 +776,7 @@ namespace cli
                     {'T', "templates",      OPTARG_NONE},
                     {'u', "user",           OPTARG_NONE},
                     {'v', "varprint",       OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {0, nullptr, OPTARG_NONE}
                 };
 
                 int depth = -1;
@@ -802,9 +786,8 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        return cli.SetError(opt.GetError());
                     }
-                    ;
                     if (opt.GetOption() == -1)
                     {
                         break;
@@ -925,27 +908,27 @@ namespace cli
                 return cli.DoPrint(options, depth, &arg);
             }
 
+            PrintCommand& operator=(const PrintCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            PrintCommand& operator=(const PrintCommand&);
     };
 
     class PushDCommand : public cli::ParserCommand
     {
         public:
-            PushDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~PushDCommand() {}
-            virtual const char* GetString() const
+            explicit PushDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~PushDCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "pushd";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: pushd directory";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 // Only takes one argument, the directory to change into
                 if (argv.size() < 2)
@@ -959,27 +942,27 @@ namespace cli
                 return cli.DoPushD(argv[1]);
             }
 
+            PushDCommand& operator=(const PushDCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            PushDCommand& operator=(const PushDCommand&);
     };
 
     class PWDCommand : public cli::ParserCommand
     {
         public:
-            PWDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~PWDCommand() {}
-            virtual const char* GetString() const
+            explicit PWDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~PWDCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "pwd";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: pwd";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 // No arguments to print working directory
                 if (argv.size() != 1)
@@ -989,27 +972,27 @@ namespace cli
                 return cli.DoPWD();
             }
 
+            PWDCommand& operator=(const PWDCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            PWDCommand& operator=(const PWDCommand&);
     };
 
     class RLCommand : public cli::ParserCommand
     {
         public:
-            RLCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~RLCommand() {}
-            virtual const char* GetString() const
+            explicit RLCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~RLCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "rl";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
-                return "Syntax: rl [options parameter|statstic]";
+                return "Syntax: rl [options parameter|statistic]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
@@ -1018,7 +1001,7 @@ namespace cli
                     {'s', "set",    OPTARG_NONE},
                     {'t', "trace",    OPTARG_NONE},
                     {'S', "stats",    OPTARG_NONE},
-                    {0, 0, OPTARG_NONE} // null
+                    {0, nullptr, OPTARG_NONE} // null
                 };
 
                 char option = 0;
@@ -1027,7 +1010,7 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        return cli.SetError(opt.GetError());
                     }
 
                     if (opt.GetOption() == -1)
@@ -1054,7 +1037,7 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoRL(option, &(argv[2]));
@@ -1065,7 +1048,7 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(2, 2))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoRL(option, &(argv[2]), &(argv[3]));
@@ -1076,7 +1059,7 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(0, 2))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         if (opt.GetNonOptionArguments() == 0)
@@ -1096,7 +1079,7 @@ namespace cli
                     {
                         if (!opt.CheckNumNonOptArgs(0, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         if (opt.GetNonOptionArguments() == 0)
@@ -1118,27 +1101,27 @@ namespace cli
                 return cli.DoRL();
             }
 
+            RLCommand& operator=(const RLCommand&) = delete;
         private:
             cli::CommandLineInterface& cli;
 
-            RLCommand& operator=(const RLCommand&);
     };
 
     class RunCommand : public cli::ParserCommand
     {
         public:
-            RunCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~RunCommand() {}
-            virtual const char* GetString() const
+            explicit RunCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~RunCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "run";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: run  [-f|count]\nrun -[d|e|o|p][s][un][g] [f|count]\nrun -[d|e|o|p][un] count [-i e|p|d|o]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
@@ -1152,7 +1135,7 @@ namespace cli
                     {'p', "phase",            OPTARG_NONE},
                     {'s', "self",            OPTARG_NONE},
                     {'u', "update",            OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {0, nullptr, OPTARG_NONE}
                 };
 
                 cli::RunBitset options(0);
@@ -1162,9 +1145,8 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        return cli.SetError(opt.GetError());
                     }
-                    ;
                     if (opt.GetOption() == -1)
                     {
                         break;
@@ -1186,7 +1168,7 @@ namespace cli
                             interleaveMode = ParseRunInterleaveOptarg(opt);
                             if (interleaveMode == cli::RUN_INTERLEAVE_DEFAULT)
                             {
-                                return cli.SetError(opt.GetError().c_str());    // error set in parse function
+                                return cli.SetError(opt.GetError());    // error set in parse function
                             }
                             break;
                         case 'o':
@@ -1235,6 +1217,8 @@ namespace cli
                 return cli.DoRun(options, count, interleaveMode);
             }
 
+            RunCommand& operator=(const RunCommand&) = delete;
+
         private:
             cli::CommandLineInterface& cli;
 
@@ -1261,24 +1245,23 @@ namespace cli
                 return cli::RUN_INTERLEAVE_DEFAULT;
             }
 
-            RunCommand& operator=(const RunCommand&);
     };
 
     class SMemCommand : public cli::ParserCommand
     {
         public:
-            SMemCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~SMemCommand() {}
-            virtual const char* GetString() const
+            explicit SMemCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~SMemCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "smem";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: smem [options]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
@@ -1300,7 +1283,7 @@ namespace cli
                     {'S', "stats",      OPTARG_NONE},
                     {'t', "timers",     OPTARG_NONE},
                     {'x', "export",     OPTARG_NONE},
-                    {0, 0, OPTARG_NONE} // null
+                    {0, nullptr, OPTARG_NONE} // null
                 };
 
                 char option = 0;
@@ -1309,7 +1292,7 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        return cli.SetError(opt.GetError());
                     }
 
                     if (opt.GetOption() == -1)
@@ -1334,19 +1317,11 @@ namespace cli
                         break;
 
                     case 'a':
-                        // case: add requires one non-option argument
-                        if (!opt.CheckNumNonOptArgs(1, 1))
-                        {
-                            return cli.SetError(opt.GetError().c_str());
-                        }
-
-                        return cli.DoSMem(option, &(argv[2]));
-
                     case 'b':
-                        // case: backup requires one non-option argument
+                        // case: add and backup require one non-option argument
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoSMem(option, &(argv[2]));
@@ -1356,7 +1331,7 @@ namespace cli
                         // case: get requires one non-option argument
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoSMem(option, &(argv[2]));
@@ -1367,10 +1342,10 @@ namespace cli
                         // case: history only accepts 1 non-option argument
                         if (!opt.CheckNumNonOptArgs(1, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
-                        return cli.DoSMem(option, &(argv[2]), 0);
+                        return cli.DoSMem(option, &(argv[2]), nullptr);
                     }
                     case 'c':
                     case 'i':
@@ -1379,7 +1354,7 @@ namespace cli
                         // case: init takes no arguments
                         if (!opt.CheckNumNonOptArgs(0, 0))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoSMem(option);
@@ -1389,15 +1364,15 @@ namespace cli
                         // case: export does 1-2 non-option arguments
                         if (!opt.CheckNumNonOptArgs(1, 2))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         if (opt.GetNonOptionArguments() == 1)
                         {
-                            return cli.DoSMem(option, &(argv[2]), 0);
+                            return cli.DoSMem(option, &(argv[2]), nullptr);
                         }
 
-                        return cli.DoSMem(option, &(argv[2]), &(argv[3]), 0);
+                        return cli.DoSMem(option, &(argv[2]), &(argv[3]), nullptr);
                     }
 
                     case 'q':
@@ -1405,7 +1380,7 @@ namespace cli
                         // case: query requires one non-option argument, but can have a depth argument
                         if (!opt.CheckNumNonOptArgs(1, 2))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         if (opt.GetNonOptionArguments() == 1)
@@ -1420,7 +1395,7 @@ namespace cli
                         // case: precalculate takes no arguments
                         if (!opt.CheckNumNonOptArgs(0,0))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoSMem(option);
@@ -1430,7 +1405,7 @@ namespace cli
                         // case: remove requires one non-option argument, but can have a "force" argument
                         if (!opt.CheckNumNonOptArgs(1, 2))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         if (opt.GetNonOptionArguments() == 1)
@@ -1446,7 +1421,7 @@ namespace cli
                         // case: set requires two non-option arguments
                         if (!opt.CheckNumNonOptArgs(2, 2))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         return cli.DoSMem(option, &(argv[2]), &(argv[3]));
@@ -1457,7 +1432,7 @@ namespace cli
                         // case: stat can do zero or one non-option arguments
                         if (!opt.CheckNumNonOptArgs(0, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         if (opt.GetNonOptionArguments() == 0)
@@ -1473,7 +1448,7 @@ namespace cli
                         // case: timer can do zero or one non-option arguments
                         if (!opt.CheckNumNonOptArgs(0, 1))
                         {
-                            return cli.SetError(opt.GetError().c_str());
+                            return cli.SetError(opt.GetError());
                         }
 
                         if (opt.GetNonOptionArguments() == 0)
@@ -1500,28 +1475,28 @@ namespace cli
                 return cli.DoSMem();
             }
 
+            SMemCommand& operator=(const SMemCommand&) = delete;
+
         private:
             cli::CommandLineInterface& cli;
-
-            SMemCommand& operator=(const SMemCommand&);
     };
 
     class SPCommand : public cli::ParserCommand
     {
         public:
-            SPCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~SPCommand() {}
-            virtual const char* GetString() const
+            explicit SPCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~SPCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "sp";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return
                     "Syntax: sp {production_body}";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 // One argument (the stuff in the brackets, minus the brackets
                 if (argv.size() < 2)
@@ -1536,28 +1511,28 @@ namespace cli
                 return cli.DoSP(argv[1]);
             }
 
+            SPCommand& operator=(const SPCommand&) = delete;
+
         private:
             cli::CommandLineInterface& cli;
-
-            SPCommand& operator=(const SPCommand&);
     };
 
     class StatsCommand : public cli::ParserCommand
     {
         public:
-            StatsCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~StatsCommand() {}
-            virtual const char* GetString() const
+            explicit StatsCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~StatsCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "stats";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return
                     "Syntax: stats [options]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
@@ -1575,7 +1550,7 @@ namespace cli
                     {'C', "cycle-csv",  OPTARG_NONE},
                     {'S', "sort",       OPTARG_REQUIRED},
                     {'a', "agent",      OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {0, nullptr, OPTARG_NONE}
                 };
 
                 cli::StatsBitset options(0);
@@ -1585,9 +1560,8 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        return cli.SetError(opt.GetError());
                     }
-                    ;
                     if (opt.GetOption() == -1)
                     {
                         break;
@@ -1650,28 +1624,28 @@ namespace cli
                 return cli.DoStats(options, sort);
             }
 
+            StatsCommand& operator=(const StatsCommand&) = delete;
+
         private:
             cli::CommandLineInterface& cli;
-
-            StatsCommand& operator=(const StatsCommand&);
     };
 
     class SVSCommand : public cli::ParserCommand
     {
         public:
-            SVSCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
-            virtual ~SVSCommand() {}
-            virtual const char* GetString() const
+            explicit SVSCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ~SVSCommand() override = default;
+            [[nodiscard]] const char* GetString() const override
             {
                 return "svs";
             }
-            virtual const char* GetSyntax() const
+            [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: svs <elements to inspect>\n"
                        "        svs [--enable | -e | --on | --disable | -d | --off]";
             }
 
-            virtual bool Parse(std::vector< std::string >& argv)
+            bool Parse(std::vector< std::string >& argv) override
             {
                 return cli.DoSVS(argv);
             }

@@ -129,9 +129,9 @@ namespace cli
 
             }
             
-            virtual ~Aliases() {}
+            ~Aliases() override = default;
             
-            virtual bool handle_command(std::vector< std::string >& argv)
+            bool handle_command(std::vector< std::string >& argv) override
             {
                 SetAlias(argv);
                 return true;
@@ -144,7 +144,7 @@ namespace cli
                     return;
                 }
                 
-                std::vector<std::string>::const_iterator i = argv.begin();
+                auto i = argv.begin();
                 if (argv.size() == 1)
                 {
                     aliases.erase(*i);
@@ -164,14 +164,14 @@ namespace cli
                     return false;
                 }
                 
-                std::map< std::string, std::vector< std::string > >::iterator iter = aliases.find(argv.front());
+                auto iter = aliases.find(argv.front());
                 if (iter == aliases.end())
                 {
                     return false;
                 }
                 
                 // overwrite first argument in argv
-                std::vector< std::string >::iterator insertion = argv.begin();
+                auto insertion = argv.begin();
                 insertion->assign(iter->second[0]);
                 
                 // insert any remaining args after that one
