@@ -37,7 +37,7 @@ t = env.Install('$OUT_DIR', put_obj)
 if 'MSVSProject' in env['BUILDERS']:
 	proj = env.MSVSProject(
 		target = '#unittests' + env['MSVSPROJECTSUFFIX'],
-		srcs = src,
+		srcs = [ str(s) for s in Flatten(src) ],
 		buildtarget = t,
 		variant = g_msvs_variant,
 		auto_build_solution = 0,
