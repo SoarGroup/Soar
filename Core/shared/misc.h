@@ -15,6 +15,7 @@
 
 #include "portability.h"
 
+#include <cinttypes>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -91,42 +92,42 @@ template <class T> inline T cast_and_possibly_truncate(void* ptr)
 const size_t TO_C_STRING_BUFSIZE = 24; // uint64: 18446744073709551615 plus a few extra
 inline const char* const to_c_string(const int8_t& v, char* buf)
 {
-    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%hhi", v);
+    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%" SCNi8, v);
     return buf;
 }
 inline const char* const to_c_string(const uint8_t& v, char* buf)
 {
-    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%hhu", v);
+    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%" SCNu8, v);
     return buf;
 }
 inline const char* const to_c_string(const int16_t& v, char* buf)
 {
-    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%hd", v);
+    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%" SCNd16, v);
     return buf;
 }
 inline const char* const to_c_string(const uint16_t& v, char* buf)
 {
-    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%hu", v);
+    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%" SCNu16, v);
     return buf;
 }
 inline const char* const to_c_string(const int32_t& v, char* buf)
 {
-    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%d", v);
+    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%" SCNd32, v);
     return buf;
 }
 inline const char* const to_c_string(const uint32_t& v, char* buf)
 {
-    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%u", v);
+    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%" SCNu32, v);
     return buf;
 }
 inline const char* const to_c_string(const int64_t& v, char* buf)
 {
-    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%lld", static_cast<long long>(v));
+    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%" SCNd64, v);
     return buf;
 }
 inline const char* const to_c_string(const uint64_t& v, char* buf)
 {
-    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%llu", static_cast<long long unsigned>(v));
+    SNPRINTF(buf, TO_C_STRING_BUFSIZE, "%" SCNu64, v);
     return buf;
 }
 inline const char* const to_c_string(const float& v, char* buf)
@@ -148,57 +149,49 @@ inline const char* const to_c_string(const long double& v, char* buf)
 // FROM
 inline bool from_c_string(int8_t& v, const char* const str)
 {
-    return sscanf(str, "%hhd", &v) == 1;
+    return sscanf(str, "%" SCNd8, &v) == 1;
 }
 inline bool from_c_string(uint8_t& v, const char* const str)
 {
-    return sscanf(str, "%hhu", &v) == 1;
+    return sscanf(str, "%" SCNu8, &v) == 1;
 }
 inline bool from_c_string(int16_t& v, const char* const str)
 {
-    return sscanf(str, "%hd", &v) == 1;
+    return sscanf(str, "%" SCNd16, &v) == 1;
 }
 inline bool from_c_string(uint16_t& v, const char* const str)
 {
-    return sscanf(str, "%hu", &v) == 1;
+    return sscanf(str, "%" SCNu16, &v) == 1;
 }
 inline bool from_c_string(int32_t& v, const char* const str)
 {
-    //v = atoi(str);
-    return sscanf(str, "%d", &v) == 1;
+    return sscanf(str, "%" SCNd32, &v) == 1;
 }
 inline bool from_c_string(uint32_t& v, const char* const str)
 {
-    return sscanf(str, "%u", &v) == 1;
+    return sscanf(str, "%" SCNu32, &v) == 1;
 }
 inline bool from_c_string(int64_t& v, const char* const str)
 {
-    long long vt = 0;
-    bool ret = sscanf(str, "%lld", &vt) == 1;
-    v = static_cast<int64_t>(vt);
+    bool ret = sscanf(str, "%" SCNd64, &v) == 1;
     return ret;
 }
 inline bool from_c_string(uint64_t& v, const char* const str)
 {
-    long long unsigned vt = 0;
-    bool ret = sscanf(str, "%llu", &vt) == 1;
-    v = static_cast<uint64_t>(vt);
+    bool ret = sscanf(str, "%" SCNu64, &v) == 1;
     return ret;
 }
 inline bool from_c_string(float& v, const char* const str)
 {
-    //v = strtof(str, NULL);
     return sscanf(str, "%f", &v) == 1;
 }
 inline bool from_c_string(double& v, const char* const str)
 {
-    //v = strtod(str, NULL);
     return sscanf(str, "%lf", &v) == 1;
 }
 
 inline bool from_c_string(long double& v, const char* const str)
 {
-    //v = strtold(str, NULL);
     return sscanf(str, "%Lf", &v) == 1;
 }
 

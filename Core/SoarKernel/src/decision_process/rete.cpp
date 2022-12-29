@@ -9342,7 +9342,7 @@ int64_t xml_aux(agent* thisAgent,    /* current agent */
                 for (rm = node->b.posneg.alpha_mem_->right_mems; rm != NIL;
                         rm = rm->next_in_am)
                 {
-                    //if (wtt==TIMETAG_WME_TRACE) print (thisAgent, "%lu", rm->w->timetag);
+                    //if (wtt==TIMETAG_WME_TRACE) print (thisAgent, "%" SCNu64, rm->w->timetag);
                     //else if (wtt==FULL_WME_TRACE) print_wme (thisAgent, rm->w);
                     //print (thisAgent, " ");
                     if (wtt == TIMETAG_WME_TRACE)

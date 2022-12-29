@@ -19,6 +19,8 @@
 #include "smem_db.h"
 #include "symbol.h"
 
+#include <cinttypes>
+
 Symbol_Manager::Symbol_Manager(agent* pAgent)
 {
     thisAgent = pAgent;
@@ -982,10 +984,10 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
         if (sym->reference_count > 0)
         {
                 SNPRINTF(msg, 256,
-                    "\t%c%llu --> %llu\n",
+                    "\t%c%" SCNu64 " --> %" SCNu64 "\n",
                     sym->id->name_letter,
-                    static_cast<long long unsigned>(sym->id->name_number),
-                    static_cast<long long unsigned>(sym->reference_count));
+                    sym->id->name_number,
+                    sym->reference_count);
                 thisAgent->outputManager->printa_sf(thisAgent,  msg);
             //                xml_generate_warning(thisAgent, msg);
 
@@ -1104,7 +1106,7 @@ Symbol* Symbol_Manager::generate_new_str_constant(const char* prefix, uint64_t* 
 
     while (true)
     {
-        SNPRINTF(name, GENERATE_NEW_STR_CONSTANT_BUFFER_SIZE, "%s%lu", prefix, static_cast<long unsigned int>((*counter)++));
+        SNPRINTF(name, GENERATE_NEW_STR_CONSTANT_BUFFER_SIZE, "%s%" SCNu64, prefix, (*counter)++);
         name[GENERATE_NEW_STR_CONSTANT_BUFFER_SIZE - 1] = 0;
         if (! find_str_constant(name))
         {
@@ -1187,8 +1189,8 @@ Symbol* Symbol_Manager::generate_new_variable(const char* prefix)
 
     while (true)
     {
-        SNPRINTF(name, GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
-                 static_cast<long unsigned int>(gensymed_variable_count[first_letter - 'a']++));
+        SNPRINTF(name, GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%" SCNu64 ">", prefix,
+                 gensymed_variable_count[first_letter - 'a']++);
         name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
 
         New = make_variable(name);

@@ -38,6 +38,7 @@
 #endif
 
 #include <cassert>
+#include <cinttypes>
 
 using namespace sml ;
 
@@ -1184,7 +1185,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
     //if (kDebugInput)
     //{
     //    std::string printInput1 = this->ExecuteCommandLine("print --internal --depth 2 I2") ;
-    //  PrintDebugFormat("%s\nLooking for %ld", printInput1.c_str(), timetag) ;
+    //  PrintDebugFormat("%s\nLooking for %" SCNu64, printInput1.c_str(), timetag) ;
     //}
 
     // The wme is already gone so no work to do
@@ -1580,7 +1581,7 @@ void AgentSML::ReplayInputWMEs()
         {
             // add-wme
             char timetagString[25];
-            SNPRINTF(timetagString, 25, "%ld", static_cast<long int>(ca.clientTimeTag));
+            SNPRINTF(timetagString, 25, "%" SCNd64, ca.clientTimeTag);
 
             if (!AddInputWME(ca.Add()->id.c_str(), ca.Add()->attr.c_str(), ca.Add()->value.c_str(), ca.Add()->type, timetagString))
             {

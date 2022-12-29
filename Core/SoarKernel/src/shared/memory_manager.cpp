@@ -271,7 +271,7 @@ void* Memory_Manager::allocate_memory(size_t size, int usage_code)
     if (p == NULL)
     {
         char msg[BUFFER_MSG_SIZE];
-        SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %llu bytes of memory.\n", static_cast<long long unsigned>(size));
+        SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %zu bytes of memory.\n", size);
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error_noagent(msg);
     }
