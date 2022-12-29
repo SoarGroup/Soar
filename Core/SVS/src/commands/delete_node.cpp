@@ -79,7 +79,7 @@ class delete_node_command : public command
             // Get the value of the ^source-id wme
             if (!get_symbol_value(si->get_wme_val(idWme), nodeId))
             {
-                set_status("^id must be a std::string");
+                set_status("^id must be a string");
                 return false;
             }
 
