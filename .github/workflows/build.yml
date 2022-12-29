@@ -48,7 +48,7 @@ jobs:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: python3 scons/scons.py --scu --opt --verbose all performance_tests
-    
+
       - name: Pack artifacts
         run: tar -czvf build.tar.gz out/
       - name: upload artifacts
@@ -106,8 +106,17 @@ jobs:
 
       # No easy quick way to install TCL on Windows, so we download and build it ourselves.
       - name: build and install Tcl
+        env:
+          TCL_DOWNLOAD_URL: https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip
+          EXPECTED_TCL_HASH: 8999fcafab2d85473280e0bf6e390480496dfd53
         run: |
-          (new-object System.Net.WebClient).DownloadFile('https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip', 'tcl8613-src.zip')
+          (new-object System.Net.WebClient).DownloadFile($Env:TCL_DOWNLOAD_URL, 'tcl8613-src.zip')
+          # check that the file hash matches what we expect
+          $FileHash = Get-FileHash -Algorithm SHA1 tcl8613-src.zip
+          if ( $FileHash.Hash -ne $Env:EXPECTED_TCL_HASH ) {
+             throw "tcl download hash mismatch: $fileHash"
+          }
+
           Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
           cd tcl8613-src\tcl8.6.13\win
           &nmake -f makefile.vc release install INSTALLDIR=c:\progra~1\tcl
@@ -124,7 +133,7 @@ jobs:
           if ($lastexitcode -ne 0) {
              throw "build.bat exit code: $lastexitcode"
           }
-          
+
       - name: Pack artifacts
         shell: bash
         run: tar -czvf build.tar.gz out/
