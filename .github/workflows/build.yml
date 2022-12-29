@@ -104,7 +104,7 @@ jobs:
       - name: switch to VS command prompt
         uses: ilammy/msvc-dev-cmd@v1
 
-      # No easy quick way to install TCL on Windows, so we download and build it ourselves.
+      # No easy/quick way to install TCL on Windows, so we download and build it ourselves.
       - name: build and install Tcl
         env:
           TCL_DOWNLOAD_URL: https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip
@@ -114,7 +114,7 @@ jobs:
           # check that the file hash matches what we expect
           $FileHash = Get-FileHash -Algorithm SHA1 tcl8613-src.zip
           if ( $FileHash.Hash -ne $Env:EXPECTED_TCL_HASH ) {
-             throw "tcl download hash mismatch: $fileHash"
+             throw "tcl download hash mismatch: $($FileHash.Hash)"
           }
 
           Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
