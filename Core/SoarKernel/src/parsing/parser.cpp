@@ -35,6 +35,7 @@
 #include "xml.h"
 
 #include <ctype.h>
+#include <cinttypes>
 #include <stdlib.h>
 
 using soar::Lexer;
@@ -77,7 +78,7 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
 
     /* --- create variable with "#" in its name:  this couldn't possibly be a
        variable in the user's code, since the lexer doesn't handle "#" --- */
-    SNPRINTF(buf, sizeof(buf) - 1, "<#%c*%lu>", first_letter, static_cast<long unsigned int>(thisAgent->placeholder_counter[i]++));
+    SNPRINTF(buf, sizeof(buf) - 1, "<#%c*%" SCNu64 ">", first_letter, thisAgent->placeholder_counter[i]++);
     buf[sizeof(buf) - 1] = '\0';
 
     v = thisAgent->symbolManager->make_variable(buf);
@@ -322,7 +323,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         {
 //            thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
             char buf[30];
-            SNPRINTF(buf, sizeof(buf) - 1, "%c%llu", lexeme->id_letter, lexeme->id_number);
+            SNPRINTF(buf, sizeof(buf) - 1, "%c%" SCNu64, lexeme->id_letter, lexeme->id_number);
              buf[sizeof(buf) - 1] = '\0';
             newSymbol = thisAgent->symbolManager->make_str_constant(buf);
 

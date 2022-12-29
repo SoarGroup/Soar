@@ -227,7 +227,7 @@ wme* find_input_wme_by_timetag_from_id(agent* thisAgent, Symbol* idSym, uint64_t
     // This is inefficient.  Using a hash table could save a lot here.
     for (pWME = idSym->id->input_wmes; pWME != NIL; pWME = pWME->next)
     {
-        //PrintDebugFormat("Timetag %ld", pWME->timetag) ;
+        //PrintDebugFormat("Timetag %" SCNu64, pWME->timetag) ;
         if (pWME->timetag == timetag)
         {
             return pWME ;

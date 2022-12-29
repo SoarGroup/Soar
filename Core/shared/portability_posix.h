@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <inttypes.h>
+#include <cinttypes>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stddef.h>
@@ -117,14 +117,14 @@ static inline int set_working_directory_to_executable_path()
 {
     char application_path[FILENAME_MAX];
     int length;
-    
+
 #if (defined(__APPLE__) && defined(__MACH__))
     uint32_t size = sizeof(application_path);
     length = _NSGetExecutablePath(application_path, &size) ? -1 : int(strlen(application_path));
 #else
     length = readlink("/proc/self/exe", application_path, FILENAME_MAX);
 #endif
-    
+
     for (; length != -1; --length)
     {
         if (application_path[length] == '/')
@@ -133,19 +133,19 @@ static inline int set_working_directory_to_executable_path()
             break;
         }
     }
-    
+
     if (length == -1)
     {
         fprintf(stderr, "Detecting working directory failed.\n");
         return -1;
     }
-    
+
     int rv = chdir(application_path);
     if (rv)
     {
         fprintf(stderr, "Failed to set working directory.\n");
     }
-    
+
     return rv;
 }
 

@@ -20,6 +20,7 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <cinttypes>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -765,7 +766,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
                 (data->gap_age == 0) && !data->prev_op_rl_rules->empty())
         {
             char buf[256];
-            SNPRINTF(buf, 254, "gap started (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number));
+            SNPRINTF(buf, 254, "gap started (%c%" SCNu64 ")", goal->id->name_letter, goal->id->name_number);
 
             thisAgent->outputManager->printa(thisAgent,  buf);
             xml_generate_warning(thisAgent, buf);
@@ -823,7 +824,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
             if (data->gap_age && using_gaps && thisAgent->trace_settings[ TRACE_RL_SYSPARAM ])
             {
                 char buf[256];
-                SNPRINTF(buf, 254, "gap ended (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number));
+                SNPRINTF(buf, 254, "gap ended (%c%" SCNu64 ")", goal->id->name_letter, goal->id->name_number);
 
                 thisAgent->outputManager->printa(thisAgent,  buf);
                 xml_generate_warning(thisAgent, buf);

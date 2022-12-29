@@ -32,6 +32,7 @@
 #include "XMLTrace.h"
 
 #include <cassert>
+#include <cinttypes>
 
 using namespace soar_TraceNames;
 namespace stn = soar_TraceNames;
@@ -127,7 +128,7 @@ void xml_move_current_to_last_child(agent* pAgent)
 void xml_att_val(agent* pAgent, char const* pAttribute, uint64_t value)
 {
     char buf[51];
-    SNPRINTF(buf, 50, "%llu", static_cast<long long unsigned>(value));
+    SNPRINTF(buf, 50, "%" SCNu64, value);
 
     soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >(pAgent->xml_destination);
     pXML->AddAttribute(pAttribute, buf) ;
@@ -145,7 +146,7 @@ void xml_att_val(agent* pAgent, char const* pAttribute, int value)
 void xml_att_val(agent* pAgent, char const* pAttribute, int64_t value)
 {
     char buf[51];
-    SNPRINTF(buf, 50, "%lld", static_cast<long long>(value));
+    SNPRINTF(buf, 50, "%" SCNd64, value);
 
     soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >(pAgent->xml_destination);
     pXML->AddAttribute(pAttribute, buf) ;
