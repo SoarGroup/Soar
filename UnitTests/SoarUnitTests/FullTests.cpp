@@ -15,6 +15,7 @@
 #include "SoarHelper.hpp"
 
 #include "sml_AgentSML.h"
+#include "sml_ClientKernel.h"
 #include "soar_instance.h"
 
 bool g_Cancel = false;
@@ -413,10 +414,13 @@ void FullTests_Parent::testClientMessageHandler()
     int clientCallback = m_pKernel->RegisterForClientMessageEvent("test-client", Handlers::MyClientMessageHandler, &clientHandlerReceived) ;
 
     // This is a bit dopey--but we'll send a message to ourselves for this test
-    std::string response = m_pKernel->SendClientMessage(agent, "test-client", "test-message");
+    // use a large message to exercise buffer re-allocation logic
+    std::string message(SML_INITIAL_BUFFER_SIZE + 100, 'x');
+    std::string response = m_pKernel->SendClientMessage(agent, "test-client", message.c_str());
     no_agent_assertTrue(clientHandlerReceived);
     clientHandlerReceived = false;
-    no_agent_assertTrue(response == "handler-messagetest-message");
+    std::string expected = "handler-message" + message;
+    no_agent_assertTrue(response == expected);
 
     no_agent_assertTrue(m_pKernel->UnregisterForClientMessageEvent(clientCallback));
 }

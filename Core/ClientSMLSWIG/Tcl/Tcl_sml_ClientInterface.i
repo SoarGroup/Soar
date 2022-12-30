@@ -134,7 +134,7 @@
 		Tcl_ThreadAlert(threadId);
 
 		// Pump the event queue so the event is handled synchronously
-		// Without this the call because asynchronous which is trouble.
+		// Without this the call becomes asynchronous which is trouble.
 		// BUGBUG? Should this be while (DoOneEvent() == 1) { } - i.e. clear the queue.
 		Tcl_DoOneEvent(TCL_DONT_WAIT) ;
 
@@ -161,9 +161,20 @@
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 
-	std::string TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
-	                    char const* pArgument)
+    // RHS function used to exec Tcl code from Soar
+	const char *TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
+	                    char const* pArgument, int *bufSize, char *buf)
 	{
+		static std::string prevResult;
+
+		if ( !prevResult.empty() )
+		{
+			strncpy( buf, prevResult.c_str(), *bufSize );
+
+			prevResult = "";
+
+			return buf;
+		}
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -184,12 +195,33 @@
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
 
-		return Tcl_GetString(res);
+		std::string sres = Tcl_GetString(res);
+
+		if ( sres.length() + 1 > *bufSize )
+		{
+			*bufSize = sres.length() + 1;
+			prevResult = sres;
+			return NULL;
+		}
+		strcpy( buf, sres.c_str() );
+
+		return buf;
 	}
 
-	std::string TclClientMessageEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pClientName,
-	                    char const* pMessage)
+	const char *TclClientMessageEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pClientName,
+	                    char const* pMessage, int *bufSize, char *buf)
 	{
+		static std::string prevResult;
+
+		if ( !prevResult.empty() )
+		{
+			strncpy( buf, prevResult.c_str(), *bufSize );
+
+			prevResult = "";
+
+			return buf;
+		}
+
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
 	    // this beginning part of the script will never change, but the parts we add will, so we make a copy of the beginning part so we can reuse it next time
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
@@ -210,7 +242,17 @@
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
 
-		return Tcl_GetString(res);
+		std::string sres = Tcl_GetString(res);
+
+		if ( sres.length() + 1 > *bufSize )
+		{
+			*bufSize = sres.length() + 1;
+			prevResult = sres;
+			return NULL;
+		}
+		strcpy( buf, sres.c_str() );
+
+		return buf;
 	}
 
 	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)

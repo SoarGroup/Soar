@@ -134,7 +134,7 @@ void Kernel::InitEvents()
     RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
 
     // Register for load-library events (local client only)
-    if (!this->GetConnection()->IsRemoteConnection())
+    if (!GetConnection()->IsRemoteConnection())
     {
         RegisterForStringEvent(smlEVENT_LOAD_LIBRARY, &LoadLibraryHandler, NULL);
         RegisterForStringEvent(smlEVENT_TCL_LIBRARY_MESSAGE, &TclLibraryMessageHandler, NULL);
@@ -461,7 +461,7 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
             if (strcmp(sml_Names::kCommand_Event, pCommandName) == 0)
             {
                 // This is an event that is not agent specific
-                this->ReceivedEvent(&msg, pResponse) ;
+                ReceivedEvent(&msg, pResponse) ;
             }
         }
     }
@@ -699,7 +699,23 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
     void* pUserData = handlerWithData.getUserData() ;
 
     // Call the handler
-    std::string result = handler(id, pUserData, pAgent, pFunctionName, pArgument) ;
+		char buffer[SML_INITIAL_BUFFER_SIZE] = {0};
+		char *buff = buffer;
+		std::string result;
+		int buffSize = sizeof(buffer);
+
+		const char *retVal = handler(id, pUserData, pAgent, pFunctionName, pArgument, &buffSize, buff) ;
+
+		if ( !retVal )
+		{
+			buff = new char[buffSize];
+
+			result = handler(id, pUserData, pAgent, pFunctionName, pArgument, &buffSize, buff) ;
+
+			delete [] buff;
+		}
+		else
+			result = buff;
 
     // If we got back a result then fill in the value in the response message.
     GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
@@ -2484,7 +2500,7 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
 #ifdef _WIN32
     // The windows shared library
     newLibraryName = libraryName + ".dll";
-    HMODULE hLibrary;
+    HMODULE hLibrary = NULL;
 #else
     newLibraryName = "lib" + libraryName;
     #if (defined(__APPLE__) && defined(__MACH__))
@@ -2512,7 +2528,15 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     if (!hLibrary)
     {
 #ifdef _WIN32
-        return "Library not found.";
+    std::string msg;
+
+    if ( directory.empty() )
+        msg = "Library not found. ";
+    else
+        msg = "Library failed to load. ";
+
+    msg += directory;
+    return msg;
 #else
      if(dlerror())
      {

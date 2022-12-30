@@ -122,7 +122,24 @@ namespace soar
          * Return the current level of parentheses nesting (0 means
          * no open paren's have been encountered).
          */
-        int current_parentheses_level ();
+        int current_parentheses_level () const;
+
+        /**
+        * Return the remaining string in the lex.
+        */
+        const char *current_orig_string() const;
+        const char *current_remaining_string() const;
+
+
+        /**
+         * Inserts an exec lexeme in front of the current lexeme, resets the lexer to before
+         * the exec lexeme, then reads back up to the exec lexeme. We use this to change undefined
+         * RHS function calls into exec calls so that clients can use arbitrary RHS functions defined
+         * in their language of choice. The implementation here is hacky, but necessary to match the
+         * behavior of JSoar.
+        */
+        void addExec();
+
         /**
          * Eat lexemes until current_parentheses_level matches the input
          * integer (0 means eat until back at the top level).
@@ -166,6 +183,11 @@ namespace soar
          * The second-to-last character read from the input string.
          */
         int                 prev_char;
+        /**
+         * Saves the original string passed to the lexer, in case
+         * it is changed by addExec().
+        */
+        std::string         orig_string;
         const char*         production_string;
         //0 means top level, no left parens seen
         int                 parentheses_level;

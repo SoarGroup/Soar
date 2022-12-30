@@ -32,7 +32,7 @@
 #include <unordered_map>
 
 // JRV: Added to support XML management inside Soar
-// These handles should not be used directly, see xml.h
+// This handle should not be used directly, see xml.h
 typedef void* xml_handle;
 
 #define UPDATE_LINKS_NORMALLY 0

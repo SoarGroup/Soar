@@ -20,6 +20,7 @@
 	#include <list>
 	#include <algorithm>
 	#include <iostream>
+    #include <string>
 
 	namespace sml {
 	class Agent;
@@ -280,8 +281,19 @@
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
 
-	std::string PythonRhsEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
+	const char *PythonRhsEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 	{
+        static std::string prevResult;
+
+        if ( !prevResult.empty() )
+        {
+            strncpy( buf, prevResult.c_str(), *bufSize );
+
+            prevResult = "";
+
+            return buf;
+        }
+
 	    PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
@@ -305,11 +317,30 @@
 
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 
-		return res;
+        if ( res.length() + 1 > *bufSize )
+        {
+            *bufSize = res.length() + 1;
+            prevResult = res;
+            return NULL;
+        }
+        strcpy( buf, res.c_str() );
+
+        return buf;
 	}
 
-	std::string PythonClientMessageEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage)
+	const char *PythonClientMessageEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage, int *bufSize, char *buf)
 	{
+        static std::string prevResult;
+
+        if ( !prevResult.empty() )
+        {
+            strncpy( buf, prevResult.c_str(), *bufSize );
+
+            prevResult = "";
+
+            return buf;
+        }
+
 	    PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
@@ -332,7 +363,15 @@
 
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 
-		return res;
+        if ( res.length() + 1 > *bufSize )
+        {
+            *bufSize = res.length() + 1;
+            prevResult = res;
+            return NULL;
+        }
+        strcpy( buf, res.c_str() );
+
+        return buf;
 	}
 
 	PythonUserData* CreatePythonUserData(PyObject* func, PyObject* userData) {

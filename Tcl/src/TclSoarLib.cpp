@@ -133,8 +133,11 @@ TclSoarLib::TclSoarLib(Kernel* myKernel) :
     std::unique_lock<std::mutex> lock(command_mutex);
     lib_thread = std::thread(&launch_tcl, (void*)this);
 
+    myKernel->AddRhsFunction( "tcl", tclRHS, this );
+
     // Wait until the new thread has finished initialization
     cv.wait(lock, [this]{ return thread_ready; });
+		lock.unlock();
 }
 
 TclSoarLib::~TclSoarLib()
@@ -143,14 +146,43 @@ TclSoarLib::~TclSoarLib()
     //cout << "   Waiting for TclThread to exit" << std::endl;
 
     // Tell the thread to shutdown
-    send_thread_command(SHUTDOWN_TCL_THREAD, "");
+    //send_thread_command(SHUTDOWN_TCL_THREAD, "");
+
+		//!!!!!!! The lib_thread is always already dead here, so waiting on anything causes a hang and the code won't shut down
+	  // lots of memory leaks, but doing anything else prevents shutdown
+	  // since this is only called on shutdown, it's not too big a deal
+		lib_thread.detach();
 
     // Wait until the thread exits
-    lib_thread.join();
+    //lib_thread.join();
 
     m_kernel = 0;
 
     //cout << "TclSoarLib destroyed" << std::endl;
+}
+
+const char *TclSoarLib::tclRHS( sml::smlRhsEventId, void *pData, sml::Agent *pAgent, char const *pFunc, char const *pArg, int *buffSize, char *buff )
+{
+    TclSoarLib *pLib = (TclSoarLib *)pData;
+
+    std::string comm("interp eval ");
+    std::string res;
+
+    comm += pAgent->GetAgentName();
+    comm += " {";
+    comm += pArg;
+    comm += "}";
+
+    pLib->GlobalEval( comm, res);
+
+    if ( res.size() + 1 > *buffSize )
+    {
+        *buffSize = res.size() + 1;
+        return NULL;
+    }
+    strcpy( buff, res.c_str() );
+
+    return buff;
 }
 
 void TclSoarLib::send_thread_command(int type, std::string info){
@@ -170,6 +202,7 @@ void TclSoarLib::send_thread_command(int type, std::string info){
         cmd_lock.lock();
         cv.wait(cmd_lock, [this]{ return finished_command; });
         finished_command = false;
+				cmd_lock.unlock();
     }
 }
 
@@ -342,6 +375,14 @@ bool TclSoarLib::initialize_Master()
         if (!(isDir(libDir.c_str()) && isDir(smlTclDir.c_str()) && isFile(masterFilePath.c_str())))
         {
             libDir = getenv("SOAR_HOME");
+
+            // remove any quotes contain in the env var
+            for ( int i = libDir.length() - 1; i >= 0; i-- )
+            {
+                if (libDir[i] == '\"')
+                    libDir.erase(i,1);
+            }
+
             if (libDir.size() == 0)
             {
                 GlobalEval("puts {Unable to find tcl scripts under current directory or SOAR_HOME, which is not currently set.}", result_string);

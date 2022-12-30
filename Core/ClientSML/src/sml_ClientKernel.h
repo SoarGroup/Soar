@@ -19,6 +19,8 @@
 #include "sml_ClientEvents.h"
 #include "sml_ListMap.h"
 
+#define SML_INITIAL_BUFFER_SIZE 1024
+
 // Forward declare so clients can use this
 struct ElementXML_InterfaceStruct;
 typedef ElementXML_InterfaceStruct* ElementXML_Handle ;

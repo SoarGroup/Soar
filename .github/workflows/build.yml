@@ -61,6 +61,13 @@ jobs:
         working-directory: ./out
         run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
 
+      - name: SML client tests
+        working-directory: ./out
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/out
+        run: java -jar java/soar-smljava.jar
+        # TODO: run additional tests for Python, Tcl, CSharp
+
       # reports JUnit test results as GitHub PR check.
       - name: publish test report
         uses: mikepenz/action-junit-report@v3
@@ -151,6 +158,15 @@ jobs:
              throw "UnitTests exit code: $lastexitcode"
           }
 
+      - name: SML client tests
+        working-directory: ./out
+        run: |
+          java -jar java/soar-smljava.jar
+          if ($lastexitcode -ne 0) {
+             throw "soar-smljava exit code: $lastexitcode"
+          }
+        # TODO: run additional tests for Python, Tcl, CSharp
+
       # reports JUnit test results as GitHub PR check.
       - name: publish test report
         uses: mikepenz/action-junit-report@v3
@@ -175,5 +191,3 @@ jobs:
         with:
           name: Windows-PerformanceTestResults.txt
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
-
-      # TODO: run SML tests (Python, Tcl, Java)

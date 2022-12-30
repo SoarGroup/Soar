@@ -77,7 +77,7 @@ class EXPORT TclSoarLib
         bool turnOff();
 
         // The thread which creates and destroys all interpreters
-        std::thread lib_thread; 
+        std::thread lib_thread;
         std::mutex interp_mutex;
         bool thread_ready;
         friend void* launch_tcl(void* lib_ptr);
@@ -96,6 +96,8 @@ class EXPORT TclSoarLib
 
         bool initialize_Master();
         bool initialize_Tcl_Interpreter();
+
+        static const char *tclRHS( sml::smlRhsEventId id, void *pData, sml::Agent *pAgent, char const *pFunc, char const *pArg, int *bufSize, char *buf );
 
         // Methods to send commands to the tcl interpreter
         bool evaluateDirCommand(const std::string command);

@@ -664,8 +664,18 @@ bool Lexer::init ()
   return true;
 }
 
-int Lexer::current_parentheses_level () {
+int Lexer::current_parentheses_level () const {
   return parentheses_level;
+}
+
+const char *Lexer::current_remaining_string() const
+{
+    return production_string;
+}
+
+const char *Lexer::current_orig_string() const
+{
+    return orig_string.c_str();
 }
 
 void Lexer::skip_ahead_to_balanced_parentheses (int parentheses_level) {
@@ -756,16 +766,43 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
     }
 }
 
-Lexer::Lexer(agent* agent, const char* string)
+Lexer::Lexer(agent* agent, const char* str)
 {
     thisAgent = agent;
-    production_string = string;
+    orig_string = str;
+    production_string = orig_string.c_str();
     current_char = ' ';
     parentheses_level = 0;
     lex_error = false;
 
     //Initializing lexeme
     current_lexeme = Lexeme();
+}
+
+void Lexer::addExec()
+{
+    std::string str = current_lexeme.string();
+
+    size_t beg = 0;
+
+    beg  = orig_string.length() - strlen( production_string );
+    beg -= ( str.length() + 2 );
+
+    size_t pos = orig_string.find( str, beg );
+
+    orig_string.insert( pos, "exec " );
+
+    beg = orig_string.length() - pos;
+
+    // now reset lexer and reread up to exec
+    production_string = orig_string.c_str();
+    current_char = ' ';
+    parentheses_level = 0;
+    lex_error = false;
+    current_lexeme = Lexeme();
+
+    while ( std::string("exec") != current_lexeme.string() || strlen(production_string) > beg )
+        get_lexeme();
 }
 
 Lexeme Lexer::get_lexeme_from_string (agent* thisAgent, const char* input)

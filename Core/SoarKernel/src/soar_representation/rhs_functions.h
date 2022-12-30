@@ -34,7 +34,20 @@
 #include "kernel.h"
 #include "Export.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
 typedef Symbol* ((*rhs_function_routine)(agent* thisAgent, cons* args, void* user_data));
+
+typedef std::map<std::string, Symbol*> LinkMap;
+struct Link
+{
+	Symbol* from;
+	Symbol* attribute;
+	const char* linkTo;
+};
+typedef std::vector<Link> Links;
 
 typedef struct rhs_function_struct
 {

@@ -58,141 +58,66 @@
     <Filter Include="Source Files\SVS\windows">
       <UniqueIdentifier>{1cbc0d41-caf7-4874-b1d4-081982730b3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\SoarKernel\debug_code">
+      <UniqueIdentifier>{17a99909-ffc9-4b38-9f1d-e928e09197e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\decision_process">
+      <UniqueIdentifier>{7ffae787-3a9e-4898-aa69-3302fd656572}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\episodic_memory">
+      <UniqueIdentifier>{ccd5914e-4a18-4a4c-88a7-de2ff16dd33e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\explanation_based_chunking">
+      <UniqueIdentifier>{451fabc5-6c30-40a6-b627-d2ec35513b8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\explanation_memory">
+      <UniqueIdentifier>{41916734-84ab-4628-8869-b705986f8b1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\interface">
+      <UniqueIdentifier>{4a22e251-f86e-4d4a-b890-224c1c562463}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\parsing">
+      <UniqueIdentifier>{10f206ad-f8d7-4dc8-8c51-20c17919caa0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\output_manager">
+      <UniqueIdentifier>{13c93a1e-e4b7-4368-a206-f53d062a536a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\reinforcement_learning">
+      <UniqueIdentifier>{04293dc1-8eca-4a28-8689-e1f3d23cfc7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\semantic_memory">
+      <UniqueIdentifier>{19f10ab1-7ad4-406a-8cfd-8706395f50c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\shared">
+      <UniqueIdentifier>{94e873a2-d654-4fda-a7c2-476a1e14a469}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\soar_representation">
+      <UniqueIdentifier>{345f533f-c172-45b8-bbe8-f9d0d3aa3166}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel\visualizer">
+      <UniqueIdentifier>{18a4fbe9-1698-4b5a-8801-8999adcb4acf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_addwme.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_alias.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_allocate.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_captureinput.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_cd.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_chunknameformat.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_cli_extension.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_clog.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_CommandLineInterface.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_commandtofile.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_debug.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_defaultwmedepth.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_dirs.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_echo.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_echocommands.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_editproduction.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_epmem.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_excise.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_explainbacktraces.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_firingcounts.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_gdsprint.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_gp.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_gpmax.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_help.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_indifferentselection.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_initsoar.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_internalsymbols.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_learn.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_loadLibrary.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_ls.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_matches.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxchunks.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxdctime.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxelaborations.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxgoaldepth.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxmemoryusage.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxniloutputcycles.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_memories.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_multiattributes.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_numericindifferentmode.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_osupportmode.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_pbreak.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_popd.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_port.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_predict.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_preferences.cpp">
@@ -201,97 +126,22 @@
     <ClCompile Include="..\..\..\Core\CLI\src\cli_print.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_productionfind.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_pushd.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_pwatch.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_pwd.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_rand.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_removewme.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_replayinput.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_retenet.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_rl.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_run.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_savebacktraces.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_select.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_setstopphase.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_smem.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_soarnews.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_source.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_sp.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_srand.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_stats.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_stopsoar.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_svs.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_time.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_timers.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_unalias.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_verbose.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_version.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_waitsnc.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_warnings.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_watch.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_watchwmes.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_wma.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientAgent.cpp">
@@ -525,135 +375,6 @@
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_XMLListener.cpp">
       <Filter>Source Files\KernelSML</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\backtrace.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\callback.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\chunk.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\consistency.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\decide.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_manipulation.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\episodic_memory.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\explain.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\exploration.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\init_soar.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\io_soar.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\lexer.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\mem.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\osupport.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_db.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_params.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\parser.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\prefmem.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\print.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\production.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\recmem.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\reinforcement_learning.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\reorder.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\rete.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs_functions.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs_functions_math.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_db.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_instance.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_module.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_rand.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\stats.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\symtab.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\tempmem.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\test.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\trace.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\wma.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\wmem.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\xml.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\SVS\src\cliproxy.cpp">
       <Filter>Source Files\SVS</Filter>
     </ClCompile>
@@ -768,54 +489,330 @@
     <ClCompile Include="..\..\..\Core\shared\assert.cpp">
       <Filter>Source Files\shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_misc.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_code\debug.cpp">
+      <Filter>Source Files\SoarKernel\debug_code</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_print_speed_test.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_code\debug_inventories.cpp">
+      <Filter>Source Files\SoarKernel\debug_code</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_thread.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_code\debug_stacktrace.cpp">
+      <Filter>Source Files\SoarKernel\debug_code</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_trace.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\consistency.cpp">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\memory_manager.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\decide.cpp">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_print.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\decider.cpp">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_to_string.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\decider_settings.cpp">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\variablization_manager.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\decision_manipulation.cpp">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_constraints.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\rete.cpp">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_explanation.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_process\run_soar.cpp">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_map.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\episodic_memory\episodic_memory.cpp">
+      <Filter>Source Files\SoarKernel\episodic_memory</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_merge.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_print.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_backtrace.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_unify.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_build.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_constraints.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_explanation_trace.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_merge.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_osk.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_print.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_reinstantiate.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_repair.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_settings.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_unify.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_update_justification.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_variablize.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_variablize_rl.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_variablize_sti.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\action_record.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\chunk_record.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\condition_record.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\explain_print.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\explanation_memory.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\explanation_settings.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\identity_record.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\instantiation_record.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\production_record.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\interface\callback.cpp">
+      <Filter>Source Files\SoarKernel\interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\interface\io_link.cpp">
+      <Filter>Source Files\SoarKernel\interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\output_errors.cpp">
+      <Filter>Source Files\SoarKernel\output_manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\output_manager.cpp">
+      <Filter>Source Files\SoarKernel\output_manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\output_print.cpp">
+      <Filter>Source Files\SoarKernel\output_manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\output_settings.cpp">
+      <Filter>Source Files\SoarKernel\output_manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager\soar_to_string.cpp">
+      <Filter>Source Files\SoarKernel\output_manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\parsing\lexer.cpp">
+      <Filter>Source Files\SoarKernel\parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\parsing\parser.cpp">
+      <Filter>Source Files\SoarKernel\parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\reinforcement_learning\exploration.cpp">
+      <Filter>Source Files\SoarKernel\reinforcement_learning</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\reinforcement_learning\reinforcement_learning.cpp">
+      <Filter>Source Files\SoarKernel\reinforcement_learning</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\semantic_memory.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_activation.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_cli_commands.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_db.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_instance.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_print.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_query.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_settings.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_store.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_timers.cpp">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\cmd_settings.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\mem.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\memory_manager.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\print.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\soar_db.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\soar_instance.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\soar_module.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\soar_rand.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\stats.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\trace.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\shared\xml.cpp">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\agent.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\condition.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\instantiation.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\preference.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\production.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\production_reorder.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs_functions.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs_functions_math.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\slot.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\symbol.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\symbol_manager.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\test.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\working_memory.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_representation\working_memory_activation.cpp">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\visualizer\visualize.cpp">
+      <Filter>Source Files\SoarKernel\visualizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_colors.cpp">
+      <Filter>Source Files\SoarKernel\visualizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_settings.cpp">
+      <Filter>Source Files\SoarKernel\visualizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_wm.cpp">
+      <Filter>Source Files\SoarKernel\visualizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\copy_transform.cpp">
+      <Filter>Source Files\SVS\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\axis_relation.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\calculate_placement.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\monitor_object.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\occlusion.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\overlap.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_chunk.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_decide.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_explain.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_file_system_cmds.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_load_save.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_output.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_production.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_trace.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_visualize.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_wm.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_soar.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_identity.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_identity_graph.cpp">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explanation_memory\after_action_report.cpp">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Core\CLI\src\cli_Aliases.h">
-      <Filter>Source Files\CLI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\CLI\src\cli_Cli.h">
       <Filter>Source Files\CLI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Core\CLI\src\cli_CommandLineInterface.h">
@@ -1118,156 +1115,6 @@
     <ClInclude Include="..\..\..\Core\shared\msvc\stdint.h">
       <Filter>Source Files\shared\msvc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\agent.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\backtrace.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\callback.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\chunk.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\consistency.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_defines.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\decide.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_manipulation.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\enums.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\episodic_memory.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\exploration.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\gsysparam.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\init_soar.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\instantiations.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\io_soar.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\kernel.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\lexer.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\mem.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\osupport.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager_db.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager_params.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\parser.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\prefmem.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\print.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\production.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\recmem.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\reinforcement_learning.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\reorder.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\rete.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs_functions.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs_functions_math.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory_math_queries.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_db.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_instance.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_module.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_rand.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\sqlite3.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\stats.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\symtab.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\tempmem.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\test.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\trace.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\wma.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\wmem.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\xml.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Core\SVS\src\change_tracking_list.h">
       <Filter>Source Files\SVS</Filter>
     </ClInclude>
@@ -1370,17 +1217,275 @@
     <ClInclude Include="..\..\..\Core\shared\assert.hpp">
       <Filter>Source Files\shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_thread.h">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_code\debug.h">
+      <Filter>Source Files\SoarKernel\debug_code</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_trace.h">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_code\debug_inventories.h">
+      <Filter>Source Files\SoarKernel\debug_code</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\memory_manager.h">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_code\debug_stacktrace.h">
+      <Filter>Source Files\SoarKernel\debug_code</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\variablization_manager.h">
-      <Filter>Source Files\SoarKernel</Filter>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_code\dprint.h">
+      <Filter>Source Files\SoarKernel\debug_code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\consistency.h">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\decide.h">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\decider.h">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\decider_settings.h">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\decision_manipulation.h">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\rete.h">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_process\run_soar.h">
+      <Filter>Source Files\SoarKernel\decision_process</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\episodic_memory\episodic_memory.h">
+      <Filter>Source Files\SoarKernel\episodic_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc.h">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_repair.h">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_settings.h">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_structs.h">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_timers.h">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\action_record.h">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\chunk_record.h">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\condition_record.h">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\explanation_memory.h">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\explanation_settings.h">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\identity_record.h">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\instantiation_record.h">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory\production_record.h">
+      <Filter>Source Files\SoarKernel\explanation_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\interface\callback.h">
+      <Filter>Source Files\SoarKernel\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\interface\io_link.h">
+      <Filter>Source Files\SoarKernel\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager\output_manager.h">
+      <Filter>Source Files\SoarKernel\output_manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager\output_settings.h">
+      <Filter>Source Files\SoarKernel\output_manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\parsing\lexer.h">
+      <Filter>Source Files\SoarKernel\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\parsing\parser.h">
+      <Filter>Source Files\SoarKernel\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\reinforcement_learning\exploration.h">
+      <Filter>Source Files\SoarKernel\reinforcement_learning</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\reinforcement_learning\reinforcement_learning.h">
+      <Filter>Source Files\SoarKernel\reinforcement_learning</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\semantic_memory.h">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_db.h">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_math_query.h">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_settings.h">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_stats.h">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_structs.h">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory\smem_timers.h">
+      <Filter>Source Files\SoarKernel\semantic_memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\cmd_settings.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\constants.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\enums.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\forward.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\kernel.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\macros.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\mem.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\memory_manager.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\mempool_allocator.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\print.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\soar_db.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\soar_instance.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\soar_module.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\soar_rand.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\sqlite3.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\stats.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\stl_structs.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\stl_typedefs.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\trace.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\shared\xml.h">
+      <Filter>Source Files\SoarKernel\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\agent.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\condition.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\instantiation.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\preference.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\production.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\production_reorder.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\rhs_functions.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\slot.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\symbol.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\symbols_predefined.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\symbol_manager.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\test.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\working_memory.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_representation\working_memory_activation.h">
+      <Filter>Source Files\SoarKernel\soar_representation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\visualizer\visualize.h">
+      <Filter>Source Files\SoarKernel\visualizer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_settings.h">
+      <Filter>Source Files\SoarKernel\visualizer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\visualizer\visualize_wm.h">
+      <Filter>Source Files\SoarKernel\visualizer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_chunk.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_decide.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_enums.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_explain.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_load_save.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_output.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_production.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_trace.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_visualize.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_wm.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_soar.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_based_chunking\ebc_identity.h">
+      <Filter>Source Files\SoarKernel\explanation_based_chunking</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

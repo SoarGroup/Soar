@@ -1,4 +1,4 @@
-## Soar Tests to Port
+## Soar Tests to Write
 
 ### JSoar Unit Tests to Port
 
@@ -91,6 +91,7 @@
 - [ ] SoarEventsTest
 - [ ] ??? org.soar.util.properties.* (we have none of these???)
 - [ ] ??? DefaultExecutionTimerTest (we don’t have this right???)
+- [ ] SoarTechXmlToWmeTest
 
 ### Existing Soar Tests to Port
 
@@ -114,3 +115,5 @@
 - [ ] Split Prototype Unit Testing into its own project and use git modules to check it out
 - [ ] Add fancier output
 - [x] Add summary of tests in #s.
+- [ ] SML clients: test RHS and client message handlers that return strings longer than 1024 characters (trigger buffer re-allocation logic)
+- [ ] test that floating point precision is preserved in a cycle of `save precepts`/`load precepts`

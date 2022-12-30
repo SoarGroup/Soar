@@ -20,6 +20,7 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
+#include "float.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -1820,6 +1821,479 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
     return thisAgent->symbolManager->make_float_constant(ret);
 }
 
+/* Helper for processing more complex RHS functions */
+wme* get_wmes_for_named_slot(Symbol* idSym, Symbol* nameSym) {
+    if (idSym->is_sti()) {
+        idSymbol* id = idSym->id;  // get the id part of the union
+        for(struct slot_struct* slot = id->slots; slot != NIL; slot = slot->next) {
+            Symbol* attr_name = slot->attr;
+            if (nameSym == attr_name) {
+                return slot->wmes;
+            }
+        }
+    }
+    return NIL;
+}
+
+
+struct wme_val_stats {
+
+    long   count;
+    double sum;
+    double product;
+    double min;
+    double max;
+    double mean;
+    double sum_square;
+
+    wme_val_stats(): count(0), sum(0.0), product(1.0), mean(0.0), sum_square(0.0), min(DBL_MAX), max(-DBL_MAX) { }
+};
+
+/*
+ * Helper for set-based processes.  This calls the given fn for each wme in the set being processed.
+ *
+ * The return value is only not NIL if the fn returns an error symbol.
+ */
+[[nodiscard]] Symbol* set_reduce(agent* thisAgent, cons* args, Symbol* (*fn)(agent*, wme*, void*), void* data) {
+    cons* c = args;
+    Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
+
+    if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
+        idSymbol* set_id = param_set_id_sym->id;
+                       c = c->rest;
+
+        if (c != NIL) {
+            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);
+
+            if(param_attr_name_sym == NIL) {
+                return thisAgent->symbolManager->make_str_constant("|ERROR: Missing set attribute parameter.|");
+            }
+
+            Symbol* param_level_2       = NIL;
+            Symbol* param_level_3       = NIL;
+
+            // Optional nesting
+            c = c->rest;
+            if (c != NIL) {
+                param_level_2 = static_cast<symbol_struct*>(c->first);
+                c = c->rest;
+                if (c != NIL)
+                    param_level_3 = static_cast<symbol_struct*>(c->first);
+            }
+
+            for (wme* cwme = get_wmes_for_named_slot(set_id, param_attr_name_sym); cwme != NIL; cwme = cwme->next) {
+                // The following if statement handles nested values inside of a structure up to two levels.
+                // It can handle multi-valued attributes at all levels
+                if (!param_level_2) {
+                    Symbol* error = fn(thisAgent, cwme, data);
+                    if (error != NIL) { return error; }
+                } else {
+                    for(wme* cwme2 = get_wmes_for_named_slot(cwme->value, param_level_2); cwme2 != NIL; cwme2 = cwme2->next) {
+                        if(!param_level_3) {
+                            Symbol* error = fn(thisAgent, cwme2, data);
+                            if (error != NIL) { return error; }
+                        } else {
+                            for(wme* cwme3 = get_wmes_for_named_slot(cwme2->value, param_level_3); cwme3 != NIL; cwme3 = cwme3->next) {
+                                Symbol* error = fn(thisAgent, cwme3, data);
+                                if (error != NIL) { return error; }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else { return thisAgent->symbolManager->make_str_constant("|ERROR: First parameter needs to be an identifier.|"); }
+
+    return NIL;
+}
+
+/*
+ * Set-based multiply accumulates.
+ *
+ * Expects four parameters:
+ *  - The ID of a set
+ *  - Attribute name for the item that contains two factors to multiply
+ *  - The name of one of the factors
+ *  - The name of the other factor
+ *
+ * The algorithm moves through each item and multiplies its two factors, accumulating the result
+ *  across all items (thus multiply-accumulate)
+ *
+ * The return value is only not NIL if the fn returns an error symbol.
+ */
+Symbol* set_mac(agent* thisAgent, cons* args, void* data) {
+    cons* c = args;
+    Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
+
+    if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
+        idSymbol* set_id = param_set_id_sym->id;
+                       c = c->rest;
+
+        if (c != NIL) {
+            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);
+
+            if(param_attr_name_sym == NIL) {
+                return thisAgent->symbolManager->make_str_constant("|ERROR: Missing set attribute parameter.|");
+            }
+
+            Symbol* param_factor_1_name_sym = NIL;
+            Symbol* param_factor_2_name_sym = NIL;
+
+            // The two factor names (required)
+            c = c->rest;
+            if (c != NIL) {
+                param_factor_1_name_sym = static_cast<symbol_struct*>(c->first);
+                c = c->rest;
+                if (c != NIL)
+                    param_factor_2_name_sym = static_cast<symbol_struct*>(c->first);
+                else
+                    return thisAgent->symbolManager->make_str_constant("|ERROR: Missing second factor parameter|");
+            } else {
+                return thisAgent->symbolManager->make_str_constant("|ERROR: Missing first factor parameter|");
+            }
+
+            struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+            for (wme* cwme = get_wmes_for_named_slot(set_id, param_attr_name_sym); cwme != NIL; cwme = cwme->next) {
+
+                // The following if statement handles nested values inside of a structure up to two levels.
+                // It can handle multi-valued attributes at all levels
+                wme* cwme1 = get_wmes_for_named_slot(cwme->value, param_factor_1_name_sym);
+                wme* cwme2 = get_wmes_for_named_slot(cwme->value, param_factor_2_name_sym);
+
+                if(cwme1 != NIL && cwme2 != NIL) {
+                    Symbol* factor1 = cwme1->value;
+                    Symbol* factor2 = cwme2->value;
+                    double product = 0.0;
+
+                    if (factor1 != NIL) {
+                        if (factor1->is_float()) {
+                            product = factor1->fc->value;
+                            stats->count++;
+                        } else if (factor1->is_int()) {
+                            product = (double)factor1->ic->value;
+                            stats->count++;
+                        }
+                    } else { continue; }
+
+                    if (factor2 != NIL) {
+                        if (factor2->is_float()) {
+                            product *= factor2->fc->value;
+                        } else if (factor2->is_int()) {
+                            product *= (double)factor2->ic->value;
+                        }
+                    } else { continue; }
+
+                    stats->sum += product;
+                }
+            }
+        }
+    } else { return thisAgent->symbolManager->make_str_constant("|ERROR: First parameter needs to be an identifier.|"); }
+
+    return NIL;
+}
+
+
+
+// Simply counts wmes
+Symbol* count_wme(agent* thisAgent, wme* wme_to_count, void* data) {
+    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+    stats->count++;
+    return NIL;
+};
+
+// Adds the value of wmes
+Symbol* add_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
+    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+    Symbol* wme_val = wme_to_sum->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            stats->sum += wme_val->fc->value;
+            stats->count++;
+        } else if (wme_val->is_int()) {
+            stats->sum += (double)wme_val->ic->value;
+            stats->count++;
+        }
+    }
+    return NIL;
+};
+
+// Multiplies the value of wmes
+Symbol* multiply_wme(agent* thisAgent, wme* wme_to_mult, void* data) {
+    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+    Symbol* wme_val = wme_to_mult->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            stats->product *= wme_val->fc->value;
+            stats->count++;
+        } else if (wme_val->is_int()) {
+            stats->product *= (double)wme_val->ic->value;
+            stats->count++;
+        }
+    }
+    return NIL;
+};
+
+// Replaces data with the minimum the value of wmes
+Symbol* min_max_wme(agent* thisAgent, wme* wme_to_min, void* data) {
+    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+    Symbol* wme_val = wme_to_min->value;
+    if (wme_val != NIL) {
+        double new_val;
+        if (wme_val->is_float())
+            new_val = wme_val->fc->value;
+        else if (wme_val->is_int())
+            new_val = wme_val->ic->value;
+        else
+            return NIL;
+
+        if (new_val < stats->min)
+            stats->min = new_val;
+        if (new_val > stats->max)
+            stats->max = new_val;
+        stats->count++;
+    }
+    return NIL;
+};
+
+Symbol* mean_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
+    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+    Symbol* wme_val = wme_to_sum->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            stats->sum = stats->sum + wme_val->fc->value;
+            stats->count++;
+        } else if (wme_val->is_int()) {
+            stats->sum = stats->sum + (double)wme_val->ic->value;
+            stats->count++;
+        }
+    }
+    return NIL;
+};
+
+Symbol* stdev_wme(agent* thisAgent, wme* wme_to_sum, void* data) {
+    struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
+    Symbol* wme_val = wme_to_sum->value;
+    if (wme_val != NIL) {
+        if (wme_val->is_float()) {
+            double diff = wme_val->fc->value - stats->mean;
+            stats->sum_square = stats->sum_square + (diff * diff);
+        } else if (wme_val->is_int()) {
+            double diff = (double)wme_val->ic->value - stats->mean;
+            stats->sum_square = stats->sum_square + (diff * diff);
+        }
+    }
+    return NIL;
+};
+
+/*
+ * A right hand side function that can count the members of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want counted (second parameter).
+ *
+ * Returns an error string if there is an issue with the parameters, otherwise the number of
+ * WMEs in the set.
+ */
+Symbol* set_count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, count_wme, &stats);
+    if (error != NIL)
+        return error;
+    return thisAgent->symbolManager->make_int_constant(stats.count);
+}
+
+/*
+ * A right hand side function that sum the members of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want summed (second parameter).
+ *
+ * Non-numeric attributes are ignored.
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
+ */
+Symbol* set_sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, add_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    return (stats.count > 0)?
+                    thisAgent->symbolManager->make_float_constant(stats.sum):
+                    thisAgent->symbolManager->make_str_constant("NaN");
+}
+
+/*
+ * A right hand side function that multiplies the members of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want multiplied (second parameter).
+ *
+ * Non-numeric attributes are ignored.
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
+ */
+Symbol* set_multiply_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, multiply_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    return (stats.count > 0)?
+                    thisAgent->symbolManager->make_float_constant(stats.product):
+                    thisAgent->symbolManager->make_str_constant("NaN");
+}
+
+/*
+ * A right hand side function that finds the minimum of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want min of (second parameter).
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
+ */
+Symbol* set_min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, min_max_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    return (stats.count > 0)?
+                    thisAgent->symbolManager->make_float_constant(stats.min):
+                    thisAgent->symbolManager->make_str_constant("NaN");
+}
+
+/*
+ * A right hand side function that finds the maximum of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want max of (second parameter).
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
+ */
+Symbol* set_max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, min_max_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    return (stats.count > 0)?
+                    thisAgent->symbolManager->make_float_constant(stats.max):
+                    thisAgent->symbolManager->make_str_constant("NaN");
+}
+
+/*
+ * A right hand side function that finds the range of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want range of (second parameter).
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
+ */
+Symbol* set_range_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, min_max_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    return (stats.count > 0)?
+                    thisAgent->symbolManager->make_float_constant(stats.max - stats.min):
+                    thisAgent->symbolManager->make_str_constant("NaN");
+}
+
+/*
+ * A right hand side function that finds the mean value of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want the mean of (second parameter).
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
+ */
+Symbol* set_mean_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, mean_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    if (stats.count > 0) {
+        return thisAgent->symbolManager->make_float_constant(stats.sum / (double) stats.count);
+    } else {
+        return thisAgent->symbolManager->make_str_constant("NaN");
+    }
+
+}
+
+/*
+ * A right hand side function that finds the standard deviation of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want the standard deviation of (second parameter).
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
+ */
+Symbol* set_stdev_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_reduce(thisAgent, args, mean_wme, &stats);
+
+    if (error != NIL)
+        return error;
+
+    if (stats.count > 0) {
+        stats.mean = stats.sum / stats.count;
+        Symbol* error = set_reduce(thisAgent, args, stdev_wme, &stats);
+        return (error == NIL)? thisAgent->symbolManager->make_float_constant(sqrt(stats.sum_square / (double) stats.count)): error;
+    } else {
+        return thisAgent->symbolManager->make_str_constant("NaN");
+    }
+
+}
+
+/*
+ * A right hand side function that finds the standard deviation of a set.
+ *
+ * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
+ *   want the standard deviation of (second parameter).
+ *
+ * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
+ * string if there is an issue with the parameters.
+ */
+Symbol* set_mac_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    struct wme_val_stats stats;
+    Symbol* error = set_mac(thisAgent, args, &stats);
+
+    if (error != NIL)
+        return error;
+
+    if (stats.count > 0) {
+        return thisAgent->symbolManager->make_float_constant(stats.sum);
+    } else {
+        return thisAgent->symbolManager->make_str_constant("NaN");
+    }
+
+}
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Math Functions
@@ -1841,6 +2315,17 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("mod"), mod_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("min"), min_rhs_function_code, -1, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("max"), max_rhs_function_code, -1, true, false, 0, true);
+
+    /* RHS set functions */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-count"), set_count_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-sum"), set_sum_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-multiply"), set_multiply_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-min"), set_min_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-max"), set_max_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-range"), set_range_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mean"), set_mean_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-stdev"), set_stdev_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mac"), set_mac_rhs_function_code, -1, true, false, 0, true);
 
     /* RHS trigonometry functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"), sin_rhs_function_code, 1, true, false, 0, true);
@@ -1878,6 +2363,16 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("mod"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("min"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("max"));
+
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-count"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-sum"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-multiply"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-min"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-max"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-range"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-mean"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-stdev"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-mac"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sin"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("cos"));
