@@ -7,6 +7,8 @@ This is the code base for Soar, a cognitive architecture for developing systems 
 * [The Soar home page](http://soar.eecs.umich.edu/)
 * [The GitHub project page](https://github.com/SoarGroup/Soar)
 
+Note that the readme included with the Soar distribution for endusers is in the [Release-Support](https://github.com/SoarGroup/Release-Support/blob/master/txt/README) repository.
+
 # Soar Builds
 
 For binary builds of Soar you can get them in two places:
