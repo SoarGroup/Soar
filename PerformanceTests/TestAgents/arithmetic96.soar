@@ -1,8 +1,3 @@
-# John E. Laird
-# University of Michigan
-# latest version 1/27/2017
-# Soar version 9.6.0
-
 multi-attributes subtraction-facts 100
 multi-attributes facts 50
 multi-attributes add10-facts 10
@@ -243,7 +238,7 @@ sp {arithmetic*elaborate*state*compare-results*not-equal
    (<ap> ^computed-result <cr>
          ^top-number <tn>
          ^bottom-number <bn>
-         ^operation-symbol <os> 
+         ^operation-symbol <os>
          ^result-number { <> <cr> <rn>})
 -->
    (write (crlf) |***************************Results Incorrect: | <tn> | | <os> | | <bn> | = | <cr> | <> | <rn> | Diff | (- <cr> <rn>))
@@ -264,14 +259,14 @@ sp {elaborate*state*top-state
 }
 
 sp {process-column*elaborate*arithmetic-problem
-   (state <s> ^name 
+   (state <s> ^name
               ^superstate.arithmetic-problem <ap>)
 -->
    (<s> ^arithmetic-problem <ap>)
 }
 
 sp {process-column*elaborate*arithmetic-facts
-   (state <s> ^name 
+   (state <s> ^name
               ^superstate.arithmetic <a>)
 -->
    (<s> ^arithmetic <a>)
@@ -371,7 +366,7 @@ sp {process-column*compare*carry
 sp {process-column*propose*compute-addition-result
    (state <s> ^name process-column
               ^digit1 <d1>
-              ^digit2 <d2>   
+              ^digit2 <d2>
               ^arithmetic-problem.operation addition
              -^result)
 -->
@@ -382,7 +377,7 @@ sp {process-column*propose*compute-addition-result
 sp {process-column*apply*compute-addition-result
    (state <s> ^operator.name compute-addition-result
               ^digit1 <d1>
-              ^digit2 <d2>   
+              ^digit2 <d2>
               ^arithmetic.facts <af>)
    (<af> ^digit1 <d1>
          ^digit2 <d2>
@@ -444,7 +439,7 @@ sp {process-column*apply*compute-subtraction-no-carru-result*subtraction
 }
 
 # This subgoal is only used for subtraction when use
-## subtraction facts - don't know how to use borrow directly 
+## subtraction facts - don't know how to use borrow directly
 ## and must recursively borrow/add-10
 
 sp {compute-result*elaborate*substate
@@ -561,7 +556,7 @@ sp {arithmetic*apply*finish-problem3*column*result
          ^result <a3>
          ^next-column nil)
 -->
-   (write (crlf) | |) 
+   (write (crlf) | |)
    (write (crlf) | |   <n5> <n3> <n1> )
    (write (crlf)  <as> <n6> <n4> <n2> )
    (write (crlf) |----|)
@@ -612,7 +607,7 @@ sp {generate-problem*propose*generate-digit1
 
 
 ## For subtraction, make sure most significant digit of the top number
-## is not zero (so can insure top number is > bottom number). 
+## is not zero (so can insure top number is > bottom number).
 
 sp {generate-problem*compare*generate-digit1
    (state <s> ^name generate-problem
@@ -649,7 +644,7 @@ sp {generate-problem*propose*generate-digit2
 }
 
 ### For subtraction problem, make sure most significant digit of second number
-### is less than the most significant digit of the top-number 
+### is less than the most significant digit of the top-number
 ### Generate-digit1 will not have a 0 as most significant digit
 
 sp {generate-problem*compare*generate-digit2
@@ -1017,11 +1012,11 @@ sp {process-column*apply*get-digit1
 }
 
 ## If there has been a borrow
-sp {process-column*apply*get-digit1-new 
+sp {process-column*apply*get-digit1-new
    (state <s> ^operator.name get-digit1
               ^arithmetic-problem.operation addition
               ^current-column <cc>)
-   (<cc> ^digit1 
+   (<cc> ^digit1
          ^new-digit1 <a>
          ^carry << 0 unknown >>)
 -->
@@ -1112,7 +1107,7 @@ sp {process-column*apply*get-digit2
 #         ^operation-symbol <as>)
 #   (<oc> ^digit1 <n1>
 #         ^digit2 <n2>
-#         ^next-column <tc>)   
+#         ^next-column <tc>)
 #   (<tc> ^digit1 <n3>
 #         ^digit2 <n4>
 #         ^next-column nil)
@@ -1129,7 +1124,7 @@ sp {arithmetic*monitor*state*3column
          ^operation-symbol <as>)
    (<oc> ^digit1 <n1>
          ^digit2 <n2>
-         ^next-column <tc>)   
+         ^next-column <tc>)
    (<tc> ^digit1 <n3>
          ^digit2 <n4>
          ^next-column <hc>)
@@ -1208,7 +1203,7 @@ sp {get-digit1*elaborate*state
    (state <s> ^name get-digit1
               ^current-column <c>)
    (<c> ^digit1 <a>
-        ^carry <cb>) 
+        ^carry <cb>)
 -->
    (<s> ^digit1 <a>
         ^digit2 <cb>)
@@ -1288,7 +1283,7 @@ sp {process-column*apply*write-digit1-carry1
 sp {process-column*apply*write-digit1*carry0
    (state <s> ^operator.name write-digit1
               ^result <a>
-              ^carry 0 
+              ^carry 0
               ^superstate <ss>)
 -->
    (<ss> ^digit1 <a>)
@@ -1307,7 +1302,7 @@ sp {process-column*propose*write-result
    (<op> ^name write-result)
 }
 
-# This is required so that chunking works correctly 
+# This is required so that chunking works correctly
 sp {process-column*propose*write-result2
    (state <s> ^name process-column
               ^result <a>

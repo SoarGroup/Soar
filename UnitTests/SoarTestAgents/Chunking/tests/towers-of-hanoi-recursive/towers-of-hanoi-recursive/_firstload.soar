@@ -1,8 +1,3 @@
-# John E. Laird
-# University of Michigan
-# latest version 1/27/2017
-# Soar version 9.6.0
-
 ### These declaration help Soar reorder the conditions of the rules
 multi-attributes disk 7
 multi-attributes peg 3

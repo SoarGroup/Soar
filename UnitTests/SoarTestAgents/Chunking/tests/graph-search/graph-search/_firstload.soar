@@ -1,17 +1,13 @@
-# John E. Laird
-# University of Michigan
-# latest version 1/27/2017
-# Soar version 9.6.0
 multi-attributes waypoint 10
 multi-attributes operator 5
 multi-attributes next 3
 multi-attributes evaluation 10
 
-pushd "../../default" 
+pushd "../../default"
 source selection.soar
 source selection-astar.soar
 popd
-wma -s activation off 
+wma -s activation off
 epmem -s learning off
 
 ### Only learn selection rules from tie impasses

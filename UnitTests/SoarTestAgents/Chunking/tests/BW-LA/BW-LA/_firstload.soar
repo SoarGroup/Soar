@@ -1,10 +1,5 @@
 # Classic 3 block blocks world
-# Formulated for look ahead search
-# John E. Laird
-# University of Michigan
-# latest version 1/27/2017
-# Soar version 9.6.0
-
+# Formulated for look-ahead search
 # Give information to the rule reordering algorithm to make the match more efficient.
 multi-attributes ontop 3
 multi-attributes clear 4
