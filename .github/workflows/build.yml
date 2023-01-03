@@ -24,7 +24,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO: put linux back before merging, obviously
         os: [ubuntu-latest, macos-latest]
     steps:
       - name: Checkout
