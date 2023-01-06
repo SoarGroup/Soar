@@ -186,7 +186,7 @@ class SoarCLI
         SoarCLI()
             : m_kernel(0), m_currentAgent(0), m_quit(false), m_isMultiAgent(false),
               m_longestAgentName(0), m_seen_newline(true),
-              #if defined(_WIN32) || defined(NO_COLORS)
+              #if defined(NO_COLORS)
                   m_color(false),
               #else
                   m_color(true),

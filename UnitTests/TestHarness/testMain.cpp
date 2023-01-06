@@ -297,13 +297,8 @@ int main(int argc, char** argv)
             }
             else if (!runner->failed)
             {
-#ifndef _WIN32
                 std::cout << "✅" << std::endl;
-#else
-                std::cout << "Passed." << std::endl;
-#endif
                 std::cout.flush();
-
                 xml << " />" << std::endl;
             }
             else if (runner->failed && (std::find(expectedFailureCategories.begin(), expectedFailureCategories.end(), category->getCategoryName()) != expectedFailureCategories.end() || std::find(expectedFailureTests.begin(), expectedFailureTests.end(), std::get<2>(test)) != expectedFailureTests.end()))
