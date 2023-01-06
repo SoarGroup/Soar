@@ -10,7 +10,6 @@ import subprocess
 import re
 import fnmatch
 from SCons.Node.Alias import default_ans
-import shutil
 import time
 
 # Add the current directory to the path so we can from build_support
@@ -118,18 +117,6 @@ def InstallDir(env, tgt, src, globstring="*"):
                 targets.extend(Install(tgtsub, p))
 
     return targets
-
-def InstallDLLs(env):
-  if sys.platform == 'win32' and not env['DEBUG']:
-    indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\x64\\Microsoft.VC*.CRT\*')
-    outdir = os.path.realpath(GetOption('outdir')) + '\\'
-    if os.path.isfile(outdir):
-        os.remove(outdir)
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
-    for dll in indlls:
-      # print('copy "' + dll.rstr() + '" "' + outdir + '"')
-      shutil.copy(dll.rstr(), outdir)
 
 Export('InstallDir')
 
@@ -368,4 +355,3 @@ for a in DEF_TARGETS:
     if a in all_aliases:
         Default(a)
 
-InstallDLLs(env)
