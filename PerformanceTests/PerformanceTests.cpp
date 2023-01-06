@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
     }
     if (!numDCs) numDCs = DEFAULT_DCS;
 
-    std::cout << "\e[1;31m" << agentname << "\e[0;37m" << ": ";
+    std::cout << "\033[1;31m" << agentname << "\033[0;37m" << ": ";
     if (numTrials > 1) std::cout << numTrials << " trials"; else std::cout << "single run";
     if (numDCs > 0) std::cout << ", " << numDCs << " DCs"; else std::cout << ", run forever";
     if (numInits > 0) std::cout << ", " << numInits << " extra init-soar/runs\n"; else std::cout << std::endl;
