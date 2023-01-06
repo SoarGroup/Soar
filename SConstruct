@@ -13,7 +13,8 @@ from SCons.Node.Alias import default_ans
 import time
 
 # Add the current directory to the path so we can from build_support
-sys.path.append(Dir('.').srcnode().abspath)
+script_dir = Dir('.').srcnode().abspath
+sys.path.append(script_dir)
 from build_support.tcl import prepare_for_compiling_with_tcl
 
 join = os.path.join
@@ -157,6 +158,8 @@ env = Environment(
     SML_TCL_ALIAS = SML_TCL_ALIAS,
     # indentation for log formatting
     INDENT = '    ',
+    # used for generating the MSVS project
+    SCONS_HOME=os.path.join(script_dir, 'scons', 'scons-local-4.4.0')
 )
 
 env.AddMethod(prepare_for_compiling_with_tcl, 'PrepareForCompilingWithTcl')
