@@ -6,6 +6,7 @@
  * multicli (which was based on mincli) */
 
 #include "ElementXML.h"
+#include "portability.h"
 #include "sml_Client.h"
 #include "thread_Thread.h"
 #include "thread_Lock.h"
@@ -189,7 +190,7 @@ class SoarCLI
               #if defined(NO_COLORS)
                   m_color(false),
               #else
-                  m_color(true),
+                  m_color(stdout_supports_ansi_colors()),
               #endif
               m_listen(false), m_port(sml::Kernel::kUseAnyPort) {}
 

@@ -151,5 +151,18 @@ inline double get_raw_time_per_usec() {
 	}
 }
 
+inline bool stdout_supports_ansi_colors()
+{
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD mode = 0;
+    if (!GetConsoleMode(h, &mode))
+    {
+        fprintf(stderr, "Error determining console mode: %d. Assuming ansi colors not supported.\n", GetLastError());
+        return false;
+    }
+    return mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+}
+
+
 #endif // PORTABILITY_WINDOWS_H
 
