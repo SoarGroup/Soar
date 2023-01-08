@@ -86,6 +86,11 @@ int main(int argc, char** argv)
     std::vector<std::string> expectedFailureTests;
     bool silent = false;
 
+    #if defined(_WIN32) || defined(WIN32)
+    // Allows printing emoji ✅
+    SetConsoleOutputCP(CP_UTF8);
+    #endif
+
     for (int index = 1; index < argc; ++index)
     {
         std::string argument(argv[index]);
