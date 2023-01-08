@@ -43,19 +43,8 @@
 #include "TestRunner.hpp"
 
 #if defined(_WIN32) || defined(WIN32)
-
-#   if (_MSC_VER == 1900)
-std::string OS = "Windows VS2015";
-#   elif (_MSC_VER == 1800)
-std::string OS = "Windows VS2013";
-#   elif (_MSC_VER == 1700)
-std::string OS = "Windows VS2012";
-#   elif (_MSC_VER == 1600)
-std::string OS = "Windows VS2010";
-#   else
-std::string OS = "Windows Prior to VS2010";
-#endif
-
+#include <sstream>
+std::string OS = static_cast<std::ostringstream&>(std::ostringstream() << "Microsoft C/C++ " << _MSC_FULL_VER).str();
 #elif defined(__APPLE__)
 std::string OS = "OS X";
 #elif defined(__linux__)
