@@ -81,7 +81,7 @@ jobs:
 
       - name: performance tests
         working-directory: ./out
-        run: ./do_performance_test.sh
+        run: sudo ./do_performance_test.sh
 
       - name: upload performance test results
         uses: actions/upload-artifact@v3

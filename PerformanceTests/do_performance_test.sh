@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 lVersion="9.6"
 lTestSuite="full"
 lUnitTests=off
@@ -94,5 +96,5 @@ if [ $lUnitTests != off ] ; then
   time nice -n -10 ./UnitTests -c ChunkingTests  > /dev/null
   echo "\nFunctional Tests"
   time nice -n -10 ./UnitTests -c FunctionalTests  > /dev/null
-fi 
+fi
 

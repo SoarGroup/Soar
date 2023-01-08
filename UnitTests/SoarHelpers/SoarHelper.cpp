@@ -74,11 +74,7 @@ void SoarHelper::init_check_to_find_refcount_leaks(sml::Agent* agent)
         SoarHelper::agent_command(agent,"run 100");
         SoarHelper::agent_command(agent,"trace 1");
         SoarHelper::agent_command(agent,"soar init");
-#ifndef _WIN32
         std::cout << "✅ ";
-#else
-        std::cout << "Init passed.  Test ";
-#endif
         std::cout.flush();
     }
 }

@@ -182,5 +182,10 @@ inline double get_raw_time_per_usec()
 
 #endif
 
+inline bool stdout_supports_ansi_colors()
+{
+    return isatty(STDOUT_FILENO);
+}
+
 #endif // PORTABILITY_POSIX_H
 

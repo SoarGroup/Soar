@@ -101,12 +101,12 @@ class StatsTracker
         void PrintResultsHelper(std::ostream &outStream, std::string label, int label_width, double avg, double low, double high, bool useColors = false)
         {
             outStream.precision(4);
-            if (useColors) outStream << "\e[1;34m";
+            if (useColors) outStream << "\033[1;34m";
             outStream << std::resetiosflags(std::ios::right) << std::setiosflags(std::ios::left);
             outStream << std::setw(label_width) << label;
-            if (useColors) outStream << "\e[0;37m";
+            if (useColors) outStream << "\033[0;37m";
             outStream << ":";
-            if (useColors) outStream << "\e[0;93m";
+            if (useColors) outStream << "\033[0;93m";
             outStream << std::resetiosflags(std::ios::left);
             outStream << std::setiosflags(std::ios::right);
             outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << avg;
@@ -115,7 +115,7 @@ class StatsTracker
             outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << high;
 #endif
             outStream << std::setw(9) << std::setiosflags(std::ios::fixed) << std::setprecision(1) << (high ? ((high - low)/high)*100 : 0) << "%";
-            if (useColors) outStream << "\e[0;37m";
+            if (useColors) outStream << "\033[0;37m";
             outStream << std::endl;
         }
 };
