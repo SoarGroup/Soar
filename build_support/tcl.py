@@ -33,7 +33,7 @@ class TclInstallInfo:
         return True, ""
 
 
-def __get_tcl_from_local_dir_mac(local_compiled_dir=None) -> TclInstallInfo:
+def __get_tcl_from_local_dir_mac(env, local_compiled_dir=None) -> TclInstallInfo:
     if not local_compiled_dir:
         return None
 
@@ -53,8 +53,8 @@ def __get_tcl_from_local_dir_mac(local_compiled_dir=None) -> TclInstallInfo:
     return install_info
 
 
-def __get_tcl_install_info_mac(local_compiled_dir=None) -> TclInstallInfo:
-    install_info = __get_tcl_from_local_dir_mac(local_compiled_dir)
+def __get_tcl_install_info_mac(env, local_compiled_dir=None) -> TclInstallInfo:
+    install_info = __get_tcl_from_local_dir_mac(env, local_compiled_dir)
     if not install_info:
         # brew-installed?
         try:
@@ -63,7 +63,7 @@ def __get_tcl_install_info_mac(local_compiled_dir=None) -> TclInstallInfo:
             )
         except subprocess.CalledProcessError:
             print(f"{env['INDENT']}Tcl not brew-installed")
-        install_info = __get_tcl_from_local_dir_mac(brew_installed_dir)
+        install_info = __get_tcl_from_local_dir_mac(env, brew_installed_dir)
 
     if not install_info:
         # Otherwise, try using the system-installed Tcl
@@ -99,7 +99,7 @@ def prepare_for_compiling_with_tcl(env, tcl_path_override=None):
     print("Looking for Tcl...")
 
     if sys.platform == "darwin":
-        install_info = __get_tcl_install_info_mac(tcl_path_override)
+        install_info = __get_tcl_install_info_mac(env, tcl_path_override)
         if not install_info:
             print(f"{env['INDENT']}{NO_TCL_MSG}")
             return False
