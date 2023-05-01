@@ -840,10 +840,10 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, cons* args, void* /*user
                   RHS Deep copy recursive helper functions
 ====================================================================  */
 void recursive_deep_copy_helper(agent* thisAgent, Symbol* id_to_process, Symbol* parent_id,
-                                std::unordered_map<Symbol*, Symbol*>& processedSymbols);
+                                std::unordered_map<Symbol*, Symbol*>& processedSymbols, std::unordered_set<Symbol*>& prohibitedAttributes);
 
 void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
-                        std::unordered_map<Symbol*, Symbol*>& processedSymbols)
+                        std::unordered_map<Symbol*, Symbol*>& processedSymbols, std::unordered_set<Symbol*>& prohibitedAttributes)
 {
 
     bool made_new_attr_symbol = false;
@@ -870,7 +870,7 @@ void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
             made_new_attr_symbol = true;
         }
 
-        recursive_deep_copy_helper(thisAgent, curwme->attr, new_attr, processedSymbols);
+        recursive_deep_copy_helper(thisAgent, curwme->attr, new_attr, processedSymbols, prohibitedAttributes);
     }
 
     /* Handling the case where the value is an id symbol */
@@ -890,7 +890,7 @@ void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
             made_new_value_symbol = true;
         }
 
-        recursive_deep_copy_helper(thisAgent, curwme->value, new_value, processedSymbols);
+        recursive_deep_copy_helper(thisAgent, curwme->value, new_value, processedSymbols, prohibitedAttributes);
     }
 
     /* Making the new wme (Note just reusing the wme data structure, these wme's actually get converted into preferences later).*/
@@ -916,7 +916,7 @@ void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
 }
 
 void recursive_deep_copy_helper(agent* thisAgent, Symbol* id_to_process, Symbol* parent_id,
-                                std::unordered_map<Symbol*, Symbol*>& processedSymbols)
+                                std::unordered_map<Symbol*, Symbol*>& processedSymbols, std::unordered_set<Symbol*>& prohibitedAttributes)
 {
     /* If this symbol has already been processed then ignore it and return */
     if (processedSymbols.find(id_to_process) != processedSymbols.end()) return;
@@ -926,17 +926,23 @@ void recursive_deep_copy_helper(agent* thisAgent, Symbol* id_to_process, Symbol*
     /* Iterating over the normal slot wmes */
     for (slot* curslot = id_to_process->id->slots; curslot != 0; curslot = curslot->next)
     {
-        /* Iterating over the wmes in this slot */
-        for (wme* curwme = curslot->wmes; curwme != 0; curwme = curwme->next)
-        {
-            recursive_wme_copy(thisAgent, parent_id, curwme, processedSymbols);
-        }
+    	if (prohibitedAttributes.find(curslot->attr)==prohibitedAttributes.end())
+    	{
+			/* Iterating over the wmes in this slot */
+			for (wme* curwme = curslot->wmes; curwme != 0; curwme = curwme->next)
+			{
+				recursive_wme_copy(thisAgent, parent_id, curwme, processedSymbols, prohibitedAttributes);
+			}
+    	}
     }
 
     /* Iterating over input wmes */
     for (wme* curwme = id_to_process->id->input_wmes; curwme != 0; curwme = curwme->next)
     {
-        recursive_wme_copy(thisAgent, parent_id, curwme, processedSymbols);
+    	if (prohibitedAttributes.find(curwme->attr) == prohibitedAttributes.end())
+    	{
+            recursive_wme_copy(thisAgent, parent_id, curwme, processedSymbols, prohibitedAttributes);
+    	}
     }
 }
 
@@ -953,13 +959,26 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
         return thisAgent->symbolManager->make_str_constant("*symbol not id*");
     }
 
+    /* Getting the symbol root for the exclusions list */
+    std::unordered_set<Symbol*> prohibitedAttributes;//if it's empty, no biggie.
+    if (args->rest)
+    {
+        Symbol* exclusionsRoot = static_cast<Symbol*>(args->rest->first);
+        /* For every child here of this, we want to record the attributes and then disallow deep copies to traverse those. */
+        for (slot* curslot = exclusionsRoot->id->slots; curslot != 0; curslot = curslot->next)
+        {
+        	prohibitedAttributes.insert(curslot->attr);
+        }
+    }
+
+
     /* Make the new root identifier symbol.  We'll set the level in create_instantiation. */
     Symbol* retval = thisAgent->symbolManager->make_new_identifier('D', 0, NIL);
 
     /* Now processing the wme's associated with the passed in symbol */
     std::unordered_map<Symbol*, Symbol*> processedSymbols;
     thisAgent->WM->glbDeepCopyWMEs.clear();
-    recursive_deep_copy_helper(thisAgent, baseid,  retval, processedSymbols);
+    recursive_deep_copy_helper(thisAgent, baseid,  retval, processedSymbols, prohibitedAttributes);
     return retval;
 }
 
@@ -1188,7 +1207,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
 
     /* RHS functions that are more elaborate */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code, 0, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, -1, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
 
     // TODO: Not sure about some of the final params in this call?
