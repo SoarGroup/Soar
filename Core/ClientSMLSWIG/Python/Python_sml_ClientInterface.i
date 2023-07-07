@@ -6,6 +6,7 @@
 %}
 
 %module Python_sml_ClientInterface
+%feature("autodoc","3");
 
 // handle windows calling convention, __declspec(dllimport), correctly
 %include <windows.i>
