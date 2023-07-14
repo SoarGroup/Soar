@@ -44,11 +44,6 @@ if sys.platform == 'darwin':
 
 elif sys.platform.startswith('linux'):
     clone.Append(LIBS = ['Soar'])
-    # Currently requires Tcl 8.6 b/c it supports multiple threads without manual compilation.  The following line
-    # hard-codes the path of the current Tcl 8.6 path on this system into the executable (it's used as the first,
-    # but not only, search path for the Tcl library)
-    # TODO: is this still needed?
-    clone.Append(LINKFLAGS = ['-Wl,-rpath'])
 elif sys.platform == 'win32':
     # Windows DLLs need to get linked to dependencies, whereas Linux and Mac shared objects do not
     # (not sure if this is really needed for TclSoarLib)
