@@ -165,8 +165,9 @@
 	const char *TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
 	                    char const* pArgument, int *bufSize, char *buf)
 	{
+        // Previous result was cached, meaning client should be calling again to get it
+        // return that result and clear the cache
 		static std::string prevResult;
-
 		if ( !prevResult.empty() )
 		{
 			strncpy( buf, prevResult.c_str(), *bufSize );
@@ -197,6 +198,8 @@
 
 		std::string sres = Tcl_GetString(res);
 
+        // Too long to fit in the buffer; cache result and signal client with
+        // NULL return value to call again with a larger buffer
 		if ( sres.length() + 1 > *bufSize )
 		{
 			*bufSize = sres.length() + 1;
@@ -211,8 +214,9 @@
 	const char *TclClientMessageEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pClientName,
 	                    char const* pMessage, int *bufSize, char *buf)
 	{
+        // Previous result was cached, meaning client should be calling again to get it
+        // return that result and clear the cache
 		static std::string prevResult;
-
 		if ( !prevResult.empty() )
 		{
 			strncpy( buf, prevResult.c_str(), *bufSize );
@@ -244,6 +248,8 @@
 
 		std::string sres = Tcl_GetString(res);
 
+        // Too long to fit in the buffer; cache result and signal client with
+        // NULL return value to call again with a larger buffer
 		if ( sres.length() + 1 > *bufSize )
 		{
 			*bufSize = sres.length() + 1;

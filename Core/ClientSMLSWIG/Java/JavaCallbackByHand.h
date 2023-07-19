@@ -114,6 +114,11 @@ int jUpdateCallback = pKernel.RegisterForSystemEvent(pKernel, smlEventId.smlEVEN
 // A native thread cannot be attached simultaneously to two Java VMs.
 // When a thread is attached to the VM, the context class loader is the bootstrap loader.
 
+#ifdef __cplusplus
+// We expose the public methods in a DLL with C naming (not C++ mangled names)
+extern "C" {
+#endif
+
 #include <string>
 #include <list>
 
@@ -1103,8 +1108,9 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForStringEvent(JNIEnv *
 static const char *RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
                                                         char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
+        // Previous result was cached, meaning client should be calling again to get it
+        // return that result and clear the cache
         static std::string prevResult;
-
         if ( !prevResult.empty() )
         {
             strncpy( buf, prevResult.c_str(), *bufSize );
@@ -1173,6 +1179,8 @@ static const char *RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::
                 jenv->ReleaseStringUTFChars(result, pResult);
         }
 
+        // Too long to fit in the buffer; cache result and signal client with
+        // NULL return value to call again with a larger buffer
         if ( resultStr.length() + 1 > *bufSize )
         {
             *bufSize = resultStr.length() + 1;
@@ -1189,8 +1197,9 @@ static const char *RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::
 static const char *ClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
                                                         char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
+        // Previous result was cached, meaning client should be calling again to get it
+        // return that result and clear the cache
         static std::string prevResult;
-
         if ( !prevResult.empty() )
         {
             strncpy( buf, prevResult.c_str(), *bufSize );
@@ -1259,6 +1268,8 @@ static const char *ClientMessageHandler(sml::smlRhsEventId id, void* pUserData, 
                 jenv->ReleaseStringUTFChars(result, pResult);
         }
 
+        // Too long to fit in the buffer; cache result and signal client with
+        // NULL return value to call again with a larger buffer
         if ( resultStr.length() + 1 > *bufSize )
         {
             *bufSize = resultStr.length() + 1;
@@ -1441,3 +1452,7 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *j
 
         return result ;
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
