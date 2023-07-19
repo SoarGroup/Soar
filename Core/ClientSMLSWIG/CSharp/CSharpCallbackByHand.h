@@ -9,6 +9,11 @@
 // that SWIG can't auto generate.
 //
 
+#ifdef __cplusplus
+// We expose the public methods in a DLL with C naming (not C++ mangled names)
+extern "C" {
+#endif
+
 // __stcall calling convention only applicable to 32-bit Windows
 #if defined(_WIN32) && !defined(_WIN64)
 #define STDCALL __stdcall
@@ -813,8 +818,9 @@ typedef char const* (STDCALL* ClientMessageCallback)(int eventID, CallbackDataPt
 // Then from here we need to call back to C# to pass back the message.
 static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 {
+    // Previous result was cached, meaning client should be calling again to get it
+    // return that result and clear the cache
     static std::string prevResult;
-
     if ( !prevResult.empty() )
     {
         strncpy( buf, prevResult.c_str(), *bufSize );
@@ -837,6 +843,8 @@ static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, s
     // Now try to call back to CSharp
     std::string res = callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpFunctionName, csharpArgument) ;
 
+    // Too long to fit in the buffer; cache result and signal client with
+    // NULL return value to call again with a larger buffer
     if ( res.length() + 1 > *bufSize )
     {
         *bufSize = res.length() + 1;
@@ -852,8 +860,10 @@ static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, s
 // Then from here we need to call back to C# to pass back the message.
 static const char *ClientEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage, int *bufSize, char *buf )
 {
-    static std::string prevResult;
 
+    // Previous result was cached, meaning client should be calling again to get it
+    // return that result and clear the cache
+    static std::string prevResult;
     if ( !prevResult.empty() )
     {
         strncpy( buf, prevResult.c_str(), *bufSize );
@@ -876,6 +886,8 @@ static const char *ClientEventHandler(sml::smlRhsEventId /*id*/, void* pUserData
     // Now try to call back to CSharp
     std::string res = callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpClientName, csharpMessage) ;
 
+    // Too long to fit in the buffer; cache result and signal client with
+    // NULL return value to call again with a larger buffer
     if ( res.length() + 1 > *bufSize )
     {
         *bufSize = res.length() + 1;
@@ -1045,3 +1057,6 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForAgentEvent(void* jarg1, i
     return result ;
 }
 
+#ifdef __cplusplus
+} // extern "C"
+#endif

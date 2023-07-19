@@ -511,12 +511,6 @@
 //%newobject sml::Kernel::CreateRemoteConnection;
 
 %{
-#ifdef __cplusplus
-	extern "C" {
-#endif
 #include "CSharpCallbackByHand.h"
-#ifdef __cplusplus
-	}
-#endif
-	%}
+%}
 
