@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import subprocess
 import sys
+from typing import Optional
 
 NO_TCL_MSG = "Tcl cannot be built: no Tcl found"
 
@@ -33,7 +34,7 @@ class TclInstallInfo:
         return True, ""
 
 
-def __get_tcl_from_local_dir_mac(env, local_compiled_dir=None) -> TclInstallInfo:
+def __get_tcl_from_local_dir_mac(env, local_compiled_dir=None) -> Optional[TclInstallInfo]:
     if not local_compiled_dir:
         return None
 
@@ -47,41 +48,57 @@ def __get_tcl_from_local_dir_mac(env, local_compiled_dir=None) -> TclInstallInfo
     )
     valid, msg = install_info.is_valid()
     if not valid:
-        print(f"{env['INDENT']}Tcl not found in directory: {msg}")
+        print(f"{env['INDENT']}Tcl not found in directory {local_compiled_dir}: {msg}")
+        return None
+
+    return install_info
+
+def __get_brew_tcl_install_info_mac(env) -> Optional[TclInstallInfo]:
+    try:
+        brew_installed_dir = (
+            subprocess.check_output(["brew", "--prefix", "tcl-tk"]).decode().strip()
+        )
+    except subprocess.CalledProcessError:
+        print(f"{env['INDENT']}Tcl not brew-installed: {msg}")
+        return None
+
+    home_dir = Path(brew_installed_dir)
+    install_info = TclInstallInfo(
+        home=home_dir,
+        lib_dir=home_dir / "lib",
+        include_dir=home_dir / "include" / "tcl-tk",
+        dyn_lib_name="libtcl8.6.dylib",
+        include_lib_name="tcl8.6",
+    )
+    valid, msg = install_info.is_valid()
+    if not valid:
+        print(f"{env['INDENT']}Brew-installed Tcl could not be loaded: {msg}")
         return None
 
     return install_info
 
 
-def __get_tcl_install_info_mac(env, local_compiled_dir=None) -> TclInstallInfo:
-    install_info = __get_tcl_from_local_dir_mac(env, local_compiled_dir)
-    if not install_info:
-        # brew-installed?
-        try:
-            brew_installed_dir = (
-                subprocess.check_output(["brew", "--prefix", "tcl-tk"]).decode().strip()
-            )
-        except subprocess.CalledProcessError:
-            print(f"{env['INDENT']}Tcl not brew-installed")
-        install_info = __get_tcl_from_local_dir_mac(env, brew_installed_dir)
-
-    if not install_info:
-        # Otherwise, try using the system-installed Tcl
-        tcl_home = Path("/Library/Frameworks/Tcl.framework/Versions/Current")
-        install_info = TclInstallInfo(
-            home=tcl_home,
-            lib_dir=tcl_home,
-            include_dir=tcl_home / "Headers",
-            dyn_lib_name="Tcl",
-            include_lib_name="Tcl",
-            using_framework=True,
-        )
-        valid, msg = install_info.is_valid()
-        if valid:
-            return install_info
+def __get_system_tcl_install_info_mac(env) -> Optional[TclInstallInfo]:
+    tcl_home = Path("/Library/Frameworks/Tcl.framework/Versions/Current")
+    install_info = TclInstallInfo(
+        home=tcl_home,
+        lib_dir=tcl_home,
+        include_dir=tcl_home / "Headers",
+        dyn_lib_name="Tcl",
+        include_lib_name="Tcl",
+        using_framework=True,
+    )
+    valid, msg = install_info.is_valid()
+    if not valid:
         print(f"{env['INDENT']}System Tcl not found: {msg}")
-
+        return None
     return install_info
+
+
+def __get_tcl_install_info_mac(env, local_compiled_dir=None) -> Optional[TclInstallInfo]:
+    return __get_tcl_from_local_dir_mac(env, local_compiled_dir) or \
+        __get_brew_tcl_install_info_mac(env) or \
+        __get_system_tcl_install_info_mac(env)
 
 
 def __append_tcl_compile_flags(env, install_info):
