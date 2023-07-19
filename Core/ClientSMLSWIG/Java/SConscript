@@ -92,7 +92,7 @@ srcdir = clone.Dir('src')
 smldir = srcdir.Dir('sml')
 classdir = clone.Dir('classes')
 jar = clone.File('sml.jar')
-java_target = 'sml_java'
+java_target = java_sml_alias
 fake_java_target = '#fake_java_target'
 
 if sys.platform == 'darwin':
