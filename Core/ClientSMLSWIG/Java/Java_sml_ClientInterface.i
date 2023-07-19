@@ -51,7 +51,7 @@
       throw e ;
     }
   }
-  
+
   public final static native long Agent_RegisterForRunEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
   public final static native long Agent_RegisterForProductionEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
   public final static native long Agent_RegisterForPrintEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6, boolean jarg7);
@@ -87,26 +87,26 @@
   public interface ProductionEventInterface {
      public void productionEventHandler(int eventID, Object data, Agent agent, String prodName, String instantiation) ;
   }
-  
-  public interface PrintEventInterface { 
+
+  public interface PrintEventInterface {
   		public void printEventHandler(int eventID, Object data, Agent agent, String message) ;
   }
-  
+
   public interface xmlEventInterface {
   		public void xmlEventHandler(int eventID, Object data, Agent agent, ClientXML xml) ;
   }
 
-  public interface OutputEventInterface {  
+  public interface OutputEventInterface {
   		public void outputEventHandler(Object data, String agentName, String attributeName, WMElement pWmeAdded) ;
   }
-  
+
   public interface OutputNotificationInterface {
   		public void outputNotificationHandler(Object data, Agent agent) ;
   }
 
   public long RegisterForRunEvent(smlRunEventId id, RunEventInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForRunEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ;}
-  
+
   public long RegisterForProductionEvent(smlProductionEventId id, ProductionEventInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForProductionEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ; }
 
@@ -118,7 +118,7 @@
 
   public long RegisterForXMLEvent(smlXMLEventId id, xmlEventInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForXMLEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ; }
-  
+
   public long RegisterForOutputNotification(OutputNotificationInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForOutputNotification(swigCPtr, this, handlerObject, callbackData) ;}
 
@@ -149,29 +149,29 @@
      public void systemEventHandler(int eventID, Object data, Kernel kernel) ;
   }
 
-  public interface UpdateEventInterface {  
+  public interface UpdateEventInterface {
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) ;
   }
 
-  public interface StringEventInterface {  
+  public interface StringEventInterface {
   	public String stringEventHandler(int eventID, Object userData, Kernel kernel, String callbackData) ;
   }
 
-  public interface AgentEventInterface {  
+  public interface AgentEventInterface {
   		public void agentEventHandler(int eventID, Object data, String agentName) ;
   }
 
-  public interface RhsFunctionInterface {  
+  public interface RhsFunctionInterface {
   		public String rhsFunctionHandler(int eventID, Object data, String agentName, String functionName, String argument) ;
   }
 
-  public interface ClientMessageInterface {  
+  public interface ClientMessageInterface {
   		public String clientMessageHandler(int eventID, Object data, String agentName, String functionName, String argument) ;
   }
-  
+
   public long RegisterForSystemEvent(smlSystemEventId id, SystemEventInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_RegisterForSystemEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ;}
- 
+
   public boolean UnregisterForSystemEvent(long callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForSystemEvent(swigCPtr, callbackReturnValue) ;}
 
@@ -183,10 +183,10 @@
 
   public long RegisterForStringEvent(smlStringEventId id, StringEventInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_RegisterForStringEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ;}
- 
+
   public boolean UnregisterForStringEvent(long callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForStringEvent(swigCPtr, callbackReturnValue) ;}
-  
+
   public long RegisterForAgentEvent(smlAgentEventId id, AgentEventInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_RegisterForAgentEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ; }
 
@@ -212,7 +212,7 @@
     smlJNI.Kernel_ShutdownInternal(swigCPtr, this);
     delete() ;
   }
-  
+
   // Allow a user to avoid deleting the kernel object immediately, if they have some special reason.
   public void ShutdownNoDelete()
   {
@@ -230,20 +230,20 @@
   public void addAttribute(String attributeName, String valueName) {
      AddAttribute(attributeName, valueName) ;
   }
-  
+
 	public String getAttributeThrows(String name) throws Exception {
 		String value = GetAttribute(name) ;
 		if (value == null)
-			throw new Exception("Could not find attribute " + name + " while parsing XML document") ;			
+			throw new Exception("Could not find attribute " + name + " while parsing XML document") ;
 		return value ;
-	}  
+	}
 
 	public int getAttributeIntThrows(String name) throws Exception {
 		String val = getAttributeThrows(name) ;
 		int intVal = Integer.parseInt(val) ;
 		return intVal ;
 	}
-	
+
 	private long GetCPtrAndDisown(ElementXML pChild) {
 		pChild.swigCMemOwn = false;
 		return ElementXML.getCPtr(pChild);
@@ -275,11 +275,5 @@
 
 
 %{
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include "JavaCallbackByHand.h"
-#ifdef __cplusplus
-}
-#endif
 %}

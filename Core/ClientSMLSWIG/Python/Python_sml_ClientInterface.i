@@ -284,8 +284,9 @@
 
 	const char *PythonRhsEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
 	{
+        // Previous result was cached, meaning client should be calling again to get it
+        // return that result and clear the cache
         static std::string prevResult;
-
         if ( !prevResult.empty() )
         {
             strncpy( buf, prevResult.c_str(), *bufSize );
@@ -318,6 +319,8 @@
 
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 
+        // Too long to fit in the buffer; cache result and signal client with
+        // NULL return value to call again with a larger buffer
         if ( res.length() + 1 > *bufSize )
         {
             *bufSize = res.length() + 1;
@@ -331,8 +334,9 @@
 
 	const char *PythonClientMessageEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage, int *bufSize, char *buf)
 	{
+        // Previous result was cached, meaning client should be calling again to get it
+        // return that result and clear the cache
         static std::string prevResult;
-
         if ( !prevResult.empty() )
         {
             strncpy( buf, prevResult.c_str(), *bufSize );
@@ -364,6 +368,8 @@
 
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 
+        // Too long to fit in the buffer; cache result and signal client with
+        // NULL return value to call again with a larger buffer
         if ( res.length() + 1 > *bufSize )
         {
             *bufSize = res.length() + 1;
