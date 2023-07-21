@@ -1,21 +1,21 @@
 /********************************************************************************************
  *
  * TraceType.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	May 22, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.helpers;
 
 /************************************************************************
- * 
+ *
  * Constants defining different types of information in a trace (which we can
  * then use for filtering).
- * 
+ *
  ************************************************************************/
 public class TraceType
 {
@@ -34,9 +34,10 @@ public class TraceType
             kVerbose = 1 << 11,
             kWarning = 1 << 12,
             kError = 1 << 13,
+            kMessage = 1 << 14,
 
             kAllExceptTopLevel = kPhase | kPreference | kWmeChange | kFiring
-                    | kRetraction | kStack | kRhsWrite | kLearning
+                    | kRetraction | kStack | kRhsWrite | kMessage | kLearning
                     | kFullLearning | kNumericIndifferent | kVerbose | kWarning,
 
             kAll = kAllExceptTopLevel | kTopLevel | kError;

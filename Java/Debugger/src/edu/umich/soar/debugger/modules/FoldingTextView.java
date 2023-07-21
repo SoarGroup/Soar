@@ -362,7 +362,7 @@ public class FoldingTextView extends AbstractComboView implements
         });
 
         menuItem = new MenuItem(m_FilterMenu, SWT.CHECK);
-        menuItem.setText("Wme Changes");
+        menuItem.setText("WME Changes");
         menuItem.setData("type", TraceType.kWmeChange);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
@@ -406,13 +406,24 @@ public class FoldingTextView extends AbstractComboView implements
         });
 
         menuItem = new MenuItem(m_FilterMenu, SWT.CHECK);
-        menuItem.setText("Rhs Writes and Messages");
+        menuItem.setText("RHS Writes");
         menuItem.setData("type", TraceType.kRhsWrite);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kRhsWrite);
+            }
+        });
+
+        menuItem = new MenuItem(m_FilterMenu, SWT.CHECK);
+        menuItem.setText("Messages");
+        menuItem.setData("type", TraceType.kMessage);
+        menuItem.addSelectionListener(new SelectionAdapter()
+        {
+            public void widgetSelected(SelectionEvent e)
+            {
+                changeFilter(e.widget, TraceType.kMessage);
             }
         });
 
@@ -460,6 +471,28 @@ public class FoldingTextView extends AbstractComboView implements
             }
         });
 
+        menuItem = new MenuItem(m_FilterMenu, SWT.CHECK);
+        menuItem.setText("Top Level");
+        menuItem.setData("type", TraceType.kTopLevel);
+        menuItem.addSelectionListener(new SelectionAdapter()
+        {
+            public void widgetSelected(SelectionEvent e)
+            {
+                changeFilter(e.widget, TraceType.kTopLevel);
+            }
+        });
+
+        menuItem = new MenuItem(m_FilterMenu, SWT.CHECK);
+        menuItem.setText("Errors");
+        menuItem.setData("type", TraceType.kError);
+        menuItem.addSelectionListener(new SelectionAdapter()
+        {
+            public void widgetSelected(SelectionEvent e)
+            {
+                changeFilter(e.widget, TraceType.kError);
+            }
+        });
+
         menuItem = new MenuItem(m_FilterMenu, SWT.PUSH);
         menuItem.setText("Show all");
         menuItem.addSelectionListener(new SelectionAdapter()
@@ -472,13 +505,25 @@ public class FoldingTextView extends AbstractComboView implements
         });
 
         menuItem = new MenuItem(m_FilterMenu, SWT.PUSH);
-        menuItem.setText("Hide all");
+        menuItem.setText("Show only top level and errors");
         menuItem.addSelectionListener(new SelectionAdapter()
         {
             public void widgetSelected(SelectionEvent e)
             {
                 m_FoldingText.setExclusionFilter(TraceType.kAllExceptTopLevel,
-                        true);
+                    true);
+                updateButtonState();
+            }
+        });
+
+        menuItem = new MenuItem(m_FilterMenu, SWT.PUSH);
+        menuItem.setText("Hide all");
+        menuItem.addSelectionListener(new SelectionAdapter()
+        {
+            public void widgetSelected(SelectionEvent e)
+            {
+                m_FoldingText.setExclusionFilter(TraceType.kAll,
+                    true);
                 updateButtonState();
             }
         });
@@ -1147,13 +1192,21 @@ public class FoldingTextView extends AbstractComboView implements
                 // Figure out the type of the message so we can filter it
                 // appropriately
                 // We'll classify messages and rhs writes together for now
-                long type = TraceType.kRhsWrite;
-                if (xmlTrace.IsTagWarning())
+                long type;
+                if (xmlTrace.IsTagMessage())
+                    type = TraceType.kMessage;
+                else if (xmlTrace.IsTagWarning())
                     type = TraceType.kWarning;
                 else if (xmlTrace.IsTagVerbose())
                     type = TraceType.kVerbose;
                 else if (xmlTrace.IsTagError())
                     type = TraceType.kError;
+                else {
+                    System.err.println("Warning: unknown trace type encountered while " +
+                        "writing SML output in debugger. This should never happen.");
+                    // should never happen, but fall back to message type to be safe
+                    type = TraceType.kMessage;
+                }
 
                 if (text.length() != 0)
                 {
