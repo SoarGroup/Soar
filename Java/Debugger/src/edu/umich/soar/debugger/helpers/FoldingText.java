@@ -19,7 +19,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
@@ -1429,9 +1428,6 @@ public class FoldingText
         int innerSize = 6;
         int offset = (outerSize - innerSize) / 2 + 1;
 
-        Color gray = m_IconBar.getDisplay().getSystemColor(SWT.COLOR_GRAY);
-        Color black = m_IconBar.getDisplay().getSystemColor(SWT.COLOR_BLACK);
-
         // Go through each block in turn until we're off the bottom of the
         // screen
         // or at the end of the list of blocks drawing icons
@@ -1469,14 +1465,12 @@ public class FoldingText
                 {
                     // If expanded draw a line to show what is in the expanded
                     // area
-                    gc.setForeground(gray);
                     int x1 = x + 1 + (outerSize / 2);
                     int yTop = y + outerSize + 2;
                     int yBottom = y + ((block.getSize() - 1) * lineHeight)
                             + (outerSize / 2);
                     gc.drawLine(x1, yTop, x1, yBottom);
                     gc.drawLine(x1, yBottom, client.width - 1, yBottom);
-                    gc.setForeground(black);
                 }
             }
             blockIndex++;
