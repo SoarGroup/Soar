@@ -195,8 +195,7 @@ public class FoldingTextView extends AbstractComboView implements
         }
         else
         {
-            m_FilterLabel.setForeground(getMainFrame().getDisplay()
-                    .getSystemColor(SWT.COLOR_BLUE));
+            m_FilterLabel.setForeground(null);
         }
     }
 
