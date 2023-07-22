@@ -26,11 +26,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 
 import edu.umich.soar.debugger.modules.AbstractView;
 
@@ -773,8 +769,6 @@ public class FoldingText
         m_Text.setLayoutData(data2);
 
         m_IconBar.addPaintListener(this::paintIcons);
-        m_IconBar.setBackground(m_IconBar.getDisplay().getSystemColor(
-                SWT.COLOR_WHITE));
 
         m_IconBar.addMouseListener(new MouseAdapter()
         {
