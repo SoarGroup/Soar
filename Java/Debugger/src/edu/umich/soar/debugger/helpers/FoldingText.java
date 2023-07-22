@@ -14,15 +14,13 @@ package edu.umich.soar.debugger.helpers;
 import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Cursor;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -40,7 +38,7 @@ import edu.umich.soar.debugger.modules.AbstractView;
  ************************************************************************/
 public class FoldingText
 {
-    protected Text m_Text;
+    protected StyledText m_Text;
 
     protected Canvas m_IconBar;
 
@@ -751,7 +749,7 @@ public class FoldingText
         // The icon bar is used to paint the "+" signs. It is double-buffered or
         // we'll get a little flicker effect because we repaint it on a timer.
         m_IconBar = new Canvas(m_Container, SWT.DOUBLE_BUFFERED);
-        m_Text = new Text(m_Container, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL
+        m_Text = new StyledText(m_Container, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL
                 | SWT.READ_ONLY);
 
         m_DrawingDisabled = false;
@@ -1116,7 +1114,7 @@ public class FoldingText
     // We'd like this to not scroll if the cursor is not at the bottom of the
     // window
     // and SWT's append method always scrolls.
-    private void appendTextToWidget(Text widget, String text)
+    private void appendTextToWidget(StyledText widget, String text)
     {
         // If set this to true we just use standard append
         // and always scroll.
@@ -1348,7 +1346,7 @@ public class FoldingText
         return m_Container;
     }
 
-    public Text getTextWindow()
+    public StyledText getTextWindow()
     {
         return m_Text;
     }

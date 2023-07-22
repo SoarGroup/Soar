@@ -42,7 +42,7 @@ import edu.umich.soar.debugger.manager.Pane;
 
 /********************************************************************************************
  *
- * This is a base class designed to part of a view. This part handles the combo
+ * This is a base class designed as part of a view. This part handles the combo
  * box. Another derived class handles the display of those commands which may be
  * in text or something else.
  *

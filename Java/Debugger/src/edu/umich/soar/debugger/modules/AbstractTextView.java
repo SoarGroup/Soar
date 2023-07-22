@@ -81,7 +81,7 @@ public abstract class AbstractTextView extends AbstractComboView
 
     /************************************************************************
      *
-     * Search for the next occurance of 'text' in this view and place the
+     * Search for the next occurrence of {@code text} in this view and place the
      * selection at that point.
      *
      * @param text
