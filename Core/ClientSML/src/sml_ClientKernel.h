@@ -781,6 +781,7 @@ namespace sml
             * @returns Unique ID for this callback.  Required when unregistering this callback.
             *************************************************************/
             int AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack = true) ;
+            int AddRhsFunctionManaged(char const* pRhsFunctionName, RhsEventHandlerManaged handler, void* pUserData, bool addToBack = true) ;
 
             /*************************************************************
             * @brief Unregister for a particular rhs function callback

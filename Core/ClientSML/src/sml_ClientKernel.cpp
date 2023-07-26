@@ -2189,6 +2189,42 @@ int Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler
     return InternalAddRhsFunction(id, pRhsFunctionName, handler, pUserData, addToBack) ;
 }
 
+int Kernel::AddRhsFunctionManaged(char const* pRhsFunctionName, RhsEventHandlerManaged handler, void* pUserData, bool addToBack)
+{
+    auto newHandler = [&handler](
+        smlRhsEventId id,
+        void* pUserData,
+        Agent* pAgent,
+        char const* pFunctionName,
+        char const* pArgument,
+        int *bufSize,
+        char *buf) -> char * {
+            static std::string prevResult;
+            // Previous call could not return the full result and cached it in prevResult instead.
+            // Return the cached result and clear the cache.
+            if ( !prevResult.empty() )
+            {
+                strncpy( buf, prevResult.c_str(), *bufSize );
+                prevResult = "";
+                return buf;
+            }
+
+            std::string resultStr = handler(id, pUserData, pAgent, pFunctionName, pArgument);
+            // Result won't fit in the buffer. Return NULL and set buffSize to the required size.
+            // Soar will then re-call this handler and get the cached result.
+            if ( resultStr.length() + 1 > *bufSize )
+            {
+                *bufSize = resultStr.length() + 1;
+                prevResult = resultStr;
+                return NULL;
+            }
+
+            strcpy( buf, resultStr.c_str() );
+            return buf;
+        };
+    return AddRhsFunction(pRhsFunctionName, newHandler, pUserData, addToBack);
+}
+
 /*************************************************************
 * @brief Unregister for a particular RHS function
 *************************************************************/
