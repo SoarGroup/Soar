@@ -16,6 +16,10 @@
 bool SMem_Manager::export_smem(uint64_t lti_id, std::string& result_text, std::string** err_msg)
 {
     ltm_set store_set;
+    if (!connected()) {
+        (*err_msg)->append("Cannot export semantic memory if it is not connected.");
+        return false;
+    }
 
     if (!lti_id)
     {
