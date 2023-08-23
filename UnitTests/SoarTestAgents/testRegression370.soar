@@ -1,0 +1,10 @@
+# https://github.com/SoarGroup/Soar/issues/370
+# Make sure that smem --init connects smem DB so that --clear doesn't raise an error.
+smem --init
+smem --clear
+
+sp {pass
+	(state <S1>)
+-->
+	(succeeded)
+}

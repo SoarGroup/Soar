@@ -285,6 +285,13 @@ void MiscTests::testWrongAgentWmeFunctions()
 
 }
 
+void MiscTests::testRegression370()
+{
+	source("testRegression370.soar");
+	agent->RunSelf(5000);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
+}
+
 void MiscTests::testRHSRand()
 {
 	kernel->AddRhsFunction("failed", Handlers::MyRhsFunctionFailureHandler, 0) ;

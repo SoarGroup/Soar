@@ -133,9 +133,11 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
     }
     else if (pOp == 'i')
     {
-        /* Don't think we need clear out anything else any more */
-
-        thisAgent->SMem->reinit();
+        if (thisAgent->SMem->connected()) {
+            thisAgent->SMem->reinit();
+        } else {
+            thisAgent->SMem->attach();
+        }
 
         PrintCLIMessage("Semantic memory system re-initialized.");
         if (thisAgent->SMem->settings->append_db->get_value() == on)
