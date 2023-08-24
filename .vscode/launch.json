@@ -1,0 +1,61 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug UnitTests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/out/UnitTests",
+            // "args": ["-e", "PRIMS_Sanity1", "-e", "PRIMS_Sanity2", "-f", "testSmemArithmetic", "-l", "-c", "FullTestsClientThread"],
+            "args": ["-e", "PRIMS_Sanity1","-c", "MiscTests"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/out",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "osx": {
+                "MIMode": "lldb",
+                "targetArchitecture": "ARM64"
+            }
+        },
+        {
+            "name": "Debug Soar CLI",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceRoot}/out/soar",
+            "MIMode": "gdb",
+            "osx": {
+                "MIMode": "lldb",
+                "targetArchitecture": "ARM64"
+            }
+        },
+        {
+            "name": "Debug soar.dll loaded by Java",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${env:JAVA_HOME}/bin/java",
+            "MIMode": "gdb",
+            "osx": {
+                // Keep in mind that VSCode might freeze for you! You may need to use lldb directly instead.
+                // https://github.com/microsoft/vscode-cpptools/issues/7240
+                // You may also need to codesign your java executable with permissions to debug:
+                // https://stackoverflow.com/questions/66575538/xcode-lldb-cant-attach-to-macos-system-program-bin-cp-not-allowed-to-attach
+                "MIMode": "lldb",
+                "targetArchitecture": "ARM64"
+            },
+        },
+        {
+            "name": "Debug project build",
+            "type": "python",
+            "request": "launch",
+            "program": "scons/scons.py",
+			"args": ["--scu", "--dbg", "all", "performance_tests"],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        // TODO: Python debugger for scons build
+    ]
+}
