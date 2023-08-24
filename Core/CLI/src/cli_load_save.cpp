@@ -212,6 +212,9 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
             if (thisAgent->SMem->connected() && (thisAgent->SMem->statistics->nodes->get_value() > 0))
             {
                 result = thisAgent->SMem->export_smem(0, export_text, &(err));
+                if (!result) {
+                    SetError(*err);
+                }
                 AddSaveText("# Semantic Memory\n");
                 if (!DoCLog(LOG_ADD, 0, &export_text, true)) return false;
             } else {

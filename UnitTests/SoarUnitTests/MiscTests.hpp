@@ -33,6 +33,8 @@ public:
 
 	TEST(testWrongAgentWmeFunctions, -1)
 	void testWrongAgentWmeFunctions();
+	TEST(testRegression370, -1)
+	void testRegression370();
 	TEST(testRHSRand, -1)
 	void testRHSRand();
 	TEST(testMultipleKernels, -1)
