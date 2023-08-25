@@ -15,7 +15,8 @@ For binary builds of Soar you can get them in two places:
 
 * [Official Releases](http://soar.eecs.umich.edu/articles/downloads/soar-suite)
 * [Latest Successful Development Build](https://github.com/SoarGroup/Soar/actions/workflows/build.yml?query=branch%3Adevelopment): click the latest run and scroll down to "Artifacts".
-  - Note: if the download for your platform isn't there, the build failed. You'll need to download the result of an earlier build.
+  - If the download for your platform isn't there, the build failed. You'll need to download the result of an earlier build.
+  - GitHub cannot build for ARM64 (M-series Macs), so you'll need to build from source or use the release version instead.
 
 # Soar Performance
 
@@ -27,6 +28,8 @@ Disclaimer: These are worst case tests.  Average performance is probably much hi
 
 ## Prerequisites
 
+The instructions below are cursory and may be out of date; the most up-to-date instructions for compiling Soar from source will always be the CI build scripts. You can find them [here](.github/workflows/build.yml).
+
 To compile Soar, you will need the following:
 
 * C/C++ compiler
@@ -35,7 +38,7 @@ To compile Soar, you will need the following:
 * Python
     - Mac: `brew install python`
 * Java
-    - We recommend using [SDKMan](https://sdkman.io/). Install JDK 17 (Temurin is recommended).
+    - We recommend using [SDKMan](https://sdkman.io/). The debugger, etc. require Java 11 at a minimum, but it's best to install the latest LTS. Temurin is recommended.
 
 To compile the extra SML wrapper libs, you will need the following:
 
@@ -47,6 +50,15 @@ To compile the extra SML wrapper libs, you will need the following:
 The project supports generating compile_commands.json, which can be used by e.g. VSCode with the C/C++ plugin to provide IntelliSense. To generate this file, run scons with the `cdb` target:
 
    python3 scons/scons.py --scu --opt --verbose cdb
+
+Note for M-series Mac users: you'll want to make sure you're compiling for ARM64, not x86_64. Sometimes users have Python installed in compatibility mode, leading to compiles for the wrong architecture. You can check which architecture your Python is built for using this:
+
+```python
+import sysconfig
+>>> print(sysconfig.get_config_vars())
+```
+
+You can also check your `clang`'s default compile target using `clang --version`.
 
 # License
 
