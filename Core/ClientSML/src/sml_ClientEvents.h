@@ -11,6 +11,7 @@
 #ifndef SML_CLIENT_EVENT_ID_H
 #define SML_CLIENT_EVENT_ID_H
 
+#include <functional>
 #include <map>
 #include <string>
 
@@ -69,6 +70,7 @@ namespace sml
     typedef void (*XMLEventHandler)(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML) ;
 
 
+// TODO: move to Kernel::AddRhsHandler, which clients actually see. Expand on why this is the way it is.
 // Maintainer note: RhsEventHandler and ClientMessageHandler require special handling:
 // RETURN: returns pointer to buff.  If buff is not large enough, it will return NULL and set buffSize to a new size. Reallocate the new size and call again.
 // Implementations should save a static value locally to be returned when the client retries the call. This also means that the client
@@ -95,10 +97,13 @@ namespace sml
 
 // Handler for RHS (right hand side) function firings
 // pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
-// The return value is a string which allows the RHS function to create a symbol: e.g. ^att (exec plus 2 2) producting ^att 4
+// The return value is a string which allows the RHS function to create a symbol: e.g. ^att (exec plus 2 2) producing ^att 4
 // SEE MAINTAINER NOTE ABOVE!
     typedef char const *(*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
                                           char const* pFunctionName, char const* pArgument, int *buffSize, char *buff) ;
+
+    using RhsEventHandlerCPP = std::function<std::string(smlRhsEventId id, void *pUserData,
+                                                         Agent *pAgent, char const *pFunctionName, char const *pArgument)>;
 
 // Handler for a generic "client message".  The content is determined by the client sending this data.
 // The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,

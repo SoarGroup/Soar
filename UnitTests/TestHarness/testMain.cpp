@@ -25,6 +25,7 @@
 #include "BuiltinRHSTests.hpp"
 #include "ChunkingTests.hpp"
 #include "ChunkingDemoTests.hpp"
+#include "C2CPPApi.hpp"
 #include "ElementXMLTest.hpp"
 #include "EpMemFunctionalTests.hpp"
 #include "FullTests.hpp"
@@ -189,6 +190,7 @@ int main(int argc, char** argv)
     TEST_DECLARATION(BuiltinRHSTests);
     TEST_DECLARATION(ChunkingDemoTests);
     TEST_DECLARATION(ChunkingTests);
+    TEST_DECLARATION(C2CPPApi)
     TEST_DECLARATION(EpMemFunctionalTests);
     TEST_DECLARATION(ElementXMLTest);
     TEST_DECLARATION(FullTests);
