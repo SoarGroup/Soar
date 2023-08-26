@@ -2077,6 +2077,7 @@ int Kernel::InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionNam
     bool found = m_RhsEventMap.findFirstValueByTest(&test, &optionalFoundHandler) ;
     if (found && optionalFoundHandler.m_Handler != 0)
     {
+        // TODO: log a warning here to help catch copy/paste errors in the client
         return optionalFoundHandler.getCallbackID() ;
     }
 

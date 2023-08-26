@@ -18,6 +18,8 @@
 #include "sml_ClientKernel.h"
 #include "soar_instance.h"
 
+#include <functional>
+
 bool g_Cancel = false;
 
 #ifdef _WIN32
@@ -376,8 +378,10 @@ void FullTests_Parent::testRHSHandler()
     int callback_rhs1 = m_pKernel->AddRhsFunction("test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived) ;
     int callback_rhs_dup = m_pKernel->AddRhsFunction("test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived) ;
     //agent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::DebugPrintEventHandler, 0) ;
-
     no_agent_assertTrue_msg("Duplicate RHS function registration should be detected and be ignored", callback_rhs_dup == callback_rhs1);
+
+    bool cppRhsHandlerReceived(false);
+    int callback_rhs_cpp = m_pKernel->AddRhsFunctionCPP("test-rhs-cpp", Handlers::GetRhsFunctionHandlerCPP(&cppRhsHandlerReceived)) ;
 
     // need this to fire production that calls test-rhs
     sml::Identifier* pSquare = agent->GetInputLink()->CreateIdWME("square") ;
@@ -396,6 +400,7 @@ void FullTests_Parent::testRHSHandler()
     //std::cout << agent->ExecuteCommandLine("p i2 --depth 4") << std::endl;
 
     no_agent_assertTrue(rhsFunctionHandlerReceived);
+    no_agent_assertTrue(cppRhsHandlerReceived);
 
     no_agent_assertTrue(m_pKernel->RemoveRhsFunction(callback_rhs1));
 
