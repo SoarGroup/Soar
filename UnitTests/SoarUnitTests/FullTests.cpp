@@ -1586,6 +1586,9 @@ void FullTests_Parent::testNegatedConjunctiveTestUnbound()
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
+// Maintainer note: this test fails if the WORKING_DIRECTORY env var is not set, and
+// the current working directory is not the same as the one that the UnitTests exe is in.
+// If you noticed it failing, try `cd out` and run UnitTests again.
 void FullTests_Parent::testCommandToFile()
 {
     loadProductions(SoarHelper::GetResource("water-jug-rl.soar"));
@@ -1598,7 +1601,7 @@ void FullTests_Parent::testCommandToFile()
     if (workingDirectory)
         resourceDirectory = workingDirectory;
 
-    agent->ExecuteCommandLine(("command-to-file \"" + resourceDirectory + "/" + "testCommandToFile-output.soar\" print --rl --full").c_str());
+    agent->ExecuteCommandLine(("command-to-file \"" + resourceDirectory + "testCommandToFile-output.soar\" print --rl --full").c_str());
     no_agent_assertTrue(agent->GetLastCommandLineResult());
     const char* result = agent->ExecuteCommandLine(("source \"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"").c_str());
     no_agent_assertTrue(result);
