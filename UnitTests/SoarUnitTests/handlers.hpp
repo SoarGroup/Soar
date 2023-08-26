@@ -5,6 +5,7 @@
 
 #include "sml_Connection.h"
 #include "sml_Client.h"
+#include "sml_ClientEvents.h"
 #include "sml_Utils.h"
 
 struct RunningAgentData
@@ -37,6 +38,7 @@ class Handlers
         static void MyXMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* pAgent, sml::ClientXML* pXML);
         static void MyInterruptHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
         static const char *MyRhsFunctionHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *buffSize, char *buff);
+        static const sml::RhsEventHandlerCpp GetRhsFunctionHandlerCPP(bool* receivedFlag);
         static void MyMemoryLeakUpdateHandlerDestroyChildren(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
         static void MyMemoryLeakUpdateHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
         static void MyCallStopOnUpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
@@ -45,10 +47,10 @@ class Handlers
         static void MyOrderingRunHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
         static const char *MyRhsFunctionFailureHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *buffSize, char *buff);
         static const char *MySuccessHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *buffSize, char *buff);
-        
+
     private:
         static void MyMemoryLeakUpdateHandlerInternal(bool destroyAll, sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
-        
+
         // This class is meant to be used to contain static functions only and never instantiated.
         Handlers() {}
         Handlers(const Handlers&) {}
