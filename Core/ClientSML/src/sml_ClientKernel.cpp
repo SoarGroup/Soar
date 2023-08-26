@@ -671,6 +671,8 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
         return ;
     }
 
+    // TODO: since we're only using the name, we could get rid of the handler+data wrapper class
+    // and iterate over name/handler key/vals here instead of looking up the name in the wrapper
     // Look up the handler(s) from the map
     RhsEventMap::ValueList* pHandlers = m_RhsEventMap.getList(pFunctionName) ;
 
@@ -695,12 +697,10 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 
     RhsEventHandlerPlusData handlerWithData = *iter ;
 
-    // RhsEventHandler handler = handlerWithData.m_Handler ;
     RhsEventHandlerCPP handler = handlerWithData.m_Handler ;
-    void* pUserData = handlerWithData.getUserData() ;
 
     // Call the handler
-    const std::string retVal = handler(id, pUserData, pAgent, pFunctionName, pArgument);
+    const std::string retVal = handler(id, pAgent, pFunctionName, pArgument);
     GetConnection()->AddSimpleResultToSMLResponse(pResponse, retVal.c_str()) ;
 }
 
@@ -1855,16 +1855,12 @@ class Kernel::TestRhsCallbackFull : public RhsEventMap::ValueTest
     private:
         int             m_EventID ;
         std::string     m_FunctionName ;
-        RhsEventHandlerCPP m_Handler ;
-        void*           m_UserData ;
 
     public:
-        TestRhsCallbackFull(int eventID, char const* functionName, RhsEventHandlerCPP handler, void* pUserData)
+        TestRhsCallbackFull(int eventID, char const* functionName)
         {
             m_EventID = eventID ;
             m_FunctionName = functionName ;
-            m_Handler = handler ;
-            m_UserData = pUserData ;
         }
 
         virtual ~TestRhsCallbackFull() { } ;
@@ -1872,10 +1868,7 @@ class Kernel::TestRhsCallbackFull : public RhsEventMap::ValueTest
         bool isEqual(RhsEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_FunctionName.compare(m_FunctionName) == 0 &&
-                   handlerPlus.m_EventID == m_EventID &&
-                //    TODO: did we really need this? Not possible with std::function
-                //    handlerPlus.m_Handler == m_Handler &&
-                   handlerPlus.m_UserData == m_UserData ;
+                   handlerPlus.m_EventID == m_EventID;
         }
 } ;
 
@@ -2076,18 +2069,15 @@ int Kernel::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler,
 /***
 ***   RHS functions and message event handlers use the same internal logic, although they look rather different to the user
 ***/
-int Kernel::InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionName, RhsEventHandlerCPP handler, void* pUserData, bool addToBack)
+int Kernel::InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionName, RhsEventHandlerCPP handler, bool addToBack)
 {
-    // Start by checking if this functionName, handler, pUSerData combination has already been registered
-    TestRhsCallbackFull test(id, pRhsFunctionName, handler, pUserData) ;
-
-    // See if this handler is already registered
-    RhsEventHandlerPlusData plus(0, 0, 0, 0, 0) ;
-    bool found = m_RhsEventMap.findFirstValueByTest(&test, &plus) ;
-
-    if (found && plus.m_Handler != 0)
+    // Start by checking if this event type and function namecombination has already been registered
+    TestRhsCallbackFull test(id, pRhsFunctionName) ;
+    RhsEventHandlerPlusData optionalFoundHandler(0, 0, 0, 0) ;
+    bool found = m_RhsEventMap.findFirstValueByTest(&test, &optionalFoundHandler) ;
+    if (found && optionalFoundHandler.m_Handler != 0)
     {
-        return plus.getCallbackID() ;
+        return optionalFoundHandler.getCallbackID() ;
     }
 
     // If we have no handlers registered with the kernel, then we need
@@ -2105,7 +2095,7 @@ int Kernel::InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionNam
 
     // Record the handler
     m_CallbackIDCounter++ ;
-    RhsEventHandlerPlusData handlerPlus(id, pRhsFunctionName, handler, pUserData, m_CallbackIDCounter) ;
+    RhsEventHandlerPlusData handlerPlus(id, pRhsFunctionName, handler, m_CallbackIDCounter) ;
     m_RhsEventMap.add(pRhsFunctionName, handlerPlus, addToBack) ;
 
     // Return the ID.  We use this later to unregister the callback
@@ -2146,7 +2136,6 @@ bool Kernel::InternalRemoveRhsFunction(smlRhsEventId id, int callbackID)
 RhsEventHandlerCPP c2cppHandler(RhsEventHandler handler, void* pUserData) {
     return [handler, pUserData](
         smlRhsEventId id,
-        void* pUserDataIgnored,
         Agent* pAgent,
         char const* pFunctionName,
         char const* pArgument) -> std::string {
@@ -2203,14 +2192,14 @@ int Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler
     // TODO: remove separate pUserData everywhere.
     RhsEventHandlerCPP newHandler = c2cppHandler(handler, pUserData);
 
-    return InternalAddRhsFunction(id, pRhsFunctionName, newHandler, pUserData, addToBack) ;
+    return InternalAddRhsFunction(id, pRhsFunctionName, newHandler, addToBack) ;
 }
 
-int Kernel::AddRhsFunctionCPP(char const* pRhsFunctionName, RhsEventHandlerCPP handler, void* pUserData, bool addToBack)
+int Kernel::AddRhsFunctionCPP(char const* pRhsFunctionName, RhsEventHandlerCPP handler, bool addToBack)
 {
     smlRhsEventId id = smlEVENT_RHS_USER_FUNCTION ;
     // TODO: get rid of pUserData
-    return InternalAddRhsFunction(id, pRhsFunctionName, handler, pUserData, addToBack) ;
+    return InternalAddRhsFunction(id, pRhsFunctionName, handler, addToBack) ;
 }
 
 /*************************************************************
@@ -2255,7 +2244,7 @@ int Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessage
 
     // We actually use the RHS function code internally to process this message (since it's almost exactly like calling a RHS function that's
     // processed on a client).
-    return InternalAddRhsFunction(id, pClientName, newHandler, pUserData, addToBack) ;
+    return InternalAddRhsFunction(id, pClientName, newHandler, addToBack) ;
 }
 
 /*************************************************************

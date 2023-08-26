@@ -107,7 +107,7 @@ namespace sml
 
             RhsEventHandlerPlusData() {}
 
-            RhsEventHandlerPlusData(int eventID, char const* pFunctionName, RhsEventHandlerCPP handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
+            RhsEventHandlerPlusData(int eventID, char const* pFunctionName, RhsEventHandlerCPP handler, int callbackID) : EventHandlerPlusData(eventID, nullptr, callbackID)
             {
                 m_Handler = handler ;
 
@@ -281,7 +281,7 @@ namespace sml
             /***
             ***   RHS functions and message event handlers use the same internal logic, although they look rather different to the user
             ***/
-            int InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionName, RhsEventHandlerCPP handler, void* pUserData, bool addToBack) ;
+            int InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionName, RhsEventHandlerCPP handler, bool addToBack) ;
             bool InternalRemoveRhsFunction(smlRhsEventId id, int callbackID) ;
 
             /*************************************************************
@@ -782,7 +782,7 @@ namespace sml
             *************************************************************/
             int AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack = true) ;
             // TODO: document
-            int AddRhsFunctionCPP(char const* pRhsFunctionName, RhsEventHandlerCPP handler, void* pUserData, bool addToBack = true) ;
+            int AddRhsFunctionCPP(char const* pRhsFunctionName, RhsEventHandlerCPP handler, bool addToBack = true) ;
 
             /*************************************************************
             * @brief Unregister for a particular rhs function callback

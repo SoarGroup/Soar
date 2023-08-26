@@ -102,19 +102,19 @@ namespace sml
     typedef char const *(*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
                                           char const* pFunctionName, char const* pArgument, int *buffSize, char *buff) ;
 
-    using RhsEventHandlerCPP = std::function<std::string(smlRhsEventId id, void *pUserData,
-                                                         Agent *pAgent, char const *pFunctionName, char const *pArgument)>;
+    using RhsEventHandlerCPP = std::function<std::string(smlRhsEventId id, Agent *pAgent, char const *pFunctionName, char const *pArgument)>;
 
-// Handler for a generic "client message".  The content is determined by the client sending this data.
-// The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,
-// such as a simple series of integers up to a complete XML message.
-// SEE MAINTAINER NOTE ABOVE!
-		typedef char const *(*ClientMessageHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
-																					 char const* pFunctionName, char const* pArgument, int *buffSize, char *buff) ;
+    // Handler for a generic "client message".  The content is determined by the client sending this data.
+    // The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,
+    // such as a simple series of integers up to a complete XML message.
+    // SEE MAINTAINER NOTE ABOVE!
+    // TODO: add alternative similar to RhsEventHandlerCPP above
+    typedef char const *(*ClientMessageHandler)(smlRhsEventId id, void *pUserData, Agent *pAgent,
+                                                char const *pFunctionName, char const *pArgument, int *buffSize, char *buff);
 
-// We'll store a handler function together with a generic pointer to data of the user's choosing
-// (which is then passed back into the handler when the event occurs).
-// We also include a callback "id" which is a unique way to refer to this callback--used during unregistering.
+    // We'll store a handler function together with a generic pointer to data of the user's choosing
+    // (which is then passed back into the handler when the event occurs).
+    // We also include a callback "id" which is a unique way to refer to this callback--used during unregistering.
     class EventHandlerPlusData
     {
         public:
@@ -142,6 +142,7 @@ namespace sml
             {
                 return m_EventID ;
             }
+            // TODO: get rid of this in favor of storing in std::function captures
             void*   getUserData()
             {
                 return m_UserData ;
