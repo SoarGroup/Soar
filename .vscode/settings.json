@@ -1,0 +1,24 @@
+{
+    "files.associations": {
+        "*.csv": "plaintext",
+        "__availability": "cpp",
+        "__config": "cpp",
+        "__hash_table": "cpp",
+        "__tree": "cpp",
+        "atomic": "cpp",
+        "exception": "cpp",
+        "functional": "cpp",
+        "optional": "cpp",
+        "string": "cpp",
+        "tuple": "cpp",
+        "variant": "cpp",
+        "__debug": "cpp",
+        "__string": "cpp",
+        "filesystem": "cpp",
+        "type_traits": "cpp",
+        "iosfwd": "cpp",
+        "map": "cpp",
+        "stdexcept": "cpp"
+    },
+    "openInGitHub.defaultBranch": "development",
+}

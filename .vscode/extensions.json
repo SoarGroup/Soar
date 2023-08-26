@@ -3,6 +3,7 @@
         "ms-vscode.cpptools",
         "ms-python.python",
         "editorconfig.editorconfig",
-        "bdegrend.soar"
+        "bdegrend.soar",
+        "sysoev.vscode-open-in-github",
     ]
 }

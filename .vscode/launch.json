@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/out/UnitTests",
             // "args": ["-e", "PRIMS_Sanity1", "-e", "PRIMS_Sanity2", "-f", "testSmemArithmetic", "-l", "-c", "FullTestsClientThread"],
-            "args": ["-e", "PRIMS_Sanity1","-c", "MiscTests"],
+            "args": ["-e", "PRIMS_Sanity1","-t", "testRHSHandler"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/out",
             "environment": [],
