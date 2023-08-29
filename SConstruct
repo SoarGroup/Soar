@@ -221,12 +221,14 @@ if compiler == 'g++':
 
         gcc_ver = gcc_version(env['CXX'])
         # check if the compiler supports -fvisibility=hidden (GCC >= 4)
+        # If so, hide symbols not explicitly marked for exporting using our EXPORT macro
         if gcc_ver[0] > 3:
             env.Append(CPPFLAGS='-fvisibility=hidden')
 
             config = Configure(env)
             if config.TryCompile('', '.cpp'):
                 cflags.append('-fvisibility=hidden')
+                # TODO: what does this do?
                 cflags.append('-DGCC_HASCLASSVISIBILITY')
                 env['VISHIDDEN'] = True
             else:

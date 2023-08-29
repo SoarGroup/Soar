@@ -79,6 +79,7 @@ clone.Append(
 )
 java_sml_alias = clone['SML_JAVA_ALIAS']
 
+# TODO: why?
 if compiler == 'g++':
     if clone['VISHIDDEN']:
         clone['CPPFLAGS'].remove('-fvisibility=hidden')

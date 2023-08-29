@@ -1,11 +1,13 @@
 /* File : sml_ClientInterface.i */
+// Settings common to all target languages
 
 //
-// SWIG support for std::string
+// SWIG support for std::string (https://www.swig.org/Doc4.1/Library.html#Library_std_string)
 //
 %include std_string.i
 
 // handle windows calling convention, __declspec(dllimport), correctly
+// see https://www.swig.org/Doc4.1/Windows.html#Windows_interface_file
 %include <windows.i>
 
 //
