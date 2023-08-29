@@ -23,9 +23,10 @@ extern "C" {
 
 #include <string>
 
-typedef int agentPtr ;
-typedef int CallbackDataPtr ;
-typedef int kernelPtr ;
+typedef void* agentPtr ;
+typedef void* CallbackDataPtr ;
+typedef void* kernelPtr ;
+typedef void* callbackFnPtr;
 
 /* Callback for deleting GCHandle objects from within C#, so we don't leak them. */
 typedef void(SWIGSTDCALL *CSharpHandleHelperCallback)(uintptr_t);
@@ -66,7 +67,7 @@ class CSharpCallbackData
         int             m_CallbackID ;
 
     public:
-        CSharpCallbackData(agentPtr jagent, kernelPtr jkernel, int eventID, void* callbackFunction, unsigned int callbackData)
+        CSharpCallbackData(agentPtr jagent, kernelPtr jkernel, int eventID, void* callbackFunction, CallbackDataPtr callbackData)
         {
             m_Agent = jagent ;
             m_Kernel = jkernel ;
@@ -81,13 +82,13 @@ class CSharpCallbackData
             // Free the GCHandles created when the callback was registered
             if (m_Agent != NULL)
             {
-                SWIG_csharp_deletehandle_callback(m_Agent) ;
+                SWIG_csharp_deletehandle_callback(reinterpret_cast<uintptr_t>(m_Agent)) ;
             }
             if (m_Kernel != NULL)
             {
-                SWIG_csharp_deletehandle_callback(m_Kernel) ;
+                SWIG_csharp_deletehandle_callback(reinterpret_cast<uintptr_t>(m_Kernel)) ;
             }
-            SWIG_csharp_deletehandle_callback(m_CallbackData) ;
+            SWIG_csharp_deletehandle_callback(reinterpret_cast<uintptr_t>(m_CallbackData)) ;
         }
 } ;
 
@@ -117,7 +118,7 @@ bool IsValidCallbackData(CSharpCallbackData* pData)
     }
 }
 
-static CSharpCallbackData* CreateCSharpCallbackDataAgent(agentPtr jagent, int eventID, unsigned int callbackFunction, CallbackDataPtr callbackData)
+static CSharpCallbackData* CreateCSharpCallbackDataAgent(agentPtr jagent, int eventID, callbackFnPtr callbackFunction, CallbackDataPtr callbackData)
 {
     CSharpCallbackData* pData = new CSharpCallbackData(jagent, NULL, eventID, (void*)callbackFunction, callbackData) ;
 
@@ -127,9 +128,9 @@ static CSharpCallbackData* CreateCSharpCallbackDataAgent(agentPtr jagent, int ev
     return pData;
 }
 
-static CSharpCallbackData* CreateCSharpCallbackDataKernel(kernelPtr jkernel, int eventID, unsigned int callbackFunction, CallbackDataPtr callbackData)
+static CSharpCallbackData* CreateCSharpCallbackDataKernel(kernelPtr jkernel, int eventID, callbackFnPtr callbackFunction, CallbackDataPtr callbackData)
 {
-    CSharpCallbackData* pData = new CSharpCallbackData(NULL, jkernel, eventID, (void*)callbackFunction, callbackData) ;
+    CSharpCallbackData* pData = new CSharpCallbackData(nullptr, jkernel, eventID, callbackFunction, callbackData) ;
 
     // Save the callback data so we can free it later
     callbackdatas.push_back(pData);
@@ -151,7 +152,7 @@ typedef void (STDCALL* RunEventCallback)(int eventID, CallbackDataPtr callbackDa
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void RunEventHandler(sml::smlRunEventId /*id*/, void* pUserData, sml::Agent* /*pAgent*/, sml::smlPhase phase)
+static void RunEventHandler(sml::smlRunEventId /*id*/, CallbackDataPtr pUserData, sml::Agent* /*pAgent*/, sml::smlPhase phase)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -162,7 +163,7 @@ static void RunEventHandler(sml::smlRunEventId /*id*/, void* pUserData, sml::Age
     callback(pData->m_EventID, pData->m_CallbackData, pData->m_Agent, phase) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForRunEvent(void* jarg1, int jarg2, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForRunEvent(agentPtr jarg1, int jarg2, agentPtr jagent, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -182,7 +183,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForRunEvent(void* jarg1, in
     return reinterpret_cast<intptr_t>(pData);
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForRunEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForRunEvent(agentPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -232,7 +233,7 @@ static void OutputNotificationHandler(void* pUserData, sml::Agent* /*pAgent*/)
     callback(pData->m_CallbackData, pData->m_Agent) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForOutputNotification(void* jarg1, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForOutputNotification(agentPtr jarg1, agentPtr jagent, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -252,7 +253,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForOutputNotification(void*
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForOutputNotification(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForOutputNotification(agentPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -291,7 +292,7 @@ typedef void (STDCALL* OutputEventCallback)(CallbackDataPtr callbackData, agentP
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void OutputEventHandler(void* pUserData, sml::Agent* /*pAgent*/, char const* pCommandName, sml::WMElement* pOutputWME)
+static void OutputEventHandler(CallbackDataPtr pUserData, sml::Agent* /*pAgent*/, char const* pCommandName, sml::WMElement* pOutputWME)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -314,7 +315,7 @@ static void OutputEventHandler(void* pUserData, sml::Agent* /*pAgent*/, char con
     SWIG_csharp_deletehandle_callback(csharpOutputWME) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_AddOutputHandler(void* jarg1, agentPtr jagent, char const* pAttributeName, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_AddOutputHandler(agentPtr jarg1, agentPtr jagent, char const* pAttributeName, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -334,7 +335,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_AddOutputHandler(void* jarg1, agent
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_RemoveOutputHandler(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_RemoveOutputHandler(agentPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -374,7 +375,7 @@ typedef void (STDCALL* XMLEventCallback)(int eventID, CallbackDataPtr callbackDa
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void XMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* /*pAgent*/, sml::ClientXML* pXML)
+static void XMLEventHandler(sml::smlXMLEventId id, CallbackDataPtr pUserData, sml::Agent* /*pAgent*/, sml::ClientXML* pXML)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -394,7 +395,7 @@ static void XMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* 
     SWIG_csharp_deletehandle_callback(csharpXML) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForXMLEvent(void* jarg1, int jarg2, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForXMLEvent(agentPtr jarg1, int jarg2, agentPtr jagent, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -414,7 +415,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForXMLEvent(void* jarg1, in
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForXMLEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForXMLEvent(agentPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -451,7 +452,7 @@ typedef void (STDCALL* ProductionEventCallback)(int eventID, CallbackDataPtr cal
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void ProductionEventHandler(sml::smlProductionEventId /*id*/, void* pUserData, sml::Agent* /*pAgent*/, char const* pProdName, char const* pInstantiation)
+static void ProductionEventHandler(sml::smlProductionEventId /*id*/, CallbackDataPtr pUserData, sml::Agent* /*pAgent*/, char const* pProdName, char const* pInstantiation)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -466,7 +467,7 @@ static void ProductionEventHandler(sml::smlProductionEventId /*id*/, void* pUser
     callback(pData->m_EventID, pData->m_CallbackData, pData->m_Agent, csharpProdName, csharpInstantiation) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForProductionEvent(void* jarg1, int jarg2, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForProductionEvent(agentPtr jarg1, int jarg2, agentPtr jagent, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -486,7 +487,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForProductionEvent(void* ja
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForProductionEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForProductionEvent(agentPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -524,7 +525,7 @@ typedef void (STDCALL* PrintEventCallback)(int eventID, CallbackDataPtr callback
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void PrintEventHandler(sml::smlPrintEventId /*id*/, void* pUserData, sml::Agent* /*pAgent*/, char const* pMessage)
+static void PrintEventHandler(sml::smlPrintEventId /*id*/, CallbackDataPtr pUserData, sml::Agent* /*pAgent*/, char const* pMessage)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -538,7 +539,7 @@ static void PrintEventHandler(sml::smlPrintEventId /*id*/, void* pUserData, sml:
     callback(pData->m_EventID, pData->m_CallbackData, pData->m_Agent, csharpMessage) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForPrintEvent(void* jarg1, int jarg2, agentPtr jagent, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForPrintEvent(agentPtr jarg1, int jarg2, agentPtr jagent, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -558,7 +559,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Agent_RegisterForPrintEvent(void* jarg1, 
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForPrintEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Agent_UnregisterForPrintEvent(agentPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Agent* arg1 = *(sml::Agent**)&jarg1 ;
@@ -596,7 +597,7 @@ typedef void (STDCALL* SystemEventCallback)(int eventID, CallbackDataPtr callbac
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void SystemEventHandler(sml::smlSystemEventId /*id*/, void* pUserData, sml::Kernel* /*pKernel*/)
+static void SystemEventHandler(sml::smlSystemEventId /*id*/, CallbackDataPtr pUserData, sml::Kernel* /*pKernel*/)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -607,7 +608,7 @@ static void SystemEventHandler(sml::smlSystemEventId /*id*/, void* pUserData, sm
     callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForSystemEvent(void* jarg1, int jarg2, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForSystemEvent(kernelPtr jarg1, int jarg2, kernelPtr jkernel, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Kernel object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -627,7 +628,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForSystemEvent(void* jarg1
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForSystemEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForSystemEvent(kernelPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -665,7 +666,7 @@ typedef void (STDCALL* UpdateEventCallback)(int eventID, CallbackDataPtr callbac
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void UpdateEventHandler(sml::smlUpdateEventId /*id*/, void* pUserData, sml::Kernel* /*pKernel*/, sml::smlRunFlags runFlags)
+static void UpdateEventHandler(sml::smlUpdateEventId /*id*/, CallbackDataPtr pUserData, sml::Kernel* /*pKernel*/, sml::smlRunFlags runFlags)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -676,7 +677,7 @@ static void UpdateEventHandler(sml::smlUpdateEventId /*id*/, void* pUserData, sm
     callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, runFlags) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForUpdateEvent(void* jarg1, int jarg2, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForUpdateEvent(kernelPtr jarg1, int jarg2, kernelPtr jkernel, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Kernel object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -696,7 +697,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForUpdateEvent(void* jarg1
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForUpdateEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForUpdateEvent(kernelPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -741,7 +742,7 @@ typedef char const* (STDCALL* StringEventCallback)(int eventID, CallbackDataPtr 
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static std::string StringEventHandler(sml::smlStringEventId /*id*/, void* pUserData, sml::Kernel* /*pKernel*/, char const* pString)
+static std::string StringEventHandler(sml::smlStringEventId /*id*/, CallbackDataPtr pUserData, sml::Kernel* /*pKernel*/, char const* pString)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -761,7 +762,7 @@ extern "C" {
 #endif
 
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForStringEvent(void* jarg1, int jarg2, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForStringEvent(kernelPtr jarg1, int jarg2, kernelPtr jkernel, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Kernel object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -781,7 +782,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForStringEvent(void* jarg1
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForStringEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForStringEvent(kernelPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -816,7 +817,7 @@ typedef char const* (STDCALL* ClientMessageCallback)(int eventID, CallbackDataPt
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static std::string RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
+static const std::string RhsEventHandler(sml::smlRhsEventId /*id*/, CallbackDataPtr pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -833,7 +834,7 @@ static std::string RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, s
     return res;
 }
 
-const sml::RhsEventHandlerCpp getRhsEventHandler(void *pUserData)
+static const sml::RhsEventHandlerCpp getRhsEventHandler(void *pUserData)
 {
     return [pUserData](sml::smlRhsEventId id, sml::Agent *pAgent, char const *pFunctionName, char const *pArgument) -> const std::string
     {
@@ -841,7 +842,7 @@ const sml::RhsEventHandlerCpp getRhsEventHandler(void *pUserData)
     };
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_AddRhsFunction(void* jarg1, char const* pFunctionName, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_AddRhsFunction(kernelPtr jarg1, char const* pFunctionName, kernelPtr jkernel, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Kernel object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -861,7 +862,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_AddRhsFunction(void* jarg1, char c
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_RemoveRhsFunction(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_RemoveRhsFunction(kernelPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -884,7 +885,7 @@ SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_RemoveRhsFunction(void* jarg1, int jar
     return result ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForClientMessageEvent(void* jarg1, char const* pClientName, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForClientMessageEvent(kernelPtr jarg1, char const* pClientName, kernelPtr jkernel, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Kernel object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -904,7 +905,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForClientMessageEvent(void
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForClientMessageEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForClientMessageEvent(kernelPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -942,7 +943,7 @@ typedef void (STDCALL* AgentEventCallback)(int eventID, CallbackDataPtr callback
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static void AgentEventHandler(sml::smlAgentEventId /*id*/, void* pUserData, sml::Agent* pAgent)
+static void AgentEventHandler(sml::smlAgentEventId /*id*/, CallbackDataPtr pUserData, sml::Agent* pAgent)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -956,7 +957,7 @@ static void AgentEventHandler(sml::smlAgentEventId /*id*/, void* pUserData, sml:
     callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName) ;
 }
 
-SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForAgentEvent(void* jarg1, int jarg2, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
+SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForAgentEvent(kernelPtr jarg1, int jarg2, kernelPtr jkernel, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Kernel object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
@@ -976,11 +977,11 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForAgentEvent(void* jarg1,
     return reinterpret_cast<intptr_t>(pData) ;
 }
 
-SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForAgentEvent(void* jarg1, int jarg2)
+SWIGEXPORT bool SWIGSTDCALL CSharp_Kernel_UnregisterForAgentEvent(kernelPtr jarg1, CallbackDataPtr jarg2)
 {
     // jarg1 is the C++ Agent object
     sml::Kernel* arg1 = *(sml::Kernel**)&jarg1 ;
-
+    //
     // jarg2 is the callback data from the registration call
     CSharpCallbackData* pData = (CSharpCallbackData*)jarg2 ;
 
