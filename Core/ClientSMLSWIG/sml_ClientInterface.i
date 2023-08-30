@@ -92,6 +92,9 @@
 %ignore sml::Kernel::RemoveRhsFunction(int);
 %ignore sml::Kernel::UnregisterForClientMessageEvent(int);
 
+// meant for C++ (non-SWIG) clients only
+%ignore sml::Kernel::AddRhsFunction(char const*, RhsEventHandlerCpp, bool addToBack = true);
+
 // Internal classes not useful to the user
 %ignore sml::EventHandlerPlusData;
 %ignore sml::RhsEventHandlerPlusData;
