@@ -18,12 +18,12 @@ import sml.smlXMLEventId;
 
 /********************************************************************************************
  * TestJavaSML.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Nov 6, 2004
  * @author Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 
@@ -39,7 +39,8 @@ public class TestJavaSML
             Agent.PrintEventInterface, Agent.ProductionEventInterface,
             Agent.xmlEventInterface, Agent.OutputEventInterface,
             Agent.OutputNotificationInterface, Kernel.AgentEventInterface,
-            Kernel.SystemEventInterface, Kernel.RhsFunctionInterface
+            Kernel.SystemEventInterface, Kernel.RhsFunctionInterface,
+            Kernel.ClientMessageInterface
     {
 
         // We'll test to make sure we can keep a ClientXML object that we're
@@ -127,6 +128,13 @@ public class TestJavaSML
                     .println("Received rhs function event in Java for function: "
                             + functionName + "(" + argument + ")");
             return "My rhs result " + argument;
+        }
+
+        public String clientMessageHandler(int eventID, Object data,
+                String agentName, String functionName, String argument) {
+            System.out.println("Received client message event in Java for function: "
+                    + functionName + "(" + argument + ")");
+            return "My client message result " + argument;
         }
 
         public void outputEventHandler(Object data, String agentName,
@@ -267,6 +275,8 @@ public class TestJavaSML
                 smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener,
                 this);
         long jRhsCallback = pKernel.AddRhsFunction("test-rhs", listener, this);
+        long jClientMessageCallback = pKernel.RegisterForClientMessageEvent(
+            "test-client-message", listener, this);
         long jTraceCallback = pAgent.RegisterForXMLEvent(
                 smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, listener, this);
         long jOutputCallback = pAgent.AddOutputHandler("move", listener, this);
@@ -275,6 +285,12 @@ public class TestJavaSML
 
         // Trigger an agent event by doing init-soar
         pAgent.InitSoar();
+
+        String messageResult = pKernel.SendClientMessage(
+            pAgent, "test-client-message", "test-client-message-arg");
+        if (!messageResult.equals("My client message result test-client-message-arg")) {
+            throw new IllegalStateException("Client message function failed");
+        }
 
         // pAgent.ExecuteCommandLine("watch 5") ;
 
@@ -390,15 +406,15 @@ public class TestJavaSML
 
             if (success)
             {
-                outfile.write("Tests SUCCEEDED");
+                outfile.write("✅ Tests SUCCEEDED");
                 outfile.write(msg);
-                System.out.println("Tests SUCCEEDED");
+                System.out.println("✅ Tests SUCCEEDED");
             }
             else
             {
-                outfile.write("ERROR *** Tests FAILED");
+                outfile.write("❌ ERROR *** Tests FAILED");
                 outfile.write(msg);
-                System.out.println("ERROR *** Tests FAILED");
+                System.out.println("❌ ERROR *** Tests FAILED");
                 System.out.println(msg);
             }
 
@@ -502,7 +518,7 @@ public class TestJavaSML
         }
         finally
         {
-            // reportResult("testjavasml", success, msg) ;
+            reportResult("testjavasml", success, "") ;
             System.exit(success ? 0 : 1);
         }
     }

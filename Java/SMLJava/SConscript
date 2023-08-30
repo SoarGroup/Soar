@@ -1,14 +1,13 @@
-import os
-import sys
-
 Import('java_env', 'AddResources')
 
 clone = java_env.Clone()
 deps = [clone['SML']]
 clone['JAVACLASSPATH'] = clone['SML'].abspath
+# Some UTF-8 characters in the source files cause problems with the default encoding on Windows
+clone['ENV']['JAVA_TOOL_OPTIONS'] = "-Dfile.encoding=UTF8"
 jar_name = 'soar-smljava.jar'
 
-classes = clone.Java(target = 'classes', source = 'src/main/java')
+classes = clone.Java(target = 'classes', source = 'src/main/java', encoding = "UTF-8")
 clone.Depends(classes, clone['SML'])
 temp = clone.Jar(
 	target   = 'temp.jar',
