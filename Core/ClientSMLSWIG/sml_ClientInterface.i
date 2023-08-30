@@ -92,6 +92,20 @@
 %ignore sml::Kernel::RemoveRhsFunction(int);
 %ignore sml::Kernel::UnregisterForClientMessageEvent(int);
 
+// Internal classes not useful to the user
+%ignore sml::EventHandlerPlusData;
+%ignore sml::RhsEventHandlerPlusData;
+%ignore sml::AgentEventHandlerPlusData;
+%ignore sml::StringEventHandlerPlusData;
+%ignore sml::UpdateEventHandlerPlusData;
+%ignore sml::SystemEventHandlerPlusData;
+%ignore sml::XMLEventHandlerPlusData;
+%ignore sml::OutputNotificationHandlerPlusData;
+%ignore sml::RunEventHandlerPlusData;
+%ignore sml::ProductionEventHandlerPlusData;
+%ignore sml::PrintEventHandlerPlusData;
+%ignore sml::OutputEventHandlerPlusData;
+
 //
 // Tell SWIG to include these files in the generated wrapper code
 //
