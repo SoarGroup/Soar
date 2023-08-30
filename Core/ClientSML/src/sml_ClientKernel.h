@@ -818,6 +818,8 @@ namespace sml
             * @returns Unique ID for this callback.  Required when unregistering this callback.
             *************************************************************/
             int RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandler handler, void* pUserData, bool addToBack = true) ;
+            // TODO: document
+            int RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandlerCpp handler, bool addToBack = true) ;
 
             /*************************************************************
             * @brief Unregister for a particular client message

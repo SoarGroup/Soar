@@ -89,6 +89,21 @@ const char *Handlers::MyClientMessageHandler(sml::smlRhsEventId, void* pUserData
 		return buf;
 }
 
+const sml::ClientMessageHandlerCpp Handlers::GetClientMessageHandlerCpp(bool *receivedFlag)
+{
+        return [receivedFlag](
+                   sml::smlRhsEventId,
+                   sml::Agent *,
+                   char const *pMessageType,
+                   char const *pMessage) -> std::string
+        {
+            *receivedFlag = true;
+            std::stringstream res;
+            res << "handler-message-cpp" << pMessage;
+            return res.str();
+        };
+}
+
 // This is a very dumb filter--it adds "--depth 2" to all commands passed to it.
 const char *Handlers::MyFilterHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pCommandLine, int *bufSize, char *buff)
 {
@@ -279,7 +294,7 @@ const char *Handlers::MyRhsFunctionHandler(sml::smlRhsEventId, void* pUserData, 
 }
 
 
-const sml::RhsEventHandlerCpp Handlers::GetRhsFunctionHandlerCPP(bool* receivedFlag)
+const sml::RhsEventHandlerCpp Handlers::GetRhsFunctionHandlerCpp(bool* receivedFlag)
 {
     return [receivedFlag](
         sml::smlRhsEventId,

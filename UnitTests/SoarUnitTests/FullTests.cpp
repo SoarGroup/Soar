@@ -381,7 +381,7 @@ void FullTests_Parent::testRHSHandler()
     no_agent_assertTrue_msg("Duplicate RHS function registration should be detected and be ignored", callback_rhs_dup == callback_rhs1);
 
     bool cppRhsHandlerReceived(false);
-    int callback_rhs_cpp = m_pKernel->AddRhsFunction("test-rhs-cpp", Handlers::GetRhsFunctionHandlerCPP(&cppRhsHandlerReceived)) ;
+    int callback_rhs_cpp = m_pKernel->AddRhsFunction("test-rhs-cpp", Handlers::GetRhsFunctionHandlerCpp(&cppRhsHandlerReceived)) ;
 
     // need this to fire production that calls test-rhs
     sml::Identifier* pSquare = agent->GetInputLink()->CreateIdWME("square") ;
@@ -418,16 +418,24 @@ void FullTests_Parent::testClientMessageHandler()
     bool clientHandlerReceived(false);
     int clientCallback = m_pKernel->RegisterForClientMessageEvent("test-client", Handlers::MyClientMessageHandler, &clientHandlerReceived) ;
 
+    bool clientHandlerReceivedCpp(false);
+    int clientCallbackCpp = m_pKernel->RegisterForClientMessageEvent("test-client-cpp", Handlers::GetClientMessageHandlerCpp(&clientHandlerReceivedCpp)) ;
+
     // This is a bit dopey--but we'll send a message to ourselves for this test
     // use a large message to exercise buffer re-allocation logic
     std::string message(SML_INITIAL_BUFFER_SIZE + 100, 'x');
     std::string response = m_pKernel->SendClientMessage(agent, "test-client", message.c_str());
     no_agent_assertTrue(clientHandlerReceived);
-    clientHandlerReceived = false;
     std::string expected = "handler-message" + message;
     no_agent_assertTrue(response == expected);
 
+    response = m_pKernel->SendClientMessage(agent, "test-client-cpp", message.c_str());
+    no_agent_assertTrue(clientHandlerReceivedCpp);
+    expected = "handler-message-cpp" + message;
+    no_agent_assertTrue(response == expected);
+
     no_agent_assertTrue(m_pKernel->UnregisterForClientMessageEvent(clientCallback));
+    no_agent_assertTrue(m_pKernel->UnregisterForClientMessageEvent(clientCallbackCpp));
 }
 
 void FullTests_Parent::testFilterHandler()

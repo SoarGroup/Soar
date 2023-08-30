@@ -2188,11 +2188,8 @@ RhsEventHandlerCpp c2cppHandler(RhsEventHandler handler, void* pUserData) {
 *************************************************************/
 int Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack)
 {
-    smlRhsEventId id = smlEVENT_RHS_USER_FUNCTION ;
-
     RhsEventHandlerCpp newHandler = c2cppHandler(handler, pUserData);
-
-    return InternalAddRhsFunction(id, pRhsFunctionName, newHandler, addToBack) ;
+    return AddRhsFunction(pRhsFunctionName, newHandler, addToBack) ;
 }
 
 int Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandlerCpp handler, bool addToBack)
@@ -2239,11 +2236,15 @@ bool Kernel::RemoveRhsFunction(int callbackID)
 int Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandler handler, void* pUserData, bool addToBack)
 {
     RhsEventHandlerCpp newHandler = c2cppHandler(handler, pUserData);
-    smlRhsEventId id = smlEVENT_CLIENT_MESSAGE ;
+    return RegisterForClientMessageEvent(pClientName, newHandler, addToBack) ;
+}
 
+// TODO: document
+int Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandlerCpp handler, bool addToBack) {
+    smlRhsEventId id = smlEVENT_CLIENT_MESSAGE ;
     // We actually use the RHS function code internally to process this message (since it's almost exactly like calling a RHS function that's
     // processed on a client).
-    return InternalAddRhsFunction(id, pClientName, newHandler, addToBack) ;
+    return InternalAddRhsFunction(id, pClientName, handler, addToBack) ;
 }
 
 /*************************************************************
