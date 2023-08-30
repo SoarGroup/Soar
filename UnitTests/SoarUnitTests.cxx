@@ -1,6 +1,6 @@
 #include "SoarHelper.cpp"
 #include "EpMemFunctionalTests.cpp"
-#include "FullTests.cpp"
+#include "ExternalLibraryTest.cpp"
 #include "FunctionalTestHarness.cpp"
 #include "FunctionalTests.cpp"
 #include "handlers.cpp"

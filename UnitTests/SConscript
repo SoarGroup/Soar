@@ -2,21 +2,27 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Alex Turner <alexlt@umich.edu>
 
-import os, sys, platform
+import os
+
 
 Import('env', 'g_msvs_variant')
 Import('env', 'InstallDir')
+unit_test_env = env.Clone()
 
-clone = env.Clone()
+
+def get_external_lib_task(env):
+    lib = env.SharedLibrary('TestExternalLibraryLib', 'TestExternalLibraryLib.cpp')
+    return env.Install('$OUT_DIR', lib)
+
 scu_src = ['SoarUnitTests.cxx']
 # scu_src = [env.File('SoarUnitTests.cxx')]
 
-clone.Prepend(CPPPATH = [env.Dir('SoarUnitTests').srcnode(), env.Dir('SoarUnitTests/wma').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode(), env.Dir('.').srcnode()])
+unit_test_env.Prepend(CPPPATH = [unit_test_env.Dir('SoarUnitTests').srcnode(), unit_test_env.Dir('SoarUnitTests/wma').srcnode(), unit_test_env.Dir('SoarHelpers').srcnode(), unit_test_env.Dir('TestHarness').srcnode(), unit_test_env.Dir('.').srcnode()])
 # clone.Append(LINKFLAGS = ['-v'])
 
 srcdirs = ['SoarUnitTests/*', 'SoarUnitTests', 'SoarHelpers', 'TestHarness']
 src = []
-if env['SCU']:
+if unit_test_env['SCU']:
 	src = scu_src
 else:
 	for d in srcdirs:
@@ -29,14 +35,14 @@ src = [Glob('SoarUnitTests/*/*.cpp'), Glob('SoarUnitTests/*.cpp'), Glob('SoarHel
 
 # print "src1: ", src
 # print "src2: ", src2
-put_obj = clone.Program(target = 'UnitTests', source = src)
-t = env.Install('$OUT_DIR', put_obj)
+put_obj = unit_test_env.Program(target = 'UnitTests', source = src)
+t = unit_test_env.Install('$OUT_DIR', put_obj)
 
 # t = env.Install('$OUT_DIR', clone.Program('UnitTests', src))
 
-if 'MSVSProject' in env['BUILDERS']:
-	proj = env.MSVSProject(
-		target = '#unittests' + env['MSVSPROJECTSUFFIX'],
+if 'MSVSProject' in unit_test_env['BUILDERS']:
+	proj = unit_test_env.MSVSProject(
+		target = '#unittests' + unit_test_env['MSVSPROJECTSUFFIX'],
 		srcs = [ str(s) for s in Flatten(src) ],
 		buildtarget = t,
 		variant = g_msvs_variant,
@@ -45,6 +51,11 @@ if 'MSVSProject' in env['BUILDERS']:
 	Import('msvs_projs')
 	msvs_projs.append(proj)
 
-SoarUnitTests_tests = InstallDir(env, '$OUT_DIR/SoarUnitTests/', 'SoarTestAgents')
+SoarUnitTests_tests = InstallDir(unit_test_env, '$OUT_DIR/SoarUnitTests/', 'SoarTestAgents')
 
-env.Alias('tests', t + SoarUnitTests_tests)
+test_external_lib = get_external_lib_task(unit_test_env)
+
+unit_test_env.Alias('tests', t + SoarUnitTests_tests + test_external_lib)
+
+# print("Calling SConscript for ExampleExternalLibrary")
+# SConscript(os.path.join('ExampleExternalLibrary', 'SConscript'))

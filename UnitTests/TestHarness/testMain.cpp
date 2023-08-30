@@ -27,6 +27,7 @@
 #include "ChunkingDemoTests.hpp"
 #include "ElementXMLTest.hpp"
 #include "EpMemFunctionalTests.hpp"
+#include "ExternalLibraryTest.hpp"
 #include "FullTests.hpp"
 #include "FullTestsClientThread.hpp"
 #include "FullTestsClientThreadFullyOptimized.hpp"
@@ -191,6 +192,7 @@ int main(int argc, char** argv)
     TEST_DECLARATION(ChunkingTests);
     TEST_DECLARATION(EpMemFunctionalTests);
     TEST_DECLARATION(ElementXMLTest);
+    TEST_DECLARATION(ExternalLibraryTest);
     TEST_DECLARATION(FullTests);
     TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
     TEST_DECLARATION(FullTestsClientThread);

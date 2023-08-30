@@ -381,7 +381,7 @@ void FullTests_Parent::testRHSHandler()
     no_agent_assertTrue_msg("Duplicate RHS function registration should be detected and be ignored", callback_rhs_dup == callback_rhs1);
 
     bool cppRhsHandlerReceived(false);
-    int callback_rhs_cpp = m_pKernel->AddRhsFunctionCPP("test-rhs-cpp", Handlers::GetRhsFunctionHandlerCPP(&cppRhsHandlerReceived)) ;
+    int callback_rhs_cpp = m_pKernel->AddRhsFunction("test-rhs-cpp", Handlers::GetRhsFunctionHandlerCPP(&cppRhsHandlerReceived)) ;
 
     // need this to fire production that calls test-rhs
     sml::Identifier* pSquare = agent->GetInputLink()->CreateIdWME("square") ;
