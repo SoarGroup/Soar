@@ -247,17 +247,6 @@ bool SoarCLI::initialize()
     return true;
 }
 
-void SoarCLI::agent_init_source(const char* agentname)
-{
-    std::stringstream ss;
-    ss << "source " << agentname << ".soar";
-    std::cout << m_currentAgent->ExecuteCommandLine(ss.str().c_str(), false) << std::endl;
-    if (m_currentAgent->GetLastCommandLineResult())
-    {
-        std::cout << "loaded agent-specific initialization file " << agentname << ".soar." << std::endl;
-    }
-}
-
 bool SoarCLI::source(const char* sourcefile)
 {
     std::stringstream ss;
@@ -389,7 +378,6 @@ bool SoarCLI::createagent(const char* agentname)
 
     agents.push_back(m_currentAgent);
     std::cout << getcol(acc::BBlue) << "...created agent #" << agents.size() << " named '" << getcol(acc::Red) << agentname << getcol(acc::BBlue) << "'" << getcol(acc::Off) << std::endl;
-//    agent_init_source(agentname);
     updateMultiAgent();
     return true;
 }

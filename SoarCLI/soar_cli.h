@@ -49,7 +49,6 @@ class InputThread : public soar_thread::Thread
             while (!this->m_QuitNow && std::cin.good())
             {
                 lReadCmdResult = readcmd(line);
-//                std::getline(std::cin, line);
                 if (!lReadCmdResult || std::cin.bad())
                 {
                     break;
@@ -232,7 +231,6 @@ class SoarCLI
         void updateMultiAgent();
         void deleteagent(const char* agentname);
         void sendAllAgentsCommand(const char* cmd);
-        void agent_init_source(const char* agentname);
 
 };
 
