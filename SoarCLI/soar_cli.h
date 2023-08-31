@@ -57,7 +57,7 @@ class InputThread : public soar_thread::Thread
                 lock = new soar_thread::Lock(&mutex);
                 lines.push(line);
                 write_event.TriggerEvent();
-                if (line == "quit" || line == "exit")
+                if (line == "quit" || line == "exit" || std::cin.eof())
                 {
                     this->m_QuitNow = true;
                 }
