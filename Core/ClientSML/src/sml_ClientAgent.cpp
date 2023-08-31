@@ -255,6 +255,7 @@ void Agent::ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, Elemen
 void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
     char const* pProductionName = pIncoming->GetArgString(sml_Names::kParamName) ;
+    // TODO: this is always 0, so remove it
     char const* pInstance = 0 ; // gSKI defines this but doesn't support it yet.
 
     // Look up the handler(s) from the map

@@ -57,5 +57,6 @@ else:
     shlib = clone.SharedLibrary(name, interface, SHLIBPREFIX = '_')
 install_source = env.Install(lib_install_dir, source)
 install_lib = env.Install(lib_install_dir, shlib)
+install_test = env.Install(lib_install_dir, env.File('TestPythonSML.py'))
 
-env.Alias(python_sml_alias, install_lib + install_source)
+env.Alias(python_sml_alias, install_lib + install_source + install_test)
