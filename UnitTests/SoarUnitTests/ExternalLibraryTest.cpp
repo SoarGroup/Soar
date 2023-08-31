@@ -7,6 +7,7 @@ bool success = false;
 
 void PrintCallbackHandler(sml::smlPrintEventId, void*, sml::Agent*, char const* pMessage)
 {
+    std::cout << "Print handler called with message: " << pMessage << std::endl;
     if (std::string(pMessage) == "myLibTest")
     {
         success = true;
