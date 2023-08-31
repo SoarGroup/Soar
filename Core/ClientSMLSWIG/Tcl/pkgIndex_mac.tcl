@@ -8,4 +8,4 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
-package ifneeded tcl_sml_clientinterface 9.6.1 [list load [file join $dir libTcl_sml_ClientInterface.dylib]]
+package ifneeded tcl_sml_clientinterface 9.6.2 [list load [file join $dir libTcl_sml_ClientInterface.dylib]]

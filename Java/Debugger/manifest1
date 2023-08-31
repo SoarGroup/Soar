@@ -4,8 +4,8 @@ Created-By: 1.6.0_26-b03 (Sun Microsystems Inc.)
 Title: soar-debugger
 Vendor: University of Michigan
 Date: February 24 2012 1742
-Version: 9.6.1
-Built-By: Mazin
+Version: 9.6.2
+Built-By: Nathan Glenn
 Copyright: (c) The Regents of the University of Michigan, 2010
 Main-Class: edu.umich.soar.debugger.Application
 Class-Path: . soar-smljava.jar swt.jar swtgraphics2d.jar sml.jar soar-debugger-api.jar

@@ -3456,7 +3456,7 @@ void initdocstrings()
 		"current state of execution and which capabilities of Soar are enabled:\n"
 		"\n"
 		"  =======================================================\n"
-		"                       Soar 9.6.1 Summary\n"
+		"                       Soar 9.6.2 Summary\n"
 		"  =======================================================\n"
 		"  Enabled:                         Core, EBC, SMem, EpMem\n"
 		"  Disabled:                             SVS, RL, WMA, SSA\n"
