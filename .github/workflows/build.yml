@@ -61,12 +61,19 @@ jobs:
         # TODO: why do these fail? Make them pass.
         run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic
 
-      - name: SML client tests
+      - name: SML Java tests
         working-directory: ./out
         env:
           LD_LIBRARY_PATH: ${{ github.workspace }}/out
         run: java -jar java/soar-smljava.jar
-        # TODO: run additional tests for Python, Tcl, CSharp
+
+      - name: SML Python tests
+        working-directory: ./out
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/out
+          PYTHONUTF8: 1
+        run: python3 TestPythonSML.py
+        # TODO: run additional tests for Tcl, CSharp
 
       # reports JUnit test results as GitHub PR check.
       - name: publish test report
@@ -159,14 +166,24 @@ jobs:
              throw "UnitTests exit code: $lastexitcode"
           }
 
-      - name: SML client tests
+      - name: SML Java tests
         working-directory: ./out
         run: |
           java -jar java/soar-smljava.jar
           if ($lastexitcode -ne 0) {
              throw "soar-smljava exit code: $lastexitcode"
           }
-        # TODO: run additional tests for Python, Tcl, CSharp
+
+      - name: SML Python tests
+        working-directory: ./out
+        env:
+          PYTHONUTF8: 1
+        run: |
+          python3 TestPythonSML.py
+          if ($lastexitcode -ne 0) {
+             throw "soar-smljava exit code: $lastexitcode"
+          }
+        # TODO: run additional tests for Tcl, CSharp
 
       # reports JUnit test results as GitHub PR check.
       - name: publish test report

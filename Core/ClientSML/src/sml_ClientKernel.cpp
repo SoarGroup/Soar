@@ -1896,6 +1896,7 @@ class Kernel::TestRhsCallbackFull : public RhsEventMap::ValueTest
 *************************************************************/
 int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData, bool addToBack)
 {
+    std::cerr << "Kernel::RegisterForSystemEvent" << std::endl ;
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestSystemCallbackFull test(id, handler, pUserData) ;
 

@@ -549,7 +549,7 @@ bool KernelSML::HandleDestroyAgent(AgentSML* pAgentSML, char const* /*pCommandNa
     return true ;
 }
 
-// Shutdown is an irrevocal request to delete all agents and prepare for kernel deletion.
+// Shutdown is an irrevocable request to delete all agents and prepare for kernel deletion.
 bool KernelSML::HandleShutdown(AgentSML* /*pAgentSML*/, char const* /*pCommandName*/, Connection* /*pConnection*/, AnalyzeXML* /*pIncoming*/, soarxml::ElementXML* /*pResponse*/)
 {
     // Notify everyone that the system is about to shutdown.
@@ -1131,7 +1131,7 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
                 }
 
                 bool res;
-                if (filteredError) 
+                if (filteredError)
                 {
                     pConnection->AddErrorToSMLResponse(pResponse, pFilteredOutput, -1) ;
                     res = this->ReturnResult(pConnection, pResponse, "") ;
