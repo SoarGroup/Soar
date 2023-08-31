@@ -19,8 +19,6 @@
 #include "sml_ClientEvents.h"
 #include "sml_ListMap.h"
 
-#define SML_INITIAL_BUFFER_SIZE 1024
-
 // Forward declare so clients can use this
 struct ElementXML_InterfaceStruct;
 typedef ElementXML_InterfaceStruct* ElementXML_Handle ;
@@ -781,7 +779,14 @@ namespace sml
             * @returns Unique ID for this callback.  Required when unregistering this callback.
             *************************************************************/
             int AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack = true) ;
-            // TODO: document
+
+            /*****************************************************
+             * @brief Register a handler for an RHS (right hand side) function. This is functionally the
+             * same as the method with the same name that takes a function pointer, but it uses
+             * std::function instead, which is more ergonomic C++.
+             *
+             * @see sml::Kernel::AddRhsFunction(char const* pClientName, RhsEventHandler handler, void* pUserData, bool addToBack)
+            */
             int AddRhsFunction(char const* pRhsFunctionName, RhsEventHandlerCpp handler, bool addToBack = true) ;
 
             /*************************************************************
@@ -818,7 +823,13 @@ namespace sml
             * @returns Unique ID for this callback.  Required when unregistering this callback.
             *************************************************************/
             int RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandler handler, void* pUserData, bool addToBack = true) ;
-            // TODO: document
+            /*****************************************************
+             * @brief Register a handler for receiving generic messages sent from another client. This is
+             * functionally the same as the method with the same name that takes a function pointer, but it
+             * uses std::function instead, which is more ergonomic C++.
+             *
+             * @see sml::Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandler handler, void* pUserData, bool addToBack)
+            */
             int RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandlerCpp handler, bool addToBack = true) ;
 
             /*************************************************************

@@ -162,7 +162,7 @@
 	}
 
     // RHS function used to exec Tcl code from Soar
-	const std::string TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
+	static std::string TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
 	                    char const* pArgument)
 	{
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
@@ -188,14 +188,6 @@
 		std::string sres = Tcl_GetString(res);
         return sres;
 	}
-
-    const sml::RhsEventHandlerCpp getTclRhsEventCallback(void *pUserData)
-    {
-        return [pUserData](sml::smlRhsEventId id, sml::Agent *pAgent, char const *pFunctionName, char const *pArgument) -> const std::string
-        {
-            return TclRhsEventCallback(id, pUserData, pAgent, pFunctionName, pArgument);
-        };
-    }
 
 	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
 	{
@@ -589,13 +581,13 @@
     // to have different names in Tcl (and they are both strings -- in C++ they're not the same type; hence the separation there)
     intptr_t AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pRhsFunctionName, userData, interp);
-	    tud->callbackid = self->AddRhsFunction(pRhsFunctionName, getTclRhsEventCallback((void*)tud), addToBack);
+	    tud->callbackid = self->AddRhsFunction(pRhsFunctionName, &TclRhsEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
 
     intptr_t RegisterForClientMessageEvent(Tcl_Interp* interp, char const* pClientName, char const* pMessageHandler, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pMessageHandler, userData, interp);
-	    tud->callbackid = self->RegisterForClientMessageEvent(pClientName, getTclRhsEventCallback((void*)tud), addToBack);
+	    tud->callbackid = self->RegisterForClientMessageEvent(pClientName, &TclRhsEventCallback, (void*)tud, addToBack);
 		return (intptr_t)tud;
     }
 

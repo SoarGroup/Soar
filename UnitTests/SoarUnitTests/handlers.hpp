@@ -25,9 +25,9 @@ class Handlers
         static void MySystemEventHandler(sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel);
         static void MyCreationHandler(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent);
         static void MyProductionHandler(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation);
-        static const char *MyClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pMessage, int *buffSize, char *buff);
+        static std::string MyClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pMessage);
         static const sml::ClientMessageHandlerCpp GetClientMessageHandlerCpp(bool* receivedFlag);
-        static const char *MyFilterHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pCommandLine, int *buffSize, char *buff);
+        static std::string MyFilterHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pCommandLine);
         static void MyRunEventHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
         static void MyUpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
         static void MyOutputNotificationHandler(void* pUserData, sml::Agent* pAgent);
@@ -38,7 +38,7 @@ class Handlers
         static void MyPrintEventHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage);
         static void MyXMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* pAgent, sml::ClientXML* pXML);
         static void MyInterruptHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
-        static const char *MyRhsFunctionHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *buffSize, char *buff);
+        static std::string MyRhsFunctionHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument);
         static const sml::RhsEventHandlerCpp GetRhsFunctionHandlerCpp(bool* receivedFlag);
         static void MyMemoryLeakUpdateHandlerDestroyChildren(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
         static void MyMemoryLeakUpdateHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
@@ -46,8 +46,8 @@ class Handlers
         static void MyAgentCreationUpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
         static void MyOrderingPrintHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage);
         static void MyOrderingRunHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
-        static const char *MyRhsFunctionFailureHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *buffSize, char *buff);
-        static const char *MySuccessHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *buffSize, char *buff);
+        static std::string MyRhsFunctionFailureHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument);
+        static std::string MySuccessHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument);
 
     private:
         static void MyMemoryLeakUpdateHandlerInternal(bool destroyAll, sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);

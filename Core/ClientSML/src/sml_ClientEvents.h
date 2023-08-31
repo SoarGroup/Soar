@@ -69,50 +69,21 @@ namespace sml
 // You need to delete ClientXML objects you create and you should not delete the pXML object you are passed.
     typedef void (*XMLEventHandler)(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML) ;
 
-
-// TODO: move to Kernel::AddRhsHandler, which clients actually see. Expand on why this is the way it is.
-// Maintainer note: RhsEventHandler and ClientMessageHandler require special handling:
-// RETURN: returns pointer to buff.  If buff is not large enough, it will return NULL and set buffSize to a new size. Reallocate the new size and call again.
-// Implementations should save a static value locally to be returned when the client retries the call. This also means that the client
-// MUST re-do the call if NULL was returned, or else the next call will return an unrelated value.
-// Recommended implementation:
-// // at beginning of function:
-// static std::string prevResult;
-// if ( !prevResult.empty() )
-// {
-//     strncpy( buf, prevResult.c_str(), *bufSize );
-//     prevResult = "";
-//     return buf;
-// }
-// ...
-// // at end of function
-// if ( resultString.length() + 1 > *bufSize )
-// {
-//     *bufSize = resultString.length() + 1;
-//     prevResult = resultString;
-//     return NULL;
-// }
-// strcpy( buf, resultString.c_str() );
-// return buf;
-
 // Handler for RHS (right hand side) function firings
 // pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
 // The return value is a string which allows the RHS function to create a symbol: e.g. ^att (exec plus 2 2) producing ^att 4
-// SEE MAINTAINER NOTE ABOVE!
-    typedef char const *(*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
-                                          char const* pFunctionName, char const* pArgument, int *buffSize, char *buff) ;
+    typedef std::string (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
+                                          char const* pFunctionName, char const* pArgument) ;
 
     using RhsEventHandlerCpp = std::function<std::string(smlRhsEventId id, Agent *pAgent, char const *pFunctionName, char const *pArgument)>;
 
     // Handler for a generic "client message".  The content is determined by the client sending this data.
     // The message is sent as a simple string and the response is also a string.  The string can contain data that is intended to be parsed,
     // such as a simple series of integers up to a complete XML message.
-    // SEE MAINTAINER NOTE ABOVE!
-    // TODO: add alternative similar to RhsEventHandlerCpp above
-    typedef char const *(*ClientMessageHandler)(smlRhsEventId id, void *pUserData, Agent *pAgent,
-                                                char const *pFunctionName, char const *pArgument, int *buffSize, char *buff);
+    typedef std::string(*ClientMessageHandler)(smlRhsEventId id, void *pUserData, Agent *pAgent,
+                                                char const *pClientName, char const *pArgument);
 
-    using ClientMessageHandlerCpp = std::function<std::string(smlRhsEventId id, Agent *pAgent, char const *pFunctionName, char const *pArgument)>;
+    using ClientMessageHandlerCpp = std::function<std::string(smlRhsEventId id, Agent *pAgent, char const *pClientName, char const *pArgument)>;
 
     // We'll store a handler function together with a generic pointer to data of the user's choosing
     // (which is then passed back into the handler when the event occurs).

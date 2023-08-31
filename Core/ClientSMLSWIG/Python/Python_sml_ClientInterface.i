@@ -282,7 +282,7 @@
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	}
 
-	const std::string PythonRhsEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
+	static std::string PythonRhsEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
 	{
 	    PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
@@ -299,6 +299,7 @@
 		if(!result) {
 			show_exception_and_exit("RHS event", id);
 		} else if (!PyUnicode_Check(result)) {
+            // TODO: perhaps log a warning here?
 			return "";
 		}
 
@@ -308,63 +309,6 @@
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 
         return res;
-	}
-
-    const sml::RhsEventHandlerCpp getPythonRhsEventCallback(void *pUserData)
-    {
-        return [pUserData](sml::smlRhsEventId id, sml::Agent *pAgent, char const *pFunctionName, char const *pArgument) -> const std::string
-        {
-            return PythonRhsEventCallback(id, pUserData, pAgent, pFunctionName, pArgument);
-        };
-    }
-
-    const char *PythonClientMessageEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage, int *bufSize, char *buf)
-	{
-        // Previous result was cached, meaning client should be calling again to get it
-        // return that result and clear the cache
-        static std::string prevResult;
-        if ( !prevResult.empty() )
-        {
-            strncpy( buf, prevResult.c_str(), *bufSize );
-
-            prevResult = "";
-
-            return buf;
-        }
-
-	    PyGILState_STATE gstate;
-		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
-
-		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
-
-		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
-		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, agent, pClientName, pMessage);
-		PyObject* result = PyObject_Call(pud->func, args, NULL);
-
-		Py_DECREF(agent);
-		Py_DECREF(args);
-		if(!result) {
-			show_exception_and_exit("client message event", id);
-		} else if (!PyUnicode_Check(result)) {
-			return "";
-		}
-
-		std::string res = PyUnicode_AsUTF8 (result);
-		Py_DECREF(result);
-
-		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
-
-        // Too long to fit in the buffer; cache result and signal client with
-        // NULL return value to call again with a larger buffer
-        if ( res.length() + 1 > *bufSize )
-        {
-            *bufSize = res.length() + 1;
-            prevResult = res;
-            return NULL;
-        }
-        strcpy( buf, res.c_str() );
-
-        return buf;
 	}
 
 	PythonUserData* CreatePythonUserData(PyObject* func, PyObject* userData) {
@@ -532,13 +476,13 @@
 
     long AddRhsFunction(char const* pRhsFunctionName, PyObject* func, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(func, userData);
-        pud->callbackid = self->AddRhsFunction(pRhsFunctionName, getPythonRhsEventCallback((void*)pud), addToBack);
+        pud->callbackid = self->AddRhsFunction(pRhsFunctionName, &PythonRhsEventCallback, (void*)pud, addToBack);
 	    return (long)pud;
     }
 
     long RegisterForClientMessageEvent(char const* pClientName, PyObject* pMessageHandler, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(pMessageHandler, userData);
-	    pud->callbackid = self->RegisterForClientMessageEvent(pClientName, PythonClientMessageEventCallback, (void*)pud, addToBack);
+	    pud->callbackid = self->RegisterForClientMessageEvent(pClientName, &PythonRhsEventCallback, (void*)pud, addToBack);
 	    return (long)pud;
     }
 
