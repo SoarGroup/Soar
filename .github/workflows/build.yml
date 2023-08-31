@@ -161,7 +161,7 @@ jobs:
         working-directory: ./out
         # TODO: why do these fail? Make them pass.
         run: |
-          ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic
+          ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
           if ($lastexitcode -ne 0) {
              throw "UnitTests exit code: $lastexitcode"
           }
