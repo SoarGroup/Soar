@@ -7,6 +7,7 @@ bool success = false;
 
 void PrintCallbackHandler(sml::smlPrintEventId, void*, sml::Agent*, char const* pMessage)
 {
+    // std::cout << "Print handler called with message: " << pMessage << std::endl;
     if (std::string(pMessage) == "myLibTest")
     {
         success = true;
@@ -15,6 +16,8 @@ void PrintCallbackHandler(sml::smlPrintEventId, void*, sml::Agent*, char const* 
 
 void ExternalLibraryTest::testLoadLibrary()
 {
+    // won't see the output from the library unless we turn on agent-writes
+    agent->ExecuteCommandLine("output agent-writes on");
     // External library registers a single RHS function that returns "myRHSTest"; exec the
     // RHS and check the returned string. If it's correct, then the lib was indeed loaded.
     const std::string loadResult = kernel->LoadExternalLibrary("TestExternalLibraryLib");
