@@ -816,20 +816,8 @@ typedef char const* (STDCALL* ClientMessageCallback)(int eventID, CallbackDataPt
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *bufSize, char *buf)
+static std::string RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
-    // Previous result was cached, meaning client should be calling again to get it
-    // return that result and clear the cache
-    static std::string prevResult;
-    if ( !prevResult.empty() )
-    {
-        strncpy( buf, prevResult.c_str(), *bufSize );
-
-        prevResult = "";
-
-        return buf;
-    }
-
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
 
@@ -842,61 +830,15 @@ static const char *RhsEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, s
 
     // Now try to call back to CSharp
     std::string res = callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpFunctionName, csharpArgument) ;
-
-    // Too long to fit in the buffer; cache result and signal client with
-    // NULL return value to call again with a larger buffer
-    if ( res.length() + 1 > *bufSize )
-    {
-        *bufSize = res.length() + 1;
-        prevResult = res;
-        return NULL;
-    }
-    strcpy( buf, res.c_str() );
-
-    return buf;
+    return res;
 }
 
-// This is the C++ handler which will be called by clientSML when the event fires.
-// Then from here we need to call back to C# to pass back the message.
-static const char *ClientEventHandler(sml::smlRhsEventId /*id*/, void* pUserData, sml::Agent* pAgent, char const* pClientName, char const* pMessage, int *bufSize, char *buf )
+const sml::RhsEventHandlerCpp getRhsEventHandler(void *pUserData)
 {
-
-    // Previous result was cached, meaning client should be calling again to get it
-    // return that result and clear the cache
-    static std::string prevResult;
-    if ( !prevResult.empty() )
+    return [pUserData](sml::smlRhsEventId id, sml::Agent *pAgent, char const *pFunctionName, char const *pArgument) -> const std::string
     {
-        strncpy( buf, prevResult.c_str(), *bufSize );
-
-        prevResult = "";
-
-        return buf;
-    }
-
-    // The user data is the class we declared above, where we store the Java data to use in the callback.
-    CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
-
-    ClientMessageCallback callback = (ClientMessageCallback)pData->m_CallbackFunction ;
-
-    // Create a C# string which we can return
-    char* csharpAgentName   = SWIG_csharp_string_callback(pAgent->GetAgentName());
-    char* csharpClientName  = SWIG_csharp_string_callback(pClientName);
-    char* csharpMessage     = SWIG_csharp_string_callback(pMessage);
-
-    // Now try to call back to CSharp
-    std::string res = callback(pData->m_EventID, pData->m_CallbackData, pData->m_Kernel, csharpAgentName, csharpClientName, csharpMessage) ;
-
-    // Too long to fit in the buffer; cache result and signal client with
-    // NULL return value to call again with a larger buffer
-    if ( res.length() + 1 > *bufSize )
-    {
-        *bufSize = res.length() + 1;
-        prevResult = res;
-        return NULL;
-    }
-    strcpy( buf, res.c_str() );
-
-    return buf;
+        return RhsEventHandler(id, pUserData, pAgent, pFunctionName, pArgument);
+    };
 }
 
 SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_AddRhsFunction(void* jarg1, char const* pFunctionName, kernelPtr jkernel, unsigned int jarg3, CallbackDataPtr jdata)
@@ -913,7 +855,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_AddRhsFunction(void* jarg1, char c
     CSharpCallbackData* pData = CreateCSharpCallbackDataKernel(jkernel, 0, jarg3, jdata) ;
 
     // Register our handler.  When this is called we'll call back to the client method.
-    pData->m_CallbackID = arg1->AddRhsFunction(pFunctionName, &RhsEventHandler, pData) ;
+    pData->m_CallbackID = arg1->AddRhsFunction(pFunctionName, getRhsEventHandler(pData)) ;
 
     // Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
     return reinterpret_cast<intptr_t>(pData) ;
@@ -956,7 +898,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForClientMessageEvent(void
     CSharpCallbackData* pData = CreateCSharpCallbackDataKernel(jkernel, 0, jarg3, jdata) ;
 
     // Register our handler.  When this is called we'll call back to the client method.
-    pData->m_CallbackID = arg1->RegisterForClientMessageEvent(pClientName, &ClientEventHandler, pData) ;
+    pData->m_CallbackID = arg1->RegisterForClientMessageEvent(pClientName, getRhsEventHandler(pData)) ;
 
     // Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
     return reinterpret_cast<intptr_t>(pData) ;
