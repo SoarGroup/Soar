@@ -9,18 +9,18 @@ class SimpleListener
 {
     public:
         SimpleListener(int life);
-        
+
         int run(); // returns zero on success, nonzero failure
-        
-        static const char *MyClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pMessage, int *bufSize, char *buf);
-        
+
+        static std::string MyClientMessageHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pMessage);
+
     private:
         int life;
-        
+
         // Choose how to connect (usually use NewThread) but for
         // testing currentThread can be helpful.
         bool useCurrentThread;
-        
+
         static bool shutdownMessageReceived;
 };
 

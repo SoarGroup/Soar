@@ -817,7 +817,7 @@ typedef char const* (STDCALL* ClientMessageCallback)(int eventID, CallbackDataPt
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to C# to pass back the message.
-static const std::string RhsEventHandler(sml::smlRhsEventId /*id*/, CallbackDataPtr pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
+static std::string RhsEventHandler(sml::smlRhsEventId /*id*/, CallbackDataPtr pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
     // The user data is the class we declared above, where we store the Java data to use in the callback.
     CSharpCallbackData* pData = (CSharpCallbackData*)pUserData ;
@@ -834,14 +834,6 @@ static const std::string RhsEventHandler(sml::smlRhsEventId /*id*/, CallbackData
     return res;
 }
 
-static const sml::RhsEventHandlerCpp getRhsEventHandler(void *pUserData)
-{
-    return [pUserData](sml::smlRhsEventId id, sml::Agent *pAgent, char const *pFunctionName, char const *pArgument) -> const std::string
-    {
-        return RhsEventHandler(id, pUserData, pAgent, pFunctionName, pArgument);
-    };
-}
-
 SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_AddRhsFunction(kernelPtr jarg1, char const* pFunctionName, kernelPtr jkernel, callbackFnPtr jarg3, CallbackDataPtr jdata)
 {
     // jarg1 is the C++ Kernel object
@@ -856,7 +848,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_AddRhsFunction(kernelPtr jarg1, ch
     CSharpCallbackData* pData = CreateCSharpCallbackDataKernel(jkernel, 0, jarg3, jdata) ;
 
     // Register our handler.  When this is called we'll call back to the client method.
-    pData->m_CallbackID = arg1->AddRhsFunction(pFunctionName, getRhsEventHandler(pData)) ;
+    pData->m_CallbackID = arg1->AddRhsFunction(pFunctionName, &RhsEventHandler, pData) ;
 
     // Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
     return reinterpret_cast<intptr_t>(pData) ;
@@ -899,7 +891,7 @@ SWIGEXPORT intptr_t SWIGSTDCALL CSharp_Kernel_RegisterForClientMessageEvent(kern
     CSharpCallbackData* pData = CreateCSharpCallbackDataKernel(jkernel, 0, jarg3, jdata) ;
 
     // Register our handler.  When this is called we'll call back to the client method.
-    pData->m_CallbackID = arg1->RegisterForClientMessageEvent(pClientName, getRhsEventHandler(pData)) ;
+    pData->m_CallbackID = arg1->RegisterForClientMessageEvent(pClientName, &RhsEventHandler, pData) ;
 
     // Pass the callback info back to the client.  We need to do this so we can delete this later when the method is unregistered
     return reinterpret_cast<intptr_t>(pData) ;

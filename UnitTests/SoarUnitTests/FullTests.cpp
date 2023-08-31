@@ -422,8 +422,7 @@ void FullTests_Parent::testClientMessageHandler()
     int clientCallbackCpp = m_pKernel->RegisterForClientMessageEvent("test-client-cpp", Handlers::GetClientMessageHandlerCpp(&clientHandlerReceivedCpp)) ;
 
     // This is a bit dopey--but we'll send a message to ourselves for this test
-    // use a large message to exercise buffer re-allocation logic
-    std::string message(SML_INITIAL_BUFFER_SIZE + 100, 'x');
+    std::string message("foo-bar-baz-qux");
     std::string response = m_pKernel->SendClientMessage(agent, "test-client", message.c_str());
     no_agent_assertTrue(clientHandlerReceived);
     std::string expected = "handler-message" + message;

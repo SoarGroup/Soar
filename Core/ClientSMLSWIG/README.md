@@ -7,6 +7,10 @@
 * `*.i`` files contain directives for SWIG. `sml_ClientInterface.i` in the top-level directory contains directives common to each target language.
 * `*CallbackByHand.h` files contain manually-written C wrappers related to callback functions. These could not be generated automatically by SWIG (TODO: why?).
 
+## New SML Members
+
+If new functions or classes are added to the `sml` namespace, SWIG will try to export them automatically. If you want to prevent this, you need to add a `%ignore` directive to `sml_ClientInterface.i`. You will also need to do this for any functions that require a custom implementation for a target language.
+
 ## Portability
 
 SWIG generates pure C wrappers for the SML client library, which are then compiled into shared libraries for each target language. SWIG also generates idiomatic code in each target language for loading and using the library. Because the library is compiled from C, it is much more portable across platforms, and the symbol names are not mangled.

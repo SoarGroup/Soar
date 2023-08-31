@@ -671,8 +671,6 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
         return ;
     }
 
-    // TODO: since we're only using the name, we could get rid of the handler+data wrapper class
-    // and iterate over name/handler key/vals here instead of looking up the name in the wrapper
     // Look up the handler(s) from the map
     RhsEventMap::ValueList* pHandlers = m_RhsEventMap.getList(pFunctionName) ;
 
@@ -2078,7 +2076,7 @@ int Kernel::InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionNam
     bool found = m_RhsEventMap.findFirstValueByTest(&test, &optionalFoundHandler) ;
     if (found && optionalFoundHandler.m_Handler != 0)
     {
-        // TODO: log a warning here to help catch copy/paste errors in the client
+        std::cerr << "WARNING: Attempt to register a duplicate RHS function handler for " << pRhsFunctionName << std::endl ;
         return optionalFoundHandler.getCallbackID() ;
     }
 
@@ -2134,37 +2132,21 @@ bool Kernel::InternalRemoveRhsFunction(smlRhsEventId id, int callbackID)
     return true ;
 }
 
-// TODO: document
-RhsEventHandlerCpp c2cppHandler(RhsEventHandler handler, void* pUserData) {
+// RHS function and client message handlers can be added via 2 separate API's; this helper converts
+// the function pointer-style handlers into std::function-style handlers, because the
+// std::function-style is used internally.
+RhsEventHandlerCpp funPointer2StdFunction(RhsEventHandler handler, void* pUserData) {
     return [handler, pUserData](
         smlRhsEventId id,
         Agent* pAgent,
         char const* pFunctionName,
         char const* pArgument) -> std::string {
-        char buffer[SML_INITIAL_BUFFER_SIZE] = {0};
-        char *buff = buffer;
-        std::string result;
-        int buffSize = sizeof(buffer);
-
-        const char *retVal = handler(id, pUserData, pAgent, pFunctionName, pArgument, &buffSize, buff) ;
-
-        if ( !retVal )
-        {
-            buff = new char[buffSize];
-
-            result = handler(id, pUserData, pAgent, pFunctionName, pArgument, &buffSize, buff) ;
-            // TODO: check for NIL again and print error of some kind
-            delete [] buff;
-        }
-        else {
-            result = retVal;
-        };
-        return result;
+        return handler(id, pUserData, pAgent, pFunctionName, pArgument) ;
     };
 }
 
 /*************************************************************
-* @brief Register a handler for a RHS (right hand side) function.
+* @brief Register a handler for an RHS (right hand side) function.
 *        This function can be called in the RHS of a production firing
 *        allowing a user to quickly extend Soar with custom methods added to the client.
 *
@@ -2189,10 +2171,18 @@ RhsEventHandlerCpp c2cppHandler(RhsEventHandler handler, void* pUserData) {
 *************************************************************/
 int Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack)
 {
-    RhsEventHandlerCpp newHandler = c2cppHandler(handler, pUserData);
+    RhsEventHandlerCpp newHandler = funPointer2StdFunction(handler, pUserData);
     return AddRhsFunction(pRhsFunctionName, newHandler, addToBack) ;
 }
 
+
+/*****************************************************
+ * @brief Register a handler for an RHS (right hand side) function. This is functionally the
+ * same as the method with the same name that takes a function pointer, but it uses
+ * std::function instead, which is more ergonomic C++.
+ *
+ * @see sml::Kernel::AddRhsFunction(char const* pClientName, RhsEventHandler handler, void* pUserData, bool addToBack)
+*/
 int Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandlerCpp handler, bool addToBack)
 {
     smlRhsEventId id = smlEVENT_RHS_USER_FUNCTION ;
@@ -2217,9 +2207,6 @@ bool Kernel::RemoveRhsFunction(int callbackID)
 *        When the original client sends a message, the RHS function handler is called to process and (optionally) return
 *        a message to the caller.
 *
-*        Multiple handlers can be registered for a given message type and the results will be concatenated together and returned
-*        to the original caller.  (This is expected to be an usual situation).
-*
 *        A RHS (right hand side) function handler is used just to reduce the number of types in the system and because it is sufficient
 *        for this purpose.
 *
@@ -2236,11 +2223,17 @@ bool Kernel::RemoveRhsFunction(int callbackID)
 *************************************************************/
 int Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandler handler, void* pUserData, bool addToBack)
 {
-    RhsEventHandlerCpp newHandler = c2cppHandler(handler, pUserData);
+    RhsEventHandlerCpp newHandler = funPointer2StdFunction(handler, pUserData);
     return RegisterForClientMessageEvent(pClientName, newHandler, addToBack) ;
 }
 
-// TODO: document
+/*****************************************************
+ * @brief Register a handler for receiving generic messages sent from another client. This is
+ * functionally the same as the method with the same name that takes a function pointer, but it
+ * uses std::function instead, which is more ergonomic C++.
+ *
+ * @see sml::Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandler handler, void* pUserData, bool addToBack)
+*/
 int Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandlerCpp handler, bool addToBack) {
     smlRhsEventId id = smlEVENT_CLIENT_MESSAGE ;
     // We actually use the RHS function code internally to process this message (since it's almost exactly like calling a RHS function that's

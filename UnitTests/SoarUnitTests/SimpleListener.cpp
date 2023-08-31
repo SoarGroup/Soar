@@ -25,18 +25,16 @@ std::string listenerRhsFunctionHandler(sml::smlRhsEventId id, void* pUserData, s
 }
 
 bool SimpleListener::shutdownMessageReceived = false;
-const char *SimpleListener::MyClientMessageHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pMessage, int *bufSize, char *buf)
+std::string SimpleListener::MyClientMessageHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pMessage)
 {
     if (pMessage && std::string(pMessage) == "shutdown")
     {
         //std::cout << "SimpleListener got shutdown message." << std::endl;
         shutdownMessageReceived = true;
-				strcpy( buf, "ok" );
+        return "ok";
     }
-		else
-			strcpy( buf, "unknown command" );
-
-		return buf;
+    else
+        return "unknown command";
 }
 
 // Create a process that listens for remote commands and lives

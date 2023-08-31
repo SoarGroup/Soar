@@ -70,23 +70,15 @@ void Handlers::MyProductionHandler(sml::smlProductionEventId id, void* pUserData
     no_agent_assertTrue(id == sml::smlEVENT_BEFORE_PRODUCTION_REMOVED);
 }
 
-const char *Handlers::MyClientMessageHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pMessage, int *bufSize, char *buf)
+std::string Handlers::MyClientMessageHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pMessage)
 {
     std::stringstream res;
     res << "handler-message" << pMessage;
 
-		if ( res.str().size() + 1 > *bufSize )
-		{
-			*bufSize = res.str().size() + 1;
-			return NULL;
-		}
-		strcpy( buf, res.str().c_str() );
-
     no_agent_assertTrue(pUserData);
     bool* pHandlerReceived = static_cast< bool* >(pUserData);
     *pHandlerReceived = true;
-
-		return buf;
+    return res.str();
 }
 
 const sml::ClientMessageHandlerCpp Handlers::GetClientMessageHandlerCpp(bool *receivedFlag)
@@ -105,7 +97,7 @@ const sml::ClientMessageHandlerCpp Handlers::GetClientMessageHandlerCpp(bool *re
 }
 
 // This is a very dumb filter--it adds "--depth 2" to all commands passed to it.
-const char *Handlers::MyFilterHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pCommandLine, int *bufSize, char *buff)
+std::string Handlers::MyFilterHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pCommandLine)
 {
     soarxml::ElementXML* pXML = soarxml::ElementXML::ParseXMLFromString(pCommandLine) ;
     no_agent_assertTrue(pXML);
@@ -123,20 +115,13 @@ const char *Handlers::MyFilterHandler(sml::smlRhsEventId, void* pUserData, sml::
     std::string res(pXMLString);
 
     pXML->DeleteString(pXMLString);
-    delete pXML ;
-
-		if ( res.size() + 1 > *bufSize )
-		{
-			*bufSize = res.size() + 1;
-			return NULL;
-		}
-		strcpy( buff, res.c_str() );
+    delete pXML;
 
     no_agent_assertTrue(pUserData);
     bool* pHandlerReceived = static_cast< bool* >(pUserData);
     *pHandlerReceived = true;
 
-		return buff;
+	return res;
 }
 
 void Handlers::MyRunEventHandler(sml::smlRunEventId, void* pUserData, sml::Agent*, sml::smlPhase)
@@ -270,7 +255,7 @@ void Handlers::MyInterruptHandler(sml::smlRunEventId, void* pUserData, sml::Agen
     *pHandlerReceived = true;
 }
 
-const char *Handlers::MyRhsFunctionHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pArgument, int *buffSize, char *buff )
+std::string Handlers::MyRhsFunctionHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pArgument)
 {
     // This is optional because the callback needs to be around for the program to function properly
     // we only test for this specifically in one part of clientsmltest
@@ -282,15 +267,7 @@ const char *Handlers::MyRhsFunctionHandler(sml::smlRhsEventId, void* pUserData, 
 
     std::stringstream res;
     res << "my rhs result " << pArgument;
-
-		if ( res.str().size() + 1 > *buffSize )
-		{
-			*buffSize = res.str().size() + 1;
-			return NULL;
-		}
-		strcpy( buff, res.str().c_str() );
-
-		return buff;
+    return res.str();
 }
 
 
@@ -463,22 +440,18 @@ void Handlers::MyOrderingRunHandler(sml::smlRunEventId /*id*/, void* pUserData, 
     ++(*pInt);
 }
 
-const char *Handlers::MyRhsFunctionFailureHandler(sml::smlRhsEventId, void*, sml::Agent*, char const*, char const* pArgument, int *buffSize, char *buff)
+std::string Handlers::MyRhsFunctionFailureHandler(sml::smlRhsEventId, void*, sml::Agent*, char const*, char const* pArgument)
 {
     std::ostringstream message;
     message << "test-failure handler called for: " << pArgument;
     no_agent_assertTrue_msg(message.str().c_str(), false);
-
-		buff[0] = 0;
-		return buff;
+    return message.str();
 }
 
-const char *Handlers::MySuccessHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument, int *buffSize, char *buff)
+std::string Handlers::MySuccessHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
     no_agent_assertTrue(pUserData);
     bool* pHandlerReceived = static_cast< bool* >(pUserData);
     *pHandlerReceived = true;
-
-		buff[0] = 0;
-    return buff;
+    return "";
 }

@@ -234,7 +234,7 @@ static std::string StringEventHandler(sml::smlStringEventId id, void* pUserData,
 
 }
 
-static const std::string handleRhsEvent(sml::smlRhsEventId id, void *pUserData, sml::Agent *pAgent,
+static std::string handleRhsEvent(sml::smlRhsEventId id, void *pUserData, sml::Agent *pAgent,
                                         char const *pFunctionName, char const *pArgument)
 {
         // The user data is the class we declared above, where we store the Java data to use in the callback.
@@ -272,17 +272,6 @@ static const std::string handleRhsEvent(sml::smlRhsEventId id, void *pUserData, 
         }
         return resultStr;
 }
-
-// This is the C++ handler which will be called by clientSML when the event fires.
-// Then from here we need to call back to Java to pass back the message.
-static const sml::RhsEventHandlerCpp getRhsEventHandler(void *pUserData)
-{
-        return [pUserData](sml::smlRhsEventId id, sml::Agent *pAgent, char const *pFunctionName, char const *pArgument)
-        {
-            return handleRhsEvent(id, pUserData, pAgent, pFunctionName, pArgument);
-        };
-}
-
 
 #ifdef __cplusplus
 // We expose the public methods in a DLL with C naming (not C++ mangled names)
@@ -933,7 +922,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1AddRhsFunction(JNIEnv *jenv, jcl
         JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, 0, jarg3, jarg4, "rhsFunctionHandler", "(ILjava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
-        pJavaData->m_CallbackID = arg1->AddRhsFunction(pFunctionName, getRhsEventHandler(pJavaData)) ;
+        pJavaData->m_CallbackID = arg1->AddRhsFunction(pFunctionName, &handleRhsEvent, pJavaData) ;
 
         // Release the string we got from Java
         jenv->ReleaseStringUTFChars(jarg2, pFunctionName);
@@ -976,7 +965,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForClientMessageEvent(JN
         JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, 0, jarg3, jarg4, "clientMessageHandler", "(ILjava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
-        pJavaData->m_CallbackID = arg1->RegisterForClientMessageEvent(pFunctionName, getRhsEventHandler(pJavaData)) ;
+        pJavaData->m_CallbackID = arg1->RegisterForClientMessageEvent(pFunctionName, &handleRhsEvent, pJavaData) ;
 
         // Release the string we got from Java
         jenv->ReleaseStringUTFChars(jarg2, pFunctionName);
