@@ -257,7 +257,7 @@ bool SoarCLI::source(const char* sourcefile)
 
 void SoarCLI::loop()
 {
-    while (!m_quit)
+    while (!m_quit && !m_input.IsStopped())
     {
         prompt();
         std::string line;
