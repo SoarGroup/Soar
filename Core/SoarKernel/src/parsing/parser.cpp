@@ -181,7 +181,7 @@ void substitute_for_placeholders_in_test(agent* thisAgent, test* t)
                 substitute_for_placeholders_in_test(thisAgent, reinterpret_cast<test*>(&(c->first)));
             }
             return;
-        default:  /* relational tests other than equality */
+        default:
             substitute_for_placeholders_in_symbol(thisAgent, &(ct->data.referent));
             return;
     }
@@ -995,18 +995,23 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
    any error occurs).
 ----------------------------------------------------------------- */
 
-test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_letter_if_no_id_given)
+auto parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_letter_if_no_id_given)
 {
     test id_test, id_goal_impasse_test, check_for_symconstant;
     Symbol* sym;
+
+    struct ret_vals {
+        test id_test;
+        bool is_state_or_impasse_cond;
+    };
 
     if (lexer->current_lexeme.type != L_PAREN_LEXEME)
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "Expected ( to begin condition element\n");
 
-        return NIL;
+        return ret_vals {nullptr, false};
     }
-    if (!lexer->get_lexeme()) return NULL;
+    if (!lexer->get_lexeme()) return ret_vals {nullptr, false};
 
     /* --- look for goal/impasse indicator --- */
     if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
@@ -1017,7 +1022,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
             if (!lexer->get_lexeme())
             {
                 deallocate_test(thisAgent, id_goal_impasse_test);
-                return NULL;
+                return ret_vals {nullptr, true};
             }
             first_letter_if_no_id_given = 's';
         }
@@ -1027,7 +1032,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
             if (!lexer->get_lexeme())
             {
                 deallocate_test(thisAgent, id_goal_impasse_test);
-                return NULL;
+                return ret_vals {nullptr, true};
             }
             first_letter_if_no_id_given = 'i';
         }
@@ -1050,7 +1055,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
         if (!id_test)
         {
             deallocate_test(thisAgent, id_goal_impasse_test);
-            return NIL;
+            return ret_vals {nullptr, id_goal_impasse_test != nullptr};
         }
         if (!id_test->eq_test)
         {
@@ -1077,7 +1082,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
                 free_growable_string(thisAgent, gs);
                 //TODO: should we append this to the previous XML message or create a new message for it?
                 deallocate_test(thisAgent, id_test);    /* AGR 527c */
-                return NIL;                  /* AGR 527c */
+                return ret_vals {nullptr, true};                  /* AGR 527c */
             }
         }
     }
@@ -1090,7 +1095,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
     add_test(thisAgent, &id_test, id_goal_impasse_test);
 
     /* --- return the resulting id test --- */
-    return id_test;
+    return ret_vals {id_test, id_goal_impasse_test != nullptr};
 }
 
 /* -----------------------------------------------------------------
@@ -1104,7 +1109,8 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
    It does not fill in the id tests of the conditions.
 ----------------------------------------------------------------- */
 
-condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer)
+condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer,
+    bool is_state_or_impasse_cond)
 {
     condition* first_c, *last_c, *new_conds;
     condition* c;
@@ -1112,6 +1118,12 @@ condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer)
     /* --- if no <attr_value_tests> are given, create a dummy one --- */
     if (lexer->current_lexeme.type == R_PAREN_LEXEME)
     {
+        if (is_state_or_impasse_cond) {
+            thisAgent->outputManager->printa_sf(thisAgent,  "Expected attribute-value test "\
+                "after state/impasse test. Did you forget to add \"^type state\" or \"^superstate nil\"?\n");
+            return nullptr;
+        }
+
         /* consume the right parenthesis */
         if (!lexer->get_lexeme()) return NULL;
         c = make_condition( thisAgent,
@@ -1176,18 +1188,15 @@ condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer)
 condition* parse_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_letter_if_no_id_given,
                                   test* dest_id_test)
 {
-    condition* conds;
-    test id_test, equality_test_from_id_test;
-
     /* --- parse the head --- */
-    id_test = parse_head_of_conds_for_one_id(thisAgent, lexer, first_letter_if_no_id_given);
+    auto [id_test, is_state_or_impasse_cond] = parse_head_of_conds_for_one_id(thisAgent, lexer, first_letter_if_no_id_given);
     if (! id_test)
     {
         return NIL;
     }
 
     /* --- parse the tail --- */
-    conds = parse_tail_of_conds_for_one_id(thisAgent, lexer);
+    condition* conds = parse_tail_of_conds_for_one_id(thisAgent, lexer, is_state_or_impasse_cond);
     if (! conds)
     {
         deallocate_test(thisAgent, id_test);
@@ -1198,7 +1207,7 @@ condition* parse_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_let
     if (dest_id_test)
     {
         *dest_id_test = id_test;
-        equality_test_from_id_test = copy_test(thisAgent, id_test->eq_test);
+        test equality_test_from_id_test = copy_test(thisAgent, id_test->eq_test);
         fill_in_id_tests(thisAgent, conds, equality_test_from_id_test);
         deallocate_test(thisAgent, equality_test_from_id_test);
     }
