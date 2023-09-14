@@ -368,6 +368,33 @@ void FullTests_Parent::testProductions()
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
+void FullTests_Parent::testUngroundedLHS()
+{
+    // This one is correct
+    agent->ExecuteCommandLine("sp { grounded (state <s> ^superstate nil) -->}");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+
+    // Explicit ID test is not required on state
+    agent->ExecuteCommandLine("sp { grounded (state ^superstate nil) -->}");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+
+    // TODO: this warns but should also fail, as there's no state test
+    agent->ExecuteCommandLine("sp {hello-world (<s> ^results <any>)-->}");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+
+    // at least one attr/val test is required with state test
+    agent->ExecuteCommandLine("sp { ungrounded (state <s>) -->}");
+    no_agent_assertFalse(agent->GetLastCommandLineResult());
+
+    // We require the attr/val test to be in the same condition as the state test
+    agent->ExecuteCommandLine("sp { missing*attr*val*test (state <s>) (<s> ^superstate nil) -->}");
+    no_agent_assertFalse(agent->GetLastCommandLineResult());
+
+    // negative conditions do not serve to ground the state
+    agent->ExecuteCommandLine("sp { negative*doesnt*ground (state -^result <any>) -->}");
+    no_agent_assertFalse(agent->GetLastCommandLineResult());
+}
+
 void FullTests_Parent::testRHSHandler()
 {
     loadProductions(SoarHelper::GetResource("testsml.soar"));

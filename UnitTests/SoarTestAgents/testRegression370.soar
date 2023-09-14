@@ -4,7 +4,7 @@ smem --init
 smem --clear
 
 sp {pass
-	(state <S1>)
+	(state <S1> ^superstate nil)
 -->
 	(succeeded)
 }

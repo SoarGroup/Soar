@@ -271,9 +271,10 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
 
 
 /* ----------------------------------------------------------------
-   Destructively modifies the first test (t) by adding the second
-   one (add_me) to it (usually as a new conjunct).  The first test
-   need not be a conjunctive test nor even exist.
+   Destructively modifies *dest_test_address, always returning a
+   conjunct test that contains (at least) new_test.
+   dest_test_address need not be a conjunctive test nor even be
+   non-null.
 ---------------------------------------------------------------- */
 bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool merge_disjunctions)
 {
