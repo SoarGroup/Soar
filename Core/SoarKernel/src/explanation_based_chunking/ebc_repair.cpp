@@ -19,7 +19,7 @@ void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** uncon
 {
     matched_symbol_list* lSyms = *unconnected_syms;
     chunk_element* lSym;
-   
+
     //for(matched_symbol_list::iterator it = lSyms->begin(), end = lSyms->end(); it != end; ++it)
     for (auto it = lSyms->begin(); it != lSyms->end(); it++)
     {
@@ -306,11 +306,12 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 {
     matched_symbol_list* unconnected_syms = new matched_symbol_list();
 
-    reorder_and_validate_lhs_and_rhs(thisAgent, &m_lhs, &m_rhs, false, unconnected_syms, true, true);
+    auto reorder_result = reorder_and_validate_lhs_and_rhs(thisAgent, &m_lhs, &m_rhs, false, unconnected_syms, true, true);
 
-    if (m_failure_type != ebc_success)
+    if (reorder_result != reorder_success)
     {
-        if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
+        report_reorder_errors(reorder_result);
+        if ((reorder_result == reorder_failed_unconnected_conditions) || (reorder_result == reorder_failed_reordering_rhs))
         {
             thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
 
@@ -320,7 +321,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
             delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
             unconnected_syms = new matched_symbol_list();
             thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
-            if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_lhs, &m_rhs, false, unconnected_syms, false, false))
+            if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_lhs, &m_rhs, false, unconnected_syms, false, false) == reorder_success)
             {
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                 if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
@@ -341,3 +342,41 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
     return true;
 }
 
+void Explanation_Based_Chunker::report_reorder_errors(ProdReorderFailureType reorder_result) {
+    const char* message;
+    switch (reorder_result) {
+        case reorder_failed_reordering_rhs: {
+            message = "Chunking issue detected. Soar has learned a rule with ungrounded action(s). Repair required.";
+            break;
+        }
+        case reorder_failed_unconnected_conditions: {
+            message = "Chunking issue detected. Soar has learned a rule with with ungrounded condition(s). Repair required.\n"
+                "   This is likely caused by a condition that tested a working memory element \n"
+                "   that was created in the sub-state but later became connected to the \n"
+                "   super-state because it was a child of an identifier that was an element\n"
+                "   of a previous result in that same sub-state.";
+            break;
+        }
+        case reorder_failed_no_roots: {
+            message = "Chunking issue detected. Soar has learned a rule with no conditions that match a goal state.";
+            break;
+        }
+        case reorder_failed_negative_relational_test_bindings: {
+            message = "Chunking issue detected. Soar has learned a rule with negative relational test bindings.";
+            break;
+        }
+        case reorder_success: {
+            // this is checked in the caller and should never happen
+            return;
+        }
+    }
+    if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+    {
+        print_current_built_rule(message);
+    }
+    if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+    {
+        thisAgent->stop_soar = true;
+        thisAgent->reason_for_stopping = message;
+    }
+}

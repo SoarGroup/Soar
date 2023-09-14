@@ -17,50 +17,42 @@
 #include "ebc.h"
 #include "xml.h"
 
-void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1, const char* pString2)
+void Output_Manager::display_reorder_error(agent* thisAgent, ProdReorderFailureType pErrorType, const char* pString1, const char* pString2)
 {
-    if (!thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]) return;
+    if (!thisAgent->outputManager->settings[OM_WARNINGS]) return;
     switch (pErrorType)
     {
-        case ebc_failed_reordering_rhs:
+        case reorder_failed_reordering_rhs:
         {
-//            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
-
-            printa_sf(thisAgent,  "%eThe following RHS actions contain variables that are not tested\n"
+            printa_sf(thisAgent,  "%eAttempted to add rule with ungrounded action(s).\n"
+                                  "The following RHS actions contain variables that are not tested\n"
                                   "in a positive condition on the LHS: \n\n"
                                   "%s\n", pString2);
             break;
         }
-        case ebc_failed_unconnected_conditions:
+        case reorder_failed_unconnected_conditions:
         {
-//            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
-
             printa_sf(thisAgent,"%eConditions on the LHS contain tests that are not connected \n"
                                 "to a goal: %s\n\n", pString2);
-            printa(thisAgent,   "   This is likely caused by a condition that tested a working memory element \n"
-                                "   that was created in the sub-state but later became connected to the \n"
-                                "   super-state because it was a child of an identifier that was an element\n"
-                                "   of a previous result in that same sub-state.\n");
             break;
         }
-        case ebc_failed_no_roots:
+        case reorder_failed_no_roots:
         {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
-//            printa_sf(thisAgent,"\nChunking has created an invalid rule: %s\n\n", pString1);
-            printa(   thisAgent,  "   None of the conditions reference a goal state.\n");
+            printa_sf(thisAgent, "Error: production %s has no positive conditions that reference a goal state.\n"\
+                "Did you forget to add \"^type state\" or \"^superstate nil\"?\n",
+                thisAgent->name_of_production_being_reordered);
             break;
         }
-        case ebc_failed_negative_relational_test_bindings:
+        case reorder_failed_negative_relational_test_bindings:
         {
             thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
-//            printa_sf(thisAgent,"\nChunking has created an invalid rule: %s\n\n", pString1);
             printa(thisAgent,  "   Unbound relational test in negative condition of rule \n");
             break;
         }
         default:
         {
             thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
-            printa(thisAgent, "\nUnspecified chunking failure. That's weird.  Should report.\n\n");
+            printa(thisAgent, "\nUnspecified reordering/validation failure. That's weird. Should report.\n\n");
             printa_sf(thisAgent, "        %s\n", pString1);
         }
     }

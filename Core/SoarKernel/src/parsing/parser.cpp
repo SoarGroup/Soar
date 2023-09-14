@@ -1119,7 +1119,7 @@ condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer,
     if (lexer->current_lexeme.type == R_PAREN_LEXEME)
     {
         if (is_state_or_impasse_cond) {
-            thisAgent->outputManager->printa_sf(thisAgent,  "Expected attribute-value test "\
+            thisAgent->outputManager->printa_sf(thisAgent,  "Error: Expected attribute-value test "\
                 "after state/impasse test. Did you forget to add \"^type state\" or \"^superstate nil\"?\n");
             return nullptr;
         }
@@ -2460,7 +2460,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     for (lhs_bottom = lhs; lhs_bottom->next != NIL; lhs_bottom = lhs_bottom->next);
 
     thisAgent->name_of_production_being_reordered = name->sc->name;
-    if (!reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true))
+    if (reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true) != reorder_success)
     {
         abort_parse_production(thisAgent, name, &documentation, &lhs, &rhs);
         return NIL;

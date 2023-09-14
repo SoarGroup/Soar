@@ -772,7 +772,6 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     }
 
     m_inst = inst;
-    m_failure_type = ebc_success;
 
     if (!can_learn_from_instantiation()) { m_inst = NULL; return; }
 
@@ -1024,7 +1023,6 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, soar_timer* pTi
     m_chunk_inst                        = NULL;
     m_prod_name                         = NULL;
     m_rule_type                         = ebc_no_rule;
-    m_failure_type                      = ebc_success;
 
     clear_symbol_identity_map();
     if (ebc_settings[SETTING_EBC_LEARNING_ON])

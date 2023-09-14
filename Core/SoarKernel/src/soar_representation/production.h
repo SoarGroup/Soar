@@ -156,13 +156,13 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
     say.  Normally deallocate_production() should be invoked only via
     the production_remove_ref() macro.
 ------------------------------------------------------------------- */
-bool reorder_and_validate_lhs_and_rhs(agent*                    thisAgent,
-                                      condition**               lhs_top,
-                                      action**                  rhs_top,
-                                      bool                      reorder_nccs,
-                                      matched_symbol_list*      ungrounded_syms = NULL,
-                                      bool                      add_ungrounded_lhs = false,
-                                      bool                      add_ungrounded_rhs = false
+ProdReorderFailureType reorder_and_validate_lhs_and_rhs(agent*                    thisAgent,
+                                                        condition**               lhs_top,
+                                                        action**                  rhs_top,
+                                                        bool                      reorder_nccs,
+                                                        matched_symbol_list*      ungrounded_syms = NULL,
+                                                        bool                      add_ungrounded_lhs = false,
+                                                        bool                      add_ungrounded_rhs = false
 );
 
 production* make_production(agent* thisAgent, ProductionType type,
