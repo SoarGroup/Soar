@@ -18,7 +18,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "ebc.h"
 #include "ebc_repair.h"
 #include "explanation_memory.h"
 #include "mem.h"
@@ -69,10 +68,11 @@
   Furthermore, we make sure all arguments to function calls are bound
   before the function call is executed.
 
-  Reorder_action_list() does the reordering.  Its parameter action_list
+  reorder_action_list() does the reordering.  Its parameter action_list
   is reordered in place (destructively modified).  It also requires at entry
   that the variables bound on the LHS are marked.  The function returns
-  true if successful, false if it was unable to produce a legal ordering.
+  a ProdReorderFailureType indicating the issue if a legal ordering
+  could not be produced.
 ===================================================================== */
 
 bool legal_to_execute_action(action* a, tc_number tc);
@@ -87,7 +87,7 @@ bool isNewUngroundedElement(matched_symbol_list* ungrounded_syms, Symbol* pSym, 
     return true;
 
 }
-bool reorder_action_list(agent* thisAgent, action** action_list,
+ProdReorderFailureType reorder_action_list(agent* thisAgent, action** action_list,
                          tc_number lhs_tc, matched_symbol_list* ungrounded_syms,
                          bool add_ungrounded)
 {
@@ -95,7 +95,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     action* remaining_actions;
     action* first_action, *last_action;
     action* a, *prev_a;
-    bool result_flag;
+    ProdReorderFailureType failure_type;
 
     new_bound_vars = NIL;
     remaining_actions = *action_list;
@@ -182,18 +182,9 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 }
             }
         }
-        thisAgent->outputManager->set_print_indents();
-        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
-        {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add rule with ungrounded action(s):");
-        }
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_reordering_rhs);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Attempted to add rule with ungrounded action action(s).  Repair required.";
-        }
+        failure_type = reorder_failed_reordering_rhs;
+        thisAgent->outputManager->set_print_indents("");
+        thisAgent->outputManager->display_reorder_error(thisAgent, reorder_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         /* --- reconstruct list of all actions --- */
         if (last_action)
         {
@@ -203,11 +194,10 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         {
             first_action = remaining_actions;
         }
-        result_flag = false;
     }
     else
     {
-        result_flag = true;
+        failure_type = reorder_success;
     }
 
     /* --- unmark variables that we just marked --- */
@@ -215,7 +205,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
     /* --- return final result --- */
     *action_list = first_action;
-    return result_flag;
+    return failure_type;
 }
 
 bool all_vars_in_rhs_value_bound(rhs_value rv, tc_number tc)
@@ -756,9 +746,7 @@ void remove_vars_requiring_bindings(agent* thisAgent,
    The caller should setup the current tc to be the set of variables
    bound outside the given condition list.  (This should normally be
    an empty TC, except when the condition list is the subconditions
-   of an NCC.)  If the "allow_printing_warnings" flag is true, then
-   this routine makes sure each root variable is accompanied by a
-   goal or impasse id test, and prints a warning message if it isn't.
+   of an NCC.)
 ===================================================================== */
 
 cons* collect_root_variables(agent* thisAgent,
@@ -822,36 +810,37 @@ cons* collect_root_variables(agent* thisAgent,
     /* --- make sure each root var has some condition with goal/impasse --- */
     std::string errorStr;
 
-        for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
-        {
-            found_goal_impasse_test = false;
+    for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
+    {
+        found_goal_impasse_test = false;
 
-            for (cond = cond_list; cond != NIL; cond = cond->next)
+        for (cond = cond_list; cond != NIL; cond = cond->next)
+        {
+        if (cond->type != POSITIVE_CONDITION) continue;
+        if ((cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym) &&
+            test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
             {
-            if (cond->type != POSITIVE_CONDITION) continue;
-            if ((cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym) &&
-                test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
-                {
-                        found_goal_impasse_test = true;
-                        break;
-                    }
-            }
-            if (! found_goal_impasse_test)
+                    found_goal_impasse_test = true;
+                    break;
+                }
+        }
+        if (! found_goal_impasse_test)
+        {
+            if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->inst_identity))
             {
-                if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->inst_identity))
+                chunk_element* lNewUngroundedSym;
+                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+                chunk_element* lOldMatchedSym = (*it);
+                lNewUngroundedSym->variable_sym = (*it)->variable_sym;
+                lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
+                lNewUngroundedSym->inst_identity = (*it)->inst_identity;
+                ungrounded_syms->push_back(lNewUngroundedSym);
+            } else {
+                // TODO: we should reject the rule entirely, not just print a warning. sp {hello-world (<s> ^results <any>)-->}
+                if (thisAgent->outputManager->settings[OM_WARNINGS])
                 {
-                    chunk_element* lNewUngroundedSym;
-                    thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
-                    chunk_element* lOldMatchedSym = (*it);
-                    lNewUngroundedSym->variable_sym = (*it)->variable_sym;
-                    lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
-                    lNewUngroundedSym->inst_identity = (*it)->inst_identity;
-                    ungrounded_syms->push_back(lNewUngroundedSym);
-                } else {
                     thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
-                           thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
-                if (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
-                {
+                            thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
                     thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
                     xml_generate_warning(thisAgent, errorStr.c_str());
                 }
@@ -1115,7 +1104,7 @@ void reorder_simplified_conditions(agent* thisAgent,
 
         /* --- if min_cost==MAX_COST, print error message --- */
         if ((min_cost == MAX_COST) &&
-            (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]))
+            (thisAgent->outputManager->settings[OM_WARNINGS]))
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "Warning:  in production %s,\n",
                   thisAgent->name_of_production_being_reordered);
@@ -1429,7 +1418,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, matched_symbol_list* ungrounded_syms, bool add_ungrounded)
+ProdReorderFailureType reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, matched_symbol_list* ungrounded_syms, bool add_ungrounded)
 {
     tc_number tc;
     cons* roots;
@@ -1447,20 +1436,11 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
             {
                 unSymString += ", ";
             }
+        }
 
-        }
-        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
-        {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s):");
-        }
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
-        }
-        return false;
+        auto error = reorder_failed_unconnected_conditions;
+        thisAgent->outputManager->display_reorder_error(thisAgent, error, thisAgent->name_of_production_being_reordered, unSymString.c_str());
+        return error;
     }
 
     if (!roots)
@@ -1473,18 +1453,13 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
             {
                 add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &roots);
                 if (roots) break;
-                }
             }
+        }
     if (!roots)
     {
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
-        }
-        return false;
+        auto error = reorder_failed_no_roots;
+        thisAgent->outputManager->display_reorder_error(thisAgent, error, thisAgent->name_of_production_being_reordered);
+        return error;
     }
     }
 
@@ -1498,17 +1473,12 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
 
     if (!check_negative_relational_test_bindings(thisAgent, *lhs_top, get_new_tc_number(thisAgent)))
     {
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_negative_relational_test_bindings, thisAgent->name_of_production_being_reordered);
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_negative_relational_test_bindings);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with negative relational test bindings.";
-        }
-        return false;
+        auto error = reorder_failed_negative_relational_test_bindings;
+        thisAgent->outputManager->display_reorder_error(thisAgent, error, thisAgent->name_of_production_being_reordered);
+        return error;
     }
 
-    return true;
+    return reorder_success;
 }
 
 void init_reorderer(agent* thisAgent)     /* called from init_production_utilities() */

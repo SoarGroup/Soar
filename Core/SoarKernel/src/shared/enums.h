@@ -230,12 +230,12 @@ enum EBCTraceType {
     ebc_explanation_trace
 };
 
-enum EBCFailureType {
-    ebc_success,
-    ebc_failed_no_roots,
-    ebc_failed_negative_relational_test_bindings,
-    ebc_failed_reordering_rhs,
-    ebc_failed_unconnected_conditions
+enum ProdReorderFailureType {
+    reorder_success,
+    reorder_failed_no_roots,
+    reorder_failed_negative_relational_test_bindings,
+    reorder_failed_reordering_rhs,
+    reorder_failed_unconnected_conditions
 };
 
 enum EBCExplainStatus {

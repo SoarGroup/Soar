@@ -370,29 +370,40 @@ void FullTests_Parent::testProductions()
 
 void FullTests_Parent::testUngroundedLHS()
 {
+    // We're testing warnings here, so turn them on
+    agent->ExecuteCommandLine("output warnings on");
+
     // This one is correct
-    agent->ExecuteCommandLine("sp { grounded (state <s> ^superstate nil) -->}");
+    std::string result = agent->ExecuteCommandLine("sp { grounded (state <s> ^superstate nil) -->}");
     no_agent_assertTrue(agent->GetLastCommandLineResult());
 
     // Explicit ID test is not required on state
-    agent->ExecuteCommandLine("sp { grounded (state ^superstate nil) -->}");
+    result = agent->ExecuteCommandLine("sp { grounded (state ^superstate nil) -->}");
     no_agent_assertTrue(agent->GetLastCommandLineResult());
 
     // TODO: this warns but should also fail, as there's no state test
-    agent->ExecuteCommandLine("sp {hello-world (<s> ^results <any>)-->}");
+    result = agent->ExecuteCommandLine("sp {hello-world (<s> ^results <any>)-->}");
     no_agent_assertTrue(agent->GetLastCommandLineResult());
+    const char* expected_message = "Warning: On the LHS of production hello-world, identifier <s> is not connected to any goal or impasse.";
+    no_agent_assertTrue_msg("Expected1 warning message not found in '" + result + "'", result.find(expected_message) != std::string::npos);
 
     // at least one attr/val test is required with state test
-    agent->ExecuteCommandLine("sp { ungrounded (state <s>) -->}");
+    result = agent->ExecuteCommandLine("sp { ungrounded (state <s>) -->}");
     no_agent_assertFalse(agent->GetLastCommandLineResult());
+    expected_message = "Error: Expected attribute-value test after state/impasse test. Did you forget to add \"^type state\" or \"^superstate nil\"?";
+    no_agent_assertTrue_msg("Expected2 error message not found in '" + result + "'", result.find(expected_message) != std::string::npos);
 
     // We require the attr/val test to be in the same condition as the state test
-    agent->ExecuteCommandLine("sp { missing*attr*val*test (state <s>) (<s> ^superstate nil) -->}");
+    result = agent->ExecuteCommandLine("sp { missing*attr*val*test (state <s>) (<s> ^superstate nil) -->}");
     no_agent_assertFalse(agent->GetLastCommandLineResult());
+    expected_message = "Error: Expected attribute-value test after state/impasse test. Did you forget to add \"^type state\" or \"^superstate nil\"?";
+    no_agent_assertTrue_msg("Expected3 error message not found in '" + result + "'", result.find(expected_message) != std::string::npos);
 
     // negative conditions do not serve to ground the state
-    agent->ExecuteCommandLine("sp { negative*doesnt*ground (state -^result <any>) -->}");
+    result = agent->ExecuteCommandLine("sp { negative*doesnt*ground (state -^result <any>) -->}");
     no_agent_assertFalse(agent->GetLastCommandLineResult());
+    expected_message = "Error: production negative*doesnt*ground has no positive conditions that reference a goal state.\nDid you forget to add \"^type state\" or \"^superstate nil\"?";
+    no_agent_assertTrue_msg("Expected4 error message not found in '" + result + "'", result.find(expected_message) != std::string::npos);
 }
 
 void FullTests_Parent::testRHSHandler()

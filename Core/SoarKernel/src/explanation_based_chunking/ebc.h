@@ -101,7 +101,6 @@ class Explanation_Based_Chunker
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
         bool set_learning_for_instantiation(instantiation* inst);
-        void set_failure_type(EBCFailureType pFailure_type) {m_failure_type = pFailure_type; };
         void set_rule_type(ebc_rule_type pRuleType) {m_rule_type = pRuleType; };
         void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; justifications_this_d_cycle = 0;};
 
@@ -200,7 +199,6 @@ class Explanation_Based_Chunker
         Symbol*             m_prod_name;
         ProductionType      m_prod_type;
         bool                m_should_print_name, m_should_print_prod;
-        EBCFailureType      m_failure_type;
 
         /* Core tables used by EBC during identity assignment during instantiation
          * creation. The data stored within them is temporary and cleared after use. */
@@ -250,6 +248,7 @@ class Explanation_Based_Chunker
         void            remove_chunk_instantiation();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         bool            reorder_and_validate_chunk();
+        void            report_reorder_errors(ProdReorderFailureType reorder_result);
         void            deallocate_failed_chunk();
         void            clean_up(uint64_t pClean_up_id, soar_timer* pTimer = NULL);
         bool            add_chunk_to_rete();

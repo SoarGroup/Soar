@@ -348,22 +348,22 @@ bool action_is_in_tc(action* a, tc_number tc)
  * so EBC can first try to fix unconnected conditions before creating
  * the production. */
 
-bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
-                                      condition**   lhs_top,
-                                      action**      rhs_top,
-                                      bool          reorder_nccs,
-                              matched_symbol_list*  ungrounded_syms,
-                                     bool           add_ungrounded_lhs,
-                                     bool           add_ungrounded_rhs)
+ProdReorderFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
+                                                        condition**   lhs_top,
+                                                        action**      rhs_top,
+                                                        bool          reorder_nccs,
+                                                matched_symbol_list*  ungrounded_syms,
+                                                        bool          add_ungrounded_lhs,
+                                                        bool          add_ungrounded_rhs)
 {
     tc_number tc;
-    bool lhs_good = false;
 
     thisAgent->symbolManager->reset_variable_generator(*lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL);
 
-    if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms, add_ungrounded_rhs))
+    auto rhs_reorder_result = reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms, add_ungrounded_rhs);
+    if (rhs_reorder_result != reorder_success)
     {
         /* If there are problems on the LHS, we need the ungrounded_syms
          * from them, before we return.  So we call, reorder_lhs too.
@@ -372,11 +372,9 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
         {
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
         }
-        return false;
+        return rhs_reorder_result;
     }
-    lhs_good = reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms, add_ungrounded_lhs);
-    if (!lhs_good) return false;
-    return true;
+    return reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms, add_ungrounded_lhs);
 }
 
 /* Note:  The rete load command will create a production without calling this.  Changes made here may

@@ -24,8 +24,8 @@ typedef struct saved_test_struct
     test                        the_test;
 } saved_test;
 
-extern bool reorder_action_list(agent* thisAgent, action** action_list, tc_number lhs_tc, matched_symbol_list* ungrounded_syms, bool add_ungrounded = false);
-extern bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, matched_symbol_list* ungrounded_syms = NULL, bool add_ungrounded = false);
+extern ProdReorderFailureType reorder_action_list(agent* thisAgent, action** action_list, tc_number lhs_tc, matched_symbol_list* ungrounded_syms, bool add_ungrounded = false);
+extern ProdReorderFailureType reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, matched_symbol_list* ungrounded_syms = NULL, bool add_ungrounded = false);
 extern void init_reorderer(agent* thisAgent);
 
 /* this prototype moved here from osupport.cpp -ajc (5/3/02) */

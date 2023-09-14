@@ -237,7 +237,7 @@ class Output_Manager
         /* A single function to print all pre-formatted Soar error messages.  Added
          * to make other code cleaner and easier to parse */
         void display_soar_feedback(agent* thisAgent, SoarCannedMessageType pErrorType, bool shouldPrint = true);
-        void display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1 = NULL, const char* pString2 = NULL);
+        void display_reorder_error(agent* thisAgent, ProdReorderFailureType pErrorType, const char* pString1 = NULL, const char* pString2 = NULL);
         void display_ambiguous_command_error(agent* thisAgent, std::list< std::string > matched_objects_str);
 
         /* -- Should be moved elsewhere -- */
