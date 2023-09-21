@@ -1907,93 +1907,6 @@ struct wme_val_stats {
     return NIL;
 }
 
-/*
- * Set-based multiply accumulates.
- *
- * Expects four parameters:
- *  - The ID of a set
- *  - Attribute name for the item that contains two factors to multiply
- *  - The name of one of the factors
- *  - The name of the other factor
- *
- * The algorithm moves through each item and multiplies its two factors, accumulating the result
- *  across all items (thus multiply-accumulate)
- *
- * The return value is only not NIL if the fn returns an error symbol.
- */
-Symbol* set_mac(agent* thisAgent, cons* args, void* data) {
-    cons* c = args;
-    Symbol* param_set_id_sym = static_cast<symbol_struct*>(c->first);
-
-    if (param_set_id_sym != NIL && param_set_id_sym->is_sti()) {
-        idSymbol* set_id = param_set_id_sym->id;
-                       c = c->rest;
-
-        if (c != NIL) {
-            Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);
-
-            if(param_attr_name_sym == NIL) {
-                return thisAgent->symbolManager->make_str_constant("|ERROR: Missing set attribute parameter.|");
-            }
-
-            Symbol* param_factor_1_name_sym = NIL;
-            Symbol* param_factor_2_name_sym = NIL;
-
-            // The two factor names (required)
-            c = c->rest;
-            if (c != NIL) {
-                param_factor_1_name_sym = static_cast<symbol_struct*>(c->first);
-                c = c->rest;
-                if (c != NIL)
-                    param_factor_2_name_sym = static_cast<symbol_struct*>(c->first);
-                else
-                    return thisAgent->symbolManager->make_str_constant("|ERROR: Missing second factor parameter|");
-            } else {
-                return thisAgent->symbolManager->make_str_constant("|ERROR: Missing first factor parameter|");
-            }
-
-            struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
-            for (wme* cwme = get_wmes_for_named_slot(set_id, param_attr_name_sym); cwme != NIL; cwme = cwme->next) {
-
-                // The following if statement handles nested values inside of a structure up to two levels.
-                // It can handle multi-valued attributes at all levels
-                wme* cwme1 = get_wmes_for_named_slot(cwme->value, param_factor_1_name_sym);
-                wme* cwme2 = get_wmes_for_named_slot(cwme->value, param_factor_2_name_sym);
-
-                if(cwme1 != NIL && cwme2 != NIL) {
-                    Symbol* factor1 = cwme1->value;
-                    Symbol* factor2 = cwme2->value;
-                    double product = 0.0;
-
-                    if (factor1 != NIL) {
-                        if (factor1->is_float()) {
-                            product = factor1->fc->value;
-                            stats->count++;
-                        } else if (factor1->is_int()) {
-                            product = (double)factor1->ic->value;
-                            stats->count++;
-                        }
-                    } else { continue; }
-
-                    if (factor2 != NIL) {
-                        if (factor2->is_float()) {
-                            product *= factor2->fc->value;
-                        } else if (factor2->is_int()) {
-                            product *= (double)factor2->ic->value;
-                        }
-                    } else { continue; }
-
-                    stats->sum += product;
-                }
-            }
-        }
-    } else { return thisAgent->symbolManager->make_str_constant("|ERROR: First parameter needs to be an identifier.|"); }
-
-    return NIL;
-}
-
-
-
 // Simply counts wmes
 Symbol* count_wme(agent* thisAgent, wme* wme_to_count, void* data) {
     struct wme_val_stats* stats = static_cast<struct wme_val_stats*>(data);
@@ -2269,31 +2182,6 @@ Symbol* set_stdev_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
 
 }
 
-/*
- * A right hand side function that finds the standard deviation of a set.
- *
- * Pass the soar id of the set (first parameter) and the name of the multi-valued attribute you
- *   want the standard deviation of (second parameter).
- *
- * Non-numeric attributes are ignored; returns "NaN" if no numeric values are found, or an error
- * string if there is an issue with the parameters.
- */
-Symbol* set_mac_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
-{
-    struct wme_val_stats stats;
-    Symbol* error = set_mac(thisAgent, args, &stats);
-
-    if (error != NIL)
-        return error;
-
-    if (stats.count > 0) {
-        return thisAgent->symbolManager->make_float_constant(stats.sum);
-    } else {
-        return thisAgent->symbolManager->make_str_constant("NaN");
-    }
-
-}
-
 /* ====================================================================
 
                   Initialize the Built-In RHS Math Functions
@@ -2325,7 +2213,6 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-range"), set_range_rhs_function_code, -1, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mean"), set_mean_rhs_function_code, -1, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-stdev"), set_stdev_rhs_function_code, -1, true, false, 0, true);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("set-mac"), set_mac_rhs_function_code, -1, true, false, 0, true);
 
     /* RHS trigonometry functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"), sin_rhs_function_code, 1, true, false, 0, true);
