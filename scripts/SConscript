@@ -6,22 +6,14 @@ import os, sys
 Import('env', 'InstallDir')
 
 settings_install = env.Install(env['OUT_DIR'], 'settings.soar')
-vs_install = env.InstallAs(env['OUT_DIR'] + '/VisualSoar.jar')
 
-all_script_targets = settings_install + vs_install
+all_script_targets = settings_install
 if os.name == 'nt':
     jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.bat')
-    vsc_install = env.Install(env['OUT_DIR'], 'VisualSoar.bat')
-elif sys.platform == 'darwin':
-    jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.command')
-    vsc_install = env.Install(env['OUT_DIR'], 'VisualSoar.command')
-    mac_setup = env.Install(env['OUT_DIR'], 'macOS_setup.command')
-    all_script_targets += mac_setup
 else:
     jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.sh')
-    vsc_install = env.Install(env['OUT_DIR'], 'VisualSoar.sh')
 
-all_script_targets += jd_install + vsc_install
+all_script_targets += jd_install
 
 env.Alias('scripts', all_script_targets)
 
