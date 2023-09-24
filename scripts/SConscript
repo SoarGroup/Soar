@@ -6,7 +6,7 @@ import os, sys
 Import('env', 'InstallDir')
 
 settings_install = env.Install(env['OUT_DIR'], 'settings.soar')
-vs_install = env.InstallAs(env['OUT_DIR'] + '/VisualSoar.jar', 'VisualSoar.jartmp')
+vs_install = env.InstallAs(env['OUT_DIR'] + '/VisualSoar.jar')
 
 all_script_targets = settings_install + vs_install
 if os.name == 'nt':
