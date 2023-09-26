@@ -2259,7 +2259,6 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-range"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-mean"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-stdev"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("set-mac"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sin"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("cos"));
