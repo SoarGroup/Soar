@@ -132,15 +132,24 @@ def prepare_for_compiling_with_tcl(env, tcl_path_override=None):
         env.Append(SHLINKFLAGS=env.Split('$LINKFLAGS -flat_namespace -undefined suppress -fmessage-length=0'))
 
     elif sys.platform.startswith("linux"):
+        def parse_conf(env, flags, unique):
+            print(f"{env['INDENT']}Found Tcl with pkg-config: {flags}")
+            # TODO: grab the library path from the flags and add it below
+            # # Currently requires Tcl 8.6 b/c it supports multiple threads without manual compilation.  The following line
+            # # hard-codes the path of the current Tcl 8.6 path on this system into the executable (it's used as the first,
+            # # but not only, search path for the Tcl library)
+            # # TODO: is this still needed?
+            # # clone.Append(LINKFLAGS = ['-Wl,-rpath,\''+tcl_libs.abspath+'\''])
+            return env.MergeFlags(flags, unique)
         try:
-            env.ParseConfig("pkg-config tcl --libs --cflags")
+            env.ParseConfig("pkg-config tcl --libs --cflags", parse_conf)
         except OSError:
             print(
                 f"{env['INDENT']}pkg-config didn't find tcl package; try `apt-get install tcl-dev`"
             )
             print(f"{env['INDENT']}{NO_TCL_MSG}")
             return False
-        print(f"{env['INDENT']}Found Tcl with pkg-config")
+
 
     elif sys.platform == "win32":
         if tcl_path_override:
