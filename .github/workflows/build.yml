@@ -5,7 +5,6 @@
 # We use these tools from the runner images: git, gcc/XCode/MSVC, swig, Tcl/Tk on MacOS
 
 # TODO: not building svs_viewer ('Cannot find GL, GLU, not building svs_viewer' and 'Cannot find opengl32, glu32, not building svs_viewer')
-# TODO: not building with TCL support; need to install TCL from somewhere (maybe http://tclkits.rkeene.org/fossil/wiki/Downloads?)
 # TODO: pin more dependency versions (python, swig, gcc/XCode/MSVC, etc.)
 
 name: Build/Test
@@ -77,7 +76,12 @@ jobs:
           LD_LIBRARY_PATH: ${{ github.workspace }}/out
           PYTHONUTF8: 1
         run: python3 TestPythonSML.py
-        # TODO: run additional tests for Tcl, CSharp
+
+      - name: SML Tcl tests
+        working-directory: ./out
+        run: tclsh TestTclSML.tcl
+
+        # TODO: run additional tests for CSharp
 
       # reports JUnit test results as GitHub PR check.
       - name: publish test report
@@ -105,6 +109,8 @@ jobs:
   Windows:
     name: build-windows
     runs-on: [windows-latest]
+    env:
+      TCL_HOME: c:\progra~1\tcl
 
     steps:
       - name: Checkout
@@ -141,17 +147,22 @@ jobs:
 
           Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
           cd tcl8613-src\tcl8.6.13\win
-          &nmake -f makefile.vc release install INSTALLDIR=c:\progra~1\tcl
+          &nmake /D -f makefile.vc release install INSTALLDIR="$env:TCL_HOME"
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
+
+          # temporary fix for https://core.tcl-lang.org/tcl/tktview/aa6e42643794ecff2f3508d7306c702baf4f4c0f;
+          # install target doesn't copy tclsh86t.exe to the bin directory for some reason
+          $tclsh = (Get-ChildItem -Filter tclsh86t.exe -Recurse -ErrorAction SilentlyContinue -Force)[0]
+          Copy-Item $tclsh.FullName -Destination "$env:TCL_HOME\bin"
 
       - name: build
         env:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: |
-          ./build.bat --scu --opt --verbose --tcl=c:\progra~1\tcl all performance_tests
+          ./build.bat --scu --opt --verbose --tcl="$env:TCL_HOME" all performance_tests
           if ($lastexitcode -ne 0) {
              throw "build.bat exit code: $lastexitcode"
           }
@@ -189,9 +200,20 @@ jobs:
         run: |
           python3 TestPythonSML.py
           if ($lastexitcode -ne 0) {
-             throw "soar-smljava exit code: $lastexitcode"
+             throw "TestPythonSML.py exit code: $lastexitcode"
           }
-        # TODO: run additional tests for Tcl, CSharp
+
+      - name: SML Tcl tests
+        working-directory: ./out
+        run: |
+          # have to add Tcl to path every time we use it (permanent add is possible but troublesome)
+          $env:path += "$env:path;$env:TCL_HOME\bin"
+          tclsh86t TestTclSML.tcl
+          if ($lastexitcode -ne 0) {
+             throw "TestTclSML.tcl exit code: $lastexitcode"
+          }
+
+      # TODO: run additional tests for CSharp
 
       # reports JUnit test results as GitHub PR check.
       - name: publish test report
