@@ -104,7 +104,7 @@ clone.Depends(clone.File('#Core/SoarKernel/src/shared/soar_instance.h'), swig_tc
 # Tell SCons to clean up intermediate files when doing a scons -c
 clone.Clean(lib, [swig_tcl_wrapper_cpp, pkgindex])
 
+install_test = clone.Install(lib_install_dir.abspath, clone.File('TestTclSML.tcl'))
+
 # Set up alias to compile everything
-clone.Alias(tcl_sml_alias, tclstep3)
-
-
+clone.Alias(tcl_sml_alias, tclstep3 + install_test)
