@@ -1109,54 +1109,20 @@ public class FoldingText
         return selectionPoint;
     }
 
-    // Separating out the call to append text to a widget so we can work on its
-    // behavior.
-    // We'd like this to not scroll if the cursor is not at the bottom of the
-    // window
-    // and SWT's append method always scrolls.
+    /**
+     * If the caret is at the end of the widget text, scroll the text and keep the
+     * caret at the end. Otherwise, leave the caret in place and don't scroll anything.
+     */
     private void appendTextToWidget(StyledText widget, String text)
     {
-        // If set this to true we just use standard append
-        // and always scroll.
-        boolean kUseAppend = false;
-
-        if (kUseAppend)
-        {
-            widget.append(text);
-        }
-        else
-        {
-            // A more sophisticated routine for inserting text
-            // at the end of the widget without scrolling unless
-            // current selection is already at the end.
-            Point currentSelection = widget.getSelection();
-            int length = widget.getCharCount();
-
-            if (currentSelection.x == length)
-                widget.append(text);
-            else
-            {
-                // The calls to setRedraw are needed because there's a bug
-                // on SWT in Windows where setSelection() calls scroll caret
-                // always
-                // which it really shouldn't. So we need to suppress that
-                // behavior by
-                // turning redraw on and off. However that incurs the cost of
-                // redrawing the
-                // entire widget in the setRedraw(true) call which shouldn't be
-                // needed.
-                // Because of this we only use this code if the selection isn't
-                // at the end
-                // of the widget.
-                widget.setRedraw(false);
-                widget.setSelection(length, length);
-                widget.insert(text);
-                widget.setSelection(currentSelection);
-                widget.setRedraw(true);
-
-                if (currentSelection.x == length)
-                    widget.showSelection();
-            }
+        Point currentSelection = widget.getSelection();
+        int lastChar = Math.max(widget.getCharCount(), 0);
+        boolean isAtEnd = currentSelection.x == lastChar;
+        // StyledText default is *not* to scroll
+        widget.append(text);
+        if (isAtEnd) {
+            lastChar = Math.max(widget.getCharCount(), 0);
+            widget.setSelection(lastChar);
         }
     }
 
