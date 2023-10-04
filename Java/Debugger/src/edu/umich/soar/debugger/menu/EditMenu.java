@@ -1,28 +1,29 @@
 /********************************************************************************************
  *
  * EditMenu.java
- * 
+ *
  * Created on 	Nov 9, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Menu;
 
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.dialogs.SearchDialog;
 import edu.umich.soar.debugger.doc.Document;
 
+import static edu.umich.soar.debugger.menu.ShortcutUtils.SHORTCUT_HINT;
+import static edu.umich.soar.debugger.menu.ShortcutUtils.SHORTCUT_KEY;
+
 /********************************************************************************************
- * 
+ *
  * The edit menu
- * 
+ *
  ********************************************************************************************/
 public class EditMenu
 {
@@ -30,7 +31,7 @@ public class EditMenu
 
     private SearchDialog m_SearchDialog = null;
 
-    private AbstractAction m_Copy = new AbstractAction("&Copy\tCtrl+C")
+    private AbstractAction m_Copy = new AbstractAction("&Copy\t" + SHORTCUT_HINT + "C")
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -38,7 +39,7 @@ public class EditMenu
         }
     };
 
-    private AbstractAction m_Paste = new AbstractAction("&Paste\tCtrl+V")
+    private AbstractAction m_Paste = new AbstractAction("&Paste\t" + SHORTCUT_HINT + "V")
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -46,29 +47,11 @@ public class EditMenu
         }
     };
 
-    private AbstractAction m_Search = new AbstractAction("&Find...\tCtrl+F")
+    private AbstractAction m_Search = new AbstractAction("&Find...\t" + SHORTCUT_HINT + "F")
     {
         public void actionPerformed(ActionEvent e)
         {
             searchPrime();
-        }
-    };
-
-    private AbstractAction m_ChooseFont = new AbstractAction(
-            "&Choose text font...")
-    {
-        public void actionPerformed(ActionEvent e)
-        {
-            chooseFontPerformed(e);
-        }
-    };
-
-    private AbstractAction m_DefaultFont = new AbstractAction(
-            "Use &default font")
-    {
-        public void actionPerformed(ActionEvent e)
-        {
-            useDefaultFont(e);
         }
     };
 
@@ -91,10 +74,7 @@ public class EditMenu
         menu.add(m_Copy);
         menu.add(m_Paste);
         menu.addSeparator();
-        menu.add(m_Search, SWT.CTRL + 'F');
-        menu.addSeparator();
-        menu.add(m_ChooseFont);
-        menu.add(m_DefaultFont);
+        menu.add(m_Search, SHORTCUT_KEY + 'F');
 
         return menu;
     }
@@ -133,18 +113,5 @@ public class EditMenu
 
         if (view != null)
             view.paste();
-    }
-
-    private void useDefaultFont(ActionEvent e)
-    {
-        m_Frame.setTextFont(MainFrame.kDefaultFontData);
-    }
-
-    private void chooseFontPerformed(ActionEvent e)
-    {
-        FontData data = m_Frame.ShowFontDialog();
-
-        if (data != null)
-            m_Frame.setTextFont(data);
     }
 }

@@ -767,6 +767,8 @@ public class MainFrame
         m_FileMenu = FileMenu.createMenu(this, getDocument(), "&File");
         /* m_EditMenu = */edu.umich.soar.debugger.menu.EditMenu.createMenu(
                 this, getDocument(), "&Edit");
+        /* m_ViewMenu = */edu.umich.soar.debugger.menu.ViewMenu.createMenu(
+        this, "&View");
         /* m_PrintMenu = */PrintMenu.createMenu(this, getDocument(), "&Print");
         /* m_CommandsMenu = */CommandsMenu.createMenu(this, getDocument(),
                 "&Commands");
