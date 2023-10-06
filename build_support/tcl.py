@@ -101,7 +101,7 @@ def __get_tcl_install_info_mac(env, local_compiled_dir=None) -> Optional[TclInst
         __get_system_tcl_install_info_mac(env)
 
 
-def __append_tcl_compile_flags(env, install_info):
+def __append_tcl_compile_flags(env, install_info: TclInstallInfo):
     env.Append(CXXFLAGS=["-I" + str(install_info.include_dir.absolute())])
     env.Append(CPPPATH=[str(install_info.include_dir.absolute())])
     env.Append(LIBPATH=[install_info.lib_dir.absolute()])
@@ -114,6 +114,12 @@ def prepare_for_compiling_with_tcl(env, tcl_path_override=None):
     """
 
     print("Looking for Tcl...")
+    if tcl_path_override:
+        print(f"{env['INDENT']}Tcl path override specified: {tcl_path_override}")
+        if not Path(tcl_path_override).exists():
+            raise FileNotFoundError(
+                f"Specified Tcl path does not exist: {tcl_path_override}"
+            )
 
     if sys.platform == "darwin":
         install_info = __get_tcl_install_info_mac(env, tcl_path_override)
@@ -132,15 +138,32 @@ def prepare_for_compiling_with_tcl(env, tcl_path_override=None):
         env.Append(SHLINKFLAGS=env.Split('$LINKFLAGS -flat_namespace -undefined suppress -fmessage-length=0'))
 
     elif sys.platform.startswith("linux"):
-        try:
-            env.ParseConfig("pkg-config tcl --libs --cflags")
-        except OSError:
-            print(
-                f"{env['INDENT']}pkg-config didn't find tcl package; try `apt-get install tcl-dev`"
+        if tcl_path_override:
+            home_dir = Path(tcl_path_override)
+            install_info = TclInstallInfo(
+                home=home_dir,
+                lib_dir=home_dir / "lib",
+                include_dir=home_dir / "include",
+                dyn_lib_name="tcl86t.so",
+                include_lib_name="tcl86t",
             )
-            print(f"{env['INDENT']}{NO_TCL_MSG}")
-            return False
-        print(f"{env['INDENT']}Found Tcl with pkg-config")
+            valid, msg = install_info.is_valid()
+            if not valid:
+                print(f"{env['INDENT']}Tcl not found in {home_dir}: {msg}")
+                print(f"{env['INDENT']}{NO_TCL_MSG}")
+                return False
+            print(f"{env['INDENT']}Found Tcl at specified location: " + str(install_info.home))
+            __append_tcl_compile_flags(env, install_info)
+        else:
+            try:
+                env.ParseConfig("pkg-config tcl --libs --cflags")
+            except OSError:
+                print(
+                    f"{env['INDENT']}pkg-config didn't find tcl package; try `apt-get install tcl-dev`"
+                )
+                print(f"{env['INDENT']}{NO_TCL_MSG}")
+                return False
+            print(f"{env['INDENT']}Found Tcl with pkg-config")
 
     elif sys.platform == "win32":
         if tcl_path_override:
