@@ -40,7 +40,7 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.X'
-      # TODO: install on other platforms, too
+
       - name: Setup tcl (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install tcl-dev
@@ -111,6 +111,8 @@ jobs:
     runs-on: [windows-latest]
     env:
       TCL_HOME: c:\progra~1\tcl
+      TCL_DOWNLOAD_URL: https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip
+      EXPECTED_TCL_HASH: 8999fcafab2d85473280e0bf6e390480496dfd53
 
     steps:
       - name: Checkout
@@ -132,11 +134,16 @@ jobs:
       - name: switch to VS command prompt
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: Cache Tcl build
+        id: tcl-msvc-cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.TCL_HOME }}
+          key: tcl-build-windows-${{ env.TCL_DOWNLOAD_URL }}
+
       # No easy/quick way to install TCL on Windows, so we download and build it ourselves.
-      - name: build and install Tcl
-        env:
-          TCL_DOWNLOAD_URL: https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip
-          EXPECTED_TCL_HASH: 8999fcafab2d85473280e0bf6e390480496dfd53
+      - name: download, build and install Tcl
+        if: steps.tcl-msvc-cache.outputs.cache-hit != 'true'
         run: |
           (new-object System.Net.WebClient).DownloadFile($Env:TCL_DOWNLOAD_URL, 'tcl8613-src.zip')
           # check that the file hash matches what we expect
