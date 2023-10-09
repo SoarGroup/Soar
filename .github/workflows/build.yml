@@ -147,15 +147,15 @@ jobs:
 
           Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
           cd tcl8613-src\tcl8.6.13\win
-          &nmake /D -f makefile.vc release install INSTALLDIR="$env:TCL_HOME"
+          # Build and install must be done in two steps: https://core.tcl-lang.org/tcl/tktview/aa6e42643794ecff2f3508d7306c702baf4f4c0f
+          nmake /D /f makefile.vc INSTALLDIR="$env:TCL_HOME"
           if ($lastexitcode -ne 0) {
-             throw "nmake exit code: $lastexitcode"
+             throw "nmake build exit code: $lastexitcode"
           }
-
-          # temporary fix for https://core.tcl-lang.org/tcl/tktview/aa6e42643794ecff2f3508d7306c702baf4f4c0f;
-          # install target doesn't copy tclsh86t.exe to the bin directory for some reason
-          $tclsh = (Get-ChildItem -Filter tclsh86t.exe -Recurse -ErrorAction SilentlyContinue -Force)[0]
-          Copy-Item $tclsh.FullName -Destination "$env:TCL_HOME\bin"
+          nmake /D /f makefile.vc INSTALLDIR="$env:TCL_HOME" install
+          if ($lastexitcode -ne 0) {
+             throw "nmake install exit code: $lastexitcode"
+          }
 
       - name: build
         env:
