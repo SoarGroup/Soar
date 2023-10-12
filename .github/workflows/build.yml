@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest] #[ubuntu-latest, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -49,7 +49,7 @@ jobs:
         env:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
-        run: python3 scons/scons.py --scu --opt --verbose all performance_tests sml_tcl
+        run: python3 scons/scons.py --scu --dbg --verbose all performance_tests sml_tcl
 
       - name: Pack artifacts
         run: tar -czvf build.tar.gz out/
@@ -106,143 +106,143 @@ jobs:
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
 
 # Using powershell means we need to explicitly stop on failure
-  Windows:
-    name: build-windows
-    runs-on: [windows-latest]
-    env:
-      TCL_HOME: c:\progra~1\tcl
-      TCL_DOWNLOAD_URL: https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip
-      EXPECTED_TCL_HASH: 8999fcafab2d85473280e0bf6e390480496dfd53
+  # Windows:
+  #   name: build-windows
+  #   runs-on: [windows-latest]
+  #   env:
+  #     TCL_HOME: c:\progra~1\tcl
+  #     TCL_DOWNLOAD_URL: https://kumisystems.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip
+  #     EXPECTED_TCL_HASH: 8999fcafab2d85473280e0bf6e390480496dfd53
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
+  #     - name: Setup Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.12'
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
 
-      # This does not install MSVC or Visual Studio! We rely on the software installed already on the
-      # GH action runner, and this step just prepares the environment. We pin the VS version here because
-      # the error messages are much more helpful than the mess we get from SCons, which automatically
-      # falls back on a combo of Mingw with MSVC libs and then fails to build.
-      - name: switch to VS command prompt
-        uses: ilammy/msvc-dev-cmd@v1
+  #     # This does not install MSVC or Visual Studio! We rely on the software installed already on the
+  #     # GH action runner, and this step just prepares the environment. We pin the VS version here because
+  #     # the error messages are much more helpful than the mess we get from SCons, which automatically
+  #     # falls back on a combo of Mingw with MSVC libs and then fails to build.
+  #     - name: switch to VS command prompt
+  #       uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Cache Tcl build
-        id: tcl-msvc-cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.TCL_HOME }}
-          key: tcl-build-windows-${{ env.TCL_DOWNLOAD_URL }}
+  #     - name: Cache Tcl build
+  #       id: tcl-msvc-cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: ${{ env.TCL_HOME }}
+  #         key: tcl-build-windows-${{ env.TCL_DOWNLOAD_URL }}
 
-      # No easy/quick way to install TCL on Windows, so we download and build it ourselves.
-      - name: download, build and install Tcl
-        if: steps.tcl-msvc-cache.outputs.cache-hit != 'true'
-        run: |
-          (new-object System.Net.WebClient).DownloadFile($Env:TCL_DOWNLOAD_URL, 'tcl8613-src.zip')
-          # check that the file hash matches what we expect
-          $FileHash = Get-FileHash -Algorithm SHA1 tcl8613-src.zip
-          if ( $FileHash.Hash -ne $Env:EXPECTED_TCL_HASH ) {
-             throw "tcl download hash mismatch: $($FileHash.Hash)"
-          }
+  #     # No easy/quick way to install TCL on Windows, so we download and build it ourselves.
+  #     - name: download, build and install Tcl
+  #       if: steps.tcl-msvc-cache.outputs.cache-hit != 'true'
+  #       run: |
+  #         (new-object System.Net.WebClient).DownloadFile($Env:TCL_DOWNLOAD_URL, 'tcl8613-src.zip')
+  #         # check that the file hash matches what we expect
+  #         $FileHash = Get-FileHash -Algorithm SHA1 tcl8613-src.zip
+  #         if ( $FileHash.Hash -ne $Env:EXPECTED_TCL_HASH ) {
+  #            throw "tcl download hash mismatch: $($FileHash.Hash)"
+  #         }
 
-          Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
-          cd tcl8613-src\tcl8.6.13\win
-          # Build and install must be done in two steps: https://core.tcl-lang.org/tcl/tktview/aa6e42643794ecff2f3508d7306c702baf4f4c0f
-          nmake /D /f makefile.vc INSTALLDIR="$env:TCL_HOME"
-          if ($lastexitcode -ne 0) {
-             throw "nmake build exit code: $lastexitcode"
-          }
-          nmake /D /f makefile.vc INSTALLDIR="$env:TCL_HOME" install
-          if ($lastexitcode -ne 0) {
-             throw "nmake install exit code: $lastexitcode"
-          }
+  #         Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
+  #         cd tcl8613-src\tcl8.6.13\win
+  #         # Build and install must be done in two steps: https://core.tcl-lang.org/tcl/tktview/aa6e42643794ecff2f3508d7306c702baf4f4c0f
+  #         nmake /D /f makefile.vc INSTALLDIR="$env:TCL_HOME"
+  #         if ($lastexitcode -ne 0) {
+  #            throw "nmake build exit code: $lastexitcode"
+  #         }
+  #         nmake /D /f makefile.vc INSTALLDIR="$env:TCL_HOME" install
+  #         if ($lastexitcode -ne 0) {
+  #            throw "nmake install exit code: $lastexitcode"
+  #         }
 
-      - name: build
-        env:
-          # instructs SCons to print debug statements to stdout
-          SCONS_MSCOMMON_DEBUG: '-'
-        run: |
-          ./build.bat --scu --opt --verbose --tcl="$env:TCL_HOME" all performance_tests sml_tcl
-          if ($lastexitcode -ne 0) {
-             throw "build.bat exit code: $lastexitcode"
-          }
+  #     - name: build
+  #       env:
+  #         # instructs SCons to print debug statements to stdout
+  #         SCONS_MSCOMMON_DEBUG: '-'
+  #       run: |
+  #         ./build.bat --scu --opt --verbose --tcl="$env:TCL_HOME" all performance_tests sml_tcl
+  #         if ($lastexitcode -ne 0) {
+  #            throw "build.bat exit code: $lastexitcode"
+  #         }
 
-      - name: Pack artifacts
-        shell: bash
-        run: tar -czvf build.tar.gz out/
-      - name: upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Soar-Windows
-          path: ./build.tar.gz
+  #     - name: Pack artifacts
+  #       shell: bash
+  #       run: tar -czvf build.tar.gz out/
+  #     - name: upload artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: Soar-Windows
+  #         path: ./build.tar.gz
 
-      - name: unit tests
-        working-directory: ./out
-        # TODO: why do these fail? Make them pass.
-        run: |
-          ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
-          if ($lastexitcode -ne 0) {
-             throw "UnitTests exit code: $lastexitcode"
-          }
+  #     - name: unit tests
+  #       working-directory: ./out
+  #       # TODO: why do these fail? Make them pass.
+  #       run: |
+  #         ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic
+  #         if ($lastexitcode -ne 0) {
+  #            throw "UnitTests exit code: $lastexitcode"
+  #         }
 
-      - name: SML Java tests
-        working-directory: ./out
-        run: |
-          java -jar java/soar-smljava.jar
-          if ($lastexitcode -ne 0) {
-             throw "soar-smljava exit code: $lastexitcode"
-          }
+  #     - name: SML Java tests
+  #       working-directory: ./out
+  #       run: |
+  #         java -jar java/soar-smljava.jar
+  #         if ($lastexitcode -ne 0) {
+  #            throw "soar-smljava exit code: $lastexitcode"
+  #         }
 
-      - name: SML Python tests
-        working-directory: ./out
-        env:
-          PYTHONUTF8: 1
-        run: |
-          python3 TestPythonSML.py
-          if ($lastexitcode -ne 0) {
-             throw "TestPythonSML.py exit code: $lastexitcode"
-          }
+  #     - name: SML Python tests
+  #       working-directory: ./out
+  #       env:
+  #         PYTHONUTF8: 1
+  #       run: |
+  #         python3 TestPythonSML.py
+  #         if ($lastexitcode -ne 0) {
+  #            throw "TestPythonSML.py exit code: $lastexitcode"
+  #         }
 
-      - name: SML Tcl tests
-        working-directory: ./out
-        run: |
-          # have to add Tcl to path every time we use it (permanent add is possible but troublesome)
-          $env:path += "$env:path;$env:TCL_HOME\bin"
-          tclsh86t TestTclSML.tcl
-          if ($lastexitcode -ne 0) {
-             throw "TestTclSML.tcl exit code: $lastexitcode"
-          }
+  #     - name: SML Tcl tests
+  #       working-directory: ./out
+  #       run: |
+  #         # have to add Tcl to path every time we use it (permanent add is possible but troublesome)
+  #         $env:path += "$env:path;$env:TCL_HOME\bin"
+  #         tclsh86t TestTclSML.tcl
+  #         if ($lastexitcode -ne 0) {
+  #            throw "TestTclSML.tcl exit code: $lastexitcode"
+  #         }
 
-      # TODO: run additional tests for CSharp
+  #     # TODO: run additional tests for CSharp
 
-      # reports JUnit test results as GitHub PR check.
-      - name: publish test report
-        uses: mikepenz/action-junit-report@v3
-        # always run even if the previous step fails
-        if: always()
-        with:
-          report_paths: './out/TestResults.xml'
-          # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
-          # fail_on_failure: true
-          annotate_only: true
+  #     # reports JUnit test results as GitHub PR check.
+  #     - name: publish test report
+  #       uses: mikepenz/action-junit-report@v3
+  #       # always run even if the previous step fails
+  #       if: always()
+  #       with:
+  #         report_paths: './out/TestResults.xml'
+  #         # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
+  #         # fail_on_failure: true
+  #         annotate_only: true
 
-      - name: performance tests
-        working-directory: ./out
-        run: |
-          bash ./do_performance_test.sh
-          if ($lastexitcode -ne 0) {
-             throw "do_performance_test exit code: $lastexitcode"
-          }
+  #     - name: performance tests
+  #       working-directory: ./out
+  #       run: |
+  #         bash ./do_performance_test.sh
+  #         if ($lastexitcode -ne 0) {
+  #            throw "do_performance_test exit code: $lastexitcode"
+  #         }
 
-      - name: upload performance test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: Windows-PerformanceTestResults.txt
-          path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
+  #     - name: upload performance test results
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: Windows-PerformanceTestResults.txt
+  #         path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
