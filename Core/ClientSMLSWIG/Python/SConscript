@@ -2,11 +2,10 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import distutils.sysconfig as sysconfig
-import os, os.path, sys
-import SCons.Script
-from ast import literal_eval
-from subprocess import check_output
+import sysconfig
+import os
+import os.path
+import sys
 
 Import('env')
 clone = env.Clone()
@@ -16,26 +15,14 @@ if GetOption('nosvs'):
     clone['SWIGFLAGS'].append('-DNO_SVS')
 python_sml_alias = clone['SML_PYTHON_ALIAS']
 
-python_exe = GetOption('python')
+inc_path = sysconfig.get_path('include')
 if os.name == 'nt':
-    commands = ("distutils.sysconfig.get_python_inc()",
-                "os.path.join(distutils.sysconfig.get_config_vars('BINDIR')[0], 'libs')",
-                "'python' + distutils.sysconfig.get_config_vars('VERSION')[0]")
+    lib_path = os.path.join(sysconfig.get_config_vars('BINDIR')[0], 'libs')
+    pylib = 'python' + sysconfig.get_config_vars('VERSION')[0]
 else:
-    commands = ("distutils.sysconfig.get_python_inc()",
-                "distutils.sysconfig.get_config_vars('LIBDIR')",
-                "distutils.sysconfig.get_config_vars('LIBRARY')[0]")
-command = """
-import distutils.sysconfig;
-import os.path;
-print(tuple([{}]));
-""".format(", ".join(commands))
-
+    lib_path = sysconfig.get_config_vars('LIBDIR')[0]
+    pylib = sysconfig.get_config_vars('LIBRARY')[0]
 lib_install_dir = clone['OUT_DIR']
-inc_path, lib_path, pylib = literal_eval(check_output((python_exe, "-c", command)).decode())
-
-if isinstance(lib_path, list):
-    lib_path = lib_path[0]
 
 clone.Append(CPPPATH = inc_path, LIBPATH = lib_path, LIBS = pylib)
 
