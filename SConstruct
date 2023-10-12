@@ -152,6 +152,10 @@ env = Environment(
     OUT_DIR=os.path.realpath(GetOption('outdir')),
     TCL_PATH = GetOption('tcl'),
     TCL_SUFFIX = GetOption('tcl_suffix'),
+    # We fail the build immediately if Tcl cannot be loaded but was specifically requested.
+    # This is done because the Tcl build is super fragile and it's easy to accidentally
+    # build without it.
+    TCL_REQUIRED = 'tclsoarlib' in COMMAND_LINE_TARGETS or 'sml_tcl' in COMMAND_LINE_TARGETS,
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
 	JAVAVERSION='11.0',

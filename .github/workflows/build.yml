@@ -49,7 +49,7 @@ jobs:
         env:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
-        run: python3 scons/scons.py --scu --opt --verbose all performance_tests
+        run: python3 scons/scons.py --scu --opt --verbose all performance_tests sml_tcl
 
       - name: Pack artifacts
         run: tar -czvf build.tar.gz out/
@@ -169,7 +169,7 @@ jobs:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
         run: |
-          ./build.bat --scu --opt --verbose --tcl="$env:TCL_HOME" all performance_tests
+          ./build.bat --scu --opt --verbose --tcl="$env:TCL_HOME" all performance_tests sml_tcl
           if ($lastexitcode -ne 0) {
              throw "build.bat exit code: $lastexitcode"
           }

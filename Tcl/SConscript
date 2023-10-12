@@ -13,6 +13,8 @@ LIB_NAME = 'tclsoarlib'
 
 if clone.PrepareForCompilingWithTcl(clone["TCL_PATH"], clone["TCL_SUFFIX"]):
     print(f'{env["INDENT"]}TclSoarLib is buildable')
+elif clone['TCL_REQUIRED']:
+    raise ValueError('Tcl was requested by user explicitly, but Tcl is not available')
 else:
     print(f'{env["INDENT"]}TclSoarLib is *not* buildable')
     Return()
