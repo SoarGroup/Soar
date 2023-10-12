@@ -46,7 +46,7 @@ print(f"   SWIG:              {SML_PYTHON_ALIAS} {SML_TCL_ALIAS} {SML_JAVA_ALIAS
 print(f"   Extras:            debugger* headers* {COMPILE_DB_ALIAS}* tclsoarlib {MSVS_ALIAS} list")
 print("Custom Settings available:                                              *default")
 print("   Build Type:        --dbg, --opt*, --static")
-print("   Custom Paths:      --out, --build, --tcl")
+print("   Custom Paths:      --out, --build, --tcl, --tcl-suffix")
 print("   Compilation time:  --no-svs, --scu*, --no-scu, --no-scu-kernel, --no-scu-cli")
 print("   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags, --verbose,")
 print("Supported platforms are 64-bit Windows, Linux, and macOS (Intel and ARM)")
@@ -133,7 +133,8 @@ AddOption('--scu', action='store_true', dest='scu', default=True, help='Build us
 AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR', help='Directory to install binaries. Defaults to "out".')
 AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR', help='Directory to store intermediate (object) files. Defaults to "build".')
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable; defaults to same executable used to run SCons')
-AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Active TCL (>= 8.6) libraries')
+AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Path to Tcl installation (ActiveTcl or otherwise)')
+AddOption('--tcl-suffix', action='store', type='string', dest='tcl_suffix', default="t", nargs=1, help='Tcl binary suffix (defaults to "t", which is used to indicate full threading support in the standard Tcl build)')
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Enable debug build.  Disables compiler optimizations, includes debugging symbols, debug trace statements and assertions')
 AddOption('--opt', action='store_false', dest='dbg', default=False, help='Enable optimized build.  Enables compiler optimizations, removes debugging symbols, debug trace statements and assertions')
@@ -149,6 +150,8 @@ env = Environment(
     NO_SCU_CLI=GetOption('no_scu_cli'),
     BUILD_DIR=GetOption('build-dir'),
     OUT_DIR=os.path.realpath(GetOption('outdir')),
+    TCL_PATH = GetOption('tcl'),
+    TCL_SUFFIX = GetOption('tcl_suffix'),
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
 	JAVAVERSION='11.0',

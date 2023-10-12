@@ -2,12 +2,8 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Mazin Assanie
 
-from dataclasses import dataclass
-from pathlib import Path
-import subprocess
 import os
 import sys
-import SCons.Script
 
 Import('env', 'InstallDir')
 clone = env.Clone()
@@ -15,7 +11,7 @@ clone = env.Clone()
 # Set up variables (some are hardcoded for now)
 LIB_NAME = 'tclsoarlib'
 
-if clone.PrepareForCompilingWithTcl(GetOption('tcl')):
+if clone.PrepareForCompilingWithTcl(clone["TCL_PATH"], clone["TCL_SUFFIX"]):
     print(f'{env["INDENT"]}TclSoarLib is buildable')
 else:
     print(f'{env["INDENT"]}TclSoarLib is *not* buildable')
