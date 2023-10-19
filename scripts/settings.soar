@@ -37,7 +37,8 @@ soar max-goal-depth 23
 # chunk allow-local-negations off
 # explain all
 # explain justifications on
-
+# turns on singleton chunks everywhere
+chunk singleton any topstate any
 #########################
 # Other Module Settings #
 #########################
