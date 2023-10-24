@@ -38,7 +38,6 @@ soar max-goal-depth 23
 # explain all
 # explain justifications on
 # turns on singleton chunks everywhere
-chunk singleton any topstate any
 #########################
 # Other Module Settings #
 #########################
