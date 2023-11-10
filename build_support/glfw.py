@@ -53,7 +53,8 @@ def __prepare_for_compilation_mac(env, local_compiled_dir=None) -> TclInstallInf
         env.ParseConfig(f"pkg-config {local_compiled_dir}/lib/pkgconfig/glfw3.pc --libs --cflags")
     except OSError as e:
         print(
-            f"{env['INDENT']}pkg-config failed: {e}"
+            f"{env['INDENT']}pkg-config failed. Don't forget to brew install glfw and "
+            f"pkg-config! Original error: {e}"
         )
         return False
 
