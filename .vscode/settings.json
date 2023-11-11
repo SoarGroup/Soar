@@ -78,7 +78,8 @@
         "chrono": "cpp",
         "compare": "cpp",
         "concepts": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "viewer.h": "c"
     },
     "openInGitHub.defaultBranch": "development",
     "[python]": {

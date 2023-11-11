@@ -478,7 +478,7 @@ void svs::input_callback()
 /*
  This is a naive implementation. If this method is called concurrently
  with proc_input, the env_inputs std::vector will probably become
- inconsistent. This eventually needs to be replaced by a thread-safe FIFO.
+ inconsistent. TODO: This eventually needs to be replaced by a thread-safe FIFO.
 */
 void svs::add_input(const std::string& in)
 {

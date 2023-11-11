@@ -76,9 +76,16 @@ void mouse_position_callback(GLFWwindow* window, int x, int y);
 void win_resize_callback(GLFWwindow* window, int w, int h);
 void win_refresh_callback(GLFWwindow* window);
 
+// call from GLFW whenever an error occurs
+void error_callback(int errorCode, const char* description) {
+	fprintf(stderr, "Error: %s (%d)\n", description, errorCode);
+}
+
 int main(int argc, char *argv[]) {
 	int i, signal_redraw;
 	thrd_t input_thread;
+
+	glfwSetErrorCallback(error_callback);
 
 	if (glfwInit() == GL_FALSE) {
 		error("Failed to init glfw");
@@ -100,12 +107,13 @@ int main(int argc, char *argv[]) {
 	if (!init_input(argc, argv))
 		exit(1);
 
-    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-    GLFWwindow* window = glfwCreateWindow(scr_width, scr_height, "SVS viewer", monitor, NULL);
+	// Don't open in full-screen by default (monitor arg is NULL)
+	GLFWwindow* window = glfwCreateWindow(scr_width, scr_height, "SVS viewer", NULL, NULL);
 	if (window == NULL)
 	{
 		error("Failed to open glfw window");
 	}
+	glfwMakeContextCurrent(window);
 
 	glfwSetWindowSizeCallback(window, win_resize_callback);
 	glfwSetWindowRefreshCallback(window, win_refresh_callback);
@@ -303,6 +311,7 @@ void draw_screen(GLFWwindow* window) {
     if (mtx_lock(&scene_lock) != thrd_success) {
         error("failed to lock scene mutex");
     }
+
 	if (curr_scene) {
 		for (i = 0; i < NLAYERS; ++i) {
 			draw_layer(curr_scene, i);
@@ -327,6 +336,7 @@ void draw_screen(GLFWwindow* window) {
 		}
 	}
 	redraw = 0;
+
     if (mtx_unlock(&scene_lock) != thrd_success) {
         error("failed to unlock scene mutex");
     }
