@@ -240,9 +240,10 @@ int qhull(real verts[], int nverts, int indexes[], int max_indexes) {
 		atexit(cleanup_qhull);
 	}
 
+
 	input = fopen(qhull_in_path, "w");
 	if (!input) {
-		perror("qhull");
+		perror("Error reading qhull input file");
 		exit(1);
 	}
 
@@ -253,13 +254,14 @@ int qhull(real verts[], int nverts, int indexes[], int max_indexes) {
 	fclose(input);
 
 	if ((ret = run_shell(qhull_cmd)) != 0) {
-		fprintf(stderr, "qhull returned with non-zero status %d\n", ret);
+		perror("qhull returned with non-zero status. "
+            "It must be installed for SVS viewer to function.");
 		exit(1);
 	}
 
 	output = fopen(qhull_out_path, "r");
 	if (!output) {
-		perror("qhull");
+		perror("Error reading qhull output file");
 		exit(1);
 	}
 
@@ -267,22 +269,22 @@ int qhull(real verts[], int nverts, int indexes[], int max_indexes) {
 	    split(readbuf, fields, 2) != 1 ||
 	    !parse_int(fields[0], &ntriangles))
 	{
-		error("unexpected qhull output");
+		error("Could not parse number of triangles in qhull output");
 	}
 
 	if (ntriangles * 3 > max_indexes) {
-		error("too many triangles in convex hull");
+		error("qhull output contains too many triangles in convex hull");
 	}
 
 	for (i = 0, k = 0; i < ntriangles; ++i) {
 		if (!fgets(readbuf, sizeof(readbuf), output) ||
 		    split(readbuf, fields, 4) != 3)
 		{
-			error("unexpected qhull output");
+			error("Failed to parse qhull triangle");
 		}
 		for (j = 2; j >= 0; --j) {   /* qhull outputs clockwise triangles */
 			if (!parse_int(fields[j], &indexes[k++])) {
-				error("unexpected qhull output");
+				error("Failed to parse qhull triangle vertex");
 			}
 		}
 	}

@@ -33,6 +33,22 @@
             }
         },
         {
+            "name": "Debug svs_viewer",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/out/svs_viewer",
+            "args": ["-s", "12122"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/out",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "osx": {
+                "MIMode": "lldb",
+                "targetArchitecture": "ARM64"
+            }
+        },
+        {
             "name": "Debug soar.dll loaded by Java",
             "type": "cppdbg",
             "request": "attach",
