@@ -71,7 +71,7 @@ void screenshot(char *path);
 
 void keyboard_callback(GLFWwindow* window, int key, int state);
 void mouse_button_callback(GLFWwindow* window, int button, int state);
-void mouse_wheel_callback(GLFWwindow* window, int pos);
+void mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_position_callback(GLFWwindow* window, int x, int y);
 void win_resize_callback(GLFWwindow* window, int w, int h);
 void win_refresh_callback(GLFWwindow* window);
@@ -213,10 +213,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int state) {
 	}
 }
 
-void mouse_wheel_callback(GLFWwindow* window, int pos) {
-	if (pos < 0) {
+void mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset) {
+	if (yoffset < 0) {
 		zoom_camera(&cam, -10);
-	} else if (pos > 0) {
+	} else if (yoffset > 0) {
 		zoom_camera(&cam, 10);
 	}
 }
