@@ -63,7 +63,7 @@ void draw_screen(GLFWwindow* window);
 void draw_layer(scene *s, int layer_num);
 void draw_labels(void);
 void draw_scene_buttons(GLuint x, GLuint y);
-int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y);
+int scene_button_hit_test(double x0, double y0, double x, double y);
 void free_geom_shape(geometry *g);
 void setup3d();
 void init_layers();
@@ -72,7 +72,7 @@ void screenshot(char *path);
 void keyboard_callback(GLFWwindow* window, int key, int state);
 void mouse_button_callback(GLFWwindow* window, int button, int state);
 void mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset);
-void mouse_position_callback(GLFWwindow* window, int x, int y);
+void mouse_position_callback(GLFWwindow* window, double x, double y);
 void win_resize_callback(GLFWwindow* window, int w, int h);
 void win_refresh_callback(GLFWwindow* window);
 
@@ -203,7 +203,7 @@ void keyboard_callback(GLFWwindow* window, int key, int state) {
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int state) {
-	int x, y;
+	double x, y;
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && state == GLFW_PRESS) {
 		glfwGetCursorPos(window, &x, &y);
@@ -221,9 +221,10 @@ void mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	}
 }
 
-void mouse_position_callback(GLFWwindow* window, int x, int y) {
-	static int ox = -1, oy = -1;
-	int shift, ctrl, dx, dy;
+void mouse_position_callback(GLFWwindow* window, double x, double y) {
+	static double ox = -1, oy = -1;
+	int shift, ctrl;
+	double dx, dy;
 
 	dx = x - ox;
 	dy = y - oy;
@@ -834,9 +835,9 @@ int delete_geoms(scene *s, char *pattern) {
 	return n;
 }
 
-int scene_button_hit_test(GLuint x0, GLuint y0, GLuint x, GLuint y) {
+int scene_button_hit_test(double x0, double y0, double x, double y) {
 	scene *p;
-	GLuint yb, w;
+	double yb, w;
 
 	for (yb = y0, p = scene_head; p; yb -= FONT_HEIGHT, p = p->next) {
 		w = strlen(p->name) * FONT_WIDTH;
