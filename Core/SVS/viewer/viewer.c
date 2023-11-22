@@ -215,9 +215,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int state) {
 
 void mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	if (yoffset < 0) {
-		zoom_camera(&cam, -10);
+		zoom_camera(&cam, -1);
 	} else if (yoffset > 0) {
-		zoom_camera(&cam, 10);
+		zoom_camera(&cam, 1);
 	}
 }
 
