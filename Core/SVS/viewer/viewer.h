@@ -39,7 +39,7 @@ typedef struct Camera {
 typedef struct Geometry {
 	char *name;
 	int layer;
-	double line_width;
+	GLdouble line_width;
 
 	vec3 pos;
 	vec3 axis;
@@ -96,7 +96,7 @@ extern int debug;
 
 /* viewer.c */
 void pan_camera(camera *c, real x, real y);
-void rotate_camera(camera *c, int x, int y, int dx, int dy);
+void rotate_camera(camera *c, GLdouble x, GLdouble y, GLdouble dx, GLdouble dy);
 void zoom_camera(camera *c, real f);
 void pull_camera(camera *c, real z);
 void reset_camera(camera *c, int key);
@@ -130,7 +130,7 @@ void proc_input(void *unused);
 
 /* text.c */
 void init_font(void);
-void draw_text(char *s, int x, int y);
+void draw_text(char *s, GLdouble x, GLdouble y);
 
 /* util.c */
 void error(const char *msg);

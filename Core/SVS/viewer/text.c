@@ -108,7 +108,7 @@ void init_font()
 {
 	int nchars;
 	GLuint i;
-	
+
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	font_offset = glGenLists (128);
 	nchars = sizeof(font) / sizeof(font[0]);
@@ -119,8 +119,8 @@ void init_font()
 	}
 }
 
-void draw_text(char *s, int x, int y) {
-	glRasterPos2i(x, y);
+void draw_text(char *s, GLdouble x, GLdouble y) {
+	glRasterPos2d(x, y);
 	glPushAttrib (GL_LIST_BIT);
 	glListBase(font_offset);
 	glCallLists(strlen(s), GL_UNSIGNED_BYTE, (GLubyte *) s);

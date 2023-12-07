@@ -62,8 +62,8 @@ void draw_grid(void);
 void draw_screen(GLFWwindow* window);
 void draw_layer(scene *s, int layer_num);
 void draw_labels(void);
-void draw_scene_buttons(GLuint x, GLuint y);
-int scene_button_hit_test(double x0, double y0, double x, double y);
+void draw_scene_buttons(GLdouble x, GLdouble y);
+int scene_button_hit_test(GLdouble x0, GLdouble y0, GLdouble x, GLdouble y);
 void free_geom_shape(geometry *g);
 void setup3d();
 void init_layers();
@@ -71,8 +71,8 @@ void screenshot(char *path);
 
 void keyboard_callback(GLFWwindow* window, int key, int state);
 void mouse_button_callback(GLFWwindow* window, int button, int state);
-void mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset);
-void mouse_position_callback(GLFWwindow* window, double x, double y);
+void mouse_wheel_callback(GLFWwindow* window, GLdouble xoffset, GLdouble yoffset);
+void mouse_position_callback(GLFWwindow* window, GLdouble x, GLdouble y);
 void win_resize_callback(GLFWwindow* window, int w, int h);
 void win_refresh_callback(GLFWwindow* window);
 
@@ -203,7 +203,7 @@ void keyboard_callback(GLFWwindow* window, int key, int state) {
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int state) {
-	double x, y;
+	GLdouble x, y;
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && state == GLFW_PRESS) {
 		glfwGetCursorPos(window, &x, &y);
@@ -213,7 +213,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int state) {
 	}
 }
 
-void mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset) {
+void mouse_wheel_callback(GLFWwindow* window, GLdouble xoffset, GLdouble yoffset) {
 	if (yoffset < 0) {
 		zoom_camera(&cam, -1);
 	} else if (yoffset > 0) {
@@ -221,10 +221,10 @@ void mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	}
 }
 
-void mouse_position_callback(GLFWwindow* window, double x, double y) {
-	static double ox = -1, oy = -1;
+void mouse_position_callback(GLFWwindow* window, GLdouble x, GLdouble y) {
+	static GLdouble ox = -1, oy = -1;
 	int shift, ctrl;
-	double dx, dy;
+	GLdouble dx, dy;
 
 	dx = x - ox;
 	dy = y - oy;
@@ -362,16 +362,16 @@ void pan_camera(camera *c, real dx, real dy) {
 	set_redraw();
 }
 
-void rotate_camera(camera *c, int x, int y, int dx, int dy) {
+void rotate_camera(camera *c, GLdouble x, GLdouble y, GLdouble dx, GLdouble dy) {
 	int lastx, lasty;
-	double p1x, p1y, p2x, p2y, q1[4], q2[4];
+	GLdouble p1x, p1y, p2x, p2y, q1[4], q2[4];
 
 	lastx = x - dx;
 	lasty = y - dy;
-	p1x = (2.0 * lastx - scr_width) / (double) scr_width;
-	p1y = (scr_height - 2.0 * lasty) / (double) scr_height;
-	p2x = (2.0 * x - scr_width) / (double) scr_width;
-	p2y = (scr_height - 2.0 * y) / (double) scr_height;
+	p1x = (2.0 * lastx - scr_width) / (GLdouble) scr_width;
+	p1y = (scr_height - 2.0 * lasty) / (GLdouble) scr_height;
+	p2x = (2.0 * x - scr_width) / (GLdouble) scr_width;
+	p2y = (scr_height - 2.0 * y) / (GLdouble) scr_height;
 
 	/* printf("rotate in: %g %g %g %g\n", p1x, p1y, p2x, p2y); */
 	trackball(q1, 0.8, p1x, p1y, p2x, p2y);
@@ -667,7 +667,7 @@ void setup3d() {
 
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
-	aspect = scr_width / (double) scr_height;
+	aspect = scr_width / (GLdouble) scr_height;
 	if (cam.ortho) {
 		glOrtho(-cam.orthoy * aspect, cam.orthoy * aspect, -cam.orthoy, cam.orthoy, NEAR_CLIP, FAR_CLIP );
 	} else {
@@ -755,16 +755,22 @@ void draw_labels() {
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluOrtho2D(0.0, (GLfloat) scr_width, 0.0, (GLfloat) scr_height);
+		gluOrtho2D(0.0, (GLdouble) scr_width, 0.0, (GLdouble) scr_height);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glColor3dv(geom_label_color);
 		glDisable(GL_LIGHTING);
 
 		for (g = curr_scene->geoms; g; g = g->next) {
+            // ITL-Thor ONLY!!! Skip belief object labels for now. They block the real labels.
+            if(strncmp(g->name, "bel-", strlen("bel-")) == 0) {
+                continue;
+            }
 			if (g->layer == i) {
 				gluProject(g->pos[0], g->pos[1], g->pos[2], l->last_modelview, l->last_projection, l->last_view, &wx, &wy, &wz);
-				draw_text(g->name, (int) wx, (int) wy);
+                // printf("Label original %s at %f %f %f\n", g->name, g->pos[0], g->pos[1], g->pos[2]);
+				// printf("Label %s at %f %f\n", g->name, wx, wy);
+				draw_text(g->name, wx, wy);
 			}
 		}
 	}
@@ -836,9 +842,9 @@ int delete_geoms(scene *s, char *pattern) {
 	return n;
 }
 
-int scene_button_hit_test(double x0, double y0, double x, double y) {
+int scene_button_hit_test(GLdouble x0, GLdouble y0, GLdouble x, GLdouble y) {
 	scene *p;
-	double yb, w;
+	GLdouble yb, w;
 
 	for (yb = y0, p = scene_head; p; yb -= FONT_HEIGHT, p = p->next) {
 		w = strlen(p->name) * FONT_WIDTH;
@@ -853,7 +859,7 @@ int scene_button_hit_test(double x0, double y0, double x, double y) {
 	return 0;
 }
 
-void draw_scene_buttons(GLuint x, GLuint y) {
+void draw_scene_buttons(GLdouble x, GLdouble y) {
 	scene *p;
 
 	glDisable(GL_LIGHTING);
