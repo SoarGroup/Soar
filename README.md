@@ -7,7 +7,7 @@ This is the code base for Soar, a cognitive architecture for developing systems 
 * [The Soar home page](http://soar.eecs.umich.edu/)
 * [The GitHub project page](https://github.com/SoarGroup/Soar)
 
-Note that the readme included with the Soar distribution for endusers is in the [Release-Support](https://github.com/SoarGroup/Release-Support/blob/master/txt/README) repository.
+Note that the readme included with the Soar distribution for end-users is in the [Release-Support](https://github.com/SoarGroup/Release-Support/blob/master/txt/README) repository.
 
 # Soar Builds
 
@@ -30,7 +30,7 @@ Disclaimer: These are worst case tests.  Average performance is probably much hi
 
 The instructions below are cursory and may be out of date; the most up-to-date instructions for compiling Soar from source will always be the CI build scripts. You can find them [here](.github/workflows/build.yml).
 
-To compile Soar, you will need the following:
+To compile Soar, you will need the dependencies listed below. Note that the installation commands are not complete, e.g. missing instructions for Mac do not mean that the dependency is not needed on Mac, etc.:
 
 * C/C++ compiler
     - Mac: `xcode-select --install`
@@ -42,9 +42,17 @@ To compile Soar, you will need the following:
 
 To compile the extra SML wrapper libs, you will need the following:
 
-* C# compiler (`csc`)
+* pkg-config
+    - Mac: `brew install pkg-config`
+    - Linux: `sudo apt install pkgconf`
+* SWIG
+    - Mac: `brew install swig`
+    - Linux: `sudo apt install swig`
+* Python development headers (only needed for Python wrapper)
+    - Linux: `sudo apt install python3-dev`
+* C# compiler (`csc`) (only needed for C# wrapper)
     - Mac: `brew install mono`
-* Tcl
+* Tcl (only needed for Tcl wrapper and TclSoarlib)
     - Mac: `brew install tcl-tk`
 
 The project supports generating compile_commands.json, which can be used by e.g. VSCode with the C/C++ plugin to provide IntelliSense. To generate this file, run scons with the `cdb` target:

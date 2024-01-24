@@ -2,7 +2,7 @@
 # depends on pre-installed software; see image definitions:
 #  - https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
 #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-# We use these tools from the runner images: git, gcc/XCode/MSVC, swig, Tcl/Tk on MacOS
+# We use these tools from the runner images: git, gcc/XCode/MSVC, swig, Tcl/Tk on MacOS, pkg-config
 
 # TODO: not building svs_viewer ('Cannot find GL, GLU, not building svs_viewer' and 'Cannot find opengl32, glu32, not building svs_viewer')
 # TODO: pin more dependency versions (python, swig, gcc/XCode/MSVC, etc.)
