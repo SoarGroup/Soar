@@ -47,7 +47,11 @@ void setCWDToEnv()
 {
     if (getenv("LIBSOAR") != nullptr)
     {
-        chdir(getenv("LIBSOAR"));
+        if (chdir(getenv("LIBSOAR")) != 0) {
+            std::cerr << "Could not change directory to getenv(\"LIBSOAR\") (" << getenv("LIBSOAR") << ")" << std::endl;
+            perror("chdir");
+            // no further action; tests might work fine anyway if the CWD is already correct
+        }
     }
 }
 
@@ -55,7 +59,7 @@ void printDebugInformation(std::stringstream& output, sml::Agent* agent)
 {
 	if (!agent)
 		return;
-	
+
 //	output << "============================================================" << std::endl << std::endl;
 //	output << "Debug Information" << std::endl << std::endl;
 //	output << "============================================================" << std::endl << std::endl;
@@ -94,37 +98,37 @@ namespace TestHelpers
 #ifdef __GNUG__
 
 	std::string demangle(const char* name) {
-		
+
 		int status = -1;
-		
+
 		std::unique_ptr<char, void(*)(void*)> res {
 			abi::__cxa_demangle(name, NULL, NULL, &status),
 			std::free
 		};
-		
+
 		return (status==0) ? res.get() : name ;
 	}
 
 	// VS2013 +
 #elif _MSC_VER
-	
+
 	std::string demangle(const char* name)
 	{
 		std::string result = name;
 		result = result.substr(result.find_last_of(" ")+1, std::string::npos);
-		
+
 		return result;
 	}
 
 	// Unknown
 #else
-	
+
 	// does nothing if not g++
 	std::string demangle(const char* name)
 	{
 		return name;
 	}
-	
+
 #endif
-	
+
 };

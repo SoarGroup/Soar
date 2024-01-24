@@ -194,6 +194,7 @@ if GetOption('cc') != None:
     env.Replace(CC=GetOption('cc'))
 elif sys.platform == 'darwin':
     env.Replace(CC='clang')
+
 if GetOption('cxx') != None:
     env.Replace(CXX=GetOption('cxx'))
 elif sys.platform == 'darwin':
@@ -217,6 +218,8 @@ lnflags = []
 libs = ['Soar']
 if compiler == 'g++':
     libs += [ 'pthread', 'dl', 'm' ]
+    # causes some spurious warnings; TODO: revisit and re-enable if newer compiler version fixes that
+    cflags.append('-Wno-stringop-overflow')
     if GetOption('nosvs'):
         cflags.append('-DNO_SVS')
     if GetOption('defflags'):

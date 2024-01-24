@@ -89,7 +89,7 @@ void Identity::set_operational_cond(condition* pCond, WME_Field pField)
         joined_identity->touch();
 }
 
-uint64_t    get_joined_identity_id(Identity* pIdentity)             { if (!pIdentity) return NULL_IDENTITY_SET; else return pIdentity->get_identity(); }
-Identity*   get_joined_identity(Identity* pIdentity)                { if (!pIdentity) return NULL; else return pIdentity->joined_identity;}
-uint64_t    get_joined_identity_chunk_inst_id(Identity* pIdentity)  { if (!pIdentity) return NULL_IDENTITY_SET; else return pIdentity->get_clone_identity();}
+uint64_t    get_joined_identity_id(Identity* pIdentity)             { if (!pIdentity) return NULL_IDENTIFIER_ID; else return pIdentity->get_identity(); }
+Identity*   get_joined_identity(Identity* pIdentity)                { if (!pIdentity) return NULL_IDENTITY_SET; else return pIdentity->joined_identity;}
+uint64_t    get_joined_identity_chunk_inst_id(Identity* pIdentity)  { if (!pIdentity) return NULL_IDENTIFIER_ID; else return pIdentity->get_clone_identity();}
 

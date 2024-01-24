@@ -271,14 +271,14 @@ void* Memory_Manager::allocate_memory(size_t size, int usage_code)
     if (p == NULL)
     {
         char msg[BUFFER_MSG_SIZE];
-        SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %zu bytes of memory.\n", size);
+        SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmemory_manager.cpp: Error:  Tried but failed to allocate %zu bytes of memory.\n", size);
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error_noagent(msg);
     }
     if (reinterpret_cast<uintptr_t>(p) & 3)
     {
         char msg[BUFFER_MSG_SIZE];
-        strncpy(msg, "\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n", BUFFER_MSG_SIZE);
+        strncpy(msg, "\nmemory_manager.cpp: Error:  Memory allocator returned an address that's not a multiple of 4.\n", BUFFER_MSG_SIZE);
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error_noagent(msg);
     }
