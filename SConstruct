@@ -216,14 +216,26 @@ Export('compiler', 'lsb_build')
 cflags = []
 lnflags = []
 libs = ['Soar']
+
+# Enable all the warnings! These are very thorough and need to be disabled for parts we don't control,
+# like the SWIG-generated code.
+# TODO: /WX on windows, -Werror on linux to fail the build on warnings
+if compiler == "msvc":
+    cflags.append('/W4')
+else:
+    # TODO: enable -Wextra
+    cflags.extend(['-Wall'])
+
+    # warning doesn't exist in clang
+    if sys.platform != 'darwin':
+        # causes some spurious warnings; TODO: revisit and re-enable if newer compiler version fixes that
+        cflags.append('-Wno-stringop-overflow')
+
 if compiler == 'g++':
     libs += [ 'pthread', 'dl', 'm' ]
-    # causes some spurious warnings; TODO: revisit and re-enable if newer compiler version fixes that
-    cflags.append('-Wno-stringop-overflow')
     if GetOption('nosvs'):
         cflags.append('-DNO_SVS')
     if GetOption('defflags'):
-        cflags.append('-Wreturn-type')
         if env['DEBUG']:
             cflags.extend(['-g'])
         else:
@@ -257,7 +269,7 @@ if compiler == 'g++':
             cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 
 elif compiler == 'msvc':
-    cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
+    cflags.extend(['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/bigobj'])
     if GetOption('nosvs'):
         cflags.extend(' /D NO_SVS'.split())
     if GetOption('defflags'):
