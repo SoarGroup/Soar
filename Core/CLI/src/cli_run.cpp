@@ -142,6 +142,9 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
     thisAgent->Decider->before_run();
     runResult = pScheduler->RunScheduledAgents(forever, runType, count, runFlags, interleave, synchronizeAtStart) ;
 
+    std::cerr << "Agent after running: " << thisAgent->name << std::endl;
+    std::cerr << "Agent is null? " << (thisAgent == nullptr) << std::endl;
+
     // Reset goal retraction stop flag after any run
     thisAgent->substate_break_level = 0;
 

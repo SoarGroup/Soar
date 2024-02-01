@@ -338,6 +338,7 @@ void xml_begin_command_mode(agent* pAgent)
     if (!pAgent || !pAgent->xml_trace || !pAgent->xml_commands)
     {
         assert(pAgent);
+        std::cerr << "xml_begin_command_mode messup in agent " << pAgent->name << std::endl;
         assert(pAgent->xml_trace);
         assert(pAgent->xml_commands);
         return;

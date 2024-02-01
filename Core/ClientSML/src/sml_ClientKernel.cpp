@@ -1218,6 +1218,13 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
     AnalyzeXML response;
     bool wantRawOutput = true ;
 
+    if (pAgentName != nullptr) {
+        std::cerr << "sml_ClientKernel.cpp: ExecuteCommandLine: " << pCommandLine << " on agent " << pAgentName << std::endl;
+    }
+    else {
+        std::cerr << "sml_ClientKernel.cpp: ExecuteCommandLine (agent null): " << pCommandLine << std::endl;
+    }
+    // std::cerr << "sml_ClientKernel.cpp: ExecuteCommandLine: " << pCommandLine << std::endl ;
     // Send the command line to the kernel
     m_CommandLineSucceeded = GetConnection()->SendAgentCommand(&response,
                              sml_Names::kCommand_CommandLine, pAgentName,
@@ -1386,7 +1393,7 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
     Agent* pFirstAgent = GetAgentByIndex(0) ;
 
     // Execute the run command.
-    char const* pResult = ExecuteCommandLine(cmd.c_str(), pFirstAgent->GetAgentName()) ;
+    char const* pResult = ExecuteCommandLine(cmd.c_str(), nullptr) ;
     return pResult ;
 }
 

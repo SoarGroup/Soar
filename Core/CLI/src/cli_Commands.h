@@ -1213,6 +1213,7 @@ namespace cli
                         return cli.SetError("Count must be positive.");
                     }
                 }
+                std::cerr << "Got here! 1" << std::endl;
 
                 return cli.DoRun(options, count, interleaveMode);
             }
