@@ -255,7 +255,7 @@ public abstract class AbstractView implements AgentFocusListener
      * Execute a command (send it to Soar) and display the output in a manner
      * appropriate to this view.
      *
-     * @param Command
+     * @param command
      *            The command line to execute
      * @param echoCommand
      *            If true, display the command in the output window as well.
@@ -337,7 +337,7 @@ public abstract class AbstractView implements AgentFocusListener
      * @param wrap
      *            If true after reaching the bottom, continue search from the
      *            top
-     * @param searchHidden
+     * @param searchHiddenText
      *            If true and this view has hidden text (e.g. unexpanded tree
      *            nodes) search that text
      *

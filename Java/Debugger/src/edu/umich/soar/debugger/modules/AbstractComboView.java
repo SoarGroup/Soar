@@ -597,7 +597,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
      * Execute a command (send it to Soar) and display the output in a manner
      * appropriate to this view.
      *
-     * @param Command
+     * @param command
      *            The command line to execute
      * @param echoCommand
      *            If true, display the command in the output window as well.

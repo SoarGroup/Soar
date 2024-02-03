@@ -22,7 +22,7 @@ import java.util.List;
  ********************************************************************************************/
 public class FrameList
 {
-    private List<MainFrame> m_List = new ArrayList<>();
+    private final List<MainFrame> m_List = new ArrayList<>();
 
     public int size()
     {

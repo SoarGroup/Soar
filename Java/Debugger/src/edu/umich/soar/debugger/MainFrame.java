@@ -383,9 +383,6 @@ public class MainFrame
      *
      * Close the window when the close box is clicked.
      *
-     * @param e
-     *            Window closing event
-     *
      **************************************************************************/
     private void thisWindowClosing()
     {
