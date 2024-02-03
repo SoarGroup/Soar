@@ -393,14 +393,14 @@ public class MainFrame
         m_bClosing = true;
 
         // Need to explicitly release the focus which in turn will cause any
-        // listeners to unregister from this agent (is its still alive).
+        // listeners to unregister from this agent (if it's still alive).
         // Otherwise our listeners will
         // still be registered and will try to display output in windows that
         // are disposed.
         // This has the potential to deadlock (waiting to issue unregister calls
         // while we're running) so we put
         // it in a separate thread to avoid that.
-        Thread clearFocus = new Thread(() -> clearAgentFocus(false));
+        Thread clearFocus = new Thread(() -> clearAgentFocus(true));
         clearFocus.start();
 
         // DJP: Experiment
