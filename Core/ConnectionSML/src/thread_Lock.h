@@ -4,7 +4,7 @@
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : October 2004
 //
-// Locks a section of code so that only one thread can be executing in it
+// Recursively locks a section of code so that only one thread can be executing in it
 // at a time.
 //
 // Use it like this:
@@ -47,8 +47,8 @@ namespace soar_thread
     class Lock ;
     class ConditionalLock ;
     class OSSpecificMutex ;
-    
-// The more primitive mutex class which does the work for the Lock class.
+
+// The more primitive reentrant mutex class which does the work for the Lock class.
 // You create one of these in the object that requires locking
 // and then create "lock" objects as necessary to actually do the locking.
 // This is safer than exposing the "Lock" and "Unlock" methods which is
@@ -58,26 +58,26 @@ namespace soar_thread
     {
             friend class Lock ;
             friend class ConditionalLock ;
-            
+
         protected:
             // OS specific implementation
             OSSpecificMutex*    m_Imp ;
-            
+
         public:
             Mutex() ;
             ~Mutex() ;
-            
+
         protected:
             void Lock() ;
             void Unlock() ;
             bool TryToLock() ;
     } ;
-    
+
     class Lock
     {
         protected:
             Mutex* m_Mutex ;
-            
+
         public:
             // When the lock object is created, we lock the mutex.
             // The lock is released when the lock object is destroyed.
@@ -86,7 +86,7 @@ namespace soar_thread
                 m_Mutex = mutex ;
                 m_Mutex->Lock() ;
             }
-            
+
             // If you require a finer level of control you can manually lock
             // and unlock the mutex at specific points, but for many simple uses
             // this is not required.
@@ -98,14 +98,14 @@ namespace soar_thread
             {
                 m_Mutex->Lock() ;
             }
-            
+
             // Destroy the lock, unlocking the underlying mutex.
             ~Lock()
             {
                 m_Mutex->Unlock() ;
             }
     } ;
-    
+
 // This version of the Lock class allows a user to determine
 // whether we'll get the lock or not and behave accordingly.
 // It can be useful in certain situations.  If in doubt, just use the "Lock" class.
@@ -113,13 +113,13 @@ namespace soar_thread
     {
         protected:
             Mutex* m_Mutex ;
-            
+
         public:
             ConditionalLock()
             {
                 m_Mutex = 0 ;
             }
-            
+
             // Attempt to get a lock on the mutex.
             // This call will not block, but will return true if
             // the lock is achieved and false if not.
@@ -131,18 +131,18 @@ namespace soar_thread
                 {
                     return false ;
                 }
-                
+
                 // Try to obtain the lock
                 if (!mutex->TryToLock())
                 {
                     return false ;
                 }
-                
+
                 // Record the mutex that we're using
                 m_Mutex = mutex ;
                 return true ;
             }
-            
+
             ~ConditionalLock()
             {
                 if (m_Mutex)
@@ -151,7 +151,7 @@ namespace soar_thread
                 }
             }
     } ;
-    
+
 } // Namespace
 
 #endif // THREAD_LOCK_H
