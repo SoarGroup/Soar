@@ -217,16 +217,24 @@ cflags = []
 lnflags = []
 libs = ['Soar']
 
-# Enable all the warnings! These are very thorough and need to be disabled for parts we don't control,
-# like the SWIG-generated code.
-# TODO: /WX on windows, -Werror on linux to fail the build on warnings
+# TODO: Enabling all the warnings is a WIP! These are very thorough and need to be disabled for
+# parts we don't control, like the SWIG-generated code.
 if compiler == "msvc":
-    cflags.append('/W4')
+    pass
+    # show all warnings
+    # cflags.append('/W4')
+    # treat warnings as errors
+    # cflags.append('/WX')
 else:
-    # TODO: enable -Wextra
-    cflags.extend(['-Wall'])
+    # show all warnings
+    # cflags.extend(['-Wall'])
+    # treat warnings as errors
+    # cflags.extend(['-Werror'])
 
-    # warning doesn't exist in clang
+    # We're starting with something simple. We'll add more as we go.
+    cflags.append('-Wunused-variable')
+
+    # warning doesn't exist in Apple's clang
     if sys.platform != 'darwin':
         # causes some spurious warnings; TODO: revisit and re-enable if newer compiler version fixes that
         cflags.append('-Wno-stringop-overflow')
