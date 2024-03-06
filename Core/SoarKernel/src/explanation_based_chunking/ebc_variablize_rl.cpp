@@ -53,7 +53,7 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
         return NULL;
     }
 
-    tc_number lti_link_tc = get_new_tc_number(thisAgent);
+    get_new_tc_number(thisAgent);
     sti_variablize_rhs_symbol(rhs->id, false);
     sti_variablize_rhs_symbol(rhs->attr, false);
     sti_variablize_rhs_symbol(rhs->value, false);

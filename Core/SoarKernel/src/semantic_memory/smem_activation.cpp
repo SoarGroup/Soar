@@ -777,7 +777,6 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     ////////////////////////////////////////////////////////////////////////////
     timers->spreading->start();
     ////////////////////////////////////////////////////////////////////////////
-    uint64_t count = 0;
     std::map<uint64_t,std::list<std::pair<uint64_t,double>>*> lti_trajectories;
     timers->spreading_wma_3->start();
     batch_invalidate_from_lti();
@@ -864,8 +863,6 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     ////////////////////////////////////////////////////////////////////////////
     soar_module::sqlite_statement* add_fingerprint = SQL->add_fingerprint;
     soar_module::sqlite_statement* select_fingerprint = SQL->select_fingerprint;
-    soar_module::sqlite_statement* add_uncommitted_fingerprint = SQL->add_uncommitted_fingerprint;
-    soar_module::sqlite_statement* remove_fingerprint_reversal = SQL->remove_fingerprint_reversal;
     for (std::set<uint64_t>::iterator it = smem_context_additions->begin(); it != smem_context_additions->end(); ++it)
     {//Now we add the walks/traversals we've done. //can imagine doing this as a batch process through a join on a list of the additions if need be.
         select_fingerprint->bind_int(1,(*it));
@@ -909,6 +906,8 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     ////////////////////////////////////////////////////////////////////////////
     timers->spreading_3->stop();
     ////////////////////////////////////////////////////////////////////////////
+    //soar_module::sqlite_statement* add_uncommitted_fingerprint = SQL->add_uncommitted_fingerprint;
+    //soar_module::sqlite_statement* remove_fingerprint_reversal = SQL->remove_fingerprint_reversal;
     //for (std::set<uint64_t>::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     //{
         //add_uncommitted_fingerprint->bind_int(1,(*it));
@@ -922,8 +921,8 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     ////////////////////////////////////////////////////////////////////////////
     smem_context_additions->clear();
     soar_module::sqlite_statement* delete_old_spread = SQL->delete_old_spread;
-    soar_module::sqlite_statement* delete_old_uncommitted_spread = SQL->delete_old_uncommitted_spread;
-    soar_module::sqlite_statement* reverse_old_committed_spread = SQL->reverse_old_committed_spread;
+    // soar_module::sqlite_statement* delete_old_uncommitted_spread = SQL->delete_old_uncommitted_spread;
+    // soar_module::sqlite_statement* reverse_old_committed_spread = SQL->reverse_old_committed_spread;
     //delete_old_spread->prepare();
     std::unordered_map<uint64_t,int64_t>* spreaded_to = smem_spreaded_to;
     std::set<uint64_t>::iterator recipient_it;
@@ -995,9 +994,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     double raw_prob;
     double additional;
     double offset;
-    bool still_exists;
     double spread = 0;
-    double modified_spread = 0;
     std::set<uint64_t> pruned_candidates;
     //soar_module::sqlite_statement* list_uncommitted_spread = SQL->list_uncommitted_spread;
     soar_module::sqlite_statement* list_current_spread = SQL->list_current_spread;
@@ -1208,7 +1205,6 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 ////////////////////////////////////////////////////////////////////////////
                 SQL->act_lti_child_ct_get->bind_int(1, *candidate);
                 SQL->act_lti_child_ct_get->execute();
-                uint64_t num_edges = SQL->act_lti_child_ct_get->column_int(0);
 
                 SQL->act_lti_child_ct_get->reinitialize();
                 double modified_spread = (log(spread)-log(offset));
@@ -1312,8 +1308,6 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 spread-=raw_prob;//additional;//Now, we've adjusted the activation according to this new addition.
                 SQL->act_lti_child_ct_get->bind_int(1, *candidate);
                 SQL->act_lti_child_ct_get->execute();
-
-                uint64_t num_edges = SQL->act_lti_child_ct_get->column_int(0);
 
                 SQL->act_lti_child_ct_get->reinitialize();
                 double modified_spread = ((spread < offset) || (spread < 0)) ? (0) : (log(spread)-log(offset));

@@ -22,7 +22,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
     {
         cons* fl = rhs_value_to_funcall_list(pRhs_val);
         cons* c;
-        rhs_value lRhsValue, *lc;
+        rhs_value lRhsValue;
 
         for (c = fl->rest; c != NIL; c = c->rest)
         {
@@ -90,8 +90,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
 
 void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 {
-    cons* c;
-    test tt;
     char prefix[2];
     Symbol* lNewVariable = NULL;
     Symbol* lOldSym;

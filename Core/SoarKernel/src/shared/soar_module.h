@@ -212,7 +212,7 @@ namespace soar_module
                 T* matched_object = NULL , *current_object = NULL;
                 std::list<std::string> matched_name_list;
                 std::string current_name;
-                size_t match_pos, match_length, longest_match = 0;
+                size_t match_pos = 0;
 
                 typename std::map<std::string, T*>::iterator p;
 

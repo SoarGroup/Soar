@@ -196,7 +196,7 @@ void Explanation_Memory::print_instantiation_actions(action_record_list* pAction
     else
     {
         action_record* lAction;
-        action* rhs, *lThisAction;
+        action* rhs;
         int lActionCount = 0;
         thisAgent->outputManager->set_print_indents("");
         thisAgent->outputManager->set_print_test_format(true, false);
@@ -425,7 +425,6 @@ void Explanation_Memory::list_explained_rules(short pNumToPrint, bool pChunks, b
 
     for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
-        Symbol* d1 = it->first;
         chunk_record* d2 = it->second;
 
         if (d2->type != lRuleType) continue;

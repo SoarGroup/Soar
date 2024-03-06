@@ -223,7 +223,6 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
     m_results_match_goal_level = m_inst->match_goal_level;
     m_results_tc = get_new_tc_number(thisAgent);
     m_extra_results = m_inst->preferences_generated;
-    Identity* lNULL;
 
     for (pref = m_inst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
@@ -517,7 +516,7 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
     condition* cc;
     tc_number tc;   /* mark each id as we add a test for it, so we don't add
                      a test for the same id in two different places */
-    Symbol* idSym, *id_vrblz;
+    Symbol* idSym;
     test t;
     bool isa_goal, isa_impasse;
 
@@ -747,7 +746,6 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
 
 void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, instantiation** new_inst_list)
 {
-    preference*         pref;
     bool                lChunkValidated = true;
     bool                lRevertedChunk = false;
     condition*          l_inst_top = NULL;

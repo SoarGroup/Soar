@@ -96,7 +96,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
     rhs_quadruple rhs_funcs = pPref->rhs_func_inst_identities;
 
     condition* c;
-    cons* grounds_to_print, *locals_to_print, *negateds_to_print;
+    cons *negateds_to_print;
 
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
@@ -149,7 +149,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
     {
         backtrace_through_OSK(inst->OSK_proposal_prefs, inst->explain_depth);
     }
-    Symbol* thisID, *value;
 
     /* --- scan through conditions, collect grounds and locals --- */
     negateds_to_print = NIL;
@@ -242,9 +241,9 @@ void Explanation_Based_Chunker::trace_locals()
 {
 
     /* mvp 5-17-94 */
-    cons* c, *l_OSK_prefs;
+    cons* c;
     condition* cond;
-    preference* bt_pref, *p;
+    preference* bt_pref;
 
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {

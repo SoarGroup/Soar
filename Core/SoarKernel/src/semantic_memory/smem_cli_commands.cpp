@@ -491,7 +491,6 @@ bool SMem_Manager::CLI_remove(const char* ltms_str, std::string** err_msg, std::
     }
 
     uint64_t lti_id;
-    ltm_object* l_ltm;
 
     if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
     {
@@ -947,7 +946,6 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
                             do
                             {
-                                bool dont_consume = false;
                                 // value by type
                                 l_ltm_value = NIL;
                                 if ((lexer->current_lexeme.type == STR_CONSTANT_LEXEME)  || (lexer->current_lexeme.type == IDENTIFIER_LEXEME))
@@ -1058,11 +1056,6 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
                                 if (l_ltm_value != NIL)
                                 {
-                                    // consume
-                                    /*if (!dont_consume)
-                                    {
-                                        lexer->get_lexeme();
-                                    }*/
                                     lexer->get_lexeme();
                                     if (lexer->current_lexeme.type == L_PAREN_LEXEME)
                                     {
@@ -1094,10 +1087,6 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                     }
                                     else
                                     {
-                                        /*if (lexer->current_lexeme.type == R_PAREN_LEXEME)
-                                        {
-                                            dont_consume = true;
-                                        }*/
                                         l_ltm_value->val_lti.edge_weight = 0;
                                     }
 

@@ -729,7 +729,6 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** 
 
 void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pMatchedSym, uint64_t pInstIdentity,  tc_number tc, matched_symbol_list* var_list)
 {
-    Symbol* referent;
 
     if (pSym->is_variable())
     {
@@ -757,9 +756,6 @@ void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pM
 
 char first_letter_from_test(test t)
 {
-    cons* c;
-    char ch;
-
     if (!t) return '*';
 
     switch (t->type)

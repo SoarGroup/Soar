@@ -826,7 +826,6 @@ bool CommandLineInterface::DoFiringCounts(PrintBitset options, const int numberT
     }
     else
     {
-        bool foundProduction = false;
         bool printRL = options.test(PRINT_RL);
 
         // Print all productions if there are no other production flags set

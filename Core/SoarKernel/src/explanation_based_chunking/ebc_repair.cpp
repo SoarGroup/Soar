@@ -193,8 +193,7 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
 void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCondList, tc_number tc)
 {
     condition* lCond;
-    Symbol* highest_goal = thisAgent->bottom_goal, *lSym, *lMatchedSym;
-    test lID_test, lValue_test, lInst_ID_test, lInst_Value_test, highest_goal_test = NULL;
+    Symbol *lSym, *lMatchedSym;
 
     for (lCond = pCondList; lCond; lCond = lCond->next)
     {

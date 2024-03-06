@@ -872,7 +872,6 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
         {
             this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
         }
-        agent* thisAgent = m_pAgentSML->GetSoarAgent();
         if (m_pSourceOptions && !m_pSourceOptions->test(SOURCE_DISABLE))
         {
             PrintSourceSummary(m_NumTotalProductionsSourced, m_TotalExcisedDuringSource, m_NumTotalProductionsIgnored);

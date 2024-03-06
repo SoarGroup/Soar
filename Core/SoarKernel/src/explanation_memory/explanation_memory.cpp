@@ -157,7 +157,6 @@ void Explanation_Memory::re_init()
 
 void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
 {
-    bool lShouldRecord = false;
     if ((!m_all_enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
     {
         current_recording_chunk = NULL;

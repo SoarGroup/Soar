@@ -182,7 +182,6 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
         {
         }
 
-        const char* lCmdName = pArg1->c_str();
         if (my_param == thisAgent->Decider->params->stop_phase)
         {
             thisAgent->Decider->settings[DECIDER_STOP_PHASE] = thisAgent->Decider->params->stop_phase->get_value();

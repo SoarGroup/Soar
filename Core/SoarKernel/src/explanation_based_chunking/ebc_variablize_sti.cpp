@@ -72,7 +72,7 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
     {
         cons* fl = rhs_value_to_funcall_list(pRhs_val);
         cons* c;
-        rhs_value lRhsValue, *lc;
+        rhs_value lRhsValue;
 
         for (c = fl->rest; c != NIL; c = c->rest)
         {

@@ -172,8 +172,6 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
         path_to_base = new inst_record_list();
     }
     else {
-        int size1 = path_to_base->size();
-        int size2 = pInstPath->size();
         if (path_to_base->size() <= pInstPath->size())
         {
             return;

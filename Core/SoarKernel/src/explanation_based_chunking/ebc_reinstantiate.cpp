@@ -99,8 +99,6 @@ condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
 void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
 {
 
-    Symbol* var;
-
     if (rhs_value_is_funcall(pRhs_val))
     {
         cons* fl = rhs_value_to_funcall_list(pRhs_val);
