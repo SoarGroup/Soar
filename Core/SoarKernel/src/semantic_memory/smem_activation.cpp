@@ -36,7 +36,6 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     // get all history
     SQL->history_get->bind_int(1, pLTI_ID);
     SQL->history_get->execute();
-    bool prohibited = false;
     //int recent = 0;
     int64_t recent_time = 0;
 
@@ -296,7 +295,6 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     double spread = 0;
     double modified_spread = 0;
     double new_base;
-    double additional;
     bool already_in_spread_table = false;
     std::unordered_map<uint64_t, int64_t>* spreaded_to = smem_spreaded_to;
     if (settings->spreading->get_value() == on && spreaded_to->find(pLTI_ID) != spreaded_to->end() && (*spreaded_to)[pLTI_ID] != 0)
@@ -388,7 +386,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             double total_touches = 0;
             std::list<smem_edge_update*>::iterator edge_begin_it = edge_updates->begin();
             std::list<smem_edge_update*>::iterator edge_it;
-            bool prohibited = false;
+            // bool prohibited = false;
             double edge_update_decay = thisAgent->SMem->settings->spreading_edge_update_factor->get_value();//.99;
             for (edge_it = edge_begin_it; edge_it != edge_updates->end(); ++edge_it)
             {
@@ -485,7 +483,6 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             //After the loop of commits to the table, we then loop over thge original updates map attached to the agent to do the deletions (frees).
             std::map<uint64_t,double>::iterator updates_begin = old_edge_weight_map_for_children.begin();
             std::map<uint64_t,double>::iterator updates_it;
-            double update_sum = 0;
             soar_module::sqlite_statement* update_edge = SQL->web_update_child_edge;
             for (updates_it = updates_begin; updates_it != old_edge_weight_map_for_children.end(); ++updates_it)
             {// args are edge weight, parent lti it, child lti id.
@@ -700,12 +697,10 @@ void SMem_Manager::calc_spread_trajectories()
     attach();
     soar_module::sqlite_statement* lti_all = SQL->lti_all;
     uint64_t lti_id;
-    int j = 0;
     //smem_delete_trajectory_indices();//This is for efficiency.
     //It's super inefficient to maintain the database indexing during this batch processing
     //It's way better to delete and rebuild. However, for testing and small DBs, it's fine. I'm testing... so... it's commented for now.
     // - scijones (Yell at me if you see this.)
-    double p1 = settings->spreading_continue_probability->get_value();
     std::map<uint64_t, std::list<std::pair<uint64_t, double>>*> lti_trajectories;
     while (lti_all->execute() == soar_module::row)
     {//loop over all ltis.
@@ -949,7 +944,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     {
                         SQL->act_lti_fake_get->bind_int(1,*recipient_it);
                         SQL->act_lti_fake_get->execute();
-                        double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
+                        // double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
                         double prev_base = SQL->act_lti_fake_get->column_double(0);
                         SQL->act_lti_fake_get->reinitialize();
                         SQL->act_lti_fake_delete->bind_int(1, *recipient_it);
@@ -1047,7 +1042,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         {
             SQL->act_lti_fake_get->bind_int(1,*candidate);
             SQL->act_lti_fake_get->execute();
-            double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
+            // double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
             double prev_base = SQL->act_lti_fake_get->column_double(0);
             SQL->act_lti_fake_get->reinitialize();
             SQL->act_lti_fake_delete->bind_int(1, *candidate);

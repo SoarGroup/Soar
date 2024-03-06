@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * RemoteDialog.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Mar 16, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
@@ -26,10 +26,10 @@ import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
 
 /************************************************************************
- * 
+ *
  * Asks the user for an IP address and port to use to connect to a remote Soar
  * instance.
- * 
+ *
  ************************************************************************/
 public class RemoteDialog extends BaseDialog
 {
@@ -59,9 +59,9 @@ public class RemoteDialog extends BaseDialog
     private MainFrame m_Frame;
 
     /********************************************************************************************
-     * 
+     *
      * Create a simple dialog asking the user for input (a single string).
-     * 
+     *
      * @param parent
      *            The parent for this dialog (we'll center the dialog within
      *            this window)
@@ -85,10 +85,10 @@ public class RemoteDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the dialog -- the constructor is private because we use a static
      * method to build this.
-     * 
+     *
      ********************************************************************************************/
     private RemoteDialog(MainFrame frame, String title)
     {
@@ -144,7 +144,7 @@ public class RemoteDialog extends BaseDialog
                 | SWT.READ_ONLY);
         help
                 .setText("You can leave the IP address blank if you are connecting to a process on the same machine.  The default port number for Soar is "
-                        + Kernel.GetDefaultPort());
+                        + Kernel.GetDefaultPort() + ".");
 
         FormData form = FormDataHelper.anchorTop(0);
         group.setLayoutData(form);
@@ -159,9 +159,9 @@ public class RemoteDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog -- either successfully or cancelled.
-     * 
+     *
      ********************************************************************************************/
     protected void endDialog(boolean ok)
     {

@@ -617,7 +617,7 @@ void SMem_Manager::STM_to_LTM(Symbol* pSTI, smem_storage_type store_type, bool u
     wme_list* children = get_direct_augs_of_id(pSTI, tc);
     wme_list::iterator w;
 
-    uint64_t l_val_ID, l_LTM_ID = get_current_LTI_for_iSTI(pSTI, use_lookup, pOverwriteOldLinkToLTM);
+    uint64_t l_LTM_ID = get_current_LTI_for_iSTI(pSTI, use_lookup, pOverwriteOldLinkToLTM);
 
     // encode this level
     {

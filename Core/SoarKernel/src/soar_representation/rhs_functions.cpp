@@ -475,7 +475,7 @@ get_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 Symbol*
 set_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
-    Symbol* sym, *ltiIDSym, *returnSym;
+    Symbol* sym, *ltiIDSym;
 
     if (!args)
     {
@@ -713,8 +713,6 @@ Symbol* trim_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 */
 Symbol* string_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
-    char* symbol_to_convert;
-
     if (!args)
     {
         thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'string' function called with no arguments.\n");
@@ -1096,7 +1094,7 @@ Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, 
             Symbol* value = xmltowme_get_value(thisAgent, child, linkMap, links);
 
             // add wme
-            wme* w = soar_module::add_module_wme(thisAgent, targetId, attribute, value, false);
+            soar_module::add_module_wme(thisAgent, targetId, attribute, value, false);
             const char* link = soarxml_GetAttribute(child, "link-id");
             if (link != NULL)
             {
@@ -1128,7 +1126,7 @@ Symbol* xmltowme_from_xml(agent* thisAgent, ElementXML_Handle element, Symbol* t
         auto targetIt = linkMap.find(std::string(link.linkTo));
         if (targetIt != linkMap.end())
         {
-            wme* w = soar_module::add_module_wme(thisAgent, link.from, link.attribute, targetIt->second, false);
+            soar_module::add_module_wme(thisAgent, link.from, link.attribute, targetIt->second, false);
         }
         else
         {

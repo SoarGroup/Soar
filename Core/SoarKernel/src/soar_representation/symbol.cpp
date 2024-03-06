@@ -81,7 +81,6 @@ bool make_string_rereadable(std::string &pStr)
 {
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool is_rereadable;
-    bool has_angle_bracket;
 
     const char* pCStr = pStr.c_str();
     short pLength = pStr.size();
@@ -89,7 +88,7 @@ bool make_string_rereadable(std::string &pStr)
     soar::Lexer::determine_possible_symbol_types_for_string(pCStr, pLength,
             &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
 
-//    has_angle_bracket = pCStr[0] == '<' || pCStr[pLength - 1] == '>';
+    // bool has_angle_bracket = pCStr[0] == '<' || pCStr[pLength - 1] == '>';
 
     if ((!possible_sc)   || possible_var || possible_ic || possible_fc || possible_id || (!is_rereadable))
     {

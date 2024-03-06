@@ -67,7 +67,6 @@ extern void determine_highest_active_production_level_in_stack_apply(agent* this
 
 void abort_with_fatal_error(agent* thisAgent, const char* msg)
 {
-    FILE* f;
     const char* warning = "Soar cannot recover from this error. \nData is still available for inspection, but may be corrupt.\nYou will have to restart Soar to run an agent.\nIf a log was open, it has been closed for safety.";
 
     Output_Manager::Get_OM().printa(thisAgent, msg);
@@ -77,6 +76,7 @@ void abort_with_fatal_error(agent* thisAgent, const char* msg)
     xml_generate_error(thisAgent, msg);
     xml_generate_error(thisAgent, warning);
 
+//    FILE* f;
 //    f = fopen("soar_crash_log.txt", "w");
 //    fprintf(f, "%s", msg);
 //    fprintf(f, "%s", warning);

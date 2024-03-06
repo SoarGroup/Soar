@@ -187,8 +187,6 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
         if (lParentInst && (lParentInst->get_match_level() == match_level))
         {
             lParentInst->create_identity_paths(path_to_base);
-        } else {
-            condition_record* lCond = (*it);
         }
     }
 }
@@ -465,7 +463,6 @@ void instantiation_record::print_arch_inst_for_explanation_trace(bool isChunk, b
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        action* rhs;
         production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
 
         /* Print header */
@@ -546,7 +543,6 @@ void instantiation_record::viz_wm_instantiation(visObjectType objectType)
 
     Output_Manager* outputManager = thisAgent->outputManager;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
-    condition_record* lCond;
 
     if (conditions->empty())
     {
@@ -616,8 +612,6 @@ void instantiation_record::viz_et_instantiation(visObjectType objectType)
         int lConditionCount = 0;
         action* rhs;
         condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
         production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
 
         if (!originalProduction || !originalProduction->p_node)
@@ -646,7 +640,7 @@ void instantiation_record::viz_et_instantiation(visObjectType objectType)
         }
         outputManager->set_print_test_format(true, false);
 
-        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, objectType);
+        visualizer->viz_object_start(production_name, instantiationID, objectType);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -654,12 +648,12 @@ void instantiation_record::viz_et_instantiation(visObjectType objectType)
             ++lConditionCount;
             if (lConditionCount > 1)
             {
-                thisAgent->visualizationManager->viz_endl();
+                visualizer->viz_endl();
             }
 
             if (!lInNegativeConditions && (lCond->type == CONJUNCTIVE_NEGATION_CONDITION))
             {
-                thisAgent->visualizationManager->viz_NCC_start();
+                visualizer->viz_NCC_start();
                 lInNegativeConditions = true;
             }
 
@@ -685,7 +679,7 @@ void instantiation_record::viz_et_instantiation(visObjectType objectType)
                 if (!currentNegativeCond)
                 {
                     current_cond = current_cond->next;
-                    thisAgent->visualizationManager->viz_NCC_end();
+                    visualizer->viz_NCC_end();
                     lInNegativeConditions = false;
                 }
             } else {
@@ -698,11 +692,11 @@ void instantiation_record::viz_et_instantiation(visObjectType objectType)
         }
         if (lInNegativeConditions)
         {
-            thisAgent->visualizationManager->viz_NCC_end();
+            visualizer->viz_NCC_end();
         } else {
-            thisAgent->visualizationManager->viz_endl();
+            visualizer->viz_endl();
         }
-        thisAgent->visualizationManager->viz_seperator();
+        visualizer->viz_seperator();
 
         action_record::viz_action_list(thisAgent, actions, originalProduction, rhs, excised_production);
 
@@ -710,7 +704,7 @@ void instantiation_record::viz_et_instantiation(visObjectType objectType)
         {
             deallocate_condition_list(thisAgent, top);
         }
-        thisAgent->visualizationManager->viz_object_end(objectType);
+        visualizer->viz_object_end(objectType);
     }
 }
 

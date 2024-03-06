@@ -812,12 +812,13 @@ cons* collect_root_variables(agent* thisAgent,
 
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
+        chunk_element* lOldMatchedSym = (*it);
         found_goal_impasse_test = false;
 
         for (cond = cond_list; cond != NIL; cond = cond->next)
         {
         if (cond->type != POSITIVE_CONDITION) continue;
-        if ((cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym) &&
+        if ((cond->data.tests.id_test->eq_test->data.referent == lOldMatchedSym->variable_sym) &&
             test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
             {
                     found_goal_impasse_test = true;
@@ -826,21 +827,20 @@ cons* collect_root_variables(agent* thisAgent,
         }
         if (! found_goal_impasse_test)
         {
-            if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->inst_identity))
+            if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  lOldMatchedSym->instantiated_sym,  lOldMatchedSym->inst_identity))
             {
                 chunk_element* lNewUngroundedSym;
                 thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
-                chunk_element* lOldMatchedSym = (*it);
-                lNewUngroundedSym->variable_sym = (*it)->variable_sym;
-                lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
-                lNewUngroundedSym->inst_identity = (*it)->inst_identity;
+                lNewUngroundedSym->variable_sym = lOldMatchedSym->variable_sym;
+                lNewUngroundedSym->instantiated_sym = lOldMatchedSym->instantiated_sym;
+                lNewUngroundedSym->inst_identity = lOldMatchedSym->inst_identity;
                 ungrounded_syms->push_back(lNewUngroundedSym);
             } else {
                 // TODO: we should reject the rule entirely, not just print a warning. sp {hello-world (<s> ^results <any>)-->}
                 if (thisAgent->outputManager->settings[OM_WARNINGS])
                 {
                     thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
-                            thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
+                            thisAgent->name_of_production_being_reordered, lOldMatchedSym->variable_sym);
                     thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
                     xml_generate_warning(thisAgent, errorStr.c_str());
                 }

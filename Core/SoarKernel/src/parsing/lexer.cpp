@@ -808,7 +808,6 @@ void Lexer::addExec()
 Lexeme Lexer::get_lexeme_from_string (agent* thisAgent, const char* input)
 {
     Lexer lexer = Lexer(thisAgent, input);
-    const char * c;
     lexer.current_lexeme.lex_string = "";
     lexer.consume_whitespace_and_comments();
 

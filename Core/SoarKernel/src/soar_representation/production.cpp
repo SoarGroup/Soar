@@ -224,8 +224,6 @@ void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, cons** id_lis
 
 void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  cons** id_list, cons** var_list)
 {
-    cons* c;
-
     if (!t) return;
     add_symbol_to_tc(thisAgent, t->eq_test->data.referent, tc, id_list, var_list);
 

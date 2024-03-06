@@ -574,7 +574,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
     }
 
         production* my_template = my_template_instance->prod;
-        char first_letter;
         double init_value = 0;
         condition* cond_top, *cond_bottom;
 
@@ -988,7 +987,6 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     }
 
                     // Change value of rule
-                    Symbol* lSym = rhs_value_to_symbol(prod->action_list->referent);
                     deallocate_rhs_value(thisAgent, prod->action_list->referent);
                     prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_float_constant(new_combined), 0, 0);
 
