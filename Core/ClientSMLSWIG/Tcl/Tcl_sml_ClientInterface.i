@@ -68,7 +68,6 @@
 	static int ThreadEventProc(Tcl_Event *evPtr, int mask)
 	{
 		ThreadEvent *threadEventPtr = (ThreadEvent *)evPtr;
-		ThreadEventResult *resultPtr = threadEventPtr->resultPtr;
 		Tcl_Interp *interp = dispinterp;
 		int code;
 		char const* result;
@@ -77,8 +76,6 @@
 
 		// Check which thread we're on.
 		// I hope this is the thread I asked to be part of.
-		Tcl_ThreadId currentThread = Tcl_GetCurrentThread() ;
-
 		if (interp == NULL) {
 			code = TCL_ERROR;
 			result = "no target interp!";
@@ -110,7 +107,6 @@
 	int tcl_thread_send(Tcl_Interp* interp, Tcl_ThreadId id, Tcl_Obj* script)
 	{
 		ThreadEvent *threadEventPtr;
-		ThreadEventResult *resultPtr;
 		Tcl_ThreadId threadId = (Tcl_ThreadId) id;
 
 		// Cache the interpreter so we can find it again later
@@ -122,7 +118,7 @@
 
 		threadEventPtr = (ThreadEvent *) ckalloc(sizeof(ThreadEvent));
 		threadEventPtr->script = script;
-		resultPtr = threadEventPtr->resultPtr = NULL;
+		threadEventPtr->resultPtr = NULL;
 
 		/*
 		* Queue the event and poke the other thread's notifier.

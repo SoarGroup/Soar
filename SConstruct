@@ -232,7 +232,7 @@ else:
     # cflags.extend(['-Werror'])
 
     # We're starting with something simple. We'll add more as we go.
-    cflags.append('-Wunused-variable')
+    cflags.extend(['-Wunused-variable', '-Wreorder-ctor'])
 
     # warning doesn't exist in Apple's clang
     if sys.platform != 'darwin':

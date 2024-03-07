@@ -103,7 +103,7 @@ class InputThread : public soar_thread::Thread
         }
         bool readcmd(std::string& result)
         {
-            int nestlvl, i, n;
+            int nestlvl, n;
             std::string line;
             std::stringstream cmd;
 

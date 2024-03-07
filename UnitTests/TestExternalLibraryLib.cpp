@@ -21,7 +21,7 @@ extern "C"
     // Soar calls this when the library is loaded
     RHS_EXPORT const char *sml_InitLibrary(Kernel *pKernel, int argc, char **argv)
     {
-        int callbackId = pKernel->AddRhsFunction("test", [](smlRhsEventId id, Agent *pAgent, char const *pFunctionName, char const *pArgument)
+        pKernel->AddRhsFunction("test", [](smlRhsEventId id, Agent *pAgent, char const *pFunctionName, char const *pArgument)
                                                  { return "myLibTest"; });
         return "";
     }

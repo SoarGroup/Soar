@@ -449,6 +449,7 @@ void FullTests_Parent::testRHSHandler()
     no_agent_assertTrue(cppRhsHandlerReceived);
 
     no_agent_assertTrue(m_pKernel->RemoveRhsFunction(callback_rhs1));
+    no_agent_assertTrue(m_pKernel->RemoveRhsFunction(callback_rhs_cpp));
 
     // Re-add it without the bool that is getting popped off the stack
     no_agent_assertTrue(m_pKernel->AddRhsFunction("test-rhs", Handlers::MyRhsFunctionHandler, 0));
