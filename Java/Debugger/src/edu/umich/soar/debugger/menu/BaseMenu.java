@@ -95,6 +95,7 @@ public class BaseMenu
         // repeat all of the logic)
         item.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 action.actionPerformed(null);
@@ -130,6 +131,7 @@ public class BaseMenu
         // repeat all of the logic)
         item.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 action.setChecked(!action.isChecked(), false);

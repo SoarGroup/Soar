@@ -147,6 +147,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     }
 
     /** Layout the combo box and the main display window */
+    @Override
     protected void layoutControls()
     {
         // I'll use forms everywhere for consistency and so it's easier
@@ -193,6 +194,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
      * start to complete initialization of the abstract view.
      *
      ********************************************************************************************/
+    @Override
     public void init(MainFrame frame, Document doc, Pane parentPane)
     {
         setValues(frame, doc, parentPane);
@@ -212,6 +214,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
         {
             // Listen for key presses on the combo box so we know when the user
             // presses return
+            @Override
             public void keyPressed(KeyEvent e)
             {
                 comboKeyPressed(e);
@@ -223,6 +226,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
         // So clear the selection explicitly.
         m_CommandCombo.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 m_CommandCombo.clearSelection();
@@ -269,6 +273,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     // SWT.Traverse and then look at the detail.
     protected Listener m_Tab = new Listener()
     {
+        @Override
         public void handleEvent(Event e)
         {
             if (e.detail == SWT.TRAVERSE_TAB_NEXT)
@@ -561,6 +566,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
         restoreContent(element);
     }
 
+    @Override
     protected void updateNow()
     {
         if (m_Updating)
@@ -701,6 +707,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
         return m_CurrentCommand;
     }
 
+    @Override
     public void printEventHandler(int eventID, Object data, Agent agent,
             String message)
     {

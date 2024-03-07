@@ -87,6 +87,7 @@ public class ButtonView extends AbstractFixedView
      * "trace1", "trace2" etc.
      *
      ********************************************************************************************/
+    @Override
     public String getModuleBaseName()
     {
         return "buttons";
@@ -281,8 +282,9 @@ public class ButtonView extends AbstractFixedView
      * attached to a specific control.
      *
      *************************************************************************/
+    @Override
     protected void fillInContextMenu(Menu contextMenu, final Control control,
-            int mouseX, int mouseY)
+                                     int mouseX, int mouseY)
     {
         if (control instanceof Button)
         {
@@ -293,6 +295,7 @@ public class ButtonView extends AbstractFixedView
 
             item.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     editButton((Button) control);
@@ -303,6 +306,7 @@ public class ButtonView extends AbstractFixedView
 
             item.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     reorderButtons();
@@ -315,6 +319,7 @@ public class ButtonView extends AbstractFixedView
 
             item.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     removeButton((Button) control);
@@ -332,6 +337,7 @@ public class ButtonView extends AbstractFixedView
 
             item.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     addButton();
@@ -342,6 +348,7 @@ public class ButtonView extends AbstractFixedView
 
             item.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     reorderButtons();
@@ -354,6 +361,7 @@ public class ButtonView extends AbstractFixedView
             // but for now we'll point them to the real stuff.
             item.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     m_Frame
@@ -375,6 +383,7 @@ public class ButtonView extends AbstractFixedView
      * start to complete initialization of the abstract view.
      *
      ********************************************************************************************/
+    @Override
     public void init(MainFrame frame, Document doc, Pane parentPane)
     {
         setValues(frame, doc, parentPane);
@@ -389,6 +398,7 @@ public class ButtonView extends AbstractFixedView
         createButtonPanel(m_Pane.getWindow());
     }
 
+    @Override
     public void showProperties()
     {
         PropertiesDialog.Property[] properties = new PropertiesDialog.Property[1];
@@ -517,6 +527,7 @@ public class ButtonView extends AbstractFixedView
 
         m_Container.addControlListener(new ControlAdapter()
         {
+            @Override
             public void controlResized(ControlEvent e)
             {
                 setPrefSize();
@@ -537,6 +548,7 @@ public class ButtonView extends AbstractFixedView
             // action)
             button.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     buttonPressed(e, pos);
@@ -613,6 +625,7 @@ public class ButtonView extends AbstractFixedView
      * For the button view there is no content beyond the list of buttons.
      *
      *************************************************************************/
+    @Override
     public edu.umich.soar.debugger.general.JavaElementXML convertToXML(
             String title, boolean storeContent)
     {
@@ -673,9 +686,10 @@ public class ButtonView extends AbstractFixedView
      *            The XML representation of this command
      *
      *************************************************************************/
+    @Override
     public void loadFromXML(MainFrame frame,
-            edu.umich.soar.debugger.doc.Document doc, Pane parent,
-            edu.umich.soar.debugger.general.JavaElementXML element)
+                            edu.umich.soar.debugger.doc.Document doc, Pane parent,
+                            edu.umich.soar.debugger.general.JavaElementXML element)
             throws Exception
     {
         setValues(frame, doc, parent);

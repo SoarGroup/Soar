@@ -59,6 +59,7 @@ public class ParseSelectedText
 
             item.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     view.executeAgentCommand(command, true);
@@ -94,8 +95,9 @@ public class ParseSelectedText
         }
 
         /** Fills in menu items that are appropriate for this type of object */
+        @Override
         public void fillMenu(Document doc, AbstractView owningView,
-                AbstractView outputView, Menu menu, boolean simple)
+                             AbstractView outputView, Menu menu, boolean simple)
         {
             addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(
                     m_Name));
@@ -127,8 +129,9 @@ public class ParseSelectedText
         }
 
         /** Fills in menu items that are appropriate for this type of object */
+        @Override
         public void fillMenu(Document doc, AbstractView owningView,
-                AbstractView outputView, Menu menu, boolean simple)
+                             AbstractView outputView, Menu menu, boolean simple)
         {
             addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(
                     m_Name));
@@ -165,8 +168,9 @@ public class ParseSelectedText
         }
 
         /** Fills in menu items that are appropriate for this type of object */
+        @Override
         public void fillMenu(Document doc, AbstractView owningView,
-                AbstractView outputView, Menu menu, boolean simple)
+                             AbstractView outputView, Menu menu, boolean simple)
         {
             addItem(outputView, menu, doc.getSoarCommands()
                     .getPreferencesCommand(m_ID + " " + m_Att));
@@ -200,8 +204,9 @@ public class ParseSelectedText
         }
 
         /** Fills in menu items that are appropriate for this type of object */
+        @Override
         public void fillMenu(Document doc, AbstractView owningView,
-                AbstractView outputView, Menu menu, boolean simple)
+                             AbstractView outputView, Menu menu, boolean simple)
         {
             owningView.fillWindowMenu(menu, false, true);
         }

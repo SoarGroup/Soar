@@ -218,6 +218,7 @@ public class SearchDialog extends BaseDialog
         close.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         close.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent event)
             {
                 close();
@@ -227,6 +228,7 @@ public class SearchDialog extends BaseDialog
         // Do a find
         m_DoFind.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent event)
             {
                 find();

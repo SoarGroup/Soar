@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * LayoutMenu.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Apr 12, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
@@ -17,9 +17,9 @@ import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 
 /************************************************************************
- * 
+ *
  * The layout menu
- * 
+ *
  ************************************************************************/
 public class LayoutMenu
 {
@@ -28,6 +28,7 @@ public class LayoutMenu
     private AbstractAction m_UseDefaultLayout = new AbstractAction(
             "Use &default window layout")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             useDefaultPerformed(e);
@@ -37,6 +38,7 @@ public class LayoutMenu
     private AbstractAction m_UseTreeLayout = new AbstractAction(
             "Use &tree view layout")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             useDefaultPerformed(e);
@@ -46,6 +48,7 @@ public class LayoutMenu
     private AbstractAction m_UseTextLayout = new AbstractAction(
             "Use te&xt view layout")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             useTextLayout(e);
@@ -54,6 +57,7 @@ public class LayoutMenu
 
     private AbstractAction m_Load = new AbstractAction("&Load window layout...")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             load(e);
@@ -62,6 +66,7 @@ public class LayoutMenu
 
     private AbstractAction m_Save = new AbstractAction("&Save window layout...")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             save(e);

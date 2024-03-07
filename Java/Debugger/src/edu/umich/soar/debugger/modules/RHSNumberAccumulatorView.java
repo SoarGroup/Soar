@@ -2,6 +2,7 @@ package edu.umich.soar.debugger.modules;
 
 public class RHSNumberAccumulatorView extends RHSFunTextView
 {
+    @Override
     public String getModuleBaseName()
     {
         return "rhs_number_accumulator";

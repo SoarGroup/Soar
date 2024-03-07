@@ -38,6 +38,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
         super.init(frame, doc, parentPane);
     }
 
+    @Override
     public String getModuleBaseName()
     {
         return "rhs_fun_text";
@@ -108,8 +109,9 @@ public class RHSFunTextView extends AbstractRHSFunView implements
 
     StringBuilder output = new StringBuilder();
 
+    @Override
     public String rhsFunctionHandler(int eventID, Object data,
-            String agentName, String functionName, String argument)
+                                     String agentName, String functionName, String argument)
     {
 
         String[] commandLine = argument.split("\\s+");
@@ -184,6 +186,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
         // menu.
         textBox.addMouseListener(new MouseAdapter()
         {
+            @Override
             public void mouseDown(MouseEvent e)
             {
                 if (e.button == 2 || e.button == 3)
@@ -312,6 +315,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
 
     private int propertiesStartingIndex;
 
+    @Override
     protected void initProperties(
             ArrayList<PropertiesDialog.Property> properties)
     {
@@ -322,6 +326,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements
                 labelText));
     }
 
+    @Override
     protected void processProperties(
             ArrayList<PropertiesDialog.Property> properties)
     {

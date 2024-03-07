@@ -33,6 +33,7 @@ public class EditMenu
 
     private AbstractAction m_Copy = new AbstractAction("&Copy\t" + SHORTCUT_HINT + "C")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             copy();
@@ -41,6 +42,7 @@ public class EditMenu
 
     private AbstractAction m_Paste = new AbstractAction("&Paste\t" + SHORTCUT_HINT + "V")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             paste();
@@ -49,6 +51,7 @@ public class EditMenu
 
     private AbstractAction m_Search = new AbstractAction("&Find...\t" + SHORTCUT_HINT + "F")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             searchPrime();

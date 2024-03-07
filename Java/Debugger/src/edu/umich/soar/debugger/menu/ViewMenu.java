@@ -15,12 +15,14 @@ public class ViewMenu {
     private MainFrame m_Frame = null;
 
     private final AbstractAction m_ChooseFont = new AbstractAction("&Choose text font...") {
+        @Override
         public void actionPerformed(ActionEvent e) {
             chooseFontPerformed();
         }
     };
 
     private final AbstractAction m_DefaultFont = new AbstractAction("Use &default font") {
+        @Override
         public void actionPerformed(ActionEvent e) {
             useDefaultFont();
         }
@@ -30,6 +32,7 @@ public class ViewMenu {
     private static final String ZOOM_OUT_HINT = SHORTCUT_HINT + "-";
 
     private final AbstractAction m_ZoomIn = new AbstractAction("Zoom &in\t" + ZOOM_IN_HINT) {
+        @Override
         public void actionPerformed(ActionEvent e) {
             Font currentFont = m_Frame.getTextFont();
             FontData[] fontData = currentFont.getFontData();
@@ -44,6 +47,7 @@ public class ViewMenu {
     };
 
     private final AbstractAction m_ZoomOut = new AbstractAction("Zoom &out\t" + ZOOM_OUT_HINT) {
+        @Override
         public void actionPerformed(ActionEvent e) {
             Font currentFont = m_Frame.getTextFont();
             FontData[] fontData = currentFont.getFontData();

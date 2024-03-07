@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * RemoteMenu.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Jan 29, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
@@ -20,10 +20,10 @@ import edu.umich.soar.debugger.dialogs.RemoteDialog;
 import edu.umich.soar.debugger.doc.Document;
 
 /************************************************************************
- * 
+ *
  * Menu for commands related to working with a remote instance of Soar (on
  * another PC or already running in another process)
- * 
+ *
  ************************************************************************/
 public class KernelMenu
 {
@@ -34,6 +34,7 @@ public class KernelMenu
     private AbstractAction m_StartKernel = new AbstractAction(
             "Create new &local Soar Kernel instance")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             startKernelPerformed(e);
@@ -43,6 +44,7 @@ public class KernelMenu
     private AbstractAction m_StopKernel = new AbstractAction(
             "Delete local &Soar Kernel instance")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             stopKernelPerformed(e);
@@ -52,6 +54,7 @@ public class KernelMenu
     private AbstractAction m_RemoteConnect = new AbstractAction(
             "Connect to &remote Soar...")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             remoteConnectPerformed(e);
@@ -61,6 +64,7 @@ public class KernelMenu
     private AbstractAction m_RemoteDisconnect = new AbstractAction(
             "&Disconnect from remote Soar")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             remoteDisconnectPerformed(e);

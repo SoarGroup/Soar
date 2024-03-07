@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * LoggingDialog.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 9, 2006
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
@@ -113,6 +113,7 @@ public class LoggingDialog extends BaseDialog
         // Do a find
         m_Browse.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent event)
             {
                 String filename = SaveLoad.SaveFileDialog(m_Frame.getWindow(),
@@ -130,10 +131,11 @@ public class LoggingDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog -- either successfully or cancelled.
-     * 
+     *
      ********************************************************************************************/
+    @Override
     protected void endDialog(boolean ok)
     {
         // Only process values if the user selected ok

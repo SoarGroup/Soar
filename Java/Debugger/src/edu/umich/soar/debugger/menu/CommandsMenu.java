@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * CommandsMenu.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Apr 12, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
@@ -17,9 +17,9 @@ import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 
 /********************************************************************************************
- * 
+ *
  * The commands menu
- * 
+ *
  ********************************************************************************************/
 public class CommandsMenu
 {
@@ -30,6 +30,7 @@ public class CommandsMenu
     private AbstractAction m_RestartAgent = new AbstractAction(
             "Clear &working memory")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             initSoar(e);
@@ -39,6 +40,7 @@ public class CommandsMenu
     private AbstractAction m_ExciseAll = new AbstractAction(
             "Excise &all productions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             exciseAll(e);
@@ -47,6 +49,7 @@ public class CommandsMenu
 
     private AbstractAction m_ExciseChunks = new AbstractAction("Excise &chunks")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             exciseChunks(e);
@@ -56,6 +59,7 @@ public class CommandsMenu
     private AbstractAction m_ExciseTask = new AbstractAction(
             "Excise &task productions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             exciseTask(e);
@@ -65,6 +69,7 @@ public class CommandsMenu
     private AbstractAction m_ExciseUser = new AbstractAction(
             "Excise &user productions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             exciseUser(e);
@@ -74,6 +79,7 @@ public class CommandsMenu
     private AbstractAction m_ExciseDefault = new AbstractAction(
             "Excise &default productions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             exciseDefault(e);

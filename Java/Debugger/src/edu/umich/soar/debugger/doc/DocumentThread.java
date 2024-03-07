@@ -217,6 +217,7 @@ public class DocumentThread extends Thread
         setExecuting(false);
     }
 
+    @Override
     public void run()
     {
         while (!m_AskedToStop)

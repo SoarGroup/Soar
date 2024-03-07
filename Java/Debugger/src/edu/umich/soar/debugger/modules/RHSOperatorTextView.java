@@ -9,6 +9,7 @@ import sml.Agent;
 
 public class RHSOperatorTextView extends RHSObjectTextView
 {
+    @Override
     public String getModuleBaseName()
     {
         return "rhs_operator_text";

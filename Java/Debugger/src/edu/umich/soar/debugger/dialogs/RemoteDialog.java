@@ -163,6 +163,7 @@ public class RemoteDialog extends BaseDialog
      * Close the dialog -- either successfully or cancelled.
      *
      ********************************************************************************************/
+    @Override
     protected void endDialog(boolean ok)
     {
         // Store the user's choices (even if they cancel)

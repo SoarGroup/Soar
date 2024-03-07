@@ -1,21 +1,21 @@
 /********************************************************************************************
  *
  * UpdateCommandView.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Mar 18, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
 
 /************************************************************************
- * 
+ *
  * This version of the BaseCommandView updates at the end of each run and clears
  * each time a command is issued.
- * 
+ *
  ************************************************************************/
 public class UpdateCommandView extends AbstractSingleTextView
 {
@@ -27,12 +27,13 @@ public class UpdateCommandView extends AbstractSingleTextView
     }
 
     /********************************************************************************************
-     * 
+     *
      * This "base name" is used to generate a unique name for the window. For
      * example, returning a base name of "trace" would lead to windows named
      * "trace1", "trace2" etc.
-     * 
+     *
      ********************************************************************************************/
+    @Override
     public String getModuleBaseName()
     {
         return "update";

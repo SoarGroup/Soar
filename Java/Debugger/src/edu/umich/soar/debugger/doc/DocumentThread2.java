@@ -96,6 +96,7 @@ public class DocumentThread2 extends Thread
             m_Command = command;
         }
 
+        @Override
         protected void execute()
         {
             // If there's no XML object to receive the response we just execute
@@ -124,6 +125,7 @@ public class DocumentThread2 extends Thread
             m_Response = response;
         }
 
+        @Override
         protected void execute()
         {
             // If we were provided an XML object for the response, record the
@@ -282,6 +284,7 @@ public class DocumentThread2 extends Thread
         setExecuting(false);
     }
 
+    @Override
     public void run()
     {
         while (!m_AskedToStop)

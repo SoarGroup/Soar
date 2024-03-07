@@ -10,6 +10,7 @@ import sml.Kernel;
 public class RHSObjectTextView extends RHSFunTextView implements
         Kernel.RhsFunctionInterface
 {
+    @Override
     public String getModuleBaseName()
     {
         return "rhs_object_text";
@@ -128,6 +129,7 @@ public class RHSObjectTextView extends RHSFunTextView implements
             doubleOrder = 0;
         }
 
+        @Override
         public int compareTo(OrderedIdentifier other)
         {
             if (this.order == other.order)

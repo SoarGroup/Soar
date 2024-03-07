@@ -24,6 +24,7 @@ import edu.umich.soar.debugger.dialogs.PropertiesDialog;
  ************************************************************************/
 public abstract class AbstractSingleTextView extends AbstractTextView
 {
+    @Override
     public Color getBackgroundColor()
     {
 //        if (!m_UpdateOnStop)
@@ -34,6 +35,7 @@ public abstract class AbstractSingleTextView extends AbstractTextView
                 SWT.COLOR_WIDGET_BACKGROUND);
     }
 
+    @Override
     public void showProperties()
     {
         PropertiesDialog.Property[] properties = new PropertiesDialog.Property[3];

@@ -8,6 +8,7 @@ import edu.umich.soar.debugger.doc.Document;
 public class RHSWaterfallAccumulatorView extends RHSFunTextView implements
         Kernel.RhsFunctionInterface
 {
+    @Override
     public String getModuleBaseName()
     {
         return "rhs_waterfall_accumulator";

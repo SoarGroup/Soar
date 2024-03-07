@@ -149,11 +149,13 @@ public class FoldingTextView extends AbstractComboView implements
     }
 
     /** This window can be the main display window */
+    @Override
     public boolean canBePrimeWindow()
     {
         return true;
     }
 
+    @Override
     public Color getBackgroundColor()
     {
         return getMainFrame().getDisplay()
@@ -204,6 +206,7 @@ public class FoldingTextView extends AbstractComboView implements
      * Create the window that will display the output
      *
      ********************************************************************************************/
+    @Override
     protected void createDisplayControl(Composite parent)
     {
         m_FoldingText = new FoldingText(parent);
@@ -220,6 +223,7 @@ public class FoldingTextView extends AbstractComboView implements
             // If the user tries to type into the main text window, move the
             // focus down
             // to the combo box where they can usefully type.
+            @Override
             public void keyPressed(KeyEvent e)
             {
                 // Only for keys that generate characters (so arrows keys, shift
@@ -245,6 +249,7 @@ public class FoldingTextView extends AbstractComboView implements
 
         m_ExpandButton.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 m_ExpandTrace = (e.widget.getData("expand") == Boolean.FALSE);
@@ -258,6 +263,7 @@ public class FoldingTextView extends AbstractComboView implements
 
         m_ExpandPageArrow.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent event)
             {
                 Point pt = m_ExpandPageArrow.toDisplay(new Point(event.x,
@@ -271,6 +277,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setText("Expand page");
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 expandPage(true);
@@ -285,6 +292,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setText("Collapse page");
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 expandPage(false);
@@ -295,6 +303,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setText("Expand all");
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 expandAll(true);
@@ -305,6 +314,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setText("Collapse all");
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 expandAll(false);
@@ -330,6 +340,7 @@ public class FoldingTextView extends AbstractComboView implements
 
         m_FilterArrow.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent event)
             {
                 Point pt = m_FilterArrow.toDisplay(new Point(event.x, event.y));
@@ -343,6 +354,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kPhase);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kPhase);
@@ -354,6 +366,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kPreference);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kPreference);
@@ -365,6 +378,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kWmeChange);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kWmeChange);
@@ -376,6 +390,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kFiring);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kFiring);
@@ -387,6 +402,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kRetraction);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kRetraction);
@@ -398,6 +414,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kStack);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kStack);
@@ -409,6 +426,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kRhsWrite);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kRhsWrite);
@@ -420,6 +438,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kMessage);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kMessage);
@@ -431,6 +450,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kLearning);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kLearning);
@@ -442,6 +462,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kFullLearning);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kFullLearning);
@@ -453,6 +474,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kVerbose);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kVerbose);
@@ -464,6 +486,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kWarning);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kWarning);
@@ -475,6 +498,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kTopLevel);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kTopLevel);
@@ -486,6 +510,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setData("type", TraceType.kError);
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 changeFilter(e.widget, TraceType.kError);
@@ -496,6 +521,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setText("Show all");
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 m_FoldingText.setExclusionFilter(0, true);
@@ -507,6 +533,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setText("Show only top level and errors");
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 m_FoldingText.setExclusionFilter(TraceType.kAllExceptTopLevel,
@@ -519,6 +546,7 @@ public class FoldingTextView extends AbstractComboView implements
         menuItem.setText("Hide all");
         menuItem.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 m_FoldingText.setExclusionFilter(TraceType.kAll,
@@ -534,6 +562,7 @@ public class FoldingTextView extends AbstractComboView implements
         {
             m_FoldingText.getTextWindow().addPaintListener(new PaintListener()
             {
+                @Override
                 public void paintControl(PaintEvent e)
                 {
                     // First time we are asked to paint, trigger a relaying out
@@ -578,6 +607,7 @@ public class FoldingTextView extends AbstractComboView implements
      * Copy current selection to the clipboard.
      *
      ********************************************************************************************/
+    @Override
     public void copy()
     {
         m_FoldingText.getTextWindow().copy();
@@ -602,8 +632,9 @@ public class FoldingTextView extends AbstractComboView implements
      *            nodes) search that text
      *
      *************************************************************************/
+    @Override
     public boolean find(String text, boolean searchDown, boolean matchCase,
-            boolean wrap, boolean searchHiddenText)
+                        boolean wrap, boolean searchHiddenText)
     {
         boolean found = false;
 
@@ -710,8 +741,9 @@ public class FoldingTextView extends AbstractComboView implements
      * selected by the user (e.g. a production name).
      *
      *************************************************************************/
+    @Override
     protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX,
-            int mouseY)
+                                                                   int mouseY)
     {
         // Switchfrom screen coords to coords based on the text window
         Point pt = m_FoldingText.getTextWindow().toControl(mouseX, mouseY);
@@ -775,6 +807,7 @@ public class FoldingTextView extends AbstractComboView implements
         m_FoldingText.expandAll(state);
     }
 
+    @Override
     protected void layoutComboBar(boolean top)
     {
         m_ComboContainer.setLayout(new FormLayout());
@@ -799,12 +832,14 @@ public class FoldingTextView extends AbstractComboView implements
      * "trace1", "trace2" etc.
      *
      ********************************************************************************************/
+    @Override
     public String getModuleBaseName()
     {
         return "trace";
     }
 
     /** The control we're using to display the output in this case **/
+    @Override
     protected Control getDisplayControl()
     {
         return m_FoldingText.getTextWindow();
@@ -817,11 +852,13 @@ public class FoldingTextView extends AbstractComboView implements
      * define a container that surrounds the display control and includes other
      * supporting controls. In which case this method should be overriden.
      */
+    @Override
     protected Control getDisplayWindow()
     {
         return m_FoldingText.getWindow();
     }
 
+    @Override
     public void setTextFont(Font f)
     {
         super.setTextFont(f);
@@ -918,6 +955,7 @@ public class FoldingTextView extends AbstractComboView implements
         }
     }
 
+    @Override
     protected void appendText(String text)
     {
         appendText(text, TraceType.kTopLevel);
@@ -928,6 +966,7 @@ public class FoldingTextView extends AbstractComboView implements
      * Clear the display control.
      *
      *************************************************************************/
+    @Override
     public void clearDisplay()
     {
         m_FoldingText.clear();
@@ -938,6 +977,7 @@ public class FoldingTextView extends AbstractComboView implements
      * Scroll the display control to the bottom
      *
      ********************************************************************************************/
+    @Override
     public void scrollBottom()
     {
         m_FoldingText.scrollBottom();
@@ -1252,14 +1292,16 @@ public class FoldingTextView extends AbstractComboView implements
             m_View = view;
         }
 
+        @Override
         public void run()
         {
             m_View.displayXmlTraceEvent(m_Agent, m_XML);
         }
     }
 
+    @Override
     public void xmlEventHandler(int eventID, Object data, Agent agent,
-            ClientXML xml)
+                                ClientXML xml)
     {
         if (eventID != smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT.swigValue())
             return;
@@ -1321,17 +1363,20 @@ public class FoldingTextView extends AbstractComboView implements
      * Register for events of particular interest to this view
      *
      ********************************************************************************************/
+    @Override
     protected void registerForViewAgentEvents(Agent agent)
     {
         m_xmlCallback = agent.RegisterForXMLEvent(
                 smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, this, null);
     }
 
+    @Override
     protected void clearViewAgentEvents()
     {
         m_xmlCallback = -1;
     }
 
+    @Override
     protected boolean unregisterForViewAgentEvents(Agent agent)
     {
         boolean ok = true;
@@ -1344,11 +1389,13 @@ public class FoldingTextView extends AbstractComboView implements
         return ok;
     }
 
+    @Override
     protected void storeContent(JavaElementXML element)
     {
 
     }
 
+    @Override
     protected void restoreContent(JavaElementXML element)
     {
 
@@ -1361,6 +1408,7 @@ public class FoldingTextView extends AbstractComboView implements
      * executes or not.
      *
      ********************************************************************************************/
+    @Override
     public void showProperties()
     {
         PropertiesDialog.Property[] properties = new PropertiesDialog.Property[4];
@@ -1411,6 +1459,7 @@ public class FoldingTextView extends AbstractComboView implements
      *            from a trace window)
      *
      *************************************************************************/
+    @Override
     public edu.umich.soar.debugger.general.JavaElementXML convertToXML(
             String tagName, boolean storeContent)
     {
@@ -1445,9 +1494,10 @@ public class FoldingTextView extends AbstractComboView implements
      *            The XML representation of this command
      *
      *************************************************************************/
+    @Override
     public void loadFromXML(MainFrame frame,
-            edu.umich.soar.debugger.doc.Document doc, Pane parent,
-            edu.umich.soar.debugger.general.JavaElementXML element)
+                            edu.umich.soar.debugger.doc.Document doc, Pane parent,
+                            edu.umich.soar.debugger.general.JavaElementXML element)
             throws Exception
     {
         // On Linux the SWT implementations are so slow Soar can get far to far

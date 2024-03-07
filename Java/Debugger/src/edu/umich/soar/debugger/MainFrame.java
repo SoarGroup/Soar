@@ -225,6 +225,7 @@ public class MainFrame
         // accordingly
         m_SoarChangeListener = new SoarChangeListener()
         {
+            @Override
             public void soarConnectionChanged(SoarConnectionEvent e)
             {
                 // If the connection has changed reset the focus to null
@@ -233,6 +234,7 @@ public class MainFrame
                 updateMenus();
             }
 
+            @Override
             public void soarAgentListChanged(SoarAgentEvent e)
             {
                 // If we're removing the current focus agent then
@@ -799,6 +801,7 @@ public class MainFrame
         getShell().addShellListener(new ShellAdapter()
         {
 
+            @Override
             public void shellClosed(ShellEvent e)
             {
                 thisWindowClosing();
@@ -1213,6 +1216,7 @@ public class MainFrame
 
     private final SoarCommandLineMXBean commandLineMXBean = new SoarCommandLineMXBean()
     {
+        @Override
         public String getName()
         {
             if (m_AgentFocus == null)
@@ -1220,6 +1224,7 @@ public class MainFrame
             return m_AgentFocus.GetAgentName();
         }
 
+        @Override
         public String executeCommandLine(final String line)
         {
             m_CommandLineResult = null;

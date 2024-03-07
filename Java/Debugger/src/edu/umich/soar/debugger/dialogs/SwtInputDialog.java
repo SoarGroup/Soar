@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SwtInputDialog.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 16, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
@@ -24,10 +24,10 @@ import org.eclipse.swt.widgets.Text;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
 
 /*****************************************************************************************
- * 
+ *
  * Create a simple dialog for getting input (to match Swing's
  * JOptionPane.showInputDialog)
- * 
+ *
  *****************************************************************************************/
 public class SwtInputDialog extends BaseDialog
 {
@@ -38,9 +38,9 @@ public class SwtInputDialog extends BaseDialog
     private boolean m_MultiLine;
 
     /********************************************************************************************
-     * 
+     *
      * Create a simple dialog asking the user for input (a single string).
-     * 
+     *
      * @param parent
      *            The parent for this dialog (we'll center the dialog within
      *            this window)
@@ -70,9 +70,9 @@ public class SwtInputDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create a simple dialog asking the user for input (a single string).
-     * 
+     *
      * @param parent
      *            The parent for this dialog (we'll center the dialog within
      *            this window)
@@ -102,10 +102,10 @@ public class SwtInputDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the dialog -- the constructor is private because we use a static
      * method to build this.
-     * 
+     *
      ********************************************************************************************/
     private SwtInputDialog(Composite parent, String title, String prompt,
             String initialValue, boolean multiLine)
@@ -134,6 +134,7 @@ public class SwtInputDialog extends BaseDialog
         if (!multiLine)
             entryField.addKeyListener(new KeyAdapter()
             {
+                @Override
                 public void keyPressed(KeyEvent e)
                 {
                     if (e.character == '\r')
@@ -154,10 +155,11 @@ public class SwtInputDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog -- either successfully or cancelled.
-     * 
+     *
      ********************************************************************************************/
+    @Override
     protected void endDialog(boolean ok)
     {
         if (!ok)

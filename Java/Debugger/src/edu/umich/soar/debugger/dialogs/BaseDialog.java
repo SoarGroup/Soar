@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * BaseDialog.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 16, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
@@ -26,12 +26,12 @@ import org.eclipse.swt.widgets.Shell;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
 
 /*****************************************************************************************
- * 
+ *
  * Create a simple dialog with OK and cancel buttons.
- * 
+ *
  * This dialog is intended to be the base class for other dialogs to save some
  * legwork. SwtInputDialog shows an example of its use.
- * 
+ *
  *****************************************************************************************/
 public class BaseDialog
 {
@@ -57,11 +57,11 @@ public class BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * It looks like I need to pump my message loop here to make this a blocking
      * modal dialog as we want it to be. There may be a more SWT appropriate
      * solution to this.
-     * 
+     *
      ********************************************************************************************/
     protected void pumpMessages()
     {
@@ -80,9 +80,9 @@ public class BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Center the dialog on the given control.
-     * 
+     *
      ********************************************************************************************/
     protected void centerDialog(Control control)
     {
@@ -106,9 +106,9 @@ public class BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create a basic dialog with ok and cancel buttons and set the title
-     * 
+     *
      ********************************************************************************************/
     protected BaseDialog(Composite parent, String title, boolean modal)
     {
@@ -130,6 +130,7 @@ public class BaseDialog
         ok.setText("OK");
         ok.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 endDialog(true);
@@ -140,6 +141,7 @@ public class BaseDialog
         cancel.setText("Cancel");
         cancel.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 endDialog(false);
@@ -165,9 +167,9 @@ public class BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog -- either successfully or cancelled.
-     * 
+     *
      ********************************************************************************************/
     protected void endDialog(boolean ok)
     {

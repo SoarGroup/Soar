@@ -29,6 +29,7 @@ public class HelpMenu
 
     private AbstractAction m_About = new AbstractAction("About Soar's Debugger")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             about();
@@ -37,6 +38,7 @@ public class HelpMenu
 
     private AbstractAction m_Homepage = new AbstractAction("Soar Home page")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             open("http://soar.eecs.umich.edu/");
@@ -46,6 +48,7 @@ public class HelpMenu
     private AbstractAction m_Wiki = new AbstractAction(
             "Soar Wiki (many topics)")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             open("https://github.com/SoarGroup");
@@ -54,6 +57,7 @@ public class HelpMenu
 
     private AbstractAction m_CLI = new AbstractAction("Soar Command Line Help")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             open("http://soar.eecs.umich.edu/articles/articles/general/73-command-line-help");

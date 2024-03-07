@@ -136,6 +136,7 @@ public class ChooseFontDialog extends JPanel
     /**
      * Called when this window is added to a parent
      */
+    @Override
     public void addNotify()
     {
         super.addNotify();
@@ -247,6 +248,7 @@ public class ChooseFontDialog extends JPanel
         m_StyleList.addListSelectionListener(e -> selectionChanged());
         m_SizeField.getDocument().addDocumentListener(new TextFieldListener()
         {
+            @Override
             public void textUpdate(DocumentEvent e)
             {
                 selectionChanged();

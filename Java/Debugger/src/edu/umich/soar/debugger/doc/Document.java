@@ -355,6 +355,7 @@ public class Document implements Kernel.AgentEventInterface,
 
         DocumentThread2.Command command = new DocumentThread2.Command(agent)
         {
+            @Override
             protected void execute()
             {
                 boolean res = m_Agent.IsProductionLoaded(productionName);
@@ -601,6 +602,7 @@ public class Document implements Kernel.AgentEventInterface,
             // so instead we use a flag to ensure it only executes one time.
             boolean m_Executed = false;
 
+            @Override
             public void soarAgentListChanged(SoarAgentEvent e)
             {
                 if (m_Executed)
@@ -632,6 +634,7 @@ public class Document implements Kernel.AgentEventInterface,
                 }
             }
 
+            @Override
             public void soarConnectionChanged(SoarConnectionEvent e)
             {
             }
@@ -974,6 +977,7 @@ public class Document implements Kernel.AgentEventInterface,
         return m_IsStopping;
     }
 
+    @Override
     public void systemEventHandler(int eventID, Object data, Kernel kernel)
     {
         if (eventID == smlSystemEventId.smlEVENT_INTERRUPT_CHECK.swigValue())
@@ -999,6 +1003,7 @@ public class Document implements Kernel.AgentEventInterface,
         }
     }
 
+    @Override
     public void agentEventHandler(int eventID, Object data, String agentName)
     {
         final Agent agent = getAgent(agentName);

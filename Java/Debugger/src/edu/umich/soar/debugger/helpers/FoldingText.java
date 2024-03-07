@@ -769,6 +769,7 @@ public class FoldingText
 
         m_IconBar.addMouseListener(new MouseAdapter()
         {
+            @Override
             public void mouseUp(MouseEvent e)
             {
                 iconBarMouseClick(e);
@@ -778,6 +779,7 @@ public class FoldingText
         // Think we'll need this so we update the icons while we're scrolling
         m_Text.getVerticalBar().addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 scrolled();
@@ -791,6 +793,7 @@ public class FoldingText
         {
             int lastIndex = m_Text.getTopIndex();
 
+            @Override
             public void handleEvent(Event e)
             {
                 int index = m_Text.getTopIndex();

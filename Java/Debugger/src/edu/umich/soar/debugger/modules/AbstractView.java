@@ -408,12 +408,14 @@ public abstract class AbstractView implements AgentFocusListener
         m_Frame.unregisterViewName(getName());
     }
 
+    @Override
     public void agentGettingFocus(AgentFocusEvent e)
     {
         if (e.getAgent() != null)
             registerForAgentEvents(e.getAgent());
     }
 
+    @Override
     public void agentLosingFocus(AgentFocusEvent e)
     {
         // We may be passed "null" for the agent losing focus if the
@@ -422,6 +424,7 @@ public abstract class AbstractView implements AgentFocusListener
         unregisterForAgentEvents(e.getAgent());
     }
 
+    @Override
     public void agentGone(AgentFocusEvent e)
     {
         clearAgentEvents();
@@ -436,6 +439,7 @@ public abstract class AbstractView implements AgentFocusListener
 
         item.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 m_Frame.executeScriptCommand(view, command, false);
@@ -563,6 +567,7 @@ public abstract class AbstractView implements AgentFocusListener
         final Menu menu = new Menu(control.getShell(), SWT.POP_UP);
         menu.addMenuListener(new MenuListener()
         {
+            @Override
             public void menuShown(MenuEvent e)
             {
                 // Clear any existing items from the menu and then create new
@@ -579,6 +584,7 @@ public abstract class AbstractView implements AgentFocusListener
                 fillInContextMenu(menu, control, mouse.x, mouse.y);
             }
 
+            @Override
             public void menuHidden(MenuEvent e)
             {
             }

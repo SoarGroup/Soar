@@ -325,6 +325,7 @@ public abstract class AbstractUpdateView extends AbstractView implements
 
     protected abstract void updateNow();
 
+    @Override
     public void agentEventHandler(int eventID, Object data, String agentName)
     {
         // Note: We need to check the agent names match because although this is
@@ -338,6 +339,7 @@ public abstract class AbstractUpdateView extends AbstractView implements
             updateNow();
     }
 
+    @Override
     public void systemEventHandler(int eventID, Object data, Kernel kernel)
     {
         if (this.m_UpdateOnStop
@@ -345,6 +347,7 @@ public abstract class AbstractUpdateView extends AbstractView implements
             updateNow();
     }
 
+    @Override
     public void runEventHandler(int eventID, Object data, Agent agent, int phase)
     {
         if (eventID == smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE.swigValue())

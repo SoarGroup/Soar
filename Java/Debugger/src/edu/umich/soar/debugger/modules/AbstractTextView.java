@@ -46,6 +46,7 @@ public abstract class AbstractTextView extends AbstractComboView
     }
 
     /** The control we're using to display the output in this case **/
+    @Override
     protected Control getDisplayControl()
     {
         return m_Text;
@@ -56,6 +57,7 @@ public abstract class AbstractTextView extends AbstractComboView
      * Clear the display control.
      *
      *************************************************************************/
+    @Override
     public void clearDisplay()
     {
         m_Text.setText("");
@@ -66,6 +68,7 @@ public abstract class AbstractTextView extends AbstractComboView
      * Scroll the display control to the bottom
      *
      ********************************************************************************************/
+    @Override
     public void scrollBottom()
     {
         // Move the selection to the end and make sure it's visible
@@ -74,6 +77,7 @@ public abstract class AbstractTextView extends AbstractComboView
         m_Text.showSelection();
     }
 
+    @Override
     public void copy()
     {
         m_Text.copy();
@@ -98,8 +102,9 @@ public abstract class AbstractTextView extends AbstractComboView
      *            nodes) search that text
      *
      *************************************************************************/
+    @Override
     public boolean find(String text, boolean searchDown, boolean matchCase,
-            boolean wrap, boolean searchHiddenText)
+                        boolean wrap, boolean searchHiddenText)
     {
         String windowText = m_Text.getText();
 
@@ -159,8 +164,9 @@ public abstract class AbstractTextView extends AbstractComboView
         return true;
     }
 
+    @Override
     protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX,
-            int mouseY)
+                                                                   int mouseY)
     {
         // Find out if mouseX, mouseY is over the text at all
         try
@@ -192,6 +198,7 @@ public abstract class AbstractTextView extends AbstractComboView
      * Create the window that will display the output
      *
      ********************************************************************************************/
+    @Override
     protected void createDisplayControl(Composite parent)
     {
         m_Text = new StyledText(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL
@@ -205,6 +212,7 @@ public abstract class AbstractTextView extends AbstractComboView
         // menu.
         m_Text.addMouseListener(new MouseAdapter()
         {
+            @Override
             public void mouseDown(MouseEvent e)
             {
                 if (e.button == 2 || e.button == 3)
@@ -268,6 +276,7 @@ public abstract class AbstractTextView extends AbstractComboView
      *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#storeContent(edu.umich.soar.debugger.general.JavaElementXML)
      ********************************************************************************************/
+    @Override
     protected void storeContent(JavaElementXML element)
     {
         if (m_Text.getText() != null)
@@ -279,6 +288,7 @@ public abstract class AbstractTextView extends AbstractComboView
      *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#restoreContent(edu.umich.soar.debugger.general.JavaElementXML)
      ********************************************************************************************/
+    @Override
     protected void restoreContent(JavaElementXML element)
     {
         String text = element.getContents();
@@ -297,14 +307,17 @@ public abstract class AbstractTextView extends AbstractComboView
      * Register for events of particular interest to this view
      *
      ********************************************************************************************/
+    @Override
     protected void registerForViewAgentEvents(Agent agent)
     {
     }
 
+    @Override
     protected void clearViewAgentEvents()
     {
     }
 
+    @Override
     protected boolean unregisterForViewAgentEvents(Agent agent)
     {
         return true;
@@ -320,6 +333,7 @@ public abstract class AbstractTextView extends AbstractComboView
      *
      * @see edu.umich.soar.debugger.modules.AbstractComboView#appendText(java.lang.String)
      ********************************************************************************************/
+    @Override
     protected void appendText(final String text)
     {
         if (m_Text.isDisposed())

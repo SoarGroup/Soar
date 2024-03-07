@@ -114,6 +114,7 @@ public class ReorderButtonsDialog extends BaseDialog
         top.setText("Top");
         top.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 pressed(true, true);
@@ -124,6 +125,7 @@ public class ReorderButtonsDialog extends BaseDialog
         up.setText("Up");
         up.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 pressed(true, false);
@@ -134,6 +136,7 @@ public class ReorderButtonsDialog extends BaseDialog
         down.setText("Down");
         down.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 pressed(false, false);
@@ -144,6 +147,7 @@ public class ReorderButtonsDialog extends BaseDialog
         bottom.setText("Bottom");
         bottom.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 pressed(false, true);
@@ -227,6 +231,7 @@ public class ReorderButtonsDialog extends BaseDialog
      * Close the dialog -- either successfully or cancelled.
      *
      ********************************************************************************************/
+    @Override
     protected void endDialog(boolean ok)
     {
         // If the user cancelled (or made no changes) we're done

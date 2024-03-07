@@ -93,6 +93,7 @@ public class PropertiesDialog extends BaseDialog
             return m_Value;
         }
 
+        @Override
         public TableItem addTableItem(final Table table)
         {
             TableItem item = new TableItem(table, SWT.NULL);
@@ -108,6 +109,7 @@ public class PropertiesDialog extends BaseDialog
             return item;
         }
 
+        @Override
         public boolean update()
         {
             try
@@ -158,6 +160,7 @@ public class PropertiesDialog extends BaseDialog
             return m_Value;
         }
 
+        @Override
         public TableItem addTableItem(final Table table)
         {
             TableItem item = new TableItem(table, SWT.NULL);
@@ -175,6 +178,7 @@ public class PropertiesDialog extends BaseDialog
 
         // Copy the value from the control to the property
         // Return false if its not valid for some reason.
+        @Override
         public boolean update()
         {
             m_Value = m_Text.getText();
@@ -220,6 +224,7 @@ public class PropertiesDialog extends BaseDialog
             m_Button.setText(first);
         }
 
+        @Override
         public TableItem addTableItem(final Table table)
         {
             TableItem item = new TableItem(table, SWT.NULL);
@@ -258,6 +263,7 @@ public class PropertiesDialog extends BaseDialog
 
         // Copy the value from the control to the property
         // Return false if its not valid for some reason.
+        @Override
         public boolean update()
         {
             // String value = m_Text.getText() ;
@@ -284,6 +290,7 @@ public class PropertiesDialog extends BaseDialog
             return m_Value;
         }
 
+        @Override
         public TableItem addTableItem(Table table)
         {
             TableItem item = new TableItem(table, SWT.NULL);
@@ -307,6 +314,7 @@ public class PropertiesDialog extends BaseDialog
 
         // Copy the value from the control to the property
         // Return false if its not valid for some reason.
+        @Override
         public boolean update()
         {
             int selection = m_Combo.getSelectionIndex();
@@ -359,6 +367,7 @@ public class PropertiesDialog extends BaseDialog
             return (m_Index >= 0) ? m_SetValues[m_Index] : null;
         }
 
+        @Override
         public TableItem addTableItem(Table table)
         {
             TableItem item = new TableItem(table, SWT.NULL);
@@ -379,6 +388,7 @@ public class PropertiesDialog extends BaseDialog
 
         // Copy the value from the control to the property
         // Return false if its not valid for some reason.
+        @Override
         public boolean update()
         {
             m_Index = m_Combo.getSelectionIndex();
@@ -460,6 +470,7 @@ public class PropertiesDialog extends BaseDialog
      * Close the dialog -- either successfully or cancelled.
      *
      ********************************************************************************************/
+    @Override
     protected void endDialog(boolean ok)
     {
         if (ok)

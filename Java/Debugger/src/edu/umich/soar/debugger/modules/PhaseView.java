@@ -93,6 +93,7 @@ public class PhaseView extends AbstractFixedView implements
      * "trace1", "trace2" etc.
      *
      ********************************************************************************************/
+    @Override
     public String getModuleBaseName()
     {
         return "phaseview";
@@ -104,6 +105,7 @@ public class PhaseView extends AbstractFixedView implements
      * start to complete initialization of the abstract view.
      *
      ********************************************************************************************/
+    @Override
     public void init(MainFrame frame, Document doc, Pane parentPane)
     {
         setValues(frame, doc, parentPane);
@@ -169,6 +171,7 @@ public class PhaseView extends AbstractFixedView implements
 
         canvas.addMouseListener(new MouseAdapter()
         {
+            @Override
             public void mouseDown(MouseEvent e)
             {
                 mouseClicked(e);
@@ -179,18 +182,21 @@ public class PhaseView extends AbstractFixedView implements
 
         canvas.addMouseTrackListener(new MouseTrackListener()
         {
+            @Override
             public void mouseEnter(MouseEvent e)
             {
                 m_DrawShadow = true;
                 m_PhaseDiagram.redraw();
             }
 
+            @Override
             public void mouseExit(MouseEvent e)
             {
                 m_DrawShadow = false;
                 m_PhaseDiagram.redraw();
             }
 
+            @Override
             public void mouseHover(MouseEvent e)
             {
             }
@@ -338,6 +344,7 @@ public class PhaseView extends AbstractFixedView implements
         gc.drawText(decisions, 125, 41);
     }
 
+    @Override
     public void agentEventHandler(int eventID, Object data, String agentName)
     {
         if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED
@@ -350,6 +357,7 @@ public class PhaseView extends AbstractFixedView implements
         }
     }
 
+    @Override
     public void systemEventHandler(int eventID, Object data, Kernel kernel)
     {
         if (eventID == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue())
@@ -384,6 +392,7 @@ public class PhaseView extends AbstractFixedView implements
         return smlPhase.swigToEnum(value);
     }
 
+    @Override
     public void agentGettingFocus(
             edu.umich.soar.debugger.doc.events.AgentFocusEvent ev)
     {
@@ -423,6 +432,7 @@ public class PhaseView extends AbstractFixedView implements
      * window might register for the print event)
      *
      *************************************************************************/
+    @Override
     protected void registerForAgentEvents(Agent agent)
     {
         if (m_StopCallback == -1)
@@ -442,6 +452,7 @@ public class PhaseView extends AbstractFixedView implements
         }
     }
 
+    @Override
     protected void unregisterForAgentEvents(Agent agent)
     {
         boolean ok = true;
@@ -474,6 +485,7 @@ public class PhaseView extends AbstractFixedView implements
      * can't unregister but should just clear our references)
      *
      *************************************************************************/
+    @Override
     protected void clearAgentEvents()
     {
         m_StartCallback = -1;
@@ -489,6 +501,7 @@ public class PhaseView extends AbstractFixedView implements
      * executes or not.
      *
      ********************************************************************************************/
+    @Override
     public void showProperties()
     {
         PropertiesDialog.Property[] properties = new PropertiesDialog.Property[2];
@@ -525,6 +538,7 @@ public class PhaseView extends AbstractFixedView implements
      * For the button view there is no content beyond the list of buttons.
      *
      *************************************************************************/
+    @Override
     public JavaElementXML convertToXML(String tagName, boolean storeContent)
     {
         JavaElementXML element = new JavaElementXML(tagName);
@@ -558,9 +572,10 @@ public class PhaseView extends AbstractFixedView implements
      *            The XML representation of this command
      *
      *************************************************************************/
+    @Override
     public void loadFromXML(MainFrame frame,
-            edu.umich.soar.debugger.doc.Document doc, Pane parent,
-            edu.umich.soar.debugger.general.JavaElementXML element)
+                            edu.umich.soar.debugger.doc.Document doc, Pane parent,
+                            edu.umich.soar.debugger.general.JavaElementXML element)
             throws Exception
     {
         setValues(frame, doc, parent);

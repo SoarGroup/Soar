@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * PrintMenu.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Apr 12, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
@@ -17,9 +17,9 @@ import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 
 /************************************************************************
- * 
+ *
  * The print menu
- * 
+ *
  ************************************************************************/
 public class PrintMenu
 {
@@ -30,6 +30,7 @@ public class PrintMenu
     private AbstractAction m_PrintProductions = new AbstractAction(
             "Print all &productions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             printProductions(e);
@@ -39,6 +40,7 @@ public class PrintMenu
     private AbstractAction m_PrintChunks = new AbstractAction(
             "Print all &chunks")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             printChunks(e);
@@ -48,6 +50,7 @@ public class PrintMenu
     private AbstractAction m_PrintJustifications = new AbstractAction(
             "Print all &justifications")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             printJustifications(e);
@@ -57,6 +60,7 @@ public class PrintMenu
     private AbstractAction m_PrintStack = new AbstractAction(
             "Print &goal/state stack")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             printStack(e);
@@ -65,6 +69,7 @@ public class PrintMenu
 
     private AbstractAction m_PrintState = new AbstractAction("Print &state")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             printState(e);
@@ -74,6 +79,7 @@ public class PrintMenu
     private AbstractAction m_PrintOperator = new AbstractAction(
             "Print &operator")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             printOperator(e);
@@ -83,6 +89,7 @@ public class PrintMenu
     private AbstractAction m_PrintTopState = new AbstractAction(
             "Print &top state")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             printTopState(e);
@@ -92,6 +99,7 @@ public class PrintMenu
     private AbstractAction m_PrintSuperState = new AbstractAction(
             "Print s&uper state")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             printSuperState(e);

@@ -49,6 +49,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
 
     private int propertiesStartingIndex;
 
+    @Override
     protected void initProperties(
             ArrayList<PropertiesDialog.Property> properties)
     {
@@ -59,6 +60,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
                 chartTitle));
     }
 
+    @Override
     protected void processProperties(
             ArrayList<PropertiesDialog.Property> properties)
     {
@@ -94,6 +96,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
         public Integer value;
 
         // This is backwards because descending iterator is a java 1.6 feature
+        @Override
         public int compareTo(OrderedString other)
         {
             return this.value - other.value;
@@ -128,8 +131,9 @@ public class RHSBarChartView extends AbstractRHSFunView implements
 
     TreeSet<OrderedString> seriesOrderSet = new TreeSet<>();
 
+    @Override
     public String rhsFunctionHandler(int eventID, Object data,
-            String agentName, String functionName, String argument)
+                                     String agentName, String functionName, String argument)
     {
 
         // Syntax:
@@ -386,6 +390,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements
         Display.getDefault().asyncExec(() -> dataset.clear());
     }
 
+    @Override
     public void onInitSoar()
     {
         clearDisplay();

@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SelectAgentDialog.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 16, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.dialogs;
@@ -21,10 +21,10 @@ import org.eclipse.swt.widgets.List;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
 
 /*****************************************************************************************
- * 
+ *
  * Create a simple dialog for getting input (to match Swing's
  * JOptionPane.showInputDialog)
- * 
+ *
  *****************************************************************************************/
 public class SelectAgentDialog extends BaseDialog
 {
@@ -33,9 +33,9 @@ public class SelectAgentDialog extends BaseDialog
     private List m_Agents;
 
     /********************************************************************************************
-     * 
+     *
      * Create a simple dialog asking the user for input (a single string).
-     * 
+     *
      * @param parent
      *            The parent for this dialog (we'll center the dialog within
      *            this window)
@@ -65,6 +65,7 @@ public class SelectAgentDialog extends BaseDialog
         // the list is created (causing the dialog to close).
         dialog.m_Agents.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 dialog.endDialog(true);
@@ -77,10 +78,10 @@ public class SelectAgentDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Create the dialog -- the constructor is private because we use a static
      * method to build this.
-     * 
+     *
      ********************************************************************************************/
     private SelectAgentDialog(Composite parent, String title,
             String[] agentNames)
@@ -100,10 +101,11 @@ public class SelectAgentDialog extends BaseDialog
     }
 
     /********************************************************************************************
-     * 
+     *
      * Close the dialog -- either successfully or cancelled.
-     * 
+     *
      ********************************************************************************************/
+    @Override
     protected void endDialog(boolean ok)
     {
         // If the user cancelled or no agents are selected we're done

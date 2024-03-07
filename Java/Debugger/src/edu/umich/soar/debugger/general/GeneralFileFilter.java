@@ -165,6 +165,7 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
      * @see #getExtension
      * @see GeneralFileFilter#accepts
      */
+    @Override
     public boolean accept(File f)
     {
         if (f != null)
@@ -234,6 +235,7 @@ public class GeneralFileFilter extends javax.swing.filechooser.FileFilter
      * @see #isExtensionListInDescription
      * @see GeneralFileFilter#getDescription
      */
+    @Override
     public String getDescription()
     {
         if (fullDescription != null) {

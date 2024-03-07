@@ -38,6 +38,7 @@ public abstract class AbstractFixedView extends AbstractView
      * would return false but a bar for buttons would return true.
      *
      ********************************************************************************************/
+    @Override
     public boolean isFixedSizeView()
     {
         return true;
@@ -49,11 +50,13 @@ public abstract class AbstractFixedView extends AbstractView
      * through the "executeAgentCommand" method.
      *
      *************************************************************************/
+    @Override
     public boolean canDisplayOutput()
     {
         return false;
     }
 
+    @Override
     public void setTextFont(Font f)
     {
         // We ignore this as our window doesn't display text.
@@ -64,6 +67,7 @@ public abstract class AbstractFixedView extends AbstractView
      * Copy/paste current selection to/from the clipboard.
      *
      ********************************************************************************************/
+    @Override
     public void copy()
     {
         // Usually nothing to copy in fixed views
@@ -87,8 +91,9 @@ public abstract class AbstractFixedView extends AbstractView
      *            nodes) search that text
      *
      *************************************************************************/
+    @Override
     public boolean find(String text, boolean searchDown, boolean matchCase,
-            boolean wrap, boolean searchHiddenText)
+                        boolean wrap, boolean searchHiddenText)
     {
         return false;
     }
@@ -98,6 +103,7 @@ public abstract class AbstractFixedView extends AbstractView
      * Clear the display (the text part if any)
      *
      *************************************************************************/
+    @Override
     public void clearDisplay()
     {
     }
@@ -108,6 +114,7 @@ public abstract class AbstractFixedView extends AbstractView
      * view.
      *
      *************************************************************************/
+    @Override
     public boolean offerClearDisplay()
     {
         return false;
@@ -120,11 +127,13 @@ public abstract class AbstractFixedView extends AbstractView
      * menu.
      *
      *************************************************************************/
+    @Override
     public boolean offerLogging()
     {
         return false;
     }
 
+    @Override
     public String executeAgentCommand(String command, boolean echoCommand)
     {
         // Send the command to Soar but there's no where to display the output
@@ -133,6 +142,7 @@ public abstract class AbstractFixedView extends AbstractView
                 .sendAgentCommand(getAgentFocus(), command);
     }
 
+    @Override
     public void displayText(String text)
     {
         // Nowhere to display it so eat it.
@@ -144,11 +154,13 @@ public abstract class AbstractFixedView extends AbstractView
      * true if this window wants the focus.
      *
      *************************************************************************/
+    @Override
     public boolean setFocus()
     {
         return false;
     }
 
+    @Override
     public boolean hasFocus()
     {
         return false;
@@ -160,10 +172,12 @@ public abstract class AbstractFixedView extends AbstractView
      * window might register for the print event)
      *
      *************************************************************************/
+    @Override
     protected void registerForAgentEvents(Agent agent)
     {
     }
 
+    @Override
     protected void unregisterForAgentEvents(Agent agent)
     {
     }
@@ -174,6 +188,7 @@ public abstract class AbstractFixedView extends AbstractView
      * can't unregister but should just clear our references)
      *
      *************************************************************************/
+    @Override
     protected void clearAgentEvents()
     {
     }
@@ -185,6 +200,7 @@ public abstract class AbstractFixedView extends AbstractView
      * For the button view there is no content beyond the list of buttons.
      *
      *************************************************************************/
+    @Override
     public JavaElementXML convertToXML(String tagName, boolean storeContent)
     {
         JavaElementXML element = new JavaElementXML(tagName);
@@ -214,9 +230,10 @@ public abstract class AbstractFixedView extends AbstractView
      *            The XML representation of this command
      *
      *************************************************************************/
+    @Override
     public void loadFromXML(MainFrame frame,
-            edu.umich.soar.debugger.doc.Document doc, Pane parent,
-            edu.umich.soar.debugger.general.JavaElementXML element)
+                            edu.umich.soar.debugger.doc.Document doc, Pane parent,
+                            edu.umich.soar.debugger.general.JavaElementXML element)
             throws Exception
     {
         setValues(frame, doc, parent);
@@ -242,8 +259,9 @@ public abstract class AbstractFixedView extends AbstractView
      * attached to a specific control.
      *
      *************************************************************************/
+    @Override
     protected void fillInContextMenu(Menu contextMenu, Control control,
-            int mouseX, int mouseY)
+                                     int mouseX, int mouseY)
     {
         fillWindowMenu(contextMenu, false, false);
     }

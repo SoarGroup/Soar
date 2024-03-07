@@ -125,6 +125,7 @@ public class NewWindowDialog extends BaseDialog
         // If the user makes a choice we'll close the dialog (pretty aggressive)
         m_Modules.addSelectionListener(new SelectionAdapter()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 selectionChanged();
@@ -145,6 +146,7 @@ public class NewWindowDialog extends BaseDialog
      * Close the dialog -- either successfully or cancelled.
      *
      ********************************************************************************************/
+    @Override
     protected void endDialog(boolean ok)
     {
         // If the user cancelled or no agents are selected we're done

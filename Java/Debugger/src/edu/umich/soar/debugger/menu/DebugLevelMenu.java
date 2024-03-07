@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * DebugLevelMenu.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Apr 12, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
@@ -19,9 +19,9 @@ import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 
 /************************************************************************
- * 
+ *
  * The debug level (watch) menu
- * 
+ *
  ************************************************************************/
 public class DebugLevelMenu implements MenuUpdater
 {
@@ -32,6 +32,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchStatus = new AbstractAction(
             "Show current &watch status")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchStatus(e);
@@ -40,6 +41,7 @@ public class DebugLevelMenu implements MenuUpdater
 
     private AbstractAction m_WatchDecisions = new AbstractAction("1. Decisions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchDecisions(e);
@@ -48,6 +50,7 @@ public class DebugLevelMenu implements MenuUpdater
 
     private AbstractAction m_WatchPhases = new AbstractAction("2. Phases")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchPhases(e);
@@ -57,6 +60,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchAllProductions = new AbstractAction(
             "3. All productions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchAllProductions(e);
@@ -66,6 +70,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchNoProductions = new AbstractAction(
             "3. No productions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchNoProductions(e);
@@ -75,6 +80,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchUserProductions = new AbstractAction(
             "   3a. User productions")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchUserProductions(e);
@@ -83,6 +89,7 @@ public class DebugLevelMenu implements MenuUpdater
 
     private AbstractAction m_WatchChunks = new AbstractAction("   3b. Chunks")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchChunks(e);
@@ -92,6 +99,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchJustifications = new AbstractAction(
             "   3c. Justifications")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchJustifications(e);
@@ -100,6 +108,7 @@ public class DebugLevelMenu implements MenuUpdater
 
     private AbstractAction m_WatchWmes = new AbstractAction("4. Wmes")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchWmes(e);
@@ -109,6 +118,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchPreferences = new AbstractAction(
             "5. Preferences")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchPreferences(e);
@@ -117,6 +127,7 @@ public class DebugLevelMenu implements MenuUpdater
 
     private AbstractAction m_WatchNone = new AbstractAction("Watch &nothing")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchNone(e);
@@ -126,6 +137,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchOne = new AbstractAction(
             "Watch level &1 only")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchOne(e);
@@ -135,6 +147,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchTwo = new AbstractAction(
             "Watch level 1-&2 only")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchTwo(e);
@@ -144,6 +157,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchThree = new AbstractAction(
             "Watch level 1-&3 only")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchThree(e);
@@ -153,6 +167,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchFour = new AbstractAction(
             "Watch level 1-&4 only")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchFour(e);
@@ -161,6 +176,7 @@ public class DebugLevelMenu implements MenuUpdater
 
     private AbstractAction m_WatchFive = new AbstractAction("Watch level 1-&5")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchFive(e);
@@ -170,6 +186,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WmesNone = new AbstractAction(
             "Production wme detail - none")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             wmesNone(e);
@@ -179,6 +196,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WmesTimeTags = new AbstractAction(
             "Production wme detail - time tags")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             wmesTimeTags(e);
@@ -188,6 +206,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WmesFull = new AbstractAction(
             "Production wme detail - full")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             wmesFull(e);
@@ -196,6 +215,7 @@ public class DebugLevelMenu implements MenuUpdater
 
     private AbstractAction m_WatchAliases = new AbstractAction("Watch aliases")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchAliases(e);
@@ -205,6 +225,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchProductionLoading = new AbstractAction(
             "Watch production loading")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchProductionLoading(e);
@@ -214,6 +235,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchLearnPrint = new AbstractAction(
             "Watch chunks/justifications as created")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchLearning(e);
@@ -223,6 +245,7 @@ public class DebugLevelMenu implements MenuUpdater
     private AbstractAction m_WatchBacktracing = new AbstractAction(
             "Watch backtracing as chunks created")
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             watchBacktracing(e);
@@ -242,6 +265,7 @@ public class DebugLevelMenu implements MenuUpdater
         return menu;
     }
 
+    @Override
     public void updateItems()
     {
         // Update the state of the watch items to match the current values
