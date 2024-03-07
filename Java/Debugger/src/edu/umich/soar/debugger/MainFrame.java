@@ -144,6 +144,8 @@ public class MainFrame
      */
     private final String m_Name;
 
+    private final SoarChangeListener m_SoarChangeListener;
+
     /**
      * We associate a default agent with a MainFrame, so that windows within
      * that frame can choose to work with that agent if they're not doing
@@ -221,44 +223,7 @@ public class MainFrame
 
         // Listen for changes to the state of Soar and update our menus
         // accordingly
-        SoarChangeListener m_SoarChangeListener = new SoarChangeListener() {
-            @Override
-            public void soarConnectionChanged(SoarConnectionEvent e) {
-                // If the connection has changed reset the focus to null
-                clearAgentFocus(false);
-
-                updateMenus();
-            }
-
-            @Override
-            public void soarAgentListChanged(SoarAgentEvent e) {
-                // If we're removing the current focus agent then
-                // set the focus to null for this window.
-                if (e.isAgentRemoved()
-                    && Document.isSameAgent(e.getAgent(), m_AgentFocus)) {
-                    // If this agent is being closed down then decide if we
-                    // should destroy the window or not.
-                    boolean destroyOnClose = m_Document
-                        .isCloseWindowWhenDestroyAgent();
-
-                    if (destroyOnClose) {
-
-                        // We need to switch out of this thread because we're in
-                        // a handler for the before_agent_destroyed() event and
-                        // calling close() should shutdown the kernel if this is
-                        // the last window. So we thread-switch.
-                        getDisplay().asyncExec(() -> close());
-                        return;
-                    }
-
-                    // If we don't destroy the window we need to set the current
-                    // agent to being nothing
-                    clearAgentFocus(true);
-                }
-
-                updateMenus();
-            }
-        };
+        m_SoarChangeListener = new MainFrameSoarChangeListener();
 
         getDocument().addSoarChangeListener(m_SoarChangeListener);
 
@@ -426,6 +391,8 @@ public class MainFrame
 
         if (m_TextFont != null)
             m_TextFont.dispose();
+
+        getDocument().removeSoarChangeListener(m_SoarChangeListener);
 
         // Exit the app if we're the last frame
         if (this.getDocument().getNumberFrames() == 0)
@@ -1224,4 +1191,41 @@ public class MainFrame
         }
 
     };
+
+    private class MainFrameSoarChangeListener implements SoarChangeListener {
+        @Override
+        public void soarConnectionChanged(SoarConnectionEvent e) {
+            // If the connection has changed reset the focus to null
+            clearAgentFocus(false);
+
+            updateMenus();
+        }
+
+        @Override
+        public void soarAgentListChanged(SoarAgentEvent e) {
+            // If we're removing the current focus agent then
+            // set the focus to null for this window.
+            if (e.isAgentRemoved()
+                && Document.isSameAgent(e.getAgent(), m_AgentFocus)) {
+                // If this agent is being closed down then decide if we
+                // should destroy the window or not.
+                boolean destroyOnClose = m_Document
+                    .isCloseWindowWhenDestroyAgent();
+
+                if (destroyOnClose) {
+                    // We need to switch out of this thread because we're in
+                    // a handler for the before_agent_destroyed() event and
+                    // calling close() should shutdown the kernel if this is
+                    // the last window. So we thread-switch.
+                    getDisplay().asyncExec(MainFrame.this::close);
+                    return;
+                }
+                // If we don't destroy the window we need to set the current
+                // agent to being nothing
+                clearAgentFocus(true);
+            }
+
+            updateMenus();
+        }
+    }
 }
