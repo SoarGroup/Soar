@@ -27,7 +27,7 @@ public class CommandsMenu
 
     private Document m_Document = null;
 
-    private AbstractAction m_RestartAgent = new AbstractAction(
+    private final AbstractAction m_RestartAgent = new AbstractAction(
             "Clear &working memory")
     {
         @Override
@@ -37,7 +37,7 @@ public class CommandsMenu
         }
     };
 
-    private AbstractAction m_ExciseAll = new AbstractAction(
+    private final AbstractAction m_ExciseAll = new AbstractAction(
             "Excise &all productions")
     {
         @Override
@@ -47,7 +47,7 @@ public class CommandsMenu
         }
     };
 
-    private AbstractAction m_ExciseChunks = new AbstractAction("Excise &chunks")
+    private final AbstractAction m_ExciseChunks = new AbstractAction("Excise &chunks")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -56,7 +56,7 @@ public class CommandsMenu
         }
     };
 
-    private AbstractAction m_ExciseTask = new AbstractAction(
+    private final AbstractAction m_ExciseTask = new AbstractAction(
             "Excise &task productions")
     {
         @Override
@@ -66,7 +66,7 @@ public class CommandsMenu
         }
     };
 
-    private AbstractAction m_ExciseUser = new AbstractAction(
+    private final AbstractAction m_ExciseUser = new AbstractAction(
             "Excise &user productions")
     {
         @Override
@@ -76,7 +76,7 @@ public class CommandsMenu
         }
     };
 
-    private AbstractAction m_ExciseDefault = new AbstractAction(
+    private final AbstractAction m_ExciseDefault = new AbstractAction(
             "Excise &default productions")
     {
         @Override

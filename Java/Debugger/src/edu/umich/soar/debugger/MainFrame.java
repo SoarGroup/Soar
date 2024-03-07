@@ -98,13 +98,13 @@ public class MainFrame
 
     private static final String kWindowLayoutFile = "SoarDebuggerWindows.dlf";
 
-    private Composite m_Parent;
+    private final Composite m_Parent;
 
     /* The main window that contains everything else */
-    private MainWindow m_MainWindow;
+    private final MainWindow m_MainWindow;
 
     /** The menu bar */
-    private Menu m_MenuBar;
+    private final Menu m_MenuBar;
 
     /** The menus in the menu bar */
     private FileMenu m_FileMenu = null;
@@ -124,25 +124,25 @@ public class MainFrame
      * The main document object -- represents the Soar process. There is only
      * one of these ever in the debugger.
      */
-    private Document m_Document;
+    private final Document m_Document;
 
     /** Used to script the debugger itself */
-    private ScriptCommands m_ScriptCommands;
+    private final ScriptCommands m_ScriptCommands;
 
     /**
      * Extended commands set that the user could type at the command line (might
      * fold this into scripts or vice versa one day--not sure)
      */
-    private DebuggerCommands m_DebuggerCommands;
+    private final DebuggerCommands m_DebuggerCommands;
 
     /** Map of module names that are currently in use in this frame */
-    private NameRegister m_NameMap = new NameRegister();
+    private final NameRegister m_NameMap = new NameRegister();
 
     /**
      * Each frame has a unique name within the debugger (for the life of one
      * running of the app)
      */
-    private String m_Name;
+    private final String m_Name;
 
     /**
      * We associate a default agent with a MainFrame, so that windows within
@@ -177,12 +177,10 @@ public class MainFrame
      * Windows can register with the frame to learn when it switches focus to a
      * different agent
      */
-    private AgentFocusGenerator m_AgentFocusGenerator = new AgentFocusGenerator();
+    private final AgentFocusGenerator m_AgentFocusGenerator = new AgentFocusGenerator();
 
     /** The agent this window is currently focused on -- can be null */
     private Agent m_AgentFocus;
-
-    private SoarChangeListener m_SoarChangeListener;
 
     private boolean m_bClosing = false;
 
@@ -193,10 +191,10 @@ public class MainFrame
      * We'll keep a list of colors here that we wish to use elsewhere. When the
      * frame is disposed we should dispose them
      */
-    public Color m_White;
+    public final Color m_White;
 
     // List of all color objects we own and should dispose of when frame closes
-    private ArrayList<Color> m_Colors = new ArrayList<>();
+    private final ArrayList<Color> m_Colors = new ArrayList<>();
 
     public MainFrame(Composite parent, Document doc)
     {
@@ -223,11 +221,23 @@ public class MainFrame
 
         // Listen for changes to the state of Soar and update our menus
         // accordingly
-        m_SoarChangeListener = new SoarChangeListener()
-        {
+        // If the connection has changed reset the focus to null
+        // If we're removing the current focus agent then
+        // set the focus to null for this window.
+        // If this agent is being closed down then decide if we
+        // should
+        // destroy the window or not.
+        // We need to switch out of this thread because we're in
+        // a handler for
+        // the before_agent_destroyed() event and calling
+        // close() should shutdown the
+        // kernel if this is the last window. So we thread
+        // switch.
+        // If we don't destroy the window we need to set the current
+        // agent to being nothing
+        SoarChangeListener m_SoarChangeListener = new SoarChangeListener() {
             @Override
-            public void soarConnectionChanged(SoarConnectionEvent e)
-            {
+            public void soarConnectionChanged(SoarConnectionEvent e) {
                 // If the connection has changed reset the focus to null
                 clearAgentFocus(false);
 
@@ -235,21 +245,18 @@ public class MainFrame
             }
 
             @Override
-            public void soarAgentListChanged(SoarAgentEvent e)
-            {
+            public void soarAgentListChanged(SoarAgentEvent e) {
                 // If we're removing the current focus agent then
                 // set the focus to null for this window.
                 if (e.isAgentRemoved()
-                        && Document.isSameAgent(e.getAgent(), m_AgentFocus))
-                {
+                    && Document.isSameAgent(e.getAgent(), m_AgentFocus)) {
                     // If this agent is being closed down then decide if we
                     // should
                     // destroy the window or not.
                     boolean destroyOnClose = m_Document
-                            .isCloseWindowWhenDestroyAgent();
+                        .isCloseWindowWhenDestroyAgent();
 
-                    if (destroyOnClose)
-                    {
+                    if (destroyOnClose) {
                         // We need to switch out of this thread because we're in
                         // a handler for
                         // the before_agent_destroyed() event and calling

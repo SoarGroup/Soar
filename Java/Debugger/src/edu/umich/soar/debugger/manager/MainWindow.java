@@ -56,9 +56,9 @@ public class MainWindow
     // we're using.
     private Composite m_Window;
 
-    private MainFrame m_Frame;
+    private final MainFrame m_Frame;
 
-    private Document m_Document;
+    private final Document m_Document;
 
     public final static String kAttachKey = "Attach";
 
@@ -92,7 +92,7 @@ public class MainWindow
                                                        // with a sash control
 
     // The order of this list determines tab order
-    private ArrayList<Pane> m_PaneList = new ArrayList<>();
+    private final ArrayList<Pane> m_PaneList = new ArrayList<>();
 
     public MainWindow(MainFrame frame, Document doc, Composite parent)
     {

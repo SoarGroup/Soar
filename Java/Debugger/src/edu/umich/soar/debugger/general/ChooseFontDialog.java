@@ -54,9 +54,9 @@ public class ChooseFontDialog extends JPanel
     private boolean m_InitedFixedWidth = false; // The list of fixed width fonts
                                                 // is initialized later
 
-    private JList m_FontList;
+    private JList<FontDisplay> m_FontList;
 
-    private JList m_StyleList;
+    private JList<FontStyleDisplay> m_StyleList;
 
     private JTextField m_SizeField;
 
@@ -64,7 +64,7 @@ public class ChooseFontDialog extends JPanel
 
     private JCheckBox m_FixedWidthOnly;
 
-    private FontStyleDisplay[] m_FontStyles = new FontStyleDisplay[] {
+    private final FontStyleDisplay[] m_FontStyles = new FontStyleDisplay[] {
         new FontStyleDisplay("Plain", Font.PLAIN),
         new FontStyleDisplay("Bold", Font.BOLD),
         new FontStyleDisplay("Italic", Font.ITALIC),
@@ -83,7 +83,7 @@ public class ChooseFontDialog extends JPanel
      ********************************************************************************************/
     private static class FontDisplay
     {
-        private Font m_Font;
+        private final Font m_Font;
 
         private boolean m_IsFixedWidth;
 
@@ -117,9 +117,9 @@ public class ChooseFontDialog extends JPanel
      ********************************************************************************************/
     private static class FontStyleDisplay
     {
-        private int m_Style;
+        private final int m_Style;
 
-        private String m_Name;
+        private final String m_Name;
 
         public FontStyleDisplay(String name, int style)
         {
@@ -240,8 +240,8 @@ public class ChooseFontDialog extends JPanel
         m_FixedWidthOnly = new JCheckBox("Fixed width only");
         m_FixedWidthOnly.setSelected(false);
 
-        m_FontList = new JList(m_AllFontDisplays);
-        m_StyleList = new JList(m_FontStyles);
+        m_FontList = new JList<>(m_AllFontDisplays);
+        m_StyleList = new JList<>(m_FontStyles);
         m_SizeField = new JTextField(5);
 
         m_FontList.addListSelectionListener(e -> selectionChanged());

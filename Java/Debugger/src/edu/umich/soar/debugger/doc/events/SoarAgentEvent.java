@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SoarAgentEvent.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Jan 31, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc.events;
@@ -14,25 +14,25 @@ package edu.umich.soar.debugger.doc.events;
 import sml.Agent;
 
 /************************************************************************
- * 
+ *
  * Used to report a change to an agent (added, removed etc.)
- * 
+ *
  ************************************************************************/
 public class SoarAgentEvent extends java.util.EventObject
 {
     private static final long serialVersionUID = -1073490020065002122L;
 
-    public static int kAgentAdded = 1;
+    public static final int kAgentAdded = 1;
 
-    public static int kAgentRemoved = 2;
+    public static final int kAgentRemoved = 2;
 
-    public static int kListChanged = 3; // More generic -- just says the list
+    public static final int kListChanged = 3; // More generic -- just says the list
                                         // isn't the same now (use the more
                                         // specific event if you can)
 
-    private int m_Type;
+    private final int m_Type;
 
-    private Agent m_Agent;
+    private final Agent m_Agent;
 
     public SoarAgentEvent(Object source, int type, Agent agent)
     {

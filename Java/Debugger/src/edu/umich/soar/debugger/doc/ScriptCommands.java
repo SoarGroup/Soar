@@ -35,9 +35,9 @@ import java.util.Objects;
  ************************************************************************/
 public class ScriptCommands
 {
-    protected MainFrame m_Frame;
+    protected final MainFrame m_Frame;
 
-    protected Document m_Document;
+    protected final Document m_Document;
 
     public ScriptCommands(MainFrame frame, Document doc)
     {

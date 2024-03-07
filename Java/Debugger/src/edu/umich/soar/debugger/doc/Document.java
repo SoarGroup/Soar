@@ -70,7 +70,7 @@ public class Document implements Kernel.AgentEventInterface,
      * This object is used to get strings for Soar commands in a version
      * independent way
      */
-    private SoarCommands m_SoarCommands = new SoarCommands();
+    private final SoarCommands m_SoarCommands = new SoarCommands();
 
     /**
      * The properties for this application (holds user preferences). Version
@@ -83,9 +83,9 @@ public class Document implements Kernel.AgentEventInterface,
      * The list of all modules (types of debugger windows) that exist. This is a
      * list of types, not a list of window instances.
      */
-    private ModuleList m_ModuleList = new ModuleList();
+    private final ModuleList m_ModuleList = new ModuleList();
 
-    private SoarChangeGenerator m_SoarChangeGenerator = new SoarChangeGenerator();
+    private final SoarChangeGenerator m_SoarChangeGenerator = new SoarChangeGenerator();
 
     /**
      * Stores the pointer to the Soar kernel we are currently interacting with
@@ -106,7 +106,7 @@ public class Document implements Kernel.AgentEventInterface,
      * The list of all main frames in the application -- each frame has a menu
      * bar
      */
-    private FrameList m_FrameList = new FrameList();
+    private final FrameList m_FrameList = new FrameList();
 
     /** We have to pump messages on this display to keep the app alive */
     private Display m_Display = null;
@@ -148,7 +148,7 @@ public class Document implements Kernel.AgentEventInterface,
      */
     public static final boolean kDocInOwnThread = true;
 
-    private DocumentThread2 m_DocumentThread;
+    private final DocumentThread2 m_DocumentThread;
 
     public static final boolean kShutdownInSeparateThread = true;
 
@@ -1089,7 +1089,7 @@ public class Document implements Kernel.AgentEventInterface,
             }
             catch (Throwable t)
             {
-                System.out.println(t);
+                System.err.println(t);
                 t.printStackTrace();
             }
         }
@@ -1229,7 +1229,7 @@ public class Document implements Kernel.AgentEventInterface,
         return m_DocumentThread.getExecutedCommandResult(command);
     }
 
-    HashMap<String, Long> m_RHSFunctions = new HashMap<>();
+    final HashMap<String, Long> m_RHSFunctions = new HashMap<>();
 
     public boolean isRHSFunctionRegistered(String functionName)
     {

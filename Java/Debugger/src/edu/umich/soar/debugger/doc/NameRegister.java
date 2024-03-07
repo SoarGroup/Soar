@@ -23,7 +23,7 @@ import edu.umich.soar.debugger.modules.AbstractView;
  ************************************************************************/
 public class NameRegister
 {
-	private HashMap<String, AbstractView> m_NameMap = new HashMap<>() ;
+	private final HashMap<String, AbstractView> m_NameMap = new HashMap<>() ;
 
 	public boolean isNameInUse(String name)
 	{

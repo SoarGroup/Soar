@@ -23,10 +23,10 @@ import java.util.Arrays;
 public class CommandHistory
 {
     /** Max number of items to store in the history */
-    public static int kMaxHistorySize = 20;
+    public static final int kMaxHistorySize = 20;
 
     /** The current history */
-    private String[] m_History = new String[kMaxHistorySize];
+    private final String[] m_History = new String[kMaxHistorySize];
 
     /** The current number of items in the history list */
     private int m_HistorySize = 0;

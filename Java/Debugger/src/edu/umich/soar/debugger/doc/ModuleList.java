@@ -24,7 +24,7 @@ import java.util.List;
  ********************************************************************************************/
 public class ModuleList
 {
-    private List<Module> m_List = new ArrayList<>();
+    private final List<Module> m_List = new ArrayList<>();
 
     public int size()
     {

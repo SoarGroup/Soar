@@ -29,7 +29,7 @@ public class DebugLevelMenu implements MenuUpdater
 
     private Document m_Document = null;
 
-    private AbstractAction m_WatchStatus = new AbstractAction(
+    private final AbstractAction m_WatchStatus = new AbstractAction(
             "Show current &watch status")
     {
         @Override
@@ -39,7 +39,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchDecisions = new AbstractAction("1. Decisions")
+    private final AbstractAction m_WatchDecisions = new AbstractAction("1. Decisions")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -48,7 +48,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchPhases = new AbstractAction("2. Phases")
+    private final AbstractAction m_WatchPhases = new AbstractAction("2. Phases")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -57,7 +57,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchAllProductions = new AbstractAction(
+    private final AbstractAction m_WatchAllProductions = new AbstractAction(
             "3. All productions")
     {
         @Override
@@ -67,7 +67,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchNoProductions = new AbstractAction(
+    private final AbstractAction m_WatchNoProductions = new AbstractAction(
             "3. No productions")
     {
         @Override
@@ -77,7 +77,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchUserProductions = new AbstractAction(
+    private final AbstractAction m_WatchUserProductions = new AbstractAction(
             "   3a. User productions")
     {
         @Override
@@ -87,7 +87,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchChunks = new AbstractAction("   3b. Chunks")
+    private final AbstractAction m_WatchChunks = new AbstractAction("   3b. Chunks")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -96,7 +96,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchJustifications = new AbstractAction(
+    private final AbstractAction m_WatchJustifications = new AbstractAction(
             "   3c. Justifications")
     {
         @Override
@@ -106,7 +106,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchWmes = new AbstractAction("4. Wmes")
+    private final AbstractAction m_WatchWmes = new AbstractAction("4. Wmes")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -115,7 +115,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchPreferences = new AbstractAction(
+    private final AbstractAction m_WatchPreferences = new AbstractAction(
             "5. Preferences")
     {
         @Override
@@ -125,7 +125,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchNone = new AbstractAction("Watch &nothing")
+    private final AbstractAction m_WatchNone = new AbstractAction("Watch &nothing")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -134,7 +134,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchOne = new AbstractAction(
+    private final AbstractAction m_WatchOne = new AbstractAction(
             "Watch level &1 only")
     {
         @Override
@@ -144,7 +144,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchTwo = new AbstractAction(
+    private final AbstractAction m_WatchTwo = new AbstractAction(
             "Watch level 1-&2 only")
     {
         @Override
@@ -154,7 +154,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchThree = new AbstractAction(
+    private final AbstractAction m_WatchThree = new AbstractAction(
             "Watch level 1-&3 only")
     {
         @Override
@@ -164,7 +164,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchFour = new AbstractAction(
+    private final AbstractAction m_WatchFour = new AbstractAction(
             "Watch level 1-&4 only")
     {
         @Override
@@ -174,7 +174,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchFive = new AbstractAction("Watch level 1-&5")
+    private final AbstractAction m_WatchFive = new AbstractAction("Watch level 1-&5")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -183,7 +183,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WmesNone = new AbstractAction(
+    private final AbstractAction m_WmesNone = new AbstractAction(
             "Production wme detail - none")
     {
         @Override
@@ -193,7 +193,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WmesTimeTags = new AbstractAction(
+    private final AbstractAction m_WmesTimeTags = new AbstractAction(
             "Production wme detail - time tags")
     {
         @Override
@@ -203,7 +203,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WmesFull = new AbstractAction(
+    private final AbstractAction m_WmesFull = new AbstractAction(
             "Production wme detail - full")
     {
         @Override
@@ -213,7 +213,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchAliases = new AbstractAction("Watch aliases")
+    private final AbstractAction m_WatchAliases = new AbstractAction("Watch aliases")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -222,7 +222,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchProductionLoading = new AbstractAction(
+    private final AbstractAction m_WatchProductionLoading = new AbstractAction(
             "Watch production loading")
     {
         @Override
@@ -232,7 +232,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchLearnPrint = new AbstractAction(
+    private final AbstractAction m_WatchLearnPrint = new AbstractAction(
             "Watch chunks/justifications as created")
     {
         @Override
@@ -242,7 +242,7 @@ public class DebugLevelMenu implements MenuUpdater
         }
     };
 
-    private AbstractAction m_WatchBacktracing = new AbstractAction(
+    private final AbstractAction m_WatchBacktracing = new AbstractAction(
             "Watch backtracing as chunks created")
     {
         @Override

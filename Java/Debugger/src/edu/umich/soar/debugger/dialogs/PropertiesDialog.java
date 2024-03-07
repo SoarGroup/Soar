@@ -40,7 +40,7 @@ public class PropertiesDialog extends BaseDialog
 {
     public abstract static class Property
     {
-        protected String m_PropertyName;
+        protected final String m_PropertyName;
 
         public Property(String propertyName)
         {
@@ -67,9 +67,9 @@ public class PropertiesDialog extends BaseDialog
     {
         protected int m_Value;
 
-        protected int m_MinValue;
+        protected final int m_MinValue;
 
-        protected int m_MaxValue;
+        protected final int m_MaxValue;
 
         protected Text m_Text;
 
@@ -396,9 +396,9 @@ public class PropertiesDialog extends BaseDialog
         }
     }
 
-    protected Property[] m_BaseProperties;
+    protected final Property[] m_BaseProperties;
 
-    protected Composite m_Container;
+    protected final Composite m_Container;
 
     public PropertiesDialog(MainFrame frame, String title, boolean modal,
             Property[] baseProperties)

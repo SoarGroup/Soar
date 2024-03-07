@@ -33,7 +33,6 @@ import edu.umich.soar.debugger.doc.Document;
  ************************************************************************/
 public class SWTApplication
 {
-    private Document m_Document = null;
 
     static Display display;
 
@@ -145,7 +144,7 @@ public class SWTApplication
 
     public void startApp(String[] args, Display display) {
         // The document manages the Soar process
-        m_Document = new Document();
+        Document m_Document = new Document();
 
         // Check for command line options
         boolean remote = hasOption(args, "-remote");

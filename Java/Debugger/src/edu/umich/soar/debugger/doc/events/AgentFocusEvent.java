@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * AgentFocusEvent.java
- * 
- * Description:	
- * 
+ *
+ * Description:
+ *
  * Created on 	Feb 2, 2005
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc.events;
@@ -14,9 +14,9 @@ package edu.umich.soar.debugger.doc.events;
 import sml.Agent;
 
 /************************************************************************
- * 
+ *
  * Event fired when a frame switches to tracking a different agent.
- * 
+ *
  ************************************************************************/
 public class AgentFocusEvent extends java.util.EventObject
 {
@@ -29,9 +29,9 @@ public class AgentFocusEvent extends java.util.EventObject
     public static final int kGone = 3; // Agent has been deleted (usually
                                        // because kernel is gone)
 
-    private int m_Event;
+    private final int m_Event;
 
-    private Agent m_Agent;
+    private final Agent m_Agent;
 
     public AgentFocusEvent(Object source, int event, Agent agent)
     {

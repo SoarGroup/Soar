@@ -91,9 +91,9 @@ public class RHSBarChartView extends AbstractRHSFunView implements
             this.value = ov.value;
         }
 
-        public String string;
+        public final String string;
 
-        public Integer value;
+        public final Integer value;
 
         // This is backwards because descending iterator is a java 1.6 feature
         @Override
@@ -125,11 +125,11 @@ public class RHSBarChartView extends AbstractRHSFunView implements
     boolean clear = false;
 
     // category -> series -> value
-    HashMap<String, HashMap<String, Double>> categoryToSeriesMap = new HashMap<>();
+    final HashMap<String, HashMap<String, Double>> categoryToSeriesMap = new HashMap<>();
 
-    TreeSet<OrderedString> categoryOrderSet = new TreeSet<>();
+    final TreeSet<OrderedString> categoryOrderSet = new TreeSet<>();
 
-    TreeSet<OrderedString> seriesOrderSet = new TreeSet<>();
+    final TreeSet<OrderedString> seriesOrderSet = new TreeSet<>();
 
     @Override
     public String rhsFunctionHandler(int eventID, Object data,

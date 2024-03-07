@@ -106,9 +106,9 @@ public class JavaElementXML
          *************************************************************************/
         private static class Token
         {
-            private String m_Value;
+            private final String m_Value;
 
-            private int m_Type;
+            private final int m_Type;
 
             public Token(String value, int type)
             {
@@ -129,7 +129,7 @@ public class JavaElementXML
             // public void setValue(String s){ this.m_Value = s ; }
         }
 
-        protected BufferedReader m_Input;
+        protected final BufferedReader m_Input;
 
         protected String m_CurrentLine;
 
@@ -564,10 +564,10 @@ public class JavaElementXML
             .getProperty("line.separator");
 
     /** List of attribute names and string values */
-    protected HashMap<String, String> m_AttributeList = new HashMap<>();
+    protected final HashMap<String, String> m_AttributeList = new HashMap<>();
 
     /** List of elements contained in this element */
-    protected ArrayList<JavaElementXML> m_ChildElementList = new ArrayList<>();
+    protected final ArrayList<JavaElementXML> m_ChildElementList = new ArrayList<>();
 
     /** The tag for this item */
     protected String m_TagName;

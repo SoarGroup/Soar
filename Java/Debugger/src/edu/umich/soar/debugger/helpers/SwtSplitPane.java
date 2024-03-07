@@ -35,17 +35,13 @@ public class SwtSplitPane
 {
     private int m_Orientation = SWT.HORIZONTAL;
 
-    private Group m_Pane;
-
-    private FormLayout m_Layout;
-
-    private Listener m_SashListener;
+    private final Group m_Pane;
 
     private Control m_Left;
 
     private Control m_Right;
 
-    private Sash m_Sash;
+    private final Sash m_Sash;
 
     private double m_Position; // 0.0 is left/top ; 1.0 is bottom/right
 
@@ -57,7 +53,7 @@ public class SwtSplitPane
     public SwtSplitPane(Composite parent, int style)
     {
         m_Pane = new Group(parent, 0);
-        m_Layout = new FormLayout();
+        FormLayout m_Layout = new FormLayout();
         m_Pane.setLayout(m_Layout);
 
         if ((style & SWT.VERTICAL) != 0)
@@ -67,7 +63,7 @@ public class SwtSplitPane
 
         m_Pane.addListener(SWT.Resize, e -> layoutControls());
 
-        m_SashListener = this::onDragSash;
+        Listener m_SashListener = this::onDragSash;
 
         // The sash uses the inverse orientation
         m_Sash = new Sash(m_Pane,

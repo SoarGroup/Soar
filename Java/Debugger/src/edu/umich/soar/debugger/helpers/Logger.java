@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * Logger.java
- * 
+ *
  * Description:	Provides support for logging output from a window to a file.
- * 
+ *
  * Created on 	Feb 9, 2006
  * @author 		Douglas Pearson
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.helpers;
@@ -121,9 +121,9 @@ public class Logger
     }
 
     /********************************************************************************************
-     * 
+     *
      * Add this string to the log file (if we're currently logging).
-     * 
+     *
      * @param text
      *            The string to log
      * @param replaceSoarNewLines
@@ -154,7 +154,7 @@ public class Logger
         }
         catch (Exception ex)
         {
-            System.out.println(ex);
+            System.err.println(ex);
         }
     }
 
@@ -167,7 +167,7 @@ public class Logger
         }
         catch (Exception ex)
         {
-            System.out.println(ex);
+            System.err.println(ex);
         }
         m_OutputFile = null;
         m_IsLogging = false;

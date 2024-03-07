@@ -50,13 +50,13 @@ public class RemoteDialog extends BaseDialog
         }
     }
 
-    private Text m_IP;
+    private final Text m_IP;
 
-    private Text m_Port;
+    private final Text m_Port;
 
     private RemoteInfo m_Result;
 
-    private MainFrame m_Frame;
+    private final MainFrame m_Frame;
 
     /********************************************************************************************
      *

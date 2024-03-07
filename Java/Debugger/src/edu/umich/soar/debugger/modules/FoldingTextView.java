@@ -123,7 +123,7 @@ public class FoldingTextView extends AbstractComboView implements
      */
     protected static class TreeData
     {
-        protected ArrayList<String> m_Lines = new ArrayList<>();
+        protected final ArrayList<String> m_Lines = new ArrayList<>();
 
         public void addLine(String text)
         {
@@ -1279,11 +1279,11 @@ public class FoldingTextView extends AbstractComboView implements
 
     public static class RunWrapper implements Runnable
     {
-        FoldingTextView m_View;
+        final FoldingTextView m_View;
 
-        Agent m_Agent;
+        final Agent m_Agent;
 
-        ClientXML m_XML;
+        final ClientXML m_XML;
 
         public RunWrapper(FoldingTextView view, Agent agent, ClientXML xml)
         {

@@ -24,9 +24,9 @@ import edu.umich.soar.debugger.modules.AbstractView;
  ************************************************************************/
 public class DebuggerCommands
 {
-    protected MainFrame m_Frame;
+    protected final MainFrame m_Frame;
 
-    protected Document m_Document;
+    protected final Document m_Document;
 
     public final static String kClear = "clear";
 
@@ -36,7 +36,7 @@ public class DebuggerCommands
 
     public final static String kEditProduction = "edit-production";
 
-    protected String[] kCommands = new String[] { kClear, kQuit, kExit,
+    protected final String[] kCommands = new String[] { kClear, kQuit, kExit,
             kEditProduction };
 
     public DebuggerCommands(MainFrame frame, Document doc)

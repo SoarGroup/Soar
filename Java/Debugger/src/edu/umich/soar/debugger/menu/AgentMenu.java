@@ -31,7 +31,7 @@ public class AgentMenu
 
     private MainFrame m_Frame = null;
 
-    private AbstractAction m_SelectAgent = new AbstractAction(
+    private final AbstractAction m_SelectAgent = new AbstractAction(
             "Select Current Agent")
     {
         @Override
@@ -41,7 +41,7 @@ public class AgentMenu
         }
     };
 
-    private AbstractAction m_CreateAgentSame = new AbstractAction(
+    private final AbstractAction m_CreateAgentSame = new AbstractAction(
             "Create Agent - Same Window")
     {
         @Override
@@ -51,7 +51,7 @@ public class AgentMenu
         }
     };
 
-    private AbstractAction m_CreateAgentNew = new AbstractAction(
+    private final AbstractAction m_CreateAgentNew = new AbstractAction(
             "Create Agent - New Window")
     {
         @Override
@@ -61,7 +61,7 @@ public class AgentMenu
         }
     };
 
-    private AbstractAction m_CreateNewWindow = new AbstractAction(
+    private final AbstractAction m_CreateNewWindow = new AbstractAction(
             "Create Window - No New Agent")
     {
         @Override
@@ -71,7 +71,7 @@ public class AgentMenu
         }
     };
 
-    private AbstractAction m_CreateNewOnAgent = new AbstractAction(
+    private final AbstractAction m_CreateNewOnAgent = new AbstractAction(
             "Create New Window on Agent Creation")
     {
         @Override
@@ -81,7 +81,7 @@ public class AgentMenu
         }
     };
 
-    private AbstractAction m_CloseOnDestroy = new AbstractAction(
+    private final AbstractAction m_CloseOnDestroy = new AbstractAction(
             "Close Window on Agent Destruction")
     {
         @Override
@@ -91,7 +91,7 @@ public class AgentMenu
         }
     };
 
-    private AbstractAction m_DestroyAgent = new AbstractAction("Destroy Agent")
+    private final AbstractAction m_DestroyAgent = new AbstractAction("Destroy Agent")
     {
         @Override
         public void actionPerformed(ActionEvent e)

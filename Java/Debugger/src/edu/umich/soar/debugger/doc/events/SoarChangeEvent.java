@@ -1,12 +1,12 @@
 /********************************************************************************************
  *
  * SoarChangeEvent.java
- * 
+ *
  * Created on 	Nov 10, 2003
  *
  * @author 		Doug
  * @version
- * 
+ *
  * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
  ********************************************************************************************/
 package edu.umich.soar.debugger.doc.events;
@@ -14,10 +14,10 @@ package edu.umich.soar.debugger.doc.events;
 import java.util.EventObject;
 
 /********************************************************************************************
- * 
+ *
  * Event fired when a change occurs in the soar process (e.g. output is
  * generated from a command)
- * 
+ *
  ********************************************************************************************/
 public class SoarChangeEvent extends EventObject
 {
@@ -27,9 +27,9 @@ public class SoarChangeEvent extends EventObject
 
     public final static int kSoarStopped = 2;
 
-    private String m_Message;
+    private final String m_Message;
 
-    private int m_Code;
+    private final int m_Code;
 
     public SoarChangeEvent(Object source, int code, String message)
     {

@@ -85,7 +85,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     protected String m_CurrentCommand;
 
     /** The history of commands for this window */
-    protected CommandHistory m_CommandHistory = new CommandHistory();
+    protected final CommandHistory m_CommandHistory = new CommandHistory();
 
     protected long m_PrintCallback = -1;
 
@@ -271,7 +271,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements
     // SWT.TRAVERSE_TAB_NEXT event (through event.type)
     // is too late in the sequence it turns out. That's why we listen for
     // SWT.Traverse and then look at the detail.
-    protected Listener m_Tab = new Listener()
+    protected final Listener m_Tab = new Listener()
     {
         @Override
         public void handleEvent(Event e)

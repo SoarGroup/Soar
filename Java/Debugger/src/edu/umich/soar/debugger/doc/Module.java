@@ -26,13 +26,13 @@ import edu.umich.soar.debugger.modules.AbstractView;
 public class Module
 {
     /** The name shown to the user for this class */
-    private String m_Name;
+    private final String m_Name;
 
     /** A description shown to the user for this class */
-    private String m_Description;
+    private final String m_Description;
 
     /** The class itself */
-    private Class<? extends AbstractView> m_Class;
+    private final Class<? extends AbstractView> m_Class;
 
     public Module(String name, String description,
             Class<? extends AbstractView> c)

@@ -31,7 +31,7 @@ public class EditMenu
 
     private SearchDialog m_SearchDialog = null;
 
-    private AbstractAction m_Copy = new AbstractAction("&Copy\t" + SHORTCUT_HINT + "C")
+    private final AbstractAction m_Copy = new AbstractAction("&Copy\t" + SHORTCUT_HINT + "C")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -40,7 +40,7 @@ public class EditMenu
         }
     };
 
-    private AbstractAction m_Paste = new AbstractAction("&Paste\t" + SHORTCUT_HINT + "V")
+    private final AbstractAction m_Paste = new AbstractAction("&Paste\t" + SHORTCUT_HINT + "V")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -49,7 +49,7 @@ public class EditMenu
         }
     };
 
-    private AbstractAction m_Search = new AbstractAction("&Find...\t" + SHORTCUT_HINT + "F")
+    private final AbstractAction m_Search = new AbstractAction("&Find...\t" + SHORTCUT_HINT + "F")
     {
         @Override
         public void actionPerformed(ActionEvent e)

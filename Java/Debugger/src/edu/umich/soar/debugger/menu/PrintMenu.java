@@ -27,7 +27,7 @@ public class PrintMenu
 
     private Document m_Document = null;
 
-    private AbstractAction m_PrintProductions = new AbstractAction(
+    private final AbstractAction m_PrintProductions = new AbstractAction(
             "Print all &productions")
     {
         @Override
@@ -37,7 +37,7 @@ public class PrintMenu
         }
     };
 
-    private AbstractAction m_PrintChunks = new AbstractAction(
+    private final AbstractAction m_PrintChunks = new AbstractAction(
             "Print all &chunks")
     {
         @Override
@@ -47,7 +47,7 @@ public class PrintMenu
         }
     };
 
-    private AbstractAction m_PrintJustifications = new AbstractAction(
+    private final AbstractAction m_PrintJustifications = new AbstractAction(
             "Print all &justifications")
     {
         @Override
@@ -57,7 +57,7 @@ public class PrintMenu
         }
     };
 
-    private AbstractAction m_PrintStack = new AbstractAction(
+    private final AbstractAction m_PrintStack = new AbstractAction(
             "Print &goal/state stack")
     {
         @Override
@@ -67,7 +67,7 @@ public class PrintMenu
         }
     };
 
-    private AbstractAction m_PrintState = new AbstractAction("Print &state")
+    private final AbstractAction m_PrintState = new AbstractAction("Print &state")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -76,7 +76,7 @@ public class PrintMenu
         }
     };
 
-    private AbstractAction m_PrintOperator = new AbstractAction(
+    private final AbstractAction m_PrintOperator = new AbstractAction(
             "Print &operator")
     {
         @Override
@@ -86,7 +86,7 @@ public class PrintMenu
         }
     };
 
-    private AbstractAction m_PrintTopState = new AbstractAction(
+    private final AbstractAction m_PrintTopState = new AbstractAction(
             "Print &top state")
     {
         @Override
@@ -96,7 +96,7 @@ public class PrintMenu
         }
     };
 
-    private AbstractAction m_PrintSuperState = new AbstractAction(
+    private final AbstractAction m_PrintSuperState = new AbstractAction(
             "Print s&uper state")
     {
         @Override

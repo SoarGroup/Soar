@@ -115,7 +115,7 @@ public class RHSObjectTextView extends RHSFunTextView implements
             return this.id;
         }
 
-        protected String id;
+        protected final String id;
 
         protected int order = 0;
 
@@ -207,10 +207,10 @@ public class RHSObjectTextView extends RHSFunTextView implements
     }
 
     // Identifier to metadata map
-    HashMap<String, OrderedIdentifier> idToOrdered = new HashMap<>();
+    final HashMap<String, OrderedIdentifier> idToOrdered = new HashMap<>();
 
     // The sorted objects
-    TreeSet<OrderedIdentifier> sortedIdentifiers = new TreeSet<>();
+    final TreeSet<OrderedIdentifier> sortedIdentifiers = new TreeSet<>();
 
     @Override
     public String rhsFunctionHandler(int eventID, Object data,

@@ -20,7 +20,7 @@ import sml.Agent;
  ************************************************************************/
 public class AgentFocusGenerator
 {
-    protected java.util.ArrayList<AgentFocusListener> m_Listeners = new java.util.ArrayList<>();
+    protected final java.util.ArrayList<AgentFocusListener> m_Listeners = new java.util.ArrayList<>();
 
     public synchronized void addAgentFocusListener(AgentFocusListener listener)
     {

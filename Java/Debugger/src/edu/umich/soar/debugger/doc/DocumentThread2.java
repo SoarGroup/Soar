@@ -45,7 +45,7 @@ public class DocumentThread2 extends Thread
      */
     public abstract static class Command
     {
-        protected Agent m_Agent;
+        protected final Agent m_Agent;
 
         protected Object m_Result;
 
@@ -88,7 +88,7 @@ public class DocumentThread2 extends Thread
 
     public static class CommandExecCommandLine extends Command
     {
-        protected String m_Command;
+        protected final String m_Command;
 
         public CommandExecCommandLine(Agent agent, String command)
         {
@@ -113,9 +113,9 @@ public class DocumentThread2 extends Thread
 
     public static class CommandExecCommandLineXML extends Command
     {
-        protected ClientAnalyzedXML m_Response;
+        protected final ClientAnalyzedXML m_Response;
 
-        protected String m_Command;
+        protected final String m_Command;
 
         public CommandExecCommandLineXML(Agent agent, String command,
                 ClientAnalyzedXML response)
@@ -142,13 +142,13 @@ public class DocumentThread2 extends Thread
     }
 
     /** The commands waiting to be executed */
-    private ArrayList<Command> m_ToExecuteQueue = new ArrayList<>();
+    private final ArrayList<Command> m_ToExecuteQueue = new ArrayList<>();
 
     /** A flag used when we wish to stop this thread (during system shutdown) */
     private boolean m_AskedToStop = false;
 
     /** The main document (which owns the Soar kernel object etc.) */
-    private Document m_Document;
+    private final Document m_Document;
 
     private boolean m_IsExecutingCommand = false;
 
@@ -159,7 +159,7 @@ public class DocumentThread2 extends Thread
      * If true, print trace information as each command is scheduled and
      * executed
      */
-    private static boolean kTraceCommands = false;
+    private static final boolean kTraceCommands = false;
 
     public DocumentThread2(Document doc)
     {

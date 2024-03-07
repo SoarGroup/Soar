@@ -30,7 +30,7 @@ public class FileMenu
 
     private Document m_Document = null;
 
-    private AbstractAction m_LoadSource = new AbstractAction(
+    private final AbstractAction m_LoadSource = new AbstractAction(
             "Load &source file...")
     {
         @Override
@@ -40,7 +40,7 @@ public class FileMenu
         }
     };
 
-    private AbstractAction m_ChangeDirectory = new AbstractAction(
+    private final AbstractAction m_ChangeDirectory = new AbstractAction(
             "&Change current folder...")
     {
         @Override
@@ -50,7 +50,7 @@ public class FileMenu
         }
     };
 
-    private AbstractAction m_LoadRete = new AbstractAction(
+    private final AbstractAction m_LoadRete = new AbstractAction(
             "&Load production memory (rete)...")
     {
         @Override
@@ -60,7 +60,7 @@ public class FileMenu
         }
     };
 
-    private AbstractAction m_SaveRete = new AbstractAction(
+    private final AbstractAction m_SaveRete = new AbstractAction(
             "Save production memory (&rete)...")
     {
         @Override
@@ -70,7 +70,7 @@ public class FileMenu
         }
     };
 
-    private AbstractAction m_LogNewFile = new AbstractAction(
+    private final AbstractAction m_LogNewFile = new AbstractAction(
             "Log &output to file...")
     {
         @Override
@@ -89,7 +89,7 @@ public class FileMenu
     // private AbstractAction m_LogStatus = new
     // AbstractAction("Logging &status") { public void
     // actionPerformed(ActionEvent e) { logStatus(e) ; } } ;
-    private AbstractAction m_Load = new AbstractAction("Load &window layout...")
+    private final AbstractAction m_Load = new AbstractAction("Load &window layout...")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -98,7 +98,7 @@ public class FileMenu
         }
     };
 
-    private AbstractAction m_Save = new AbstractAction("Save w&indow layout...")
+    private final AbstractAction m_Save = new AbstractAction("Save w&indow layout...")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -107,7 +107,7 @@ public class FileMenu
         }
     };
 
-    private AbstractAction m_Exit = new AbstractAction("E&xit")
+    private final AbstractAction m_Exit = new AbstractAction("E&xit")
     {
         @Override
         public void actionPerformed(ActionEvent e)

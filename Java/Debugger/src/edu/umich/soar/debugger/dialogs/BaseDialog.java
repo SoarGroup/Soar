@@ -36,13 +36,13 @@ import edu.umich.soar.debugger.helpers.FormDataHelper;
 public class BaseDialog
 {
     // The dialog box
-    protected Shell m_Dialog;
+    protected final Shell m_Dialog;
 
-    protected Button m_OK;
+    protected final Button m_OK;
 
-    protected Button m_Cancel;
+    protected final Button m_Cancel;
 
-    protected Composite m_OpenArea;
+    protected final Composite m_OpenArea;
 
     protected boolean m_Cancelled;
 

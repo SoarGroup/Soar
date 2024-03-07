@@ -2,7 +2,7 @@ package edu.umich.soar.debugger.general;
 
 public class OSName
 {
-    // 
+    //
     // os.name values
     // Digital Unix
     // FreeBSD
@@ -43,6 +43,6 @@ public class OSName
         return !isWindows() && !isMacOS();
     }
 
-    public static String kSystemLineSeparator = System
+    public static final String kSystemLineSeparator = System
             .getProperty("line.separator");
 }

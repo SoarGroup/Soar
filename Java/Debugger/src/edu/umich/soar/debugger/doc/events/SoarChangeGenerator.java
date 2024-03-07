@@ -22,7 +22,7 @@ import sml.Agent;
  ********************************************************************************************/
 public class SoarChangeGenerator
 {
-    protected java.util.ArrayList<SoarChangeListener> m_Listeners = new java.util.ArrayList<>();
+    protected final java.util.ArrayList<SoarChangeListener> m_Listeners = new java.util.ArrayList<>();
 
     public synchronized void addSoarChangeListener(SoarChangeListener listener)
     {

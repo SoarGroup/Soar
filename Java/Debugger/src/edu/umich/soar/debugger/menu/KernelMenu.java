@@ -31,7 +31,7 @@ public class KernelMenu
 
     private MainFrame m_Frame = null;
 
-    private AbstractAction m_StartKernel = new AbstractAction(
+    private final AbstractAction m_StartKernel = new AbstractAction(
             "Create new &local Soar Kernel instance")
     {
         @Override
@@ -41,7 +41,7 @@ public class KernelMenu
         }
     };
 
-    private AbstractAction m_StopKernel = new AbstractAction(
+    private final AbstractAction m_StopKernel = new AbstractAction(
             "Delete local &Soar Kernel instance")
     {
         @Override
@@ -51,7 +51,7 @@ public class KernelMenu
         }
     };
 
-    private AbstractAction m_RemoteConnect = new AbstractAction(
+    private final AbstractAction m_RemoteConnect = new AbstractAction(
             "Connect to &remote Soar...")
     {
         @Override
@@ -61,7 +61,7 @@ public class KernelMenu
         }
     };
 
-    private AbstractAction m_RemoteDisconnect = new AbstractAction(
+    private final AbstractAction m_RemoteDisconnect = new AbstractAction(
             "&Disconnect from remote Soar")
     {
         @Override

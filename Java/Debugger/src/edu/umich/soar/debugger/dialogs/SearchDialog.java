@@ -32,18 +32,14 @@ import edu.umich.soar.debugger.modules.AbstractView;
  ************************************************************************/
 public class SearchDialog extends BaseDialog
 {
-    // The find and replace buttons
-    private Button m_DoFind;
 
-    private AbstractView m_View;
+    private final AbstractView m_View;
 
-    private MainFrame m_Frame;
+    private final MainFrame m_Frame;
 
     private Text m_FindText;
 
     private Button m_Down;
-
-    private Button m_Up;
 
     private Button m_Match;
 
@@ -161,7 +157,7 @@ public class SearchDialog extends BaseDialog
         m_Down = new Button(options, SWT.RADIO);
         m_Down.setText("D&own");
 
-        m_Up = new Button(options, SWT.RADIO);
+        Button m_Up = new Button(options, SWT.RADIO);
         m_Up.setText("&Up");
 
         // Add the keep window checkbox
@@ -185,7 +181,8 @@ public class SearchDialog extends BaseDialog
         buttons.setLayout(new GridLayout());
 
         // Create the Find button
-        m_DoFind = new Button(buttons, SWT.PUSH);
+        // The find and replace buttons
+        Button m_DoFind = new Button(buttons, SWT.PUSH);
         m_DoFind.setText("&Find   Ctrl-F");
         m_DoFind.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 

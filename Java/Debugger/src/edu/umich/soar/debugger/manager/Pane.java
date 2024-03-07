@@ -43,7 +43,7 @@ public class Pane
     // List of views attached to this pane
     // Each view represents a distinct module and only one is visible at a time
     // (> 1 => we use some form of tab)
-    private List<AbstractView> m_Views = new ArrayList<>();
+    private final List<AbstractView> m_Views = new ArrayList<>();
 
     private Composite m_Pane;
 

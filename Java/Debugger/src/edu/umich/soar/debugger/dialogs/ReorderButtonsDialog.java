@@ -40,11 +40,11 @@ public class ReorderButtonsDialog extends BaseDialog
 {
     private ArrayList<ButtonView.ButtonInfo> m_Result;
 
-    private List m_ButtonListControl;
+    private final List m_ButtonListControl;
 
-    private ButtonView.ButtonInfo[] m_Buttons;
+    private final ButtonView.ButtonInfo[] m_Buttons;
 
-    private String[] m_ButtonNames;
+    private final String[] m_ButtonNames;
 
     private boolean m_ModifiedList = false;
 

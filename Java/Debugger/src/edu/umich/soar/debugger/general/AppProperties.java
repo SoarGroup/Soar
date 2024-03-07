@@ -19,7 +19,7 @@ public class AppProperties extends java.util.Properties
 
     protected String m_Filename;
 
-    protected String m_Header;
+    protected final String m_Header;
 
     protected final String kVersion = "Version";
 

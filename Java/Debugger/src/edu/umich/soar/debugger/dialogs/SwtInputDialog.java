@@ -33,9 +33,7 @@ public class SwtInputDialog extends BaseDialog
 {
     private String m_Result;
 
-    private Text m_EntryField;
-
-    private boolean m_MultiLine;
+    private final Text m_EntryField;
 
     /********************************************************************************************
      *
@@ -114,7 +112,6 @@ public class SwtInputDialog extends BaseDialog
         super(parent, title, true);
 
         int margin = 10;
-        m_MultiLine = multiLine;
 
         getOpenArea().setLayout(new FormLayout());
 
@@ -124,7 +121,7 @@ public class SwtInputDialog extends BaseDialog
         promptLabel.setLayoutData(FormDataHelper.anchorTopLeft(margin));
 
         // The field where the user types their response
-        Text entryField = new Text(getOpenArea(), m_MultiLine ? SWT.MULTI
+        Text entryField = new Text(getOpenArea(), multiLine ? SWT.MULTI
                 : SWT.NULL);
         entryField.setText(initialValue);
         entryField.setFocus();

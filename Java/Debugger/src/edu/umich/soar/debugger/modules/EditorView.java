@@ -58,7 +58,7 @@ public class EditorView extends AbstractView
     protected boolean m_ComboAtTop = true;
 
     /** The history of commands for this window */
-    protected CommandHistory m_CommandHistory = new CommandHistory();
+    protected final CommandHistory m_CommandHistory = new CommandHistory();
 
     // The constructor must take no arguments so it can be called
     // from the loading code and the new window dialog

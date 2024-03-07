@@ -1,7 +1,6 @@
 package edu.umich.soar.debugger.menu;
 
 import edu.umich.soar.debugger.MainFrame;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Menu;

@@ -32,9 +32,9 @@ public class XmlOutput
                                                  // --stack in trace window
 
     /** Cache some indent strings that we'll need */
-    public static String kProdIndent;
+    public static final String kProdIndent;
 
-    public static String kLineProdIndent;
+    public static final String kLineProdIndent;
 
     /**
      * We cache a series of strings made up of just spaces up to a certain size,

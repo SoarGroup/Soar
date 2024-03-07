@@ -28,13 +28,11 @@ import edu.umich.soar.debugger.modules.AbstractView;
 
 public class LoggingDialog extends BaseDialog
 {
-    private AbstractView m_View;
+    private final AbstractView m_View;
 
-    private MainFrame m_Frame;
+    private final MainFrame m_Frame;
 
     private Text m_FilenameText;
-
-    private Button m_Browse;
 
     private Button m_Append;
 
@@ -89,7 +87,7 @@ public class LoggingDialog extends BaseDialog
         m_FilenameText.selectAll();
 
         // Browse for a filename
-        m_Browse = new Button(text, SWT.PUSH);
+        Button m_Browse = new Button(text, SWT.PUSH);
         m_Browse.setText("&Browse...");
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 1;

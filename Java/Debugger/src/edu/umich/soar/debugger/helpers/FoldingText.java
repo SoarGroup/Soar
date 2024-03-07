@@ -38,15 +38,15 @@ import edu.umich.soar.debugger.modules.AbstractView;
  ************************************************************************/
 public class FoldingText
 {
-    protected StyledText m_Text;
+    protected final StyledText m_Text;
 
-    protected Canvas m_IconBar;
+    protected final Canvas m_IconBar;
 
-    protected Composite m_Container;
+    protected final Composite m_Container;
 
-    protected FoldingTextDoc m_FoldingDoc = new FoldingTextDoc(this);
+    protected final FoldingTextDoc m_FoldingDoc = new FoldingTextDoc(this);
 
-    protected FilterDoc m_FilterDoc = new FilterDoc(this);
+    protected final FilterDoc m_FilterDoc = new FilterDoc(this);
 
     protected int m_LastTopIndex;
 
@@ -59,11 +59,11 @@ public class FoldingText
 
     public static class FilterRecord
     {
-        protected String m_Text; // The text itself
+        protected final String m_Text; // The text itself
 
-        protected boolean m_SubText; // If true this text goes at a sub level
+        protected final boolean m_SubText; // If true this text goes at a sub level
 
-        protected long m_Type; // The type of information stored here, against
+        protected final long m_Type; // The type of information stored here, against
                                // which we filter. (This is treated as a bit
                                // field).
 
@@ -95,9 +95,9 @@ public class FoldingText
 
     public static class FilterDoc
     {
-        protected ArrayList<FilterRecord> m_AllRecords = new ArrayList<>();
+        protected final ArrayList<FilterRecord> m_AllRecords = new ArrayList<>();
 
-        protected FoldingText m_FoldingText;
+        protected final FoldingText m_FoldingText;
 
         // If type & excludeFilter != 0 we won't display it
         protected long m_ExcludeFilter = 0;
@@ -269,13 +269,13 @@ public class FoldingText
 
     public static class FoldingTextDoc
     {
-        protected ArrayList<Block> m_TextBlocks = new ArrayList<>();
+        protected final ArrayList<Block> m_TextBlocks = new ArrayList<>();
 
         protected int m_ShowFilter;
 
         protected int m_HideFilter;
 
-        protected FoldingText m_FoldingText;
+        protected final FoldingText m_FoldingText;
 
         protected Block m_LastBlock;
 
@@ -567,12 +567,12 @@ public class FoldingText
         protected int m_Start; // The first line where this block appears in the
                                // text widget
 
-        protected int m_RecordIndex; // Index of first line in master list of
+        protected final int m_RecordIndex; // Index of first line in master list of
                                      // all records stored (used to connect the
                                      // view to the full list). -1 => filtering
                                      // not enabled
 
-        protected ArrayList<String> m_Lines = new ArrayList<>();
+        protected final ArrayList<String> m_Lines = new ArrayList<>();
 
         protected StringBuffer m_All = new StringBuffer();
 

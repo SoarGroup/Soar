@@ -27,7 +27,7 @@ public class HelpMenu
 
     private MainFrame m_Frame = null;
 
-    private AbstractAction m_About = new AbstractAction("About Soar's Debugger")
+    private final AbstractAction m_About = new AbstractAction("About Soar's Debugger")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -36,7 +36,7 @@ public class HelpMenu
         }
     };
 
-    private AbstractAction m_Homepage = new AbstractAction("Soar Home page")
+    private final AbstractAction m_Homepage = new AbstractAction("Soar Home page")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -45,7 +45,7 @@ public class HelpMenu
         }
     };
 
-    private AbstractAction m_Wiki = new AbstractAction(
+    private final AbstractAction m_Wiki = new AbstractAction(
             "Soar Wiki (many topics)")
     {
         @Override
@@ -55,7 +55,7 @@ public class HelpMenu
         }
     };
 
-    private AbstractAction m_CLI = new AbstractAction("Soar Command Line Help")
+    private final AbstractAction m_CLI = new AbstractAction("Soar Command Line Help")
     {
         @Override
         public void actionPerformed(ActionEvent e)

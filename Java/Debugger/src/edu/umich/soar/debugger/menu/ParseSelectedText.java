@@ -82,7 +82,7 @@ public class ParseSelectedText
 
     public static class SelectedProduction extends SelectedObject
     {
-        private String m_Name;
+        private final String m_Name;
 
         public SelectedProduction(String name)
         {
@@ -116,7 +116,7 @@ public class ParseSelectedText
 
     public static class SelectedID extends SelectedObject
     {
-        private String m_Name;
+        private final String m_Name;
 
         public SelectedID(String id)
         {
@@ -154,11 +154,11 @@ public class ParseSelectedText
     public static class SelectedWme extends SelectedObject
     {
         // Some may be null
-        private String m_ID;
+        private final String m_ID;
 
-        private String m_Att;
+        private final String m_Att;
 
-        private String m_Value;
+        private final String m_Value;
 
         public SelectedWme(String id, String att, String value)
         {
@@ -196,7 +196,7 @@ public class ParseSelectedText
 
     public static class SelectedUnknown extends SelectedObject
     {
-        private String m_Name;
+        private final String m_Name;
 
         public SelectedUnknown(String token)
         {
@@ -225,13 +225,13 @@ public class ParseSelectedText
 
     protected final static int kNextToken = 2;
 
-    protected String[] m_Tokens = new String[3];
+    protected final String[] m_Tokens = new String[3];
 
     protected final char[] kWhiteSpaceChars = new char[] { ' ', '\n', '\r',
             ')', '(', '{', '}' };
 
     // The raw values
-    protected String m_FullText;
+    protected final String m_FullText;
 
     protected int m_SelectionStart;
 

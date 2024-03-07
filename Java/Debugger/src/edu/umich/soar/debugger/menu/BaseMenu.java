@@ -30,13 +30,11 @@ import org.eclipse.swt.widgets.MenuItem;
 public class BaseMenu
 {
     // The SWT menu object
-    private Menu m_Menu;
-
-    private MenuItem m_Header;
+    private final Menu m_Menu;
 
     public BaseMenu(Menu bar, String title, final MenuUpdater updater)
     {
-        m_Header = new MenuItem(bar, SWT.CASCADE);
+        MenuItem m_Header = new MenuItem(bar, SWT.CASCADE);
         m_Header.setText(title);
 
         m_Menu = new Menu(bar.getShell(), SWT.DROP_DOWN);

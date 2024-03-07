@@ -25,7 +25,7 @@ public class LayoutMenu
 {
     private MainFrame m_Frame = null;
 
-    private AbstractAction m_UseDefaultLayout = new AbstractAction(
+    private final AbstractAction m_UseDefaultLayout = new AbstractAction(
             "Use &default window layout")
     {
         @Override
@@ -35,7 +35,7 @@ public class LayoutMenu
         }
     };
 
-    private AbstractAction m_UseTreeLayout = new AbstractAction(
+    private final AbstractAction m_UseTreeLayout = new AbstractAction(
             "Use &tree view layout")
     {
         @Override
@@ -45,7 +45,7 @@ public class LayoutMenu
         }
     };
 
-    private AbstractAction m_UseTextLayout = new AbstractAction(
+    private final AbstractAction m_UseTextLayout = new AbstractAction(
             "Use te&xt view layout")
     {
         @Override
@@ -55,7 +55,7 @@ public class LayoutMenu
         }
     };
 
-    private AbstractAction m_Load = new AbstractAction("&Load window layout...")
+    private final AbstractAction m_Load = new AbstractAction("&Load window layout...")
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -64,7 +64,7 @@ public class LayoutMenu
         }
     };
 
-    private AbstractAction m_Save = new AbstractAction("&Save window layout...")
+    private final AbstractAction m_Save = new AbstractAction("&Save window layout...")
     {
         @Override
         public void actionPerformed(ActionEvent e)

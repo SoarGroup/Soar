@@ -65,7 +65,7 @@ public abstract class AbstractView implements AgentFocusListener
     protected Composite m_Container;
 
     /** A class to help with logging, should this window wish to offer that **/
-    protected Logger m_Logger = new Logger();
+    protected final Logger m_Logger = new Logger();
 
     /** The line separator Soar uses and that we therefore use. */
     public static final String kLineSeparator = "\n";
@@ -205,7 +205,7 @@ public abstract class AbstractView implements AgentFocusListener
     // Adding a key listener for this event allows us to call our paste method
     // so commands are pasted into the command
     // buffer rather than into the window.
-    protected Listener m_ControlV = e -> {
+    protected final Listener m_ControlV = e -> {
         if (e.type == SWT.KeyDown)
         {
             int key = e.keyCode;

@@ -46,7 +46,7 @@ public class PhaseView extends AbstractFixedView implements
 {
     protected Canvas m_PhaseDiagram;
 
-    protected String[] m_ImageNames = { "phase-none.png", "phase-input.png",
+    protected final String[] m_ImageNames = { "phase-none.png", "phase-input.png",
             "phase-proposal.png", "phase-decision.png", "phase-apply.png",
             "phase-output.png", "phase-world.png", "phase-stop-cursor.png",
             "phase-stop-cursor2.png", "phase-stop-cursor-shadow.png",
@@ -127,8 +127,8 @@ public class PhaseView extends AbstractFixedView implements
             }
             catch (Exception ex)
             {
-                System.out.println("Error reading image " + m_ImageNames[i]);
-                System.out.println(ex);
+                System.err.println("Error reading image " + m_ImageNames[i]);
+                System.err.println(ex);
             }
         }
 

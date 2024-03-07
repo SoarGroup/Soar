@@ -21,7 +21,6 @@ public class KeepCommandView extends AbstractSingleTextView
 {
     public KeepCommandView()
     {
-        m_ClearComboEachCommand = false;
         m_ClearEachCommand = false;
         m_UpdateOnStop = false;
         m_ClearComboEachCommand = true;

@@ -36,13 +36,13 @@ public class NewWindowDialog extends BaseDialog
 {
     private int m_Result; // Index in module list
 
-    private List m_Modules;
+    private final List m_Modules;
 
-    private Text m_Description;
+    private final Text m_Description;
 
-    private ModuleList m_ModuleList;
+    private final ModuleList m_ModuleList;
 
-    private MainFrame m_Frame;
+    private final MainFrame m_Frame;
 
     /********************************************************************************************
      *

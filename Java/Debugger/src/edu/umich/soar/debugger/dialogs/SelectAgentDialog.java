@@ -30,7 +30,7 @@ public class SelectAgentDialog extends BaseDialog
 {
     private String m_Result;
 
-    private List m_Agents;
+    private final List m_Agents;
 
     /********************************************************************************************
      *
