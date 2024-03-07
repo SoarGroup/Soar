@@ -16,17 +16,17 @@ class cliproxy
         }
         cliproxy& set_help(const std::string& t);
         cliproxy& add_arg(const std::string& arg, const std::string& help);
-        
+
     private:
         void list_children(int level, std::ostream& os);
         void print_help(std::ostream& os) const;
-        
+
         virtual void proxy_get_children(std::map<std::string, cliproxy*>& c) {}
         virtual void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
         {
             list_children(0, os);
         }
-        
+
         std::string help_text;
         std::vector<std::string> args_help;
 };
@@ -40,7 +40,7 @@ class int_proxy : public cliproxy
         {
             return true;
         }
-        
+
     private:
         int* p;
 };
@@ -54,7 +54,7 @@ class float_proxy : public cliproxy
         {
             return true;
         }
-        
+
     private:
         double* p;
 };
@@ -68,7 +68,7 @@ class bool_proxy : public cliproxy
         {
             return true;
         }
-        
+
     private:
         bool* p;
 };
@@ -81,12 +81,12 @@ class memfunc_proxy : public cliproxy
         typedef void (T::*fout_ptr)(std::ostream& os);
         typedef void (T::*fargc_ptr)(const std::vector<std::string>& args, std::ostream& os) const;
         typedef void (T::*foutc_ptr)(std::ostream& os) const;
-        
-        memfunc_proxy(T* p, farg_ptr f)        : p(p), pc(NULL), farg(f),    fargc(NULL), fout(NULL), foutc(NULL) {}
-        memfunc_proxy(T* p, fout_ptr f)        : p(p), pc(NULL), farg(NULL), fargc(NULL), fout(f),    foutc(NULL) {}
-        memfunc_proxy(const T* p, fargc_ptr f) : p(NULL), pc(p), farg(NULL), fargc(f),    fout(NULL), foutc(NULL) {}
-        memfunc_proxy(const T* p, foutc_ptr f) : p(NULL), pc(p), farg(NULL), fargc(NULL), fout(NULL), foutc(f)    {}
-        
+
+        memfunc_proxy(T* p, farg_ptr f)        : p(p), pc(NULL), farg(f),    fout(NULL),  fargc(NULL), foutc(NULL) {}
+        memfunc_proxy(T* p, fout_ptr f)        : p(p), pc(NULL), farg(NULL), fargc(NULL), fout(f),     foutc(NULL) {}
+        memfunc_proxy(const T* p, fargc_ptr f) : p(NULL), pc(p), farg(NULL), fargc(f),    fout(NULL),  foutc(NULL) {}
+        memfunc_proxy(const T* p, foutc_ptr f) : p(NULL), pc(p), farg(NULL), fout(NULL),  fargc(NULL), foutc(f)    {}
+
         void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
         {
             if (farg)
@@ -106,12 +106,12 @@ class memfunc_proxy : public cliproxy
                 (pc->*foutc)(os);
             }
         }
-        
+
         bool temporary() const
         {
             return true;
         }
-        
+
     private:
         T* p;
         const T* pc;
@@ -130,10 +130,10 @@ class proxy_group : public cliproxy
         {
             return true;
         }
-        
+
     private:
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
-        
+
         std::map<std::string, cliproxy*> children;
 };
 

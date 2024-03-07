@@ -231,7 +231,7 @@ class soar_timer
 {
     public:
         soar_timer()
-            : enabled_ptr(NULL), t1(0), elapsed(0)
+            : t1(0), elapsed(0), enabled_ptr(NULL)
         {
             raw_per_usec = get_raw_time_per_usec();
         }

@@ -1846,7 +1846,7 @@ struct wme_val_stats {
     double mean;
     double sum_square;
 
-    wme_val_stats(): count(0), sum(0.0), product(1.0), mean(0.0), sum_square(0.0), min(DBL_MAX), max(-DBL_MAX) { }
+    wme_val_stats(): count(0), sum(0.0), product(1.0), min(DBL_MAX), max(-DBL_MAX), mean(0.0), sum_square(0.0) { }
 };
 
 /*

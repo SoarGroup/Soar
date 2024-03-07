@@ -52,13 +52,13 @@ namespace soar_module
             typedef const T&    const_reference;
 
         public:
-            soar_memory_pool_allocator() : mem_pool(NULL), memory_manager(NULL)
+            soar_memory_pool_allocator() : memory_manager(NULL), mem_pool(NULL)
         {
                 memory_manager = &(Memory_Manager::Get_MPM());
                 mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
         }
 
-            soar_memory_pool_allocator(agent* new_agent): mem_pool(NULL), memory_manager(NULL)
+            soar_memory_pool_allocator(agent* new_agent): memory_manager(NULL), mem_pool(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( value_type ).name() );
@@ -66,7 +66,7 @@ namespace soar_module
                 mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
 
-            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): mem_pool(NULL), memory_manager(NULL)
+            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): memory_manager(NULL), mem_pool(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( value_type ).name() );
@@ -75,7 +75,7 @@ namespace soar_module
             }
 
             template <class _other>
-            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): mem_pool(NULL), memory_manager(NULL)
+            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): memory_manager(NULL), mem_pool(NULL)
             {
                     // useful for debugging
                     // std::string temp_this( typeid( T ).name() );
@@ -159,13 +159,13 @@ namespace soar_module
             typedef const T&    const_reference;
 
         public:
-            soar_memory_pool_allocator_n() : mem_pool(NULL), memory_manager(NULL)
+            soar_memory_pool_allocator_n() : memory_manager(NULL), mem_pool(NULL)
         {
                 memory_manager = &(Memory_Manager::Get_MPM());
                 mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
         }
 
-            soar_memory_pool_allocator_n(agent* new_agent): mem_pool(NULL), memory_manager(NULL)
+            soar_memory_pool_allocator_n(agent* new_agent): memory_manager(NULL), mem_pool(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( value_type ).name() );

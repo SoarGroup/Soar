@@ -14,7 +14,7 @@ namespace cli
     class AliasCommand : public cli::ParserCommand
     {
         public:
-            explicit AliasCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit AliasCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~AliasCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -84,7 +84,7 @@ namespace cli
     class CDCommand : public cli::ParserCommand
     {
         public:
-            explicit CDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit CDCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~CDCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -119,7 +119,7 @@ namespace cli
     class DebugCommand : public cli::ParserCommand
     {
         public:
-            explicit DebugCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit DebugCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~DebugCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -151,7 +151,7 @@ namespace cli
     class DirsCommand : public cli::ParserCommand
     {
         public:
-            explicit DirsCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit DirsCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~DirsCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -176,7 +176,7 @@ namespace cli
     class EchoCommand : public cli::ParserCommand
     {
         public:
-            explicit EchoCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit EchoCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~EchoCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -236,7 +236,7 @@ namespace cli
     class EpMemCommand : public cli::ParserCommand
     {
         public:
-            explicit EpMemCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit EpMemCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~EpMemCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -420,7 +420,7 @@ namespace cli
     class GPCommand : public cli::ParserCommand
     {
         public:
-            explicit GPCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit GPCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~GPCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -455,7 +455,7 @@ namespace cli
     class HelpCommand : public cli::ParserCommand
     {
         public:
-            explicit HelpCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit HelpCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~HelpCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -481,7 +481,7 @@ namespace cli
     class LearnCommand : public cli::ParserCommand
     {
         public:
-            explicit LearnCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit LearnCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~LearnCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -583,7 +583,7 @@ namespace cli
     class LSCommand : public cli::ParserCommand
     {
         public:
-            explicit LSCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit LSCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~LSCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -613,7 +613,7 @@ namespace cli
     class PopDCommand : public cli::ParserCommand
     {
         public:
-            explicit PopDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit PopDCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~PopDCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -643,7 +643,7 @@ namespace cli
     class PreferencesCommand : public cli::ParserCommand
     {
         public:
-            explicit PreferencesCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit PreferencesCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~PreferencesCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -741,7 +741,7 @@ namespace cli
     class PrintCommand : public cli::ParserCommand
     {
         public:
-            explicit PrintCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit PrintCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~PrintCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -917,7 +917,7 @@ namespace cli
     class PushDCommand : public cli::ParserCommand
     {
         public:
-            explicit PushDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit PushDCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~PushDCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -951,7 +951,7 @@ namespace cli
     class PWDCommand : public cli::ParserCommand
     {
         public:
-            explicit PWDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit PWDCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~PWDCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -981,7 +981,7 @@ namespace cli
     class RLCommand : public cli::ParserCommand
     {
         public:
-            explicit RLCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit RLCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~RLCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -1110,7 +1110,7 @@ namespace cli
     class RunCommand : public cli::ParserCommand
     {
         public:
-            explicit RunCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit RunCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~RunCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -1250,7 +1250,7 @@ namespace cli
     class SMemCommand : public cli::ParserCommand
     {
         public:
-            explicit SMemCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit SMemCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~SMemCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -1484,7 +1484,7 @@ namespace cli
     class SPCommand : public cli::ParserCommand
     {
         public:
-            explicit SPCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit SPCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~SPCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -1520,7 +1520,7 @@ namespace cli
     class StatsCommand : public cli::ParserCommand
     {
         public:
-            explicit StatsCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit StatsCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~StatsCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
@@ -1633,7 +1633,7 @@ namespace cli
     class SVSCommand : public cli::ParserCommand
     {
         public:
-            explicit SVSCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            explicit SVSCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             ~SVSCommand() override = default;
             [[nodiscard]] const char* GetString() const override
             {
