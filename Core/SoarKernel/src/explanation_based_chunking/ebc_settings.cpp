@@ -24,7 +24,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
     pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] = true;
     pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] = false;
-    pEBC_settings[SETTING_AUTOMATICALLY_CREATE_SINGLETONS] = true;
 
     pMaxChunks = 50;
     pMaxDupes = 3;
@@ -89,8 +88,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(interrupt_on_warning);
     interrupt_on_watched = new soar_module::boolean_param("explain-interrupt", setting_on(SETTING_EBC_INTERRUPT_WATCHED), new soar_module::f_predicate<boolean>());
     add(interrupt_on_watched);
-    automatically_create_singletons = new soar_module::boolean_param("automatically-create-singletons", setting_on(SETTING_AUTOMATICALLY_CREATE_SINGLETONS), new soar_module::f_predicate<boolean>());
-    add(automatically_create_singletons);
 
     // mechanisms
     mechanism_add_OSK = new soar_module::boolean_param("add-osk", setting_on(SETTING_EBC_ADD_OSK), new soar_module::f_predicate<boolean>());
@@ -166,10 +163,6 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     else if (pChangedParam == interrupt_on_watched)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WATCHED] = pChangedParam->get_value();
-    }
-    else if (pChangedParam == automatically_create_singletons)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_AUTOMATICALLY_CREATE_SINGLETONS] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_add_OSK)
     {
@@ -250,7 +243,6 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     mechanism_add_OSK->set_value(pEBC_settings[SETTING_EBC_ADD_OSK] ? on : off);
     mechanism_add_ltm_links->set_value(pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] ? on : off);
     allow_missing_negative_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] ? on : off);
-    automatically_create_singletons->set_value(pEBC_settings[SETTING_AUTOMATICALLY_CREATE_SINGLETONS] ? on : off);
 }
 void Explanation_Based_Chunker::print_chunking_summary()
 {
@@ -345,7 +337,6 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "singleton %-%-%s\n", "Print all WME singletons");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("singleton", "<type> <attribute> <type>", 50).c_str(), "Add a WME singleton pattern");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("singleton -r", "<type> <attribute> <type>", 50).c_str(), "Remove a WME singleton pattern");
-    outputManager->printa_sf(thisAgent, "automatically-create-singletons  %-%s%-%s\n", capitalizeOnOff(ebc_params->automatically_create_singletons->get_value()), "Attempt creating singletons for every string attribute");
     outputManager->printa_sf(thisAgent, "----------------- EBC Mechanisms ------------------\n");
     outputManager->printa_sf(thisAgent, "add-ltm-links              %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_add_ltm_links->get_value()), "Recreate LTM links in original results");
     outputManager->printa_sf(thisAgent, "add-osk                    %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_add_OSK->get_value()), "Incorporate operator selection knowledge");

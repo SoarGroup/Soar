@@ -245,10 +245,6 @@ void do_buffered_wm_changes(agent* thisAgent)
             }
         }
         #endif
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_AUTOMATICALLY_CREATE_SINGLETONS] && (w->attr->is_string() && !w->attr->sc->singleton.possible))
-        {
-            thisAgent->explanationBasedChunker->add_new_singleton(ebc_any, w->attr, ebc_any);
-        }
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
