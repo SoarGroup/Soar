@@ -1,12 +1,11 @@
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t398-3
    
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^operator <o2> +
-          ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
+          ^problem-space <p1> ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
     (<o2> ^name fill ^jug <j1>)
     (<p1> ^name water-jug)
-    (<p2> ^name water-jug)
     (<j1> ^contents 1 ^volume 5)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
@@ -17,12 +16,11 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t398-3
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t398-2
    
     (state <s1> ^name water-jug ^operator <o1> + ^operator <o2> + ^jug <i1>
-          ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
+          ^problem-space <p1> ^desired <d1> ^jug <j1>)
     (<o1> ^name fill ^jug <j1>)
     (<o2> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
     (<p1> ^name water-jug)
-    (<p2> ^name water-jug)
     (<j1> ^contents 1 ^volume 5)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
@@ -33,12 +31,11 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t398-2
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t393-2
    
     (state <s1> ^name water-jug ^operator <o1> + ^operator <o2> + ^jug <i1>
-          ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
+          ^problem-space <p1> ^desired <d1> ^jug <j1>)
     (<o1> ^name fill ^jug <j1>)
     (<o2> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
     (<p1> ^name water-jug)
-    (<p2> ^name water-jug)
     (<j1> ^contents 4 ^volume 5)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
@@ -49,12 +46,11 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t393-2
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t393-1
    
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^operator <o2> +
-          ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
+          ^problem-space <p1> ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
     (<o2> ^name fill ^jug <j1>)
     (<p1> ^name water-jug)
-    (<p2> ^name water-jug)
     (<j1> ^contents 4 ^volume 5)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
@@ -65,12 +61,11 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t393-1
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t380-3
    
     (state <s1> ^name water-jug ^operator <o1> + ^operator <o2> + ^jug <i1>
-          ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
+          ^problem-space <p1> ^desired <d1> ^jug <j1>)
     (<o1> ^name fill ^jug <j1>)
     (<o2> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
     (<p1> ^name water-jug)
-    (<p2> ^name water-jug)
     (<j1> ^contents 2 ^volume 5)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
@@ -81,12 +76,11 @@ sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t380-3
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*t380-2
    
     (state <s1> ^name water-jug ^operator <o1> + ^jug <i1> ^operator <o2> +
-          ^problem-space <p1> ^problem-space <p2> ^desired <d1> ^jug <j1>)
+          ^problem-space <p1> ^desired <d1> ^jug <j1>)
     (<o1> ^name pour ^into <i1> ^jug <j1>)
     (<i1> ^contents 0 ^volume 3)
     (<o2> ^name fill ^jug <j1>)
     (<p1> ^name water-jug)
-    (<p2> ^name water-jug)
     (<j1> ^contents 2 ^volume 5)
     (<d1> ^jug <j2>)
     (<j2> ^contents 1 ^volume 3)
