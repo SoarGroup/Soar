@@ -4,10 +4,10 @@ sp {answer*apply*snc*t3-1
     (<s1> ^superstate nil)
     (<s2> ^foo <c1>)
     (<s2> ^wme { <> <c1> <c3> })
-    (<s2> ^value <c2>)
+    #(<s2> ^value <c2>) #previous interaction between (non)singletons and literalization often meant just throwing a test for the constant in the LHS somewhere and then having the rest of the rule essentially just testing like it's a symbol, like this.
     -->
     (<s2> ^result <c3> +)
-    (<s2> ^new-math (* 23 <c2>) +)
+    (<s2> ^new-math (* 23 3))#<c2>) +)
     (<s2> ^math (* 23 2) +)
     (<s2> ^copied-math 23 +)
     (<s2> ^bar <c1> +)
