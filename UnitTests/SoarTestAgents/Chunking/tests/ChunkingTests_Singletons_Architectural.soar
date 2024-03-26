@@ -1,4 +1,5 @@
 chunk always
+chunk automatically-create-singletons off
 
 sp {apply-create-chunk-architectural-singletons
     (state <s> ^superstate <ss> <ss2>)

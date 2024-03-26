@@ -1,4 +1,5 @@
 # Settings
+chunk automatically-create-singletons off
 watch 0
 warnings --off
 epmem --off
@@ -17,7 +18,6 @@ soar max-elaborations 500
 soar max-goal-depth 100
 soar wait-snc off
 srand 23
-
 # Procedural Memory
 
 sp {evaluate-operator*elaborate*state*look-ahead-operator*merge*copy

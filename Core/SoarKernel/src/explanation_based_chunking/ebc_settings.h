@@ -37,6 +37,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* interrupt_on_chunk;
         soar_module::boolean_param* interrupt_on_warning;
         soar_module::boolean_param* interrupt_on_watched;
+        soar_module::boolean_param* automatically_create_singletons;
 
         /* Mechanisms */
         soar_module::boolean_param* mechanism_add_OSK;

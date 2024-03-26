@@ -88,6 +88,7 @@ void ChunkingTests::STI_Variablization_Same_Type()                    { check_ch
 void ChunkingTests::STI_Variablization()                              { check_chunk("STI_Variablization", 8, 1); }
 void ChunkingTests::STI_with_referents()                              { check_chunk("STI_with_referents", 8, 1); }
 void ChunkingTests::Superstate_Identity_Opaque()                      { check_chunk("Superstate_Identity_Opaque", 8, 1); }
+void ChunkingTests::Superstate_Identity_Opaque_Old_Singleton_Behavior() { check_chunk("Superstate_Identity_Opaque_Old_Singleton_Behavior", 8, 1); }
 void ChunkingTests::Ungrounded_in_BT_Constraint()                     { check_chunk("Ungrounded_in_BT_Constraint", 8, 2); }
 void ChunkingTests::Ungrounded_Mixed()                                { check_chunk("Ungrounded_Mixed", 8, 1); }
 void ChunkingTests::Ungrounded_Relational_Constraint()                { check_chunk("Ungrounded_Relational_Constraint", 8, 1); }

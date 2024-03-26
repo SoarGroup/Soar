@@ -1,6 +1,6 @@
 sp {answer*apply4*StateNoChange*t2-4
         (state <s1> ^superstate nil ^result3 <d4> ^result2 <d3> ^result1 <d2>
-          ^a <a2> ^a <a1>)
+          ^a <a1>)
     (<a1> ^b <b1> ^c <c1>)
     (<b1> ^a <a1> ^d <d1>)
     (<d1> ^foo bar)
@@ -10,7 +10,7 @@ sp {answer*apply4*StateNoChange*t2-4
     (<a1> ^c <c1> + ^b <b1> +)
     (<d1> ^foo bar +)
     (<b1> ^d <d1> + ^a <a1> +)
-    (<s1> ^result4 <a1> + ^result4b <a2> +)
+    (<s1> ^result4 <a1> + ^result4b <a1> +)
 }
 
 sp {answer*apply1*StateNoChange*t2-3
@@ -43,10 +43,7 @@ sp {answer*apply2*t2-2
 
 sp {answer*apply3*StateNoChange*t2-1
         (state <s1> ^superstate nil ^a <a1>)
-    (<a1> ^b <b2> ^c <c2> ^b <b1> ^c <c1>)
-    (<b2> ^a <a1> ^d <d2>)
-    (<d2> ^foo bar)
-    (<c2> ^b <b2>)
+    (<a1> ^b <b1> ^c <c1>)
     (<b1> ^a <a1> ^d <d1>)
     (<d1> ^foo bar)
     (<c1> ^b <b1>)

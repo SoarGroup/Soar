@@ -1,8 +1,7 @@
 sp {answer*make-chunk-for-chosen*OpNoChange*t3-1
-    (state <s1> ^operator <o5> + ^operator <o4> + ^operator <o3> +
+    (state <s1> ^operator <o4> + ^operator <o3> +
           ^operator <o2> + ^operator <o1>)
-    (<o5> ^name c)
-    (<o4> ^name b)
+    (<o4> ^name c)
     (<o3> ^name a)
     (<o2> ^name b)
     (<o1> ^name choose)
@@ -11,15 +10,13 @@ sp {answer*make-chunk-for-chosen*OpNoChange*t3-1
 }
 
 sp {answer*make-chunk-for-propose*Tie*t1-1
-    (state <s1> ^operator <o5> + ^operator <o4> + ^operator <o3> +
+    (state <s1> ^operator <o3> +
           ^operator <o2> + ^operator <o1> +)
-    (<o5> ^name c)
-    (<o4> ^name a)
     (<o3> ^name c)
     (<o2> ^name b)
     (<o1> ^name a)
     -->
-    (<s1> ^choose <o5> +)
+    (<s1> ^choose <o3> +)
 }
 
 

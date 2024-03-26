@@ -36,6 +36,7 @@ public:
     TEST(Maintain_Instantiation_Specific_Identity, -1);
     TEST(Opaque_State_Barrier, -1);
     TEST(Superstate_Identity_Opaque, -1);
+    TEST(Superstate_Identity_Opaque_Old_Singleton_Behavior, -1);
     TEST(STI_Variablization, -1);
     TEST(STI_with_referents, -1);
     TEST(Conflated_Constants, -1);
@@ -192,6 +193,7 @@ public:
     void STI_Variablization();
     void STI_with_referents();
     void Superstate_Identity_Opaque();
+    void Superstate_Identity_Opaque_Old_Singleton_Behavior();
     void Ungrounded_in_BT_Constraint();
     void Ungrounded_Mixed();
     void Ungrounded_Relational_Constraint();

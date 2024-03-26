@@ -13,8 +13,8 @@ sp {answer*make-chunk*snc*t2-1
     (<s1> ^x 2)
     (<s1> ^superstate nil)
     (<s1> ^n <c2>)
-    (<s1> ^x <c1>)
+    #(<s1> ^x <c1>)
     -->
-    (<s1> ^result (* 6 <c1>) +)
+    (<s1> ^result (* 6 2) +)
     (<s1> ^result2 (abs 6) +)
 }

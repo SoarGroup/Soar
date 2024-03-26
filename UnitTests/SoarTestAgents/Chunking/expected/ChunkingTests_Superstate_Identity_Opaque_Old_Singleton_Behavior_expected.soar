@@ -1,0 +1,7 @@
+sp {answer*make*t2-1
+    (state <s1> ^superstate nil ^foo2 { <f1> <> homer } ^foo { <f2> <> bart }
+          ^foo { <f3> <> simpson })
+    -->
+    (<s1> ^test-done true)
+}
+

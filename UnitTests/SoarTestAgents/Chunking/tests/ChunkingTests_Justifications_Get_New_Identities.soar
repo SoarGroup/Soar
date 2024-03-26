@@ -2,6 +2,7 @@
 
 srand 23
 chunk only
+chunk automatically-create-singletons off
 
 sp {init*state
    (state <s> ^superstate nil)
