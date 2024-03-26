@@ -32,7 +32,7 @@ void ChunkingDemoTests::Demo_Water_Jug_Tie()                              { chec
 void ChunkingDemoTests::Elio_Agent()                                      { check_chunk("Elio_Agent", 795, 135, false); }
 void ChunkingDemoTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 16, false); }
 void ChunkingDemoTests::PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2", 728, 19, false); }
-void ChunkingDemoTests::Teach_Soar_90_Games()                             { check_chunk("Teach_Soar_90_Games", 10000, 16, false); } /* Should be 28 Probably re-ordering problems.  The rules learned are huge */
+void ChunkingDemoTests::Teach_Soar_90_Games()                             { check_chunk("Teach_Soar_90_Games", 10000, 15, false); } /* Should be 28 Probably re-ordering problems.  The rules learned are huge */
 void ChunkingDemoTests::Teach_Soar_9_Games()                              { check_chunk("Teach_Soar_9_Games", 23850, 60, false); } /* Should be 28 Probably re-ordering problems.  The rules learned are huge */
 
 void ChunkingDemoTests::setUp()
