@@ -17,6 +17,7 @@ soar max-elaborations 500
 soar max-goal-depth 100
 soar wait-snc off
 srand 23
+chunk automatically-create-singletons off
 
 # Procedural Memory
 
