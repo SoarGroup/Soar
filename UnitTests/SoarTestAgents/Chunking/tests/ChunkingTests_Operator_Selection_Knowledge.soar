@@ -3,6 +3,7 @@ chunk max-chunks 200
 soar max-goal-depth 8 
 chunk add-osk on
 # watch --learn 2
+chunk automatically-create-singletons off
 
 multi-attributes acceptable-test 23
 multi-attributes prohibit-test 23
