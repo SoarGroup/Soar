@@ -200,7 +200,7 @@ uint64_t SMem_Manager::get_current_LTI_for_iSTI(Symbol* pISTI, bool useLookupTab
 
 }
 
-void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<uint64_t>* visited)
+void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<uint64_t>* visited, std::queue<std::pair<Symbol*,uint64_t>>* to_install)
 {
     ////////////////////////////////////////////////////////////////////////////
     timers->ncb_retrieval->start();
@@ -266,9 +266,10 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     bool triggered = false;
 
     /* This previously would only return the children if there were no impasse wmes, input wmes and slots for sti */
-        if (visited == NULL)
+        if (to_install == NULL)
         {
             triggered = true;
+            to_install = new std::queue<std::pair<Symbol*,uint64_t>>;
             visited = new std::set<uint64_t>;
         }
 
@@ -279,7 +280,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
         expand_q->bind_int(1, pLTI_ID);
 
-        std::set<Symbol*> children;
+        //std::set<Symbol*> children;
 
         while (expand_q->execute() == soar_module::row)
         {
@@ -292,7 +293,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
                 value_sym = get_current_iSTI_for_LTI(static_cast<uint64_t>(expand_q->column_int(4)), sti->id->level, 'L');
                 if (depth > 1)
                 {
-                    children.insert(value_sym);
+                    to_install->push(std::make_pair(value_sym, depth-1));
                 }
             }
             else
@@ -315,19 +316,24 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
         expand_q->reinitialize();
 
         //Attempt to find children for the case of depth.
-        std::set<Symbol*>::iterator iterator;
-        std::set<Symbol*>::iterator end = children.end();
-        for (iterator = children.begin(); iterator != end; ++iterator)
+        Symbol* a_child;
+        uint64_t new_depth;
+        visited->insert(pLTI_ID);
+        while (triggered && !to_install->empty())
         {
-            if (visited->find((*iterator)->id->LTI_ID) == visited->end())
+        	a_child = to_install->front().first;
+        	new_depth = to_install->front().second;
+        	to_install->pop();
+            if (visited->find(a_child->id->LTI_ID) == visited->end())
             {
-                visited->insert((*iterator)->id->LTI_ID);
-                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);//choosing not to bla children of retrived node
+                install_memory(state, a_child->id->LTI_ID, a_child, false, meta_wmes, retrieval_wmes, install_type, new_depth, visited, to_install);//choosing not to bla children of retrived node
+                visited->insert(a_child->id->LTI_ID);
             }
         }
 
     if (triggered)
     {
+        delete to_install;
         delete visited;
     }
 
