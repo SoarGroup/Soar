@@ -155,6 +155,7 @@ else:
 
 env = Environment(
     tools=tools,
+    ENSCONS_ACTIVE=enscons_active,
     ENV=os.environ.copy(),
     SCU=GetOption('scu'),
     DEBUG=GetOption('dbg'),
@@ -181,11 +182,12 @@ env = Environment(
     SCONS_HOME=os.path.join(script_dir, 'scons', 'scons-local-4.4.0')
 )
 
+wheel_tag = ""
+
 if enscons_active:
     env['PACKAGE_METADATA'] = dict(toml.load(open('pyproject.toml')))['project']
-    env['WHEEL_TAG'] = enscons.get_binary_tag()
-
-env['ENSCONS_ACTIVE'] = enscons_active
+    wheel_tag = enscons.get_binary_tag()
+    env['WHEEL_TAG'] = wheel_tag
 
 env.AddMethod(prepare_for_compiling_with_tcl, 'PrepareForCompilingWithTcl')
 

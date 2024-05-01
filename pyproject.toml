@@ -21,7 +21,7 @@ build-backend = "enscons.api"
 
 [tool.cibuildwheel]
 # build-verbosity = 3
-skip = "*-musllinux_*"
+skip = ["*-win32", "*-musllinux_*"]
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = """\

@@ -65,14 +65,6 @@ jobs:
           SCONS_MSCOMMON_DEBUG: "-"
         run: python3 scons/scons.py --scu --opt --verbose all performance_tests sml_tcl
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.17.0
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
-
       - name: Pack artifacts
         run: tar -czvf build.tar.gz out/
       - name: upload artifacts
@@ -126,6 +118,14 @@ jobs:
         with:
           name: ${{ matrix.os }}-PerformanceTestResults.txt
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.17.0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
 
   # Using powershell means we need to explicitly stop on failure
   Windows:
@@ -195,14 +195,6 @@ jobs:
           if ($lastexitcode -ne 0) {
              throw "build.bat exit code: $lastexitcode"
           }
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.17.0
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
 
       - name: Pack artifacts
         shell: bash
@@ -276,3 +268,11 @@ jobs:
         with:
           name: Windows-PerformanceTestResults.txt
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.17.0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
