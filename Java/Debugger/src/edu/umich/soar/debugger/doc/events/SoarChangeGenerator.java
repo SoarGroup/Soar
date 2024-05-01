@@ -45,9 +45,8 @@ public class SoarChangeGenerator
         }
     }
 
-    public synchronized void fireAgentListChanged(Object source, int type,
-            Agent agent)
-    {
+    public synchronized void fireAgentListChanged(Object source, SoarAgentEvent.EventType type,
+                                                  Agent agent) {
         SoarAgentEvent event = new SoarAgentEvent(source, type, agent);
 
         for (SoarChangeListener current : m_Listeners) {

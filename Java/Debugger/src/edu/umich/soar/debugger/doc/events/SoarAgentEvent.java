@@ -18,48 +18,42 @@ import sml.Agent;
  * Used to report a change to an agent (added, removed etc.)
  *
  ************************************************************************/
-public class SoarAgentEvent extends java.util.EventObject
-{
+public class SoarAgentEvent extends java.util.EventObject {
     private static final long serialVersionUID = -1073490020065002122L;
 
-    public static final int kAgentAdded = 1;
+    public enum EventType {
+        AGENT_ADDED,
+        AGENT_REMOVED,
+        // More generic -- just says the list
+        // isn't the same now (use the more
+        // specific event if you can)
+        LIST_CHANGED;
+    }
 
-    public static final int kAgentRemoved = 2;
-
-    public static final int kListChanged = 3; // More generic -- just says the list
-                                        // isn't the same now (use the more
-                                        // specific event if you can)
-
-    private final int m_Type;
+    private final EventType m_Type;
 
     private final Agent m_Agent;
 
-    public SoarAgentEvent(Object source, int type, Agent agent)
-    {
+    public SoarAgentEvent(Object source, EventType type, Agent agent) {
         super(source);
 
         m_Type = type;
         m_Agent = agent;
     }
 
-    public boolean isAgentAdded()
-    {
-        return m_Type == kAgentAdded;
+    public boolean isAgentAdded() {
+        return m_Type.equals(EventType.AGENT_ADDED);
     }
 
-    public boolean isAgentRemoved()
-    {
-        return m_Type == kAgentRemoved;
+    public boolean isAgentRemoved() {
+        return m_Type.equals(EventType.AGENT_REMOVED);
     }
 
-    public boolean isAgentListChanged()
-    {
-        return m_Type == kAgentAdded || m_Type == kAgentRemoved
-                || m_Type == kListChanged;
+    public boolean isAgentListChanged() {
+        return isAgentAdded() || isAgentRemoved() || m_Type.equals(EventType.LIST_CHANGED);
     }
 
-    public Agent getAgent()
-    {
+    public Agent getAgent() {
         return m_Agent;
     }
 }

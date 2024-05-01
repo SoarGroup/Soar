@@ -1128,13 +1128,13 @@ public class Document implements Kernel.AgentEventInterface,
     protected synchronized void fireAgentAdded(Agent agent)
     {
         m_SoarChangeGenerator.fireAgentListChanged(this,
-                SoarAgentEvent.kAgentAdded, agent);
+                SoarAgentEvent.EventType.AGENT_ADDED, agent);
     }
 
     protected synchronized void fireAgentRemoved(Agent agent)
     {
         m_SoarChangeGenerator.fireAgentListChanged(this,
-                SoarAgentEvent.kAgentRemoved, agent);
+                SoarAgentEvent.EventType.AGENT_REMOVED, agent);
     }
 
     // More generic than agent added/removed. Use the more specific form if you
@@ -1142,7 +1142,7 @@ public class Document implements Kernel.AgentEventInterface,
     protected synchronized void fireAgentListChanged()
     {
         m_SoarChangeGenerator.fireAgentListChanged(this,
-                SoarAgentEvent.kListChanged, null);
+                SoarAgentEvent.EventType.LIST_CHANGED, null);
     }
 
     public String sendAgentCommand(Agent agent, String commandLine)

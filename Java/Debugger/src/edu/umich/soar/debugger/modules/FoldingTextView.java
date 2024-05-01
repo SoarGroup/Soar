@@ -1536,4 +1536,10 @@ public class FoldingTextView extends AbstractComboView implements
             updateButtonState();
         }
     }
+
+    @Override
+    public String toString() {
+        Agent agent = getAgentFocus();
+        return "FoldingTextView, agent=" + (agent == null ? "null" : agent.GetAgentName());
+    }
 }

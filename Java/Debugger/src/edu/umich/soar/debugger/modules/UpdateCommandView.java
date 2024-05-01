@@ -11,6 +11,8 @@
  ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
 
+import sml.Agent;
+
 /************************************************************************
  *
  * This version of the BaseCommandView updates at the end of each run and clears
@@ -37,5 +39,12 @@ public class UpdateCommandView extends AbstractSingleTextView
     public String getModuleBaseName()
     {
         return "update";
+    }
+
+    @Override
+    public String toString() {
+        Agent agent = getAgentFocus();
+        return "UpdateCommandView, command=" + (m_CurrentCommand == null ? "null" : m_CurrentCommand) +
+            ", agent=" + (agent == null ? "null" : agent.GetAgentName());
     }
 }
