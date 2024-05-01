@@ -627,7 +627,7 @@ public class FoldingTextView extends AbstractComboView implements
      * @param wrap
      *            If true after reaching the bottom, continue search from the
      *            top
-     * @param searchHidden
+     * @param searchHiddenText
      *            If true and this view has hidden text (e.g. unexpanded tree
      *            nodes) search that text
      *
@@ -1277,7 +1277,10 @@ public class FoldingTextView extends AbstractComboView implements
         xmlParent.delete();
     }
 
-    public static class RunWrapper implements Runnable
+    /**
+     * Solves a very specific problem; see call site comments for details
+     */
+    public static class XMLDisplayRunner implements Runnable
     {
         final FoldingTextView m_View;
 
@@ -1285,7 +1288,7 @@ public class FoldingTextView extends AbstractComboView implements
 
         final ClientXML m_XML;
 
-        public RunWrapper(FoldingTextView view, Agent agent, ClientXML xml)
+        public XMLDisplayRunner(FoldingTextView view, Agent agent, ClientXML xml)
         {
             m_Agent = agent;
             m_XML = xml;
@@ -1311,14 +1314,14 @@ public class FoldingTextView extends AbstractComboView implements
         // can send over many pieces of a trace in a single call. Just more
         // efficient that way.
 
-        ClientTraceXML xmlParent = xml.ConvertToTraceXML();
-        if (!xmlParent.IsTagTrace() || xmlParent.GetNumberChildren() == 0)
+        ClientTraceXML clientTraceXML = xml.ConvertToTraceXML();
+        if (!clientTraceXML.IsTagTrace() || clientTraceXML.GetNumberChildren() == 0)
         {
             xml.delete();
             return;
         }
         // The conversion creates a new SWIG object which we have to delete.
-        xmlParent.delete();
+        clientTraceXML.delete();
 
         // If Soar is running in the UI thread we can make
         // the update directly.
@@ -1350,12 +1353,12 @@ public class FoldingTextView extends AbstractComboView implements
         // specifically because
         // Linux needs these two to stay in step and some users might not want
         // the UI to get ahead.
-        ClientXML pKeep = new ClientXML(xml);
+        ClientXML xmlSafeCopy = new ClientXML(xml);
 
         if (m_LockToSoar)
-            Display.getDefault().syncExec(new RunWrapper(this, agent, pKeep));
+            Display.getDefault().syncExec(new XMLDisplayRunner(this, agent, xmlSafeCopy));
         else
-            Display.getDefault().asyncExec(new RunWrapper(this, agent, pKeep));
+            Display.getDefault().asyncExec(new XMLDisplayRunner(this, agent, xmlSafeCopy));
     }
 
     /********************************************************************************************
@@ -1366,6 +1369,7 @@ public class FoldingTextView extends AbstractComboView implements
     @Override
     protected void registerForViewAgentEvents(Agent agent)
     {
+        System.out.println("Registering for XML Events: " + agent.GetAgentName());
         m_xmlCallback = agent.RegisterForXMLEvent(
                 smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, this, null);
     }
@@ -1373,6 +1377,7 @@ public class FoldingTextView extends AbstractComboView implements
     @Override
     protected void clearViewAgentEvents()
     {
+        System.out.println("Clearing XML events");
         m_xmlCallback = -1;
     }
 
@@ -1381,9 +1386,10 @@ public class FoldingTextView extends AbstractComboView implements
     {
         boolean ok = true;
 
-        if (m_xmlCallback != -1)
+        if (m_xmlCallback != -1) {
             ok = agent.UnregisterForXMLEvent(m_xmlCallback);
-
+            System.out.println("Unregistered for XML events: " + agent.GetAgentName() + ", " + ok);
+        }
         m_xmlCallback = -1;
 
         return ok;
