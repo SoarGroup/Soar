@@ -17,7 +17,10 @@ python_sml_alias = clone['SML_PYTHON_ALIAS']
 
 inc_path = sysconfig.get_path('include')
 if os.name == 'nt':
-    lib_path = os.path.join(sysconfig.get_config_vars('BINDIR')[0], 'libs')
+    lib_path = [
+        os.path.join(sysconfig.get_config_vars('BINDIR')[0], 'libs'),
+        os.path.join(sysconfig.get_config_vars('LIBDEST')[0], '..\\libs'),
+    ]
     pylib = 'python' + sysconfig.get_config_vars('VERSION')[0]
 else:
     lib_path = sysconfig.get_config_vars('LIBDIR')[0]
@@ -26,7 +29,7 @@ lib_install_dir = clone['OUT_DIR']
 
 clone.Append(CPPPATH = inc_path)
 
-if not env['ENSCONS_ACTIVE']:
+if (not env['ENSCONS_ACTIVE']) or os.name == 'nt':
     clone.Append(LIBPATH = lib_path, LIBS = pylib)
 
 if os.name == 'posix':
