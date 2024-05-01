@@ -182,8 +182,8 @@ env = Environment(
 )
 
 if enscons_active:
-    env['PACKAGE_METADATA'] = dict(toml.load(open('pyproject.toml')))['project'],
-    env['WHEEL_TAG'] = enscons.get_binary_tag(),
+    env['PACKAGE_METADATA'] = dict(toml.load(open('pyproject.toml')))['project']
+    env['WHEEL_TAG'] = enscons.get_binary_tag()
 
 env['ENSCONS_ACTIVE'] = enscons_active
 
