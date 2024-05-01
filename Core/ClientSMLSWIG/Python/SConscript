@@ -24,7 +24,10 @@ else:
     pylib = sysconfig.get_config_vars('LIBRARY')[0]
 lib_install_dir = clone['OUT_DIR']
 
-clone.Append(CPPPATH = inc_path, LIBPATH = lib_path, LIBS = pylib)
+clone.Append(CPPPATH = inc_path)
+
+if not env['ENSCONS_ACTIVE']:
+    clone.Append(LIBPATH = lib_path, LIBS = pylib)
 
 if os.name == 'posix':
     clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
@@ -47,3 +50,8 @@ install_lib = env.Install(lib_install_dir, shlib)
 install_test = env.Install(lib_install_dir, env.File('TestPythonSML.py'))
 
 env.Alias(python_sml_alias, install_lib + install_source + install_test)
+
+python_shlib = shlib
+python_source = source
+Export('python_shlib')
+Export('python_source')
