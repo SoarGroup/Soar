@@ -27,6 +27,8 @@ jobs:
           ubuntu-latest,
           # latest available X86_64 target
           macos-12,
+          # latest is ARM
+          macos-latest,
         ]
     steps:
       - name: Checkout
@@ -48,6 +50,14 @@ jobs:
       - name: Setup tcl (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install tcl-dev
+
+      - name: Setup tcl (macos-latest)
+        if: matrix.os == 'macos-latest'
+        run: brew install tcl-tk
+
+      - name: Setup SWIG (macos-latest)
+        if: matrix.os == 'macos-latest'
+        run: brew install swig
 
       - name: build
         env:
