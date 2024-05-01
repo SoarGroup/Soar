@@ -2,6 +2,7 @@
 
 chunk always
 watch --learn 2
+chunk automatically-create-singletons off
 
 sp {init-superstate
    (state <s> ^superstate nil)

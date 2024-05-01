@@ -1,5 +1,6 @@
 chunk always
 srand 23
+chunk automatically-create-singletons off
 
 # Singleton types:  any constant identifier state operator
 #chunk single state state-type state

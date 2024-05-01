@@ -3,9 +3,9 @@ sp {answer*make-chunk-3*snc*t2-4
     (<s1> ^y 3)
     (<s1> ^x 2)
     (<s1> ^superstate nil)
-    (<s1> ^x <c1>)
+    #(<s1> ^x <c1>)
     -->
-    (<s1> ^result (|/| 9 <c1>) +)
+    (<s1> ^result (|/| 9 2) +)
 }
 
 sp {answer*make-chunk-4*snc*t2-3
@@ -16,9 +16,9 @@ sp {answer*make-chunk-4*snc*t2-3
     (<s1> ^c <c4>)
     (<s1> ^b <c3>)
     (<s1> ^a <c2>)
-    (<s1> ^x <c1>)
+    #(<s1> ^x <c1>)
     -->
-    (<s1> ^result (|/| 9 <c1>) +)
+    (<s1> ^result (|/| 9 2) +)
     (<s1> ^x 2 +)
     (<s1> ^y 3 +)
     (<s1> ^z 4 +)
