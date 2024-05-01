@@ -503,6 +503,9 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
+# cibuildwheel output
+wheelhouse/
+
 ### Soar ###
 out/
 build/

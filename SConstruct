@@ -12,6 +12,13 @@ import fnmatch
 from SCons.Node.Alias import default_ans
 import time
 
+try:
+    enscons_active = True
+    import pytoml as toml
+    import enscons, enscons.cpyext
+except ImportError:
+    enscons_active = False
+
 # Add the current directory to the path so we can from build_support
 script_dir = Dir('.').srcnode().abspath
 sys.path.append(script_dir)
@@ -141,8 +148,13 @@ AddOption('--opt', action='store_false', dest='dbg', default=False, help='Enable
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Build Soar without SVS functionality')
 
+if enscons_active:
+    tools = ['default', 'packaging', enscons.generate]
+else:
+    tools = None
 
 env = Environment(
+    tools=tools,
     ENV=os.environ.copy(),
     SCU=GetOption('scu'),
     DEBUG=GetOption('dbg'),
@@ -168,6 +180,12 @@ env = Environment(
     # used for generating the MSVS project
     SCONS_HOME=os.path.join(script_dir, 'scons', 'scons-local-4.4.0')
 )
+
+if enscons_active:
+    env['PACKAGE_METADATA'] = dict(toml.load(open('pyproject.toml')))['project'],
+    env['WHEEL_TAG'] = enscons.get_binary_tag(),
+
+env['ENSCONS_ACTIVE'] = enscons_active
 
 env.AddMethod(prepare_for_compiling_with_tcl, 'PrepareForCompilingWithTcl')
 
@@ -366,6 +384,15 @@ for d in os.listdir('.'):
         script = join(d, 'SConscript')
         if os.path.exists(script):
             SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
+
+if enscons_active:
+    Import('python_shlib')
+    Import('python_source')
+
+    whl = env.Whl("platlib", [
+        env.Install("soar_raw", python_shlib), env.InstallAs("soar_raw/__init__.py", python_source)
+    ], root="")
+    env.WhlFile(source=whl)
 
 if 'MSVSSolution' in env['BUILDERS']:
 
