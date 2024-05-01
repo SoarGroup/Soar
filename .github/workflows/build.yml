@@ -36,16 +36,16 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          distribution: "temurin"
+          java-version: "11"
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.X'
+          dotnet-version: "6.0.X"
 
       - name: Setup tcl (ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -62,8 +62,16 @@ jobs:
       - name: build
         env:
           # instructs SCons to print debug statements to stdout
-          SCONS_MSCOMMON_DEBUG: '-'
+          SCONS_MSCOMMON_DEBUG: "-"
         run: python3 scons/scons.py --scu --opt --verbose all performance_tests sml_tcl
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.17.0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
 
       - name: Pack artifacts
         run: tar -czvf build.tar.gz out/
@@ -103,7 +111,7 @@ jobs:
         # always run even if the previous step fails
         if: always()
         with:
-          report_paths: './out/TestResults.xml'
+          report_paths: "./out/TestResults.xml"
           # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
           # fail_on_failure: true
           annotate_only: true
@@ -119,7 +127,7 @@ jobs:
           name: ${{ matrix.os }}-PerformanceTestResults.txt
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
 
-# Using powershell means we need to explicitly stop on failure
+  # Using powershell means we need to explicitly stop on failure
   Windows:
     name: build-windows
     runs-on: [windows-latest]
@@ -134,12 +142,12 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          distribution: "temurin"
+          java-version: "11"
 
       # This does not install MSVC or Visual Studio! We rely on the software installed already on the
       # GH action runner, and this step just prepares the environment. We pin the VS version here because
@@ -181,12 +189,20 @@ jobs:
       - name: build
         env:
           # instructs SCons to print debug statements to stdout
-          SCONS_MSCOMMON_DEBUG: '-'
+          SCONS_MSCOMMON_DEBUG: "-"
         run: |
           ./build.bat --scu --opt --verbose --tcl="$env:TCL_HOME" all performance_tests sml_tcl
           if ($lastexitcode -ne 0) {
              throw "build.bat exit code: $lastexitcode"
           }
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.17.0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
 
       - name: Pack artifacts
         shell: bash
@@ -242,7 +258,7 @@ jobs:
         # always run even if the previous step fails
         if: always()
         with:
-          report_paths: './out/TestResults.xml'
+          report_paths: "./out/TestResults.xml"
           # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
           # fail_on_failure: true
           annotate_only: true
