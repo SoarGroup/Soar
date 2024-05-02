@@ -20,8 +20,26 @@ requires = ["pytoml>=0.1", "enscons", "wheel", "scons==4.4.0"]
 build-backend = "enscons.api"
 
 [tool.cibuildwheel]
-# build-verbosity = 3
-skip = ["*-win32", "*-musllinux_*"]
+build-verbosity = 3
+skip = [
+    # Skip PyPy: Build works, but does not properly work at runtime.
+    "pp*",
+    # Skip 32-bit Windows: scons does not properly build 32-bit version,
+    #  and linkage problems occur.
+    "*-win32",
+    # Skip MUSL (as opposed to GLIB) linux, due to unknown concurrency symbols.
+    "*-musllinux_*"
+]
+test-command = """\
+python -c "import soar_raw;\
+k=soar_raw.Kernel.CreateKernelInNewThread();\
+a=k.CreateAgent('soar');\
+assert(a.ExecuteCommandLine('echo hello world').strip()=='hello world')"
+"""
+
+# Skip testing python 3.8 on ARM64. This is due to a limitation with cibuildwheel:
+# https://github.com/pypa/cibuildwheel/pull/1169#issuecomment-1178727618
+test-skip = "cp38-macosx_*:arm64"
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = """\
@@ -30,6 +48,7 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/project/out auditwheel repair -w {dest_dir} {w
 
 [tool.cibuildwheel.macos]
 repair-wheel-command = """\
-DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH:/project/out delocate-wheel \
+DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$LD_LIBRARY_PATH:$REPAIR_LIBRARY_PATH:$HOME/work/Soar/Soar/out delocate-wheel \
 --require-archs {delocate_archs} -w {dest_dir} -v {wheel}\
 """
+before-build = "rm -rf build/"

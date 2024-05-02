@@ -24,12 +24,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          ubuntu-latest,
-          # latest available X86_64 target
-          macos-12,
-          # latest is ARM
-          macos-latest,
-        ]
+            ubuntu-latest,
+            # latest available X86_64 target
+            macos-12,
+            # latest is ARM
+            macos-latest,
+          ]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -274,5 +274,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          name: cibw-wheels-windows
           path: ./wheelhouse/*.whl
