@@ -390,10 +390,30 @@ for d in os.listdir('.'):
 if enscons_active:
     Import('python_shlib')
     Import('python_source')
+    Import('soarlib')
+    py_lib_namespace = env['PACKAGE_METADATA']['name'].replace("-", "_")
 
-    whl = env.Whl("platlib", [
-        env.Install("soar_raw", python_shlib), env.InstallAs("soar_raw/__init__.py", python_source)
-    ], root="")
+    sources = []
+
+    if sys.platform == 'darwin' or os.name == 'nt':
+        # Add soar's library to the wheel directory
+        sources += [
+            env.Install(py_lib_namespace, soarlib)
+        ]
+
+    if sys.platform == 'darwin':
+        # For MacOS, also add to the out/ directory,
+        # so the linker and delocator pick up on it properly.
+        sources += [
+            env.Install(env['OUT_DIR'], soarlib)
+        ]
+
+    sources += [
+        env.Install(py_lib_namespace, python_shlib),
+        env.InstallAs(py_lib_namespace + "/__init__.py", python_source)
+    ]
+
+    whl = env.Whl("platlib", sources, root="")
     env.WhlFile(source=whl)
 
 if 'MSVSSolution' in env['BUILDERS']:
