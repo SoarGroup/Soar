@@ -24,28 +24,28 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-            ubuntu-latest,
-            # latest available X86_64 target
-            macos-12,
-            # latest is ARM
-            macos-latest,
-          ]
+          ubuntu-latest,
+          # latest available X86_64 target
+          macos-12,
+          # latest is ARM
+          macos-latest,
+        ]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: "temurin"
-          java-version: "11"
+          distribution: 'temurin'
+          java-version: '11'
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "6.0.X"
+          dotnet-version: '6.0.X'
 
       - name: Setup tcl (ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -62,7 +62,7 @@ jobs:
       - name: build
         env:
           # instructs SCons to print debug statements to stdout
-          SCONS_MSCOMMON_DEBUG: "-"
+          SCONS_MSCOMMON_DEBUG: '-'
         run: python3 scons/scons.py --scu --opt --verbose all performance_tests sml_tcl
 
       - name: Pack artifacts
@@ -103,7 +103,7 @@ jobs:
         # always run even if the previous step fails
         if: always()
         with:
-          report_paths: "./out/TestResults.xml"
+          report_paths: './out/TestResults.xml'
           # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
           # fail_on_failure: true
           annotate_only: true
@@ -142,12 +142,12 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: "temurin"
-          java-version: "11"
+          distribution: 'temurin'
+          java-version: '11'
 
       # This does not install MSVC or Visual Studio! We rely on the software installed already on the
       # GH action runner, and this step just prepares the environment. We pin the VS version here because
@@ -189,7 +189,7 @@ jobs:
       - name: build
         env:
           # instructs SCons to print debug statements to stdout
-          SCONS_MSCOMMON_DEBUG: "-"
+          SCONS_MSCOMMON_DEBUG: '-'
         run: |
           ./build.bat --scu --opt --verbose --tcl="$env:TCL_HOME" all performance_tests sml_tcl
           if ($lastexitcode -ne 0) {
@@ -250,7 +250,7 @@ jobs:
         # always run even if the previous step fails
         if: always()
         with:
-          report_paths: "./out/TestResults.xml"
+          report_paths: './out/TestResults.xml'
           # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
           # fail_on_failure: true
           annotate_only: true
