@@ -15,6 +15,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 
+[project.optional-dependencies]
+compat = ["soar-compat"]
+
 [build-system]
 requires = ["pytoml>=0.1", "enscons", "wheel", "scons==4.4.0"]
 build-backend = "enscons.api"
