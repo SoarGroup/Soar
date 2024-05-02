@@ -1,0 +1,18 @@
+[project]
+name = "soar-compat"
+description = "Compatibility layer with soar-sml"
+version = "1.0"
+license = { text = "BSD" }
+authors = [
+    {name = "Jonathan de Jong", email = "jo@jo.wtf"}
+]
+readme = "README.md"
+dependencies = ["soar-sml"]
+keywords = ["soar"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
