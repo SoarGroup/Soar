@@ -17,7 +17,7 @@ try:
     import toml
     import enscons, enscons.cpyext
 
-    enscons.set_pyproject_dir("Core/ClientSMLSWIG/")
+    enscons.set_pyproject_dir("Core/ClientSMLSWIG/Python/")
 except ImportError as e:
     enscons_active = False
 

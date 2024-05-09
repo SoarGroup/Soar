@@ -30,7 +30,7 @@ requires = [
 build-backend = "enscons.api"
 
 [tool.enscons]
-build-from = "../../"
+build-from = "../../../"
 
 [tool.cibuildwheel]
 build-verbosity = 3
