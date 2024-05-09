@@ -24,12 +24,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-            ubuntu-latest,
-            # latest available X86_64 target
-            macos-12,
-            # latest is ARM
-            macos-latest,
-          ]
+          ubuntu-latest,
+          # latest available X86_64 target
+          macos-12,
+          # latest is ARM
+          macos-latest,
+        ]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
