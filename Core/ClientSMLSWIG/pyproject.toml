@@ -7,8 +7,7 @@ authors = [
     # {name = "Author Name", email = "authoremail@example.com"}
 ]
 readme = "README.md"
-# Enscons does not support 3.12 as of yet
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8"
 dependencies = []
 keywords = ["soar"]
 classifiers = [
@@ -19,8 +18,19 @@ classifiers = [
 compat = ["soar-compat"]
 
 [build-system]
-requires = ["pytoml>=0.1", "enscons", "wheel", "scons==4.4.0"]
+requires = [
+    # "enscons",
+    # we use a forked enscons to add python 3.12 support
+    "enscons @ git+https://github.com/ShadowJonathan/enscons-soar@08df06b",
+
+    "toml>=0.1",
+    "wheel",
+    "scons==4.4.0"
+]
 build-backend = "enscons.api"
+
+[tool.enscons]
+build-from = "../../"
 
 [tool.cibuildwheel]
 build-verbosity = 3

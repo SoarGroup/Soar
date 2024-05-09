@@ -14,9 +14,11 @@ import time
 
 try:
     enscons_active = True
-    import pytoml as toml
+    import toml
     import enscons, enscons.cpyext
-except ImportError:
+
+    enscons.set_pyproject_dir("Core/ClientSMLSWIG/")
+except ImportError as e:
     enscons_active = False
 
 # Add the current directory to the path so we can from build_support
@@ -185,7 +187,7 @@ env = Environment(
 wheel_tag = ""
 
 if enscons_active:
-    env['PACKAGE_METADATA'] = dict(toml.load(open('pyproject.toml')))['project']
+    env['PACKAGE_METADATA'] = enscons.get_pyproject()['project']
     wheel_tag = enscons.get_binary_tag()
     env['WHEEL_TAG'] = wheel_tag
 
@@ -405,7 +407,7 @@ if enscons_active:
         # For MacOS, also add to the out/ directory,
         # so the linker and delocator pick up on it properly.
         sources += [
-            env.Install(env['OUT_DIR'], soarlib)
+            env.Install(py_lib_namespace, soarlib)
         ]
 
     sources += [
