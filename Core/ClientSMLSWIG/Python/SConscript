@@ -52,7 +52,11 @@ install_source = env.Install(lib_install_dir, source)
 install_lib = env.Install(lib_install_dir, shlib)
 install_test = env.Install(lib_install_dir, env.File('TestPythonSML.py'))
 
-env.Alias(python_sml_alias, install_lib + install_source + install_test)
+# We add soarlib to the python_sml explicitly, as some operating systems don't pick up on this dependency,
+# and crash the build.
+Import('soarlib')
+
+env.Alias(python_sml_alias, soarlib + install_lib + install_source + install_test)
 
 python_shlib = shlib
 python_source = source
