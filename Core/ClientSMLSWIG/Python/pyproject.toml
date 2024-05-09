@@ -1,6 +1,6 @@
 [project]
 name = "soar-sml"
-description = "Raw SML Bindings to the SOAR Cognitive Architecture"
+description = "Raw SML Bindings to the Soar Cognitive Architecture"
 version = "9.6.2"
 license = "BSD"
 authors = [
