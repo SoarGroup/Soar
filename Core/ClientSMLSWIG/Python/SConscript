@@ -19,6 +19,7 @@ inc_path = sysconfig.get_path('include')
 if os.name == 'nt':
     lib_path = [
         os.path.join(sysconfig.get_config_vars('BINDIR')[0], 'libs'),
+        # Finds the correct library path for Github Runner environments (cibuildwheel)
         os.path.join(sysconfig.get_config_vars('LIBDEST')[0], '..\\libs'),
     ]
     pylib = 'python' + sysconfig.get_config_vars('VERSION')[0]
@@ -29,6 +30,12 @@ lib_install_dir = clone['OUT_DIR']
 
 clone.Append(CPPPATH = inc_path)
 
+# linux: manylinux containers do not ship with python's libraries:
+#  https://github.com/pypa/manylinux/issues/191#issuecomment-386489125
+# macos: python libraries (only their executables) do not appear to be present when installing python on
+#  GHA Runners. (python installations are handled by cibuildwheel)
+#
+# Omitting python's libraries is safe, as python itself injects its symbols when importing the library.
 if (not env['ENSCONS_ACTIVE']) or os.name == 'nt':
     clone.Append(LIBPATH = lib_path, LIBS = pylib)
 
