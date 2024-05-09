@@ -7,6 +7,9 @@ for ease of distribution and installation.
 
 Versions on PyPI will follow Soar's versioning methodology.
 
+`soar-sml` effectively bundles Soar with its distribution; you can download it, import it into Python,
+and have a fully-working Soar kernel up and running.
+
 ## Importing
 
 The soar-sml package can be imported like so:

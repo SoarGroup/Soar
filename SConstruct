@@ -398,14 +398,19 @@ py_lib_namespace = "soar_sml"
 py_sources = []
 
 if sys.platform == 'darwin' or os.name == 'nt':
-    # Add soar's library to the wheel directory
+    # Add soar's library to the wheel directory.
+    #
+    # With MacOS builds, these are shipped in the final wheel archive. Ditto for Windows.
+    #
+    # With linux builds, this step isn't neccecary, as its linker will pick up on the library from out/,
+    # and statically link it against the SWIG-generated shared library.
     py_sources += [
         env.Install(py_lib_namespace, soarlib)
     ]
 
 if sys.platform == 'darwin':
     # For MacOS, also add to the out/ directory,
-    # so the linker and delocator pick up on it properly.
+    # so the linker can pick up on it properly.
     py_sources += [
         env.Install(env['OUT_DIR'], soarlib)
     ]
@@ -418,9 +423,13 @@ py_sources += [
 env.Alias(SML_PYTHON_ALIAS + "_dev", py_sources)
 
 if enscons_active:
+    # Whl and WhlFile add multiple targets (sdist, dist_info, bdist_wheel, editable) to env
+    # for enscons (python build backend for scons; required for building with cibuildwheel).
     whl = env.Whl("platlib", py_sources, root="")
     env.WhlFile(source=whl)
 
+    # We make sure that an editable (`pip install -e`) installation always properly installs
+    # the files in the correct places.
     env.Depends("editable", py_sources)
 
 if 'MSVSSolution' in env['BUILDERS']:
