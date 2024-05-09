@@ -24,12 +24,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          ubuntu-latest,
-          # latest available X86_64 target
-          macos-12,
-          # latest is ARM
-          macos-latest,
-        ]
+            ubuntu-latest,
+            # latest available X86_64 target
+            macos-12,
+            # latest is ARM
+            macos-latest,
+          ]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -121,6 +121,8 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.17.0
+        with:
+          package-dir: Core/ClientSMLSWIG
 
       - uses: actions/upload-artifact@v4
         with:
@@ -271,6 +273,8 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.17.0
+        with:
+          package-dir: Core/ClientSMLSWIG
 
       - uses: actions/upload-artifact@v4
         with:
