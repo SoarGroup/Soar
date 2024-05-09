@@ -506,6 +506,9 @@ local.properties
 # cibuildwheel output
 wheelhouse/
 
+# pip/enscons build output
+soar_sml/
+
 ### Soar ###
 out/
 build/
