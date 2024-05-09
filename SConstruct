@@ -389,34 +389,39 @@ for d in os.listdir('.'):
         if os.path.exists(script):
             SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
 
-if enscons_active:
-    Import('python_shlib')
-    Import('python_source')
-    Import('soarlib')
-    py_lib_namespace = env['PACKAGE_METADATA']['name'].replace("-", "_")
+# Python-related packaging
+Import('python_shlib')
+Import('python_source')
+Import('soarlib')
+py_lib_namespace = "soar_sml"
 
-    sources = []
+py_sources = []
 
-    if sys.platform == 'darwin' or os.name == 'nt':
-        # Add soar's library to the wheel directory
-        sources += [
-            env.Install(py_lib_namespace, soarlib)
-        ]
-
-    if sys.platform == 'darwin':
-        # For MacOS, also add to the out/ directory,
-        # so the linker and delocator pick up on it properly.
-        sources += [
-            env.Install(py_lib_namespace, soarlib)
-        ]
-
-    sources += [
-        env.Install(py_lib_namespace, python_shlib),
-        env.InstallAs(py_lib_namespace + "/__init__.py", python_source)
+if sys.platform == 'darwin' or os.name == 'nt':
+    # Add soar's library to the wheel directory
+    py_sources += [
+        env.Install(py_lib_namespace, soarlib)
     ]
 
-    whl = env.Whl("platlib", sources, root="")
+if sys.platform == 'darwin':
+    # For MacOS, also add to the out/ directory,
+    # so the linker and delocator pick up on it properly.
+    py_sources += [
+        env.Install(env['OUT_DIR'], soarlib)
+    ]
+
+py_sources += [
+    env.Install(py_lib_namespace, python_shlib),
+    env.InstallAs(py_lib_namespace + "/__init__.py", python_source)
+]
+
+env.Alias(SML_PYTHON_ALIAS + "_dev", py_sources)
+
+if enscons_active:
+    whl = env.Whl("platlib", py_sources, root="")
     env.WhlFile(source=whl)
+
+    env.Depends("editable", py_sources)
 
 if 'MSVSSolution' in env['BUILDERS']:
 
