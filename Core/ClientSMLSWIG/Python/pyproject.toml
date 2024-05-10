@@ -1,7 +1,7 @@
 [project]
 name = "soar-sml"
 description = "Raw SML Bindings to the Soar Cognitive Architecture"
-version = "9.6.2.dev1"
+version = "9.6.2.dev2"
 license = "BSD"
 maintainers = [
     { name = "Nathan Glenn", email = "garfieldnate@gmail.com" }
