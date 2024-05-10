@@ -3,16 +3,59 @@ name = "soar-sml"
 description = "Raw SML Bindings to the Soar Cognitive Architecture"
 version = "9.6.2.dev1"
 license = "BSD"
+maintainers = [
+    { name = "Nathan Glenn", email = "garfieldnate@gmail.com" }
+]
 authors = [
-    # {name = "Author Name", email = "authoremail@example.com"}
+    { name = "J. Laird" },
+    { name = "A. Mininger" },
+    { name = "A. Nickels" },
+    { name = "A. Turner" },
+    { name = "A. Nuxoll" },
+    { name = "A. Deschamps" },
+    { name = "R. Marinier" },
+    { name = "B. Stearns" },
+    { name = "C. Dettmering" },
+    { name = "D. Ray" },
+    { name = "D. Pearson" },
+    { name = "I. Hines" },
+    { name = "J. Crossman" },
+    { name = "J. Boggs" },
+    { name = "J. Voigt" },
+    { name = "J. Xu" },
+    { name = "J. Li" },
+    { name = "K. Coulter" },
+    { name = "L. Goeddel" },
+    { name = "M. Lanting" },
+    { name = "M. Assanie" },
+    { name = "M. Tinkerhess" },
+    { name = "M. Bloch" },
+    { name = "M. Schmidt" },
+    { name = "N. Derbinsky" },
+    { name = "N. Glenn" },
+    { name = "N. Gorski" },
+    { name = "N. Timpko" },
+    { name = "S. Wintermute" },
+    { name = "S. Lathrop" },
+    { name = "S. Wallace" },
+    { name = "S. Nason" },
+    { name = "S. Mohan" },
+    { name = "S. Jones" },
+    { name = "Y. Wang" },
+    { name = "J. Kirk" },
+    { name = "R. Wray" },
 ]
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = []
-keywords = ["soar"]
+keywords = ["soar", "sml", "cog-arch", "cognitive architecture", "cognitive", "soar-sml", "ai"]
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
+
+[project.urls]
+Homepage = "https://soar.eecs.umich.edu/"
+Repository = "https://github.com/SoarGroup/Soar"
 
 [project.optional-dependencies]
 compat = ["soar-compat"]
