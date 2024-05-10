@@ -4,10 +4,14 @@ description = "Raw SML Bindings to the Soar Cognitive Architecture"
 version = "9.6.2.dev2"
 license = "BSD"
 maintainers = [
-    { name = "Nathan Glenn", email = "garfieldnate@gmail.com" }
+    { name = "Nathan Glenn", email = "garfieldnate@gmail.com" },
+    { name = "Center for Integrated Cognition" }
 ]
 authors = [
-    { name = "J. Laird" },
+    { name = "John E. Laird" },
+    { name = "Allen Newell" },
+    { name = "Paul Rosenbloom" },
+
     { name = "A. Mininger" },
     { name = "A. Nickels" },
     { name = "A. Turner" },
