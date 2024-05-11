@@ -16,8 +16,6 @@ try:
     enscons_active = True
     import toml
     import enscons, enscons.cpyext
-
-    enscons.set_pyproject_dir("Core/ClientSMLSWIG/Python/")
 except ImportError as e:
     enscons_active = False
 
@@ -419,7 +417,7 @@ py_sources += [
 env.Alias(SML_PYTHON_ALIAS + "_dev", py_sources)
 
 if enscons_active:
-    env['PACKAGE_METADATA'] = enscons.get_pyproject()['project']
+    env['PACKAGE_METADATA'] = enscons.get_pyproject(env)['project']
     env['WHEEL_TAG'] = enscons.get_binary_tag()
 
     # Whl and WhlFile add multiple targets (sdist, dist_info, bdist_wheel, editable) to env
