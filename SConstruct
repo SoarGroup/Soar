@@ -431,6 +431,25 @@ if enscons_active:
 
     env.WhlFile(source=whl)
 
+    # env.FindSourceFiles(whl) +
+    sdist_sources = env.Glob("Core/*/SConscript") + env.Glob("build_support/*.py") + [
+        "SConstruct",
+        "Core/SConscript",
+        "Core/ClientSMLSWIG/Python/SConscript",
+        "Core/ClientSMLSWIG/Python/README.md",
+        "Core/SVS",
+    ] + env.Glob("Core/ClientSMLSWIG/Python/*.i") + env.Glob("Core/ClientSMLSWIG/*.i")
+
+    for i in range(0, 5):
+        for ext in {"h", "c", "cpp", "hpp", "cxx"}:
+            sdist_sources.extend(
+                env.Glob("Core/" + ("*/" * i) + "*." + ext)
+            )
+
+    env.SDist(source=sdist_sources,
+              pyproject=True,
+    )
+
     # We make sure that an editable (`pip install -e`) installation always properly installs
     # the files in the correct places.
     env.Depends("editable", py_sources)
