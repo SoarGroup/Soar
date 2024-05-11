@@ -418,7 +418,7 @@ env.Alias(SML_PYTHON_ALIAS + "_dev", py_sources)
 
 if enscons_active:
     env['PACKAGE_METADATA'] = enscons.get_pyproject(env)['project']
-    env['WHEEL_TAG'] = enscons.get_binary_tag()
+    env['ROOT_IS_PURELIB'] = False
 
     # Whl and WhlFile add multiple targets (sdist, dist_info, bdist_wheel, editable) to env
     # for enscons (python build backend for scons; required for building with cibuildwheel).

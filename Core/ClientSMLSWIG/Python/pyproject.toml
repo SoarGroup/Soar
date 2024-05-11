@@ -70,7 +70,7 @@ requires = [
     # and other python build/install frontends (such as pip itself).
     #
     # We use a forked version of enscons to add python 3.12 support.
-    "enscons @ git+https://github.com/ShadowJonathan/enscons-soar@9692b01",
+    "enscons @ git+https://github.com/ShadowJonathan/enscons-soar@8c15ea9",
 
     # Required sub-dependencies of enscons.
     "toml>=0.1",
@@ -97,7 +97,10 @@ skip = [
     #  and linkage problems occur.
     "*-win32",
     # Skip MUSL (as opposed to GLIB) linux, due to unknown concurrency symbols.
-    "*-musllinux_*"
+    "*-musllinux_*",
+    # Cibuildwheel cannot build for Python 3.8 on Apple Silicon, and just creates an x86 wheel there,
+    # which would be a duplicate with the x86 runner.
+    "cp38-macosx_arm64"
 ]
 # This test command:
 #  - imports soar_sml
