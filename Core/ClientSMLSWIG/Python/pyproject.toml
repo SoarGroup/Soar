@@ -66,10 +66,13 @@ compat = ["soar-compat"]
 
 [build-system]
 requires = [
-    # "enscons",
-    # we use a forked enscons to add python 3.12 support
+    # Enscons provides an interface with scons, allowing it to be puppetted by cibuildwheel,
+    # and other python build/install frontends (such as pip itself).
+    #
+    # We use a forked version of enscons to add python 3.12 support.
     "enscons @ git+https://github.com/ShadowJonathan/enscons-soar@08df06b",
 
+    # Required sub-dependencies of enscons.
     "toml>=0.1",
     "wheel",
     "scons==4.4.0"
@@ -77,9 +80,15 @@ requires = [
 build-backend = "enscons.api"
 
 [tool.enscons]
+# scons can only properly build when chdir'd to the right directory.
+#
+# Here we specify which relative directory enscons needs to chdir into to get scons to properly build.
+#
+# In SConstruct we have a line referring back to this directory, for enscons to properly grab the right metadata.
 build-from = "../../../"
 
 [tool.cibuildwheel]
+# We increase verbosity in the CI, so that tracking down problems is easier.
 build-verbosity = 3
 skip = [
     # Skip PyPy: Build works, but does not properly work at runtime.
@@ -90,6 +99,13 @@ skip = [
     # Skip MUSL (as opposed to GLIB) linux, due to unknown concurrency symbols.
     "*-musllinux_*"
 ]
+# This test command:
+#  - imports soar_sml
+#  - creates the kernel
+#  - creates an agent
+#  - executes a command on that agent
+#  - fails if the result of this command isn't as expected
+# to test if Soar properly boots and runs.
 test-command = """\
 python -c "import soar_sml;\
 k=soar_sml.Kernel.CreateKernelInNewThread();\
@@ -102,9 +118,17 @@ assert(a.ExecuteCommandLine('echo hello world').strip()=='hello world')"
 test-skip = "cp38-macosx_*:arm64"
 
 [tool.cibuildwheel.linux]
+# Specific instructions for cibuildwheel when running on linux:
+#  - add the /project/out directory for the linker to look at.
+#    - This allows it to find the soar library file, and link it.
 repair-wheel-command = """\
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/project/out auditwheel repair -w {dest_dir} {wheel}\
 """
 
 [tool.cibuildwheel.macos]
+# Specific instructions for cibuildwheel when running on macos:
+#  - remove the intermediate build artifacts before every new build.
+#    - this is because cibuildwheel builds for both architectures (arm64 / x86_64), and build artifacts from
+#      either arch aren't properly removed, and will fail the linker (which refuses to link artifacts from
+#      the wrong arch).
 before-build = "rm -rf build/"
