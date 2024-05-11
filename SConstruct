@@ -184,13 +184,6 @@ env = Environment(
     SCONS_HOME=os.path.join(script_dir, 'scons', 'scons-local-4.4.0')
 )
 
-wheel_tag = ""
-
-if enscons_active:
-    env['PACKAGE_METADATA'] = enscons.get_pyproject()['project']
-    wheel_tag = enscons.get_binary_tag()
-    env['WHEEL_TAG'] = wheel_tag
-
 env.AddMethod(prepare_for_compiling_with_tcl, 'PrepareForCompilingWithTcl')
 
 # must be specified first or else the resulting file will not contain all compile commands
@@ -389,7 +382,7 @@ for d in os.listdir('.'):
         if os.path.exists(script):
             SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
 
-# Python-related packaging
+# section Python-related packaging
 Import('python_shlib')
 Import('python_source')
 Import('soarlib')
@@ -423,6 +416,9 @@ py_sources += [
 env.Alias(SML_PYTHON_ALIAS + "_dev", py_sources)
 
 if enscons_active:
+    env['PACKAGE_METADATA'] = enscons.get_pyproject()['project']
+    env['WHEEL_TAG'] = enscons.get_binary_tag()
+
     # Whl and WhlFile add multiple targets (sdist, dist_info, bdist_wheel, editable) to env
     # for enscons (python build backend for scons; required for building with cibuildwheel).
     whl = env.Whl("platlib", py_sources, root="")
@@ -431,6 +427,8 @@ if enscons_active:
     # We make sure that an editable (`pip install -e`) installation always properly installs
     # the files in the correct places.
     env.Depends("editable", py_sources)
+
+# endsection Python-related packaging
 
 if 'MSVSSolution' in env['BUILDERS']:
 
