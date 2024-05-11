@@ -388,7 +388,10 @@ Import('python_source')
 Import('soarlib')
 py_lib_namespace = "soar_sml"
 
+# Targets to be built and included in wheel files.
 py_sources = []
+# Targets to be built but NOT included in wheel files.
+py_extra = []
 
 if sys.platform == 'darwin' or os.name == 'nt':
     # Add soar's library to the wheel directory.
@@ -404,7 +407,7 @@ if sys.platform == 'darwin' or os.name == 'nt':
 if sys.platform == 'darwin':
     # For MacOS, also add to the out/ directory,
     # so the linker can pick up on it properly.
-    py_sources += [
+    py_extra += [
         env.Install(env['OUT_DIR'], soarlib)
     ]
 
@@ -422,6 +425,10 @@ if enscons_active:
     # Whl and WhlFile add multiple targets (sdist, dist_info, bdist_wheel, editable) to env
     # for enscons (python build backend for scons; required for building with cibuildwheel).
     whl = env.Whl("platlib", py_sources, root="")
+
+    # Adding Depends makes scons build this file, but enscons will not include it in the final wheel file.
+    env.Depends(whl, py_extra)
+
     env.WhlFile(source=whl)
 
     # We make sure that an editable (`pip install -e`) installation always properly installs
