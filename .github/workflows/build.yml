@@ -335,6 +335,8 @@ jobs:
       - Posix
       - Windows
 
+    # We use Trusted Publishing to manage our access to pypi:
+    # https://github.com/marketplace/actions/pypi-publish#trusted-publishing
     environment:
       name: test-pypi
       url: https://test.pypi.org/p/soar-sml/
@@ -374,6 +376,8 @@ jobs:
       - Posix
       - Windows
 
+    # We use Trusted Publishing to manage our access to pypi:
+    # https://github.com/marketplace/actions/pypi-publish#trusted-publishing
     environment:
       name: pypi
       url: https://pypi.org/p/soar-sml/
