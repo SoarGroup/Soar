@@ -85,7 +85,9 @@ build-backend = "enscons.api"
 next-version = "smallest"
 
 [tool.versioningit.format]
-distance = "{next_version}.dev{distance}+{vcs}{rev}.{branch}"
+# For "distance" (development releases) we cannot use the local identifier, as pypi does not accept those.
+# Instead, we encode the distance in .dev, and the build time in a 4th version component.
+distance = "{next_version}.{committer_date:%Y%m%d%H%M}.dev{distance}"
 
 dirty = "{base_version}+dirty{build_date:%Y%m%d.%H%M}"
 
