@@ -284,6 +284,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # Do a complete clone, not a shallow one.
+          # https://github.com/actions/checkout/#usage
           fetch-depth: 0
 
       - name: Show tags
