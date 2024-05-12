@@ -1,7 +1,7 @@
 [project]
 name = "soar-sml"
 description = "Raw SML Bindings to the Soar Cognitive Architecture"
-version = "9.6.2.dev2"
+dynamic = ["version"]
 license = "BSD"
 maintainers = [
     { name = "Nathan Glenn", email = "garfieldnate@gmail.com" },
@@ -70,14 +70,33 @@ requires = [
     # and other python build/install frontends (such as pip itself).
     #
     # We use a forked version of enscons to add python 3.12 support.
-    "enscons @ git+https://github.com/ShadowJonathan/enscons-soar@8c15ea9",
+    "enscons @ git+https://github.com/ShadowJonathan/enscons-soar@544f39f",
 
     # Required sub-dependencies of enscons.
     "toml>=0.1",
     "wheel",
+    "versioningit",
     "scons==4.4.0"
 ]
 build-backend = "enscons.api"
+
+[tool.versioningit]
+# https://versioningit.readthedocs.io/en/stable/configuration.html#the-tool-versioningit-next-version-subtable
+next-version = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}.{branch}"
+
+dirty = "{base_version}+dirty{build_date:%Y%m%d.%H%M}"
+
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.{branch}.dirty{build_date:%Y%m%d.%H%M}"
+
+[tool.versioningit.tag2version]
+rmprefix = "releases/"
+
+# Optional regexes to extract a full version from git tags
+# regex = "\\d+\\.\\d+\\.\\d+"
+# regex = "\\d[A-Za-z0-9_.!+\\-]+"
 
 [tool.enscons]
 # scons can only properly build when chdir'd to the right directory.
