@@ -96,3 +96,5 @@ $ scons sml_python_dev
 
 Running the above command, and then re-running your python scripts,
 will automatically incorporate any compiled changes.
+
+Uploading to PyPI can be done manually using the [twine command](https://twine.readthedocs.io/en/stable/#using-twine)
