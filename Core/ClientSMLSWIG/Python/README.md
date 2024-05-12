@@ -72,29 +72,6 @@ $ pip install soar/Core/ClientSMLSWIG/Python
 This will generate all the required build artifacts, install them to your python installation (system-wide, or
 inside a virtual environment), and prepare it for `import soar_sml` statements in your scripts/programs.
 
-## Developing
+## Developing and Packaging
 
-While development iterations can are already possible with the repeated invocation of the above command,
-the below command is also suited:
-
-```bash
-$ pip install -e soar/Core/ClientSMLSWIG/Python
-```
-
-The `-e` stands for "editable", this means pip will have python redirect the "actual" location of the `soar_sml`
-package to be inside this project directory. Specifically, in this case, to the project root directory (`soar/`).
-
-This command will install a python package directory under the project root (`soar/soar_sml/`), where it copies
-build artifacts into, into a format that python expects.
-
-During development, other than running the `pip` command again,
-these files can be updated from builds with the `sml_python_dev` target:
-
-```bash
-$ scons sml_python_dev
-```
-
-Running the above command, and then re-running your python scripts,
-will automatically incorporate any compiled changes.
-
-Uploading to PyPI can be done manually using the [twine command](https://twine.readthedocs.io/en/stable/#using-twine)
+Notes for developing and packaging `soar-sml` can be found in [`DEVELOPING.md`](./DEVELOPING.md)
