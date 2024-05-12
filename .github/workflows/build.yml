@@ -319,7 +319,11 @@ jobs:
   python_push_dev:
     name: Publish to test.pypi.org
     runs-on: ubuntu-latest
-    if: github.event_name != 'schedule' && github.event_name != 'release'
+    # - Upload only every monday to prevent spamming the index with too many build artifacts.
+    # - Allow uploading on manual workflow dispatch, to enable quick dev releases.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # Alternative, to upload on every commit to development;
+    # if: github.event_name != 'schedule' && github.event_name != 'release'
     needs:
       # We depend on the python wheel builds because we need their artifacts
       - python_wheels
