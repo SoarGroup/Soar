@@ -52,6 +52,12 @@ $ pip install --pre -i https://test.pypi.org/simple/ soar-sml
 
 ## Packaging
 
+Versioning is dynamic, and will calculate a version identifier according to the latest git tag.
+- If the latest git tag is the current commit, it will version with that tag.
+- If the latest git tag is from a past commit, it will increment the smallest segment (e.g. `.2` in `9.6.2`) and
+  add miscellaneous metadata (such as the commit datetime, the amount of commits since the last tag, and wether the
+  workspace repository was "dirty" or not: if there were uncommitted changes.).
+
 `build.yml` will automatically build wheels for `soar-sml` on every commit, utilizing
 [cibuildwheel](https://cibuildwheel.pypa.io/) to ease the process, and build for many python versions at once. It will
 do a quick test on every build, importing `soar_sml` and running hello world, to ensure that the wheel passes basic
@@ -63,6 +69,10 @@ On a GitHub release, a workflow is triggered to build the final version of wheel
 **with the version given in the corresponding git tag**.
 (So if the release is named "Version 9.6.2", and the tag is "v9.6.2", then the auto-version script will see "v9.6.2")
 The string `releases/` is also removed from the git tag before parsing.
+
+*Do not release multiple versions pointing to the same commit*. Git tags do not have ordering compatible
+with the dynamic versioning, and so with the tags `9.6.2-rc2` and `9.6.2` pointing to the same commit,
+it may pick up on the `rc` tag, and version the build with that.
 
 Development versions are built and uploaded to [`test.pypi.org/p/soar-sml`](https://test.pypi.org/p/soar-sml) weekly.
 These will also upload on manual triggers.
