@@ -12,6 +12,10 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  release:
+    types:
+      - prereleased
+      - released
   schedule:
     # 5AM every Monday, to catch breaks due to changes in dependencies
     - cron: "0 5 * * 1"
@@ -118,16 +122,6 @@ jobs:
         with:
           name: ${{ matrix.os }}-PerformanceTestResults.txt
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.17.0
-        with:
-          package-dir: Core/ClientSMLSWIG/Python/
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
 
   # Using powershell means we need to explicitly stop on failure
   Windows:
@@ -271,6 +265,47 @@ jobs:
           name: Windows-PerformanceTestResults.txt
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
 
+  python_wheels:
+    name: wheel-*nix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [
+            ubuntu-latest,
+            # latest available X86_64 target
+            macos-12,
+            # latest is ARM
+            macos-latest,
+
+            windows-latest,
+          ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show tags
+        run: git describe --long --dirty --always --tags
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      # - name: Setup tcl (ubuntu)
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: sudo apt-get update && sudo apt-get install tcl-dev
+
+      # - name: Setup tcl (macos-latest)
+      #   if: matrix.os == 'macos-latest'
+      #   run: brew install tcl-tk
+
+      - name: Setup SWIG (macos-latest)
+        if: matrix.os == 'macos-latest'
+        run: brew install swig
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.17.0
         with:
@@ -278,5 +313,82 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-windows
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
+
+  python_push_dev:
+    name: Publish to test.pypi.org
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' && github.event_name != 'release'
+    needs:
+      # We depend on the python wheel builds because we need their artifacts
+      - python_wheels
+
+      # We depend on the builds themselves to gatekeep the upload if build + testing fails,
+      # usually then also the python wheel build should fail, but the normal builds do more thorough checking.
+      - Posix
+      - Windows
+
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/p/soar-sml/
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-*
+          path: wheelhouse/
+          merge-multiple: true
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: wheelhouse
+          skip-existing: true
+          verbose: true
+
+  python_push_release:
+    name: Publish to pypi.org
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    needs:
+      # We depend on the python wheel builds because we need their artifacts
+      - python_wheels
+
+      # We depend on the builds themselves to gatekeep the upload if build + testing fails,
+      # usually then also the python wheel build should fail, but the normal builds do more thorough checking.
+      - Posix
+      - Windows
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/soar-sml/
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-*
+          path: wheelhouse/
+          merge-multiple: true
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheelhouse
+          skip-existing: true
+          verbose: true
