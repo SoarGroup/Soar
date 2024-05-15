@@ -417,7 +417,6 @@ py_sources += [
 env.Alias(SML_PYTHON_ALIAS + "_dev", py_sources)
 
 if enscons_active:
-    env['PACKAGE_METADATA'] = enscons.get_pyproject(env)['project']
     # Instead of giving an explicit tag, we tell enscons that we're not building a "pure" (python-only) library,
     # and so we let it determine the wheel tag by itself.
     env['ROOT_IS_PURELIB'] = False
@@ -430,6 +429,44 @@ if enscons_active:
     env.Depends(whl, py_extra)
 
     env.WhlFile(source=whl)
+
+    sdist_sources = [
+        # Add SCons related files
+        "SConstruct",
+        "Core/SConscript",
+        *env.Glob("Core/*/SConscript"),
+        "Core/ClientSMLSWIG/Python/SConscript",
+
+        # Add SWIG files
+        *env.Glob("Core/ClientSMLSWIG/*.i"),
+        *env.Glob("Core/ClientSMLSWIG/Python/*.i"),
+
+        # Add build support files
+        *env.Glob("build_support/*.py"),
+
+        # Entire SVS source tree
+        "Core/SVS",
+
+        # Misc files
+        "Core/ClientSMLSWIG/Python/README.md",
+    ]
+
+    # Look for files under Core with the following file extensions, for up to 5 levels deep.
+    #
+    # We cannot just add the directories, as they will then start to include the .tar.gz file,
+    # which scons treats as a "target", creating a circular dependency.
+    SOURCE_EXTS = {"h", "c", "cpp", "hpp", "cxx"}
+    for i in range(0, 5):
+        for ext in SOURCE_EXTS:
+            sdist_sources.extend(
+                env.Glob("Core/" + ("*/" * i) + "*." + ext)
+            )
+
+    env.SDist(
+        source=sdist_sources,
+        # We tell enscons to include a generated / corrected pyproject.toml into the source distribution
+        pyproject=True,
+    )
 
     # We make sure that an editable (`pip install -e`) installation always properly installs
     # the files in the correct places.

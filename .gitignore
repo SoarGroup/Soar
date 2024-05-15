@@ -508,6 +508,7 @@ wheelhouse/
 
 # pip/enscons build output
 soar_sml/
+/pyproject.toml
 
 ### Soar ###
 out/

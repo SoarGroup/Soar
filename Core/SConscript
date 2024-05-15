@@ -111,7 +111,7 @@ if not CheckSWIG(env):
 	print('SWIG not found. Will not define sml_* build targets. Install swig to build wrappers for other languages.')
 else:
 	for x in 'Python Java Tcl CSharp'.split():
-		SConscript(os.path.join('ClientSMLSWIG', x, 'SConscript'))
+		SConscript(os.path.join('ClientSMLSWIG', x, 'SConscript'), must_exist=False)
 
 if 'MSVSProject' in kernel_env['BUILDERS']:
 	vcproj = kernel_env.MSVSProject(
