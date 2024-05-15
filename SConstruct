@@ -431,7 +431,6 @@ if enscons_active:
 
     env.WhlFile(source=whl)
 
-    # env.FindSourceFiles(whl) +
     sdist_sources = env.Glob("Core/*/SConscript") + env.Glob("build_support/*.py") + [
         "SConstruct",
         "Core/SConscript",
