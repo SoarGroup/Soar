@@ -286,6 +286,9 @@ jobs:
         with:
           # Do a complete clone, not a shallow one.
           # https://github.com/actions/checkout/#usage
+          #
+          # We need a complete clone, as versioningit uses `git describe`,
+          # which requires a commit tree to determine the latest tag.
           fetch-depth: 0
 
       - name: Show tags
