@@ -59,6 +59,18 @@ install_source = env.Install(lib_install_dir, source)
 install_lib = env.Install(lib_install_dir, shlib)
 install_test = env.Install(lib_install_dir, env.File('TestPythonSML.py'))
 
+if "SOAR_PYTHON_ABI3" in env["ENV"]:
+    if env["SWIG_VERSION"] >= (4, 2, 0):
+        print("SOAR_PYTHON_ABI3 defined, building Python Limited API...")
+        # Signal to SConstruct that we're building the limited API
+        env["PYTHON_LIMITED_API"] = True
+        # Signal to the .i file that we're building the limited API
+        clone.Append(CPPDEFINES = { 'Soar_Python_ABI3': None })
+    else:
+        print("'Requested building Python SML bindings with Python's Limited API, "
+              "while SWIG does not support it, aborting.'", file=sys.stderr)
+        Exit(1)
+
 # We add soarlib to the python_sml explicitly, as some operating systems don't pick up on this dependency,
 # and crash the build.
 Import('soarlib')

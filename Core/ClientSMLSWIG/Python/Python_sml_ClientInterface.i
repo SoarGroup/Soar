@@ -12,7 +12,9 @@
 %include <windows.i>
 
 %begin %{
+#ifdef Soar_Python_ABI3
 #define Py_LIMITED_API 0x03050000
+#endif
 %}
 
 %{

@@ -16,20 +16,27 @@ def recursive_glob(treeroot, pattern):
 	return results
 # 	('SoarKernel/SoarKernel.cxx',       recursive_glob(kernel_env.Dir('SoarKernel/src').abspath(), '*.cpp')),    # Kernel
 
-def CheckSWIG(env):
+def SWIGVersion(env):
 	if not env.WhereIs('swig'):
-		return False
-
+		return None
 	p = sub.Popen('swig -version'.split(), stdout=sub.PIPE)
 	out = p.communicate()[0].decode().split()
 	p.wait()
 
-	version = tuple(int(x) for x in out[2].split('.'))
+	return tuple(int(x) for x in out[2].split('.'))
+
+
+def CheckSWIG(env):
+	version = SWIGVersion(env)
+	if version is None:
+		return False
+
 	if version >= (1, 3, 31):
 		return True
 
 	print('swig version 1.3.31 or higher is required')
 	return False
+
 
 kernel_env = env.Clone()
 
@@ -110,6 +117,7 @@ env.Alias('headers', headers)
 if not CheckSWIG(env):
 	print('SWIG not found. Will not define sml_* build targets. Install swig to build wrappers for other languages.')
 else:
+	env["SWIG_VERSION"] = SWIGVersion(env)
 	for x in 'Python Java Tcl CSharp'.split():
 		SConscript(os.path.join('ClientSMLSWIG', x, 'SConscript'))
 
