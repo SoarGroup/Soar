@@ -70,6 +70,8 @@ if "SOAR_PYTHON_ABI3" in env["ENV"]:
         print("PY_ABI3_VERSION below supported version for ABI3", file=sys.stderr)
         Exit(1)
 
+    # Only SWIG 4.2.0 added Python Limited API support:
+    # https://github.com/swig/swig/issues/1009
     if env["SWIG_VERSION"] >= (4, 2, 0):
         print("SOAR_PYTHON_ABI3 defined, building Python Limited API...")
         # Signal to enscons that we're building the limited API
