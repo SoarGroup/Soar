@@ -311,13 +311,26 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install swig
 
+      - name: Setup SWIG (windows-latest)
+        if: matrix.os == 'windows-latest'
+        uses: MinoruSekine/setup-scoop@v4
+        with:
+          apps: swig
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.17.0
         with:
           package-dir: Core/ClientSMLSWIG/Python/
 
-      - name: ABI3Audit
+      - name: ABI3Audit (*nix)
+        if: matrix.os != 'windows-latest'
         run: pipx run abi3audit -S -v wheelhouse/*
+
+      - name: ABI3Audit (Windows)
+        if: matrix.os == 'windows-latest'
+        # For windows we can't use glob expansion, so we need to enumerate the files manually.
+        # https://stackoverflow.com/a/16804630/8700553
+        run: Get-ChildItem -File wheelhouse | Foreach {pipx run abi3audit -S -v $_.fullname}
 
       - uses: actions/upload-artifact@v4
         with:
