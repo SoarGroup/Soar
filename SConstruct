@@ -417,7 +417,6 @@ py_sources += [
 env.Alias(SML_PYTHON_ALIAS + "_dev", py_sources)
 
 if enscons_active:
-    env['PACKAGE_METADATA'] = enscons.get_pyproject(env)['project']
     # Instead of giving an explicit tag, we tell enscons that we're not building a "pure" (python-only) library,
     # and so we let it determine the wheel tag by itself.
     env['ROOT_IS_PURELIB'] = False
