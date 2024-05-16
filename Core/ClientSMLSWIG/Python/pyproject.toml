@@ -127,6 +127,7 @@ skip = [
 #
 # We pick python 3.9, since macOS ARM64 doesn't have 3.8, and so this is the earliest version on all platforms.
 build = "cp39*"
+environment = { SOAR_PYTHON_ABI3="1" }
 # This test command:
 #  - imports soar_sml
 #  - creates the kernel
