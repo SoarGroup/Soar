@@ -421,6 +421,9 @@ if enscons_active:
     # and so we let it determine the wheel tag by itself.
     env['ROOT_IS_PURELIB'] = False
 
+    # This enables tagging the wheel with the limited api, and also sets the target python version.
+    env["LIMITED_API_TARGET"] = (3, 5)
+
     # Whl and WhlFile add multiple targets (sdist, dist_info, bdist_wheel, editable) to env
     # for enscons (python build backend for scons; required for building with cibuildwheel).
     whl = env.Whl("platlib", py_sources, root="")

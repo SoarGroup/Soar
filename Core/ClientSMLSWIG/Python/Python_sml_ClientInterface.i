@@ -11,6 +11,10 @@
 // handle windows calling convention, __declspec(dllimport), correctly
 %include <windows.i>
 
+%begin %{
+#define Py_LIMITED_API 0x03050000
+%}
+
 %{
 	// helps quell warnings
 	#ifndef unused
@@ -252,7 +256,10 @@
 			return "";
 		}
 
-		std::string res = PyUnicode_AsUTF8 (result);
+		PyObject* unicode = PyUnicode_AsUTF8String (result);
+		std::string res = PyBytes_AsString(unicode);
+
+		Py_DECREF(unicode);
 		Py_DECREF(result);
 
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
@@ -303,7 +310,10 @@
 			return "";
 		}
 
-		std::string res = PyUnicode_AsUTF8 (result);
+		PyObject* unicode = PyUnicode_AsUTF8String (result);
+		std::string res = PyBytes_AsString(unicode);
+
+		Py_DECREF(unicode);
 		Py_DECREF(result);
 
 		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */

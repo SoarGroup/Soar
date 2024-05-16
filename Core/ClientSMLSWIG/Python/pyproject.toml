@@ -70,7 +70,7 @@ requires = [
     # and other python build/install frontends (such as pip itself).
     #
     # We use a forked version of enscons to add python 3.12 support.
-    "enscons @ git+https://github.com/ShadowJonathan/enscons-soar@544f39f",
+    "enscons @ git+https://github.com/ShadowJonathan/enscons-soar@190091866ac35fb5d390c425bafaf13443baee5e",
 
     # Required sub-dependencies of enscons.
     "toml>=0.1",
