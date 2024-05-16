@@ -387,10 +387,7 @@ jobs:
       - name: Setup Base Python
         uses: actions/setup-python@v4
         with:
-          python-version: |
-            3.${{ matrix.python-minor }}
-            3.12
-          # Latest version is installed under `python`
+          python-version: 3.${{ matrix.python-minor }}
         env:
           # Older python versions fail install if we dont do this: https://github.com/actions/setup-python/issues/866
           PIP_TRUSTED_HOST: "pypi.python.org pypi.org files.pythonhosted.org"
