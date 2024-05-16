@@ -172,6 +172,7 @@ env = Environment(
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
 	JAVAVERSION='11.0',
+    PY_ABI3_VERSION = (3, 5),
     SML_CSHARP_ALIAS = SML_CSHARP_ALIAS,
     SML_JAVA_ALIAS = SML_JAVA_ALIAS,
     SML_PYTHON_ALIAS = SML_PYTHON_ALIAS,
@@ -420,10 +421,6 @@ if enscons_active:
     # Instead of giving an explicit tag, we tell enscons that we're not building a "pure" (python-only) library,
     # and so we let it determine the wheel tag by itself.
     env['ROOT_IS_PURELIB'] = False
-
-    if env.get('PYTHON_LIMITED_API', False):
-        # This enables tagging the wheel with the limited api, and also sets the target python version.
-        env["LIMITED_API_TARGET"] = (3, 5)
 
     # Whl and WhlFile add multiple targets (sdist, dist_info, bdist_wheel, editable) to env
     # for enscons (python build backend for scons; required for building with cibuildwheel).

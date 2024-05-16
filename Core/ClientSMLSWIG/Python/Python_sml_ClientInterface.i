@@ -11,12 +11,6 @@
 // handle windows calling convention, __declspec(dllimport), correctly
 %include <windows.i>
 
-%begin %{
-#ifdef Soar_Python_ABI3
-#define Py_LIMITED_API 0x03050000
-#endif
-%}
-
 %{
 	// helps quell warnings
 	#ifndef unused
