@@ -77,10 +77,10 @@ if "SOAR_PYTHON_ABI3" in env["ENV"]:
         major, minor = env["LIMITED_API_TARGET"] = env["PY_ABI3_VERSION"]
 
         # CPP Definition constructed from the minor/major ABI3 version parts
-        API_NUMBER = (0x1000000 * major) + (0x10000 * minor)
+        api_version = (0x1000000 * major) + (0x10000 * minor)
 
         # Signal to the .i file that we're building the limited API
-        clone.Append(CPPDEFINES = { 'Py_LIMITED_API': None })
+        clone.Append(CPPDEFINES = { 'Py_LIMITED_API': api_version })
     else:
         print("'Requested building Python SML bindings with Python's Limited API, "
               "while SWIG does not support it, aborting.'", file=sys.stderr)
