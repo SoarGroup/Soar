@@ -123,6 +123,10 @@ skip = [
     # which would be a duplicate with the x86 runner.
     "cp38-macosx_arm64"
 ]
+# We only need one target to build on, since we test all versions later.
+#
+# We pick python 3.9, since macOS ARM64 doesn't have 3.8, and so this is the earliest version on all platforms.
+build = "cp39*"
 # This test command:
 #  - imports soar_sml
 #  - creates the kernel

@@ -324,14 +324,37 @@ jobs:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
-  python_push_dev:
-    name: Publish to test.pypi.org
-    runs-on: ubuntu-latest
-    # - Upload only every monday to prevent spamming the index with too many build artifacts.
-    # - Allow uploading on manual workflow dispatch, to enable quick dev releases.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    # Alternative, to upload on every commit to development;
-    # if: github.event_name != 'schedule' && github.event_name != 'release'
+  test_python:
+    name: Test wheel on all python versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os:
+          - ubuntu-latest
+            # latest available X86_64 target
+          - macos-12
+            # latest is ARM
+          - macos-latest
+        python-minor:
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+
+        # for macos-latest, we can't use python 3.5 - 3.7
+        exclude:
+          - os: macos-latest
+            python-minor: 5
+          - os: macos-latest
+            python-minor: 6
+          - os: macos-latest
+            python-minor: 7
+
     needs:
       # We depend on the python wheel builds because we need their artifacts
       - python_wheels
@@ -340,6 +363,43 @@ jobs:
       # usually then also the python wheel build should fail, but the normal builds do more thorough checking.
       - Posix
       - Windows
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-*
+          path: wheelhouse/
+          merge-multiple: true
+
+      - name: Setup Base Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: |
+            3.${{ matrix.python-minor }}
+            3.12
+          # Latest version is installed under `python`
+
+      - name: Prepare install repo
+        run: pipx run piprepo build ./wheelhouse
+
+      - name: Run python test command
+        # TODO: replace with actual test command: https://github.com/SoarGroup/Soar/issues/460
+        run: |
+          pip3.${{ matrix.python-minor }} install soar-sml -i ./wheelhouse/simple
+          python3.${{ matrix.python-minor }} -c "import soar_sml;
+          k=soar_sml.Kernel.CreateKernelInNewThread();
+          a=k.CreateAgent('soar');
+          assert(a.ExecuteCommandLine('echo hello world').strip()=='hello world')"
+
+  python_push_dev:
+    name: Publish to test.pypi.org
+    runs-on: ubuntu-latest
+    # - Upload only every monday to prevent spamming the index with too many build artifacts.
+    # - Allow uploading on manual workflow dispatch, to enable quick dev releases.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # Alternative, to upload on every commit to development;
+    # if: github.event_name != 'schedule' && github.event_name != 'release'
+
+    needs: test_python
 
     # We use Trusted Publishing to manage our access to pypi:
     # https://github.com/marketplace/actions/pypi-publish#trusted-publishing
@@ -373,14 +433,7 @@ jobs:
     name: Publish to pypi.org
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
-    needs:
-      # We depend on the python wheel builds because we need their artifacts
-      - python_wheels
-
-      # We depend on the builds themselves to gatekeep the upload if build + testing fails,
-      # usually then also the python wheel build should fail, but the normal builds do more thorough checking.
-      - Posix
-      - Windows
+    needs: test_python
 
     # We use Trusted Publishing to manage our access to pypi:
     # https://github.com/marketplace/actions/pypi-publish#trusted-publishing
