@@ -341,7 +341,7 @@ jobs:
     name: Test wheel on all python versions
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os:
           # linux target which supports all python versions we want to install for
@@ -391,14 +391,14 @@ jobs:
             3.${{ matrix.python-minor }}
             3.12
           # Latest version is installed under `python`
-
-      - name: Prepare install repo
-        run: pipx run piprepo build ./wheelhouse
+        env:
+          # Older python versions fail install if we dont do this: https://github.com/actions/setup-python/issues/866
+          PIP_TRUSTED_HOST: "pypi.python.org pypi.org files.pythonhosted.org"
 
       - name: Run python test command
         # TODO: replace with actual test command: https://github.com/SoarGroup/Soar/issues/460
         run: |
-          pip3.${{ matrix.python-minor }} install soar-sml -i ./wheelhouse/simple
+          pip3.${{ matrix.python-minor }} install soar-sml -f wheelhouse --no-index
           python3.${{ matrix.python-minor }} -c "import soar_sml;
           k=soar_sml.Kernel.CreateKernelInNewThread();
           a=k.CreateAgent('soar');

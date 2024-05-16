@@ -50,7 +50,7 @@ authors = [
     { name = "Y. Wang" },
 ]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.5"
 dependencies = []
 keywords = ["soar", "sml", "cog-arch", "cognitive architecture", "cognitive", "soar-sml", "ai"]
 classifiers = [
