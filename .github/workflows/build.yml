@@ -344,7 +344,8 @@ jobs:
       fail-fast: true
       matrix:
         os:
-          - ubuntu-latest
+          # linux target which supports all python versions we want to install for
+          - ubuntu-20.04
             # latest available X86_64 target
           - macos-12
             # latest is ARM
