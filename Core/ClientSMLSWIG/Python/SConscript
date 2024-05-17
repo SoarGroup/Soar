@@ -85,7 +85,7 @@ if "SOAR_PYTHON_ABI3" in env["ENV"]:
         clone.Append(CPPDEFINES = { 'Py_LIMITED_API': api_version })
     else:
         print("'Requested building Python SML bindings with Python's Limited API, "
-              "while SWIG does not support it, aborting.'", file=sys.stderr)
+              f"but SWIG does not support it (need 4.2.0, have {'.'.join(env['SWIG_VERSION'])}); aborting.'", file=sys.stderr)
         Exit(1)
 else:
     print("SOAR_PYTHON_ABI3 not defined, building Python SML bindings with full (less portable) Python API...")

@@ -1,6 +1,6 @@
 # Build, test and upload executables to GitHub
 # depends on pre-installed software; see image definitions:
-#  - https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
+#  - https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2404-Readme.md
 #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
 # We use these tools from the runner images: git, gcc/XCode/MSVC, swig, Tcl/Tk on MacOS, pkg-config
 
@@ -28,7 +28,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          ubuntu-latest,
+          # Use v24 beta for now to get newer SWIG; TODO: change back to ubuntu-latest once it points to v24
+          ubuntu-24.04,
           # latest available X86_64 target
           macos-12,
           # latest is ARM
