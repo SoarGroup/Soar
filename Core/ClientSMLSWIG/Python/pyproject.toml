@@ -129,23 +129,21 @@ skip = [
 build = "cp39*"
 # Inside CIs, we want to build the limited API, as we control SWIG's version there, so we opt-in.
 environment = { SOAR_PYTHON_ABI3="1" }
-# This test command:
-#  - imports soar_sml
-#  - creates the kernel
-#  - creates an agent
-#  - executes a command on that agent
-#  - fails if the result of this command isn't as expected
-# to test if Soar properly boots and runs.
-test-command = """\
-python -c "import soar_sml;\
-k=soar_sml.Kernel.CreateKernelInNewThread();\
-a=k.CreateAgent('soar');\
-assert(a.ExecuteCommandLine('echo hello world').strip()=='hello world')"
-"""
+# Create the unit tests under out/SoarUnitTests/
+before-test = "python scons/scons.py tests"
+# This test command will ruin the unit tests to make sure the build succeeded without oddities.
+test-command = "SOAR_UNIT_TEST_BASE_DIR={project}/out/ python {project}/Core/ClientSMLSWIG/Python/TestPythonSML.py"
 
 # Skip testing python 3.8 on ARM64. This is due to a limitation with cibuildwheel:
 # https://github.com/pypa/cibuildwheel/pull/1169#issuecomment-1178727618
 test-skip = "cp38-macosx_*:arm64"
+
+[tool.cibuildwheel.windows]
+# For windows we need a slightly different command
+test-command = """\
+set SOAR_UNIT_TEST_BASE_DIR={project}/out/
+python {project}/Core/ClientSMLSWIG/Python/TestPythonSML.py
+"""
 
 [tool.cibuildwheel.linux]
 # Specific instructions for cibuildwheel when running on linux:
