@@ -418,7 +418,6 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Run python test command
-        # TODO: replace with actual test command: https://github.com/SoarGroup/Soar/issues/460
         run: |
           pip3.${{ matrix.python-minor }} install soar-sml -f wheelhouse --no-index
           python3.${{ matrix.python-minor }} Core/ClientSMLSWIG/Python/TestPythonSML.py
