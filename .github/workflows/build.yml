@@ -67,6 +67,8 @@ jobs:
         env:
           # instructs SCons to print debug statements to stdout
           SCONS_MSCOMMON_DEBUG: '-'
+          # Build Python bindings that are portable across Python versions
+          SOAR_PYTHON_ABI3: 1
         run: python3 scons/scons.py --scu --opt --verbose all performance_tests sml_tcl
 
       - name: Pack artifacts
