@@ -87,6 +87,8 @@ if "SOAR_PYTHON_ABI3" in env["ENV"]:
         print("'Requested building Python SML bindings with Python's Limited API, "
               "while SWIG does not support it, aborting.'", file=sys.stderr)
         Exit(1)
+else:
+    print("SOAR_PYTHON_ABI3 not defined, building Python SML bindings with full (less portable) Python API...")
 
 # We add soarlib to the python_sml explicitly, as some operating systems don't pick up on this dependency,
 # and crash the build.
