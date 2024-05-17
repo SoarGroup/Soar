@@ -1369,7 +1369,7 @@ public class FoldingTextView extends AbstractComboView implements
     @Override
     protected void registerForViewAgentEvents(Agent agent)
     {
-        System.out.println("Registering for XML Events: " + agent.GetAgentName());
+//        System.out.println("Registering for XML Events: " + agent.GetAgentName());
         m_xmlCallback = agent.RegisterForXMLEvent(
                 smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, this, null);
     }
@@ -1377,7 +1377,7 @@ public class FoldingTextView extends AbstractComboView implements
     @Override
     protected void clearViewAgentEvents()
     {
-        System.out.println("Clearing XML events");
+//        System.out.println("Clearing XML events");
         m_xmlCallback = -1;
     }
 
@@ -1388,7 +1388,7 @@ public class FoldingTextView extends AbstractComboView implements
 
         if (m_xmlCallback != -1) {
             ok = agent.UnregisterForXMLEvent(m_xmlCallback);
-            System.out.println("Unregistered for XML events: " + agent.GetAgentName() + ", " + ok);
+//            System.out.println("Unregistered for XML events: " + agent.GetAgentName() + ", " + ok);
         }
         m_xmlCallback = -1;
 
