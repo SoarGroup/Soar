@@ -272,7 +272,8 @@ jobs:
       fail-fast: true
       matrix:
         os: [
-            ubuntu-latest,
+            # 20.04 to preserve compatibility with testing stage
+            ubuntu-20.04,
             # latest available X86_64 target
             macos-12,
             # latest is ARM
@@ -321,6 +322,19 @@ jobs:
         uses: pypa/cibuildwheel@v2.17.0
         with:
           package-dir: Core/ClientSMLSWIG/Python/
+
+      - name: Ensure unit tests built (ubuntu-20.04)
+        if: matrix.os == 'ubuntu-20.04'
+        # On Ubuntu, we run cibuildwheel inside docker containers, which don't retain the outputs.
+        # However, we want out/SoarUnitTests/ to be availible for future tests, so we build it again here.
+        run: python scons/scons.py tests
+
+        # Save out/SoarUnitTests/
+      - uses: actions/cache/save@v3
+        id: cache
+        with:
+          path: out/SoarUnitTests/
+          key: ${{ runner.os }}-${{ github.sha }}
 
       - name: ABI3Audit (*nix)
         if: matrix.os != 'windows-latest'
@@ -378,6 +392,9 @@ jobs:
       - Posix
       - Windows
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           pattern: cibw-wheels-*
@@ -392,14 +409,19 @@ jobs:
           # Older python versions fail install if we dont do this: https://github.com/actions/setup-python/issues/866
           PIP_TRUSTED_HOST: "pypi.python.org pypi.org files.pythonhosted.org"
 
+        # Restore out/SoarUnitTests/
+      - uses: actions/cache/restore@v3
+        id: cache
+        with:
+          path: out/SoarUnitTests/
+          key: ${{ runner.os }}-${{ github.sha }}
+          fail-on-cache-miss: true
+
       - name: Run python test command
         # TODO: replace with actual test command: https://github.com/SoarGroup/Soar/issues/460
         run: |
           pip3.${{ matrix.python-minor }} install soar-sml -f wheelhouse --no-index
-          python3.${{ matrix.python-minor }} -c "import soar_sml;
-          k=soar_sml.Kernel.CreateKernelInNewThread();
-          a=k.CreateAgent('soar');
-          assert(a.ExecuteCommandLine('echo hello world').strip()=='hello world')"
+          python3.${{ matrix.python-minor }} Core/ClientSMLSWIG/Python/TestPythonSML.py
 
   python_push_dev:
     name: Publish to test.pypi.org

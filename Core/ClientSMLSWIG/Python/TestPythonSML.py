@@ -5,32 +5,40 @@
 #  several kinds of callbacks, reinitializing, agent destruction, and kernel
 #  destruction (and maybe some other things, too).
 #
-from dataclasses import dataclass
+# This file needs to be compatible with python 3.5, to run on CI jobs testing the lowest supported python version.
 from pathlib import Path
 import sys
+import os
 import time
 
-import Python_sml_ClientInterface
-from Python_sml_ClientInterface import *
+try:
+    import Python_sml_ClientInterface
+    from Python_sml_ClientInterface import *
 
-AGENT_DIR = Path(Python_sml_ClientInterface.__file__).parent / 'SoarUnitTests'
+    BASE_DIR = Path(Python_sml_ClientInterface.__file__).parent
+except ImportError:
+    from soar_sml import *
 
-@dataclass
+    BASE_DIR = Path(os.environ.get("SOAR_UNIT_TEST_BASE_DIR", os.path.abspath("out/")))
+
+
+AGENT_DIR = BASE_DIR / 'SoarUnitTests'
+
 class CalledSignal:
-    called: bool = False
+    called = False
 
 # towers_of_hanoi_file = AGENT_DIR / 'test-towers-of-hanoi-SML.soar'
 towers_of_hanoi_file = AGENT_DIR / 'Chunking' / 'tests' / 'towers-of-hanoi-recursive' / 'towers-of-hanoi-recursive' / 'towers-of-hanoi-recursive_source.soar'
 toh_test_file = AGENT_DIR / 'TOHtest.soar'
 for source_file in (towers_of_hanoi_file, toh_test_file):
     if not source_file.is_file():
-        raise FileNotFoundError(f"Source file doesn't exist: {source_file}")
+        raise FileNotFoundError("Source file doesn't exist: %s" % source_file)
 
 def PrintCallback(id, userData, agent, message):
     print(message)
 
 def ProductionExcisedCallback(id, signal: CalledSignal, agent, prodName, instantiation):
-    print(f"removing {prodName} ({instantiation})")
+    print("removing %s (%s)" % (prodName, instantiation))
     signal.called = True
 
 def ProductionFiredCallback(id, signal: CalledSignal, agent, prodName, instantiation):
@@ -72,7 +80,7 @@ def UpdateEventCallback(id, signal: CalledSignal, kernel, runFlags):
 
 def UserMessageCallback(id, tester, agent, clientName, message):
     print("Agent", agent.GetAgentName(), "received usermessage event for clientName '", clientName, "' with message '", message, "'")
-    assert tester(clientName, message), f"❌ UserMessageCallback called with unexpected clientName '{clientName}' or message '{message}'"
+    assert tester(clientName, message), ("❌ UserMessageCallback called with unexpected clientName '%s' or message '%s'" % (clientName, message))
     return ""
 
 kernel = Kernel.CreateKernelInNewThread()
@@ -148,7 +156,7 @@ def test_excise(kernel):
     assert not prod_removed_handler_signal.called, "❌ Production excise handler called before excise"
     result = kernel.ExecuteCommandLine("excise towers-of-hanoi*monitor*operator-execution*move-disk", "Soar1")
     assert prod_removed_handler_signal.called, "❌ Production excise handler not called"
-    print(f"✅ Production excise: {result}")
+    print("✅ Production excise: %s" % result)
 
 test_excise(kernel)
 
@@ -161,7 +169,7 @@ print("\nTime in seconds:", end - start)
 def check_rhs_handler_called(kernel):
     s1 = kernel.ExecuteCommandLine("print s1", "Soar1")
     if s1.find("^rhstest success") == -1:
-        print(f"\n❌RHS test FAILED; s1 is {s1}", file=sys.stderr)
+        print("\n❌RHS test FAILED; s1 is %s" % s1, file=sys.stderr)
         sys.exit(1)
     else:
         print("\n✅RHS test PASSED")
