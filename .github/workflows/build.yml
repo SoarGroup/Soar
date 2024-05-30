@@ -367,6 +367,7 @@ jobs:
           - macos-12
             # latest is ARM
           - macos-latest
+          - windows-latest
         python-minor:
           - 5
           - 6
@@ -420,10 +421,22 @@ jobs:
           key: ${{ runner.os }}-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Run python test command
+      - name: Install soar-sml
         run: |
           pip3.${{ matrix.python-minor }} install soar-sml -f wheelhouse --no-index
-          python3.${{ matrix.python-minor }} Core/ClientSMLSWIG/Python/TestPythonSML.py
+
+      - name: Run test command (Non-Windows)
+        if: matrix.os != 'windows-latest'
+        env:
+          PYTHONUTF8: 1
+          PYTHONIOENCODING: utf-8
+        run: python3.${{ matrix.python-minor }} Core/ClientSMLSWIG/Python/TestPythonSML.py
+
+      - name: Run test command (Windows)
+        if: matrix.os == 'windows-latest'
+        env:
+          PYTHONUTF8: 1
+        run: py -3.${{ matrix.python-minor }} Core/ClientSMLSWIG/Python/TestPythonSML.py
 
   python_push_dev:
     name: Publish to test.pypi.org
