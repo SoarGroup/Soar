@@ -436,6 +436,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         env:
           PYTHONUTF8: 1
+          PYTHONIOENCODING: utf-8
         run: py -3.${{ matrix.python-minor }} Core/ClientSMLSWIG/Python/TestPythonSML.py
 
   python_push_dev:
