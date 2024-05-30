@@ -36,8 +36,12 @@ clone.Append(CPPPATH = inc_path)
 #  GHA Runners. (python installations are handled by cibuildwheel)
 #
 # Omitting python's libraries is safe, as python itself injects its symbols when importing the library.
-if (not env['ENSCONS_ACTIVE']) or os.name == 'nt':
+if (not env['ENSCONS_ACTIVE']):
     clone.Append(LIBPATH = lib_path, LIBS = pylib)
+elif os.name == 'nt':
+    # For windows specifically, we need to give it a path to find 'python3.lib',
+    # without linking it against 'python3X' (with X being the minor version).
+    clone.Append(LIBPATH = lib_path)
 
 if os.name == 'posix':
     clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))

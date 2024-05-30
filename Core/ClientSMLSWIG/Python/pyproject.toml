@@ -139,7 +139,10 @@ test-command = "SOAR_UNIT_TEST_BASE_DIR={project}/out/ python {project}/Core/Cli
 test-skip = "cp38-macosx_*:arm64"
 
 [tool.cibuildwheel.windows]
-# For windows we need a slightly different command
+# For windows, we need to include msvcp140.dll and vcruntime140_1.dll in the wheel.
+before-build = "pip install delvewheel"
+repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
+# For windows we need a slightly different test command
 test-command = """\
 set SOAR_UNIT_TEST_BASE_DIR={project}/out/
 python {project}/Core/ClientSMLSWIG/Python/TestPythonSML.py
