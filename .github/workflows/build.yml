@@ -428,6 +428,7 @@ jobs:
       - name: Run test command (Non-Windows)
         if: matrix.os != 'windows-latest'
         env:
+          # Ensures unicode outputs properly on all versions
           PYTHONUTF8: 1
           PYTHONIOENCODING: utf-8
         run: python3.${{ matrix.python-minor }} Core/ClientSMLSWIG/Python/TestPythonSML.py
@@ -435,6 +436,7 @@ jobs:
       - name: Run test command (Windows)
         if: matrix.os == 'windows-latest'
         env:
+          # Ensures unicode outputs properly on all versions
           PYTHONUTF8: 1
           PYTHONIOENCODING: utf-8
         run: py -3.${{ matrix.python-minor }} Core/ClientSMLSWIG/Python/TestPythonSML.py
