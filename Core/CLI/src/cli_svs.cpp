@@ -31,9 +31,17 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
             else
             {
                 thisAgent->svs->set_enabled(true);
-                for (Symbol* lState = thisAgent->top_goal; lState; lState = lState->id->lower_goal)
+                if (thisAgent->svs->is_enabled_in_substates())
                 {
-                    thisAgent->svs->state_creation_callback(lState);
+                    // add SVS state for top state and all substates
+                    for (Symbol* lState = thisAgent->top_goal; lState; lState = lState->id->lower_goal)
+                    {
+                        thisAgent->svs->state_creation_callback(lState);
+                    }
+                } else
+                {
+                    // add SVS state for top state only
+                    thisAgent->svs->state_creation_callback(thisAgent->top_goal);
                 }
                 m_Result << "Spatial Visual System enabled. ";
             }
@@ -51,6 +59,7 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
                     m_Result << "Cannot disable Spatial Visual System while in a substate. ";
                     return false;
                 }
+                // Note that this leaves ^svs on the top state
                 thisAgent->svs->set_enabled(false);
                 m_Result << "Spatial Visual System disabled. ";
             }
@@ -65,6 +74,17 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
             else
             {
                 thisAgent->svs->set_enabled_in_substates(true);
+                if (thisAgent->svs->is_enabled())
+                {
+                    // add SVS state for all substates
+                    for (Symbol* lState = thisAgent->top_goal; lState; lState = lState->id->lower_goal)
+                    {
+                        if (lState != thisAgent->top_goal)
+                        {
+                            thisAgent->svs->state_creation_callback(lState);
+                        }
+                    }
+                }
                 m_Result << "Spatial Visual System enabled in substates. ";
             }
         }
