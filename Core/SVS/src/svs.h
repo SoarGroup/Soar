@@ -225,7 +225,7 @@ class svs : public svs_interface, public cliproxy
 
         bool enabled;
         // when enabled is true but enabled_in_substates is false, only the top state is enabled
-        bool enabled_in_substates;
+        bool enabled_in_substates = true;
 
         static bool filter_dirty_bit;
 };
