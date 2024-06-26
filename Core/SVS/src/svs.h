@@ -191,6 +191,11 @@ class svs : public svs_interface, public cliproxy
             return "";
         }
 
+        bool is_in_substate()
+        {
+            return state_stack.size() > 1;
+        }
+
         // dirty bit is true only if there has been a new command
         //   from soar or from SendSVSInput
         //   (no need to recheck filters)
