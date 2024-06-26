@@ -38,6 +38,7 @@
 #include "MultiAgentTest.hpp"
 #include "SimpleListener.hpp"
 #include "SMemFunctionalTests.hpp"
+#include "SvsTests.hpp"
 #include "TokenizerTest.hpp"
 #include "wma/WmaFunctionalTests.hpp"
 #include "TestCategory.hpp"
@@ -202,6 +203,7 @@ int main(int argc, char** argv)
     TEST_DECLARATION(MiscTests);
     TEST_DECLARATION(MultiAgentTest);
     TEST_DECLARATION(SMemFunctionalTests);
+    TEST_DECLARATION(SvsTests);
     TEST_DECLARATION(TokenizerTest);
     TEST_DECLARATION(WmaFunctionalTests);
 
