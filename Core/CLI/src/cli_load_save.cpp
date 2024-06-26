@@ -928,6 +928,10 @@ bool CommandLineInterface::Source(const char* buffer, bool printFileStack)
             sourceError.append(to_string(line, temp));
         }
     }
+    if (sourceError.empty()) {
+        // It's important that we don't return an empty error string, as that will be interpreted as success
+        sourceError = "Unknown error";
+    }
     AppendError(sourceError);
     return false;
 }
