@@ -1642,7 +1642,7 @@ namespace cli
             [[nodiscard]] const char* GetSyntax() const override
             {
                 return "Syntax: svs <elements to inspect>\n"
-                       "        svs [--enable | -e | --on | --disable | -d | --off]";
+                       "        svs [--enable | -e | --on | --disable | -d | --off | --enable-in-substates | --disable-in-substates ]";
             }
 
             bool Parse(std::vector< std::string >& argv) override

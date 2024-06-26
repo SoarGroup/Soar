@@ -52,6 +52,30 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
             }
             return true;
         }
+        else if(args[1] == "--enable-in-substates")
+        {
+            if (thisAgent->svs->is_enabled_in_substates())
+            {
+                m_Result << "Spatial Visual System is already enabled in substates.";
+            }
+            else
+            {
+                thisAgent->svs->set_enabled_in_substates(true);
+                m_Result << "Spatial Visual System enabled in substates.";
+            }
+        }
+        else if(args[1] == "--disable-in-substates")
+        {
+            if (!thisAgent->svs->is_enabled_in_substates())
+            {
+                m_Result << "Spatial Visual System is already disabled in substates.";
+            }
+            else
+            {
+                thisAgent->svs->set_enabled_in_substates(false);
+                m_Result << "Spatial Visual System disabled in substates.";
+            }
+        }
     }
     if (thisAgent->svs->is_enabled())
     {
