@@ -6,14 +6,21 @@ import os
 import sys
 import itertools
 
-def get_headers(d):
-	chain = itertools.chain.from_iterable
-	return list(chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d)))
+Import("env")
 
-Import("env", "compiler")
-if env.WhereIs('csc') == None:
-	print('C# compiler not found, not building C# SML wrappers')
-	Return()
+
+def get_headers(d):
+    chain = itertools.chain.from_iterable
+    return list(chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d)))
+
+cs_compiler = "csc"
+if env.WhereIs(cs_compiler) == None:
+    # Ubuntu/Debian use this name for the C# compiler
+    cs_compiler = "mono-csc"
+    if env.WhereIs(cs_compiler) == None:
+        print(f'C# compiler (csc or mono-csc) not found; not building C# SML wrappers')
+    Return()
+print(f'Found C# compiler: {cs_compiler}')
 
 clone = env.Clone()
 
@@ -30,29 +37,29 @@ fake_target = '#fake-csharp-target'
 # This builder will insert extra dependencies during the COMPILATION stage
 # adapted from http://scons.org/wiki/DynamicSourceGenerator
 def late_csharp_builder(target, source, env):
-	if not os.path.isdir(srcdir):
-		print('source directory does not exist')
-		sys.exit(1)
+    if not os.path.isdir(srcdir):
+        print('source directory does not exist')
+        sys.exit(1)
 
-	cs_srcs = [ os.path.join(srcdir, f) for f in os.listdir(srcdir) ]
-	a = env.Command(env.File(assembly), cs_srcs, 'csc /target:library /out:%s %s/*.cs' % (assembly, srcdir))
-	env.Depends(a, fake_target)
-	install = env.Install(env['OUT_DIR'], a)
-	Alias(sml_csharp_target, install)
+    cs_srcs = [ os.path.join(srcdir, f) for f in os.listdir(srcdir) ]
+    a = env.Command(env.File(assembly), cs_srcs, f'{cs_compiler} /target:library /out:{assembly} {srcdir}/*.cs')
+    env.Depends(a, fake_target)
+    install = env.Install(env['OUT_DIR'], a)
+    Alias(sml_csharp_target, install)
 
 clone.Append(BUILDERS = {'LateCSharpBuilder' : Builder(action=late_csharp_builder)})
 
 incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in env['CPPPATH'])
 nosvs = ''
 if GetOption('nosvs'):
-	nosvs = '-DNO_SVS'
+    nosvs = '-DNO_SVS'
 swig_cmd = 'swig %s -o "$TARGET" -c++ -csharp -Wall -namespace sml -dllimport %s -outdir "%s" %s "$SOURCE"' % (incs, name, srcdir, nosvs)
 if not GetOption('verbose'):
-	swig_cmd = '@' + swig_cmd
+    swig_cmd = '@' + swig_cmd
 
 headers = []
 for d in 'ClientSML ConnectionSML ElementXML'.split():
-	headers += get_headers(env.Dir(os.path.join('#Core', d, 'src')).abspath)
+    headers += get_headers(env.Dir(os.path.join('#Core', d, 'src')).abspath)
 
 swig_deps = [interface] + list(headers)
 clone.Command(wrapper, swig_deps, [Mkdir(srcdir), swig_cmd])
