@@ -8,19 +8,16 @@ import itertools
 
 Import("env")
 
-
 def get_headers(d):
     chain = itertools.chain.from_iterable
     return list(chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d)))
 
-cs_compiler = "csc"
-if env.WhereIs(cs_compiler) == None:
-    # Ubuntu/Debian use this name for the C# compiler
-    cs_compiler = "mono-csc"
-    if env.WhereIs(cs_compiler) == None:
-        print(f'C# compiler (csc or mono-csc) not found; not building C# SML wrappers')
+# TODO: this could still fail if no actual SDKs are installed. We should check with dotnet --list-sdks.
+dotnet_path = env.WhereIs("dotnet")
+if not dotnet_path:
+    print(f'dotnet command not found; not building C# SML wrappers.')
     Return()
-print(f'Found C# compiler: {cs_compiler}')
+print(f'Found dotnet command: {dotnet_path}')
 
 clone = env.Clone()
 
@@ -33,6 +30,20 @@ wrapper = clone.File(name + '_wrap.cpp')
 srcdir = clone.Dir('src').abspath
 assembly = clone.File('sml_csharp.dll').abspath
 fake_target = '#fake-csharp-target'
+csproj_file = os.path.join(srcdir, 'temp_project.csproj')
+
+# Generate a temporary .csproj file for compilation
+def generate_csproj_file():
+    csproj_content = '''<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>sml_csharp</AssemblyName>
+    <RootNamespace>sml_csharp</RootNamespace>
+  </PropertyGroup>
+</Project>'''
+    with open(csproj_file, 'w') as file:
+        file.write(csproj_content)
 
 # This builder will insert extra dependencies during the COMPILATION stage
 # adapted from http://scons.org/wiki/DynamicSourceGenerator
@@ -41,8 +52,12 @@ def late_csharp_builder(target, source, env):
         print('source directory does not exist')
         sys.exit(1)
 
+    if not os.path.exists(csproj_file):
+        generate_csproj_file()
+
     cs_srcs = [ os.path.join(srcdir, f) for f in os.listdir(srcdir) ]
-    a = env.Command(env.File(assembly), cs_srcs, f'{cs_compiler} /target:library /out:{assembly} {srcdir}/*.cs')
+    build_command = f'dotnet build {csproj_file} -o {os.path.dirname(assembly)} -c Release'
+    a = env.Command(env.File(assembly), cs_srcs, build_command)
     env.Depends(a, fake_target)
     install = env.Install(env['OUT_DIR'], a)
     Alias(sml_csharp_target, install)
