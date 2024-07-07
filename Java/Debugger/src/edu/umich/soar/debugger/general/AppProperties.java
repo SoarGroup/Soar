@@ -80,6 +80,9 @@ public class AppProperties extends java.util.Properties
         // directory (which is C:\Documents and Settings\<user>).
         if (osName.toLowerCase().startsWith("windows"))
         {
+            // NOTE: in current Windows, the path below resolves to
+            // C:/Users/<user>/AppData/Roaming/SoarDebugger
+
             // Add the Application Data folder name.
             // BUGBUG: Not sure how to do this in a language neutral way.
             homeDir = new File(homeDir, "Application Data");
