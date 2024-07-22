@@ -13,15 +13,27 @@ package edu.umich.soar.debugger.general;
 /////////////////////////////////////////////////////////
 
 import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
-public class StartBrowser
+import java.net.URISyntaxException;
+
+public class DesktopActions
 {
-    public static void openURL(String url) throws Exception
-    {
+    public static void openURL(String url) throws IOException, URISyntaxException {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             Desktop.getDesktop().browse(new URI(url));
         } else {
-            System.err.println("Opening websites URLs is not supported on this platform or machine");
+            throw new IOException("Opening websites URLs is not supported on this platform or machine");
+        }
+    }
+
+    public static void openFileOrDirectory(File file) throws IOException {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+            Desktop desktop = Desktop.getDesktop();
+            desktop.open(file);
+        } else {
+            throw new IOException("Opening directories is not supported on this platform or machine");
         }
     }
 

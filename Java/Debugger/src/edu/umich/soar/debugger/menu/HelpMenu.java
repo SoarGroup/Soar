@@ -19,7 +19,7 @@ import sml.sml_Names;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 import edu.umich.soar.debugger.general.OSName;
-import edu.umich.soar.debugger.general.StartBrowser;
+import edu.umich.soar.debugger.general.DesktopActions;
 
 public class HelpMenu
 {
@@ -143,7 +143,7 @@ public class HelpMenu
     {
         try
         {
-            StartBrowser.openURL(url);
+            DesktopActions.openURL(url);
         }
         catch (Exception e)
         {

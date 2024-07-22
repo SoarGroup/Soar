@@ -11,6 +11,8 @@
  ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
 
+import edu.umich.soar.debugger.general.AppProperties;
+import edu.umich.soar.debugger.general.DesktopActions;
 import org.eclipse.swt.widgets.Menu;
 
 import sml.ClientAnalyzedXML;
@@ -18,6 +20,8 @@ import sml.sml_Names;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 import edu.umich.soar.debugger.general.SaveLoad;
+
+import java.io.File;
 
 /********************************************************************************************
  *
@@ -107,6 +111,15 @@ public class FileMenu
         }
     };
 
+    private final AbstractAction m_Open = new AbstractAction("&Browse settings files...")
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            openSettingsPerformed(e);
+        }
+    };
+
     private final AbstractAction m_Exit = new AbstractAction("E&xit")
     {
         @Override
@@ -146,6 +159,8 @@ public class FileMenu
         menu.addSeparator();
         menu.add(m_Load);
         menu.add(m_Save);
+        menu.addSeparator();
+        menu.add(m_Open);
         menu.addSeparator();
         menu.add(m_Exit);
 
@@ -332,6 +347,20 @@ public class FileMenu
             }
         }
     }
+
+    public void openSettingsPerformed(ActionEvent event) {
+        File settingsDir = AppProperties.GetSettingsFilePath("");
+        try
+        {
+            DesktopActions.openFileOrDirectory(settingsDir);
+        }
+        catch (Exception e)
+        {
+            m_Frame.ShowMessageBox("Error opening directory " + settingsDir, e
+                .getLocalizedMessage());
+        }
+    }
+
 
     /** Save the current window layout */
     public void savePerformed(ActionEvent e)
