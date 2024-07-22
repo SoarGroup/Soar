@@ -183,15 +183,20 @@ class SoarCLI
 {
     public:
 
-        SoarCLI()
-            : m_kernel(0), m_currentAgent(0), m_quit(false), m_isMultiAgent(false),
-              m_longestAgentName(0), m_seen_newline(true),
+        SoarCLI():
+            m_kernel(0),
+            m_currentAgent(0),
+            m_port(sml::Kernel::kUseAnyPort),
+            m_listen(false),
               #if defined(NO_COLORS)
                   m_color(false),
               #else
                   m_color(stdout_supports_ansi_colors()),
               #endif
-              m_listen(false), m_port(sml::Kernel::kUseAnyPort) {}
+              m_quit(false),
+              m_seen_newline(true),
+              m_isMultiAgent(false),
+              m_longestAgentName(0) {}
 
         ~SoarCLI();
 
