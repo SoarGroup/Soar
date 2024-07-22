@@ -874,12 +874,16 @@ namespace sml
             *        Java must be in the path. If jarpath is NULL, the
             *        function will search for SoarJavaDebugger.jar first in
             *        the current directory, then in $SOAR_HOME. Returns
-            *        false if the jar is not found or process spawning fails.
+            *        false if the jar is not found or process spawning fails,
+            *        or if a previously spawned debugger process is still
+            *        running.
             *************************************************************/
             bool SpawnDebugger(int port = -1, const char* jarpath = 0);
 
             /*************************************************************
-            * @brief Kills the previously spawned debugger.
+            * @brief Kills the previously spawned debugger. Returns false
+            *       if the debugger was never spawned or an OS issue occurs
+            *       while killing the process.
             *************************************************************/
             bool KillDebugger();
 
@@ -891,6 +895,7 @@ namespace sml
         protected:
             // for {Spawn, Kill}Debugger()
             DebuggerProcessInformation* m_pDPI;
+            void ClearDebuggerProcessInformation();
 
     };
 

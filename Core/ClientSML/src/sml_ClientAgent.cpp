@@ -94,6 +94,37 @@ namespace sml
     };
 }
 
+void print_debugger_process_information(DebuggerProcessInformation* processInformation)
+{
+#ifdef _WIN32
+    PrintDebugFormat("Debugger process information: hProcess = %p, hThread = %p, dwProcessId = %d, dwThreadId = %d",
+                     processInformation->debuggerProcessInformation.hProcess,
+                     processInformation->debuggerProcessInformation.hThread,
+                     processInformation->debuggerProcessInformation.dwProcessId,
+                     processInformation->debuggerProcessInformation.dwThreadId);
+#else // _WIN32
+    PrintDebugFormat("Debugger process information: pid = %d", processInformation->debuggerPid);
+#endif // not _WIN32
+}
+
+/**
+ * Returns true if a debugger process was previously started via SpawnDebugger and is still running
+ */
+bool debugger_is_running(DebuggerProcessInformation* processInformation)
+{
+#ifdef _WIN32
+    DWORD exitCode;
+    if (GetExitCodeProcess(processInformation->debuggerProcessInformation.hProcess, &exitCode))
+    {
+        return exitCode == STILL_ACTIVE;
+    }
+    return false;
+#else // _WIN32
+    int status;
+    return waitpid(processInformation->debuggerPid, &status, WNOHANG) == 0;
+#endif // not _WIN32
+}
+
 std::string get_soarlib_path()
 {
     std::string h = libraryPath;
@@ -1466,6 +1497,20 @@ bool isfile(const char* path)
 #endif
 }
 
+// There's no great way to unit-test this, but testing from Python you should be able to see the debugger
+// open and return values given as below:
+// ```python
+// import Python_sml_ClientInterface as sml
+// k = sml.Kernel.CreateKernelInNewThread()
+// a = k.CreateAgent("hi")
+// a.SpawnDebugger()
+// True
+// a.SpawnDebugger()
+// False
+// # now close the debugger manually and then:
+// a.SpawnDebugger()
+// True
+// ```
 bool Agent::SpawnDebugger(int port, const char* jarpath)
 {
     std::string p;
@@ -1473,6 +1518,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     {
         if (!isfile(jarpath))
         {
+            std::cerr << "SpawnDebugger: jarparth '" << jarpath << "'is not a file" << std::endl;
             return false;
         }
         p = jarpath;
@@ -1533,11 +1579,14 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
         char buffer[4096 + 1];
 
 #ifdef _MSC_VER
-        GetCurrentDirectory(4096, buffer);
+        if (!GetCurrentDirectory(4096, buffer)) {
+            std::cerr << "SpawnDebugger: GetCurrentDirectory failed: " << GetLastError() << std::endl;
+            return false;
+        }
 #else
         if (getcwd(buffer, 4096) != buffer)
         {
-            perror("getcwd");
+            perror("SpawnDebugger: getcwd failed");
             return false;
         }
 #endif
@@ -1550,12 +1599,15 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
         {
             p = debuggerPath;
         }
+        else {
+            std::cerr << "SpawnDebugger: Calculated debugger path '" << debuggerPath << "' is not a file" << std::endl;
+        }
     }
 
     if (p.length() == 0)
-        {
-            return false;
-        }
+    {
+        return false;
+    }
 
     if (port == -1)
     {
@@ -1564,7 +1616,14 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 
     if (m_pDPI)
     {
-        return false;
+        if (!debugger_is_running(m_pDPI))
+        {
+            ClearDebuggerProcessInformation();
+        } else {
+            std::cerr << "SpawnDebugger: Previously-spawned debugger process is still running" << std::endl;
+            print_debugger_process_information(m_pDPI);
+            return false;
+        }
     }
     m_pDPI = new DebuggerProcessInformation();
 
@@ -1578,9 +1637,15 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 
     HANDLE pipes[NumPipeTypes];
     if (!CreatePipe(&pipes[ParentWrite], &pipes[ChildRead], &sa, 0))
-    { return 0; }
+    {
+        std::cerr << "SpawnDebugger: CreatePipe (parent write, child read) failed: " << GetLastError() << std::endl;
+        return false;
+    }
     if (!CreatePipe(&pipes[ParentRead], &pipes[ChildWrite], &sa, 0))
-    { return 0; }
+    {
+        std::cerr << "SpawnDebugger: CreatePipe (parent read, child write) failed: " << GetLastError() << std::endl;
+        return false;
+    }
 
     // make sure the handles the parent will use aren't inherited.
     SetHandleInformation(pipes[ParentRead], HANDLE_FLAG_INHERIT, 0);
@@ -1656,9 +1721,8 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 
     if (ret == 0)
     {
-        std::cout << "Error code: " << GetLastError() << std::endl;
-        delete m_pDPI;
-        m_pDPI = 0;
+        std::cout << "SpawnDebugger: CreateProcess failed: " << GetLastError() << std::endl;
+        ClearDebuggerProcessInformation();
         return false;
     }
 
@@ -1682,8 +1746,8 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 
     if (m_pDPI->debuggerPid < 0)
     {
-        delete m_pDPI;
-        m_pDPI = 0;
+        ClearDebuggerProcessInformation();
+        perror("SpawnDebugger: fork failed");
         return false;
     }
 
@@ -1711,7 +1775,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
         char buffer[4096 + 1];
         if (getcwd(buffer, 4096) != buffer)
         {
-            perror("getcwd");
+            perror("SpawnDebugger: getcwd failed");
             return false;
         }
 
@@ -1766,7 +1830,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 
         // does not return on success
 
-        std::cerr << "Debugger spawn failed: " << strerror(errno) << std::endl;
+        perror("SpawnDebugger: execlp failed");
         exit(1);
     }
 
@@ -1779,6 +1843,7 @@ bool Agent::KillDebugger()
 {
     if (!m_pDPI)
     {
+        std::cerr << "KillDebugger: No existing debugger process information" << std::endl;
         return false;
     }
     bool successful = false;
@@ -1791,18 +1856,29 @@ bool Agent::KillDebugger()
     if (ret)
     {
         successful = true;
+    } else {
+        std::cerr << "KillDebugger: TerminateProcess failed: " << GetLastError() << std::endl;
     }
 
 #else // _WIN32
     if (!kill(m_pDPI->debuggerPid, SIGTERM))
     {
         successful = true;
+    } else {
+        perror("KillDebugger: kill failed");
     }
 #endif // _WIN32
-
-    delete m_pDPI;
-    m_pDPI = 0;
+    ClearDebuggerProcessInformation();
     return successful;
+}
+
+void Agent::ClearDebuggerProcessInformation()
+{
+    if (m_pDPI)
+    {
+        delete m_pDPI;
+        m_pDPI = 0;
+    }
 }
 
 char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
