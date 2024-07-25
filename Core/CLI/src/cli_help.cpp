@@ -2375,6 +2375,7 @@ void initdocstrings()
 		"n                    List the top n productions. If n is 0, only the\n"
 		"                     productions which haven't fired are listed\n"
 		"production_name      Print how many times a specific production has fired\n"
+		"-a, --all            Prints how many times all rules have fired (the default)\n"
 		"-f, --fired          Prints only rules that have fired\n"
 		"-c, --chunks         Print how many times chunks (learned rules) fired\n"
 		"-j, --justifications Print how many times justifications fired\n"
