@@ -442,6 +442,7 @@ bool CommandLineInterface::SetError(const std::string& error)
             m_Result << std::endl;
         }
     m_Result << error;
+    m_Result << std::endl;
     m_LastError = error;
     return false;
 }
@@ -454,6 +455,7 @@ bool CommandLineInterface::AppendError(const std::string& error)
             m_Result << std::endl;
         }
     m_Result << error;
+    m_Result << std::endl;
     m_LastError.append(error);
     return false;
 }

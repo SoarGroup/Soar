@@ -918,7 +918,7 @@ bool CommandLineInterface::Source(const char* buffer, bool printFileStack)
     if (printFileStack)
     {
         std::string temp;
-        sourceError.append("\n\t");
+        sourceError.append("\t");
         sourceError.append(m_SourceFileStack.top());
         sourceError.append(":");
         sourceError.append(to_string(line, temp));
@@ -927,10 +927,11 @@ bool CommandLineInterface::Source(const char* buffer, bool printFileStack)
             sourceError.append(":");
             sourceError.append(to_string(line, temp));
         }
+        sourceError.append("\n");
     }
     if (sourceError.empty()) {
         // It's important that we don't return an empty error string, as that will be interpreted as success
-        sourceError = "Unknown error";
+        sourceError = "Error while sourcing file";
     }
     AppendError(sourceError);
     return false;
