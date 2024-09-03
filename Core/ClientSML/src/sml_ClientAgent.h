@@ -884,8 +884,14 @@ namespace sml
             * @brief Kills the previously spawned debugger. Returns false
             *       if the debugger was never spawned or an OS issue occurs
             *       while killing the process.
+            * @param ignoreNonExistent if true, do not print a warning if
+            * no debugger process exists to kill. This is useful, for example,
+            * when the client doesn't know if the debugger was ever actually
+            * opened, or whether the user may have closed the window, but wants
+            * to close it just in case for cleanup purposes. Not currently
+            * exposed via SWIG bindings.
             *************************************************************/
-            bool KillDebugger();
+            bool KillDebugger(bool ignoreNonExistent = false);
 
             /*************************************************************
             * @brief Convert a client-side identifier string to kernel-side.

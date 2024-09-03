@@ -152,7 +152,7 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 
 Agent::~Agent()
 {
-    KillDebugger();
+    KillDebugger(true);
 }
 
 Connection* Agent::GetConnection() const
@@ -1839,11 +1839,14 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 #endif // _WIN32
 }
 
-bool Agent::KillDebugger()
+bool Agent::KillDebugger(bool ignoreNonExistent)
 {
     if (!m_pDPI)
     {
-        std::cerr << "KillDebugger: No existing debugger process information" << std::endl;
+        if (!ignoreNonExistent)
+        {
+            std::cerr << "KillDebugger: No existing debugger process information" << std::endl;
+        }
         return false;
     }
     bool successful = false;
