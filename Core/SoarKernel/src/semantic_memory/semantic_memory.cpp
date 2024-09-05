@@ -730,7 +730,6 @@ SMem_Manager::SMem_Manager(agent* myAgent)
     smem_context_additions = new std::set<uint64_t>();
     smem_context_removals = new std::set<uint64_t>();
     smem_edges_to_update = new smem_update_map();
-
 };
 
 void SMem_Manager::clean_up_for_agent_deletion()
