@@ -23,6 +23,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY, symbol_value REAL)");
     add_structure("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY, symbol_value TEXT)");
     add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, total_augmentations INTEGER, activation_base_level REAL, activations_total REAL, activations_last INTEGER, activations_first INTEGER, activation_spread REAL, activation_value REAL, lti_augmentations INTEGER)");
+    add_structure("CREATE TABLE smem_lti_alias (alias TEXT PRIMARY KEY, lti_id INTEGER)");
     add_structure("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY, t1 INTEGER, t2 INTEGER, t3 INTEGER, t4 INTEGER, t5 INTEGER, t6 INTEGER, t7 INTEGER, t8 INTEGER, t9 INTEGER, t10 INTEGER, touch1 REAL, touch2 REAL, touch3 REAL, touch4 REAL, touch5 REAL, touch6 REAL, touch7 REAL, touch8 REAL, touch9 REAL, touch10 REAL)");
     add_structure("CREATE TABLE smem_augmentations (lti_id INTEGER, attribute_s_id INTEGER, value_constant_s_id INTEGER, value_lti_id INTEGER, activation_value REAL, edge_weight REAL)");
     add_structure("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY, edge_frequency INTEGER)");
@@ -122,6 +123,7 @@ void smem_statement_container::drop_tables(agent* new_agent)
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_symbols_float");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_symbols_string");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_lti");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_lti_alias");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_activation_history");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_augmentations");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_attribute_frequency");
@@ -231,6 +233,15 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     lti_get_t = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti WHERE activations_last=?");
     add(lti_get_t);
+
+    // lti aliases
+
+    lti_alias_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_lti_alias (alias, lti_id) VALUES (?,?)");
+    add(lti_alias_add);
+    
+    lti_alias_get_id = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti_alias WHERE alias=?");
+    add(lti_alias_get_id);
+
 
     //
 
@@ -1420,5 +1431,45 @@ uint64_t SMem_Manager::add_specific_LTI(uint64_t lti_id)
 
     statistics->nodes->set_value(statistics->nodes->get_value() + 1);
 
+    return lti_id;
+}
+
+/** Returns the id of the LTI associated with the given string alias 
+ *    (or NIL if it does not exist) **/
+uint64_t SMem_Manager::get_lti_with_alias(const std::string& lti_alias) {
+    uint64_t lti_id = NIL;
+
+    // Check to see if the alias already exists in the db
+    SQL->lti_alias_get_id->bind_text(1, static_cast<const char*>(lti_alias.c_str()));
+    if (SQL->lti_alias_get_id->execute() == soar_module::row)
+    {
+        lti_id = static_cast<uint64_t>(SQL->lti_alias_get_id->column_int(0));
+    }
+    SQL->lti_alias_get_id->reinitialize();
+
+    return lti_id;
+}
+
+/** Creates a new LTI and associates it with the given string alias
+ *  returns the id of the newly created LTI **/
+uint64_t SMem_Manager::add_new_lti_with_alias(const std::string& lti_alias) {
+    // Create a new LTI
+    uint64_t lti_id = add_new_LTI();
+
+    // Add the alias record to the db
+    SQL->lti_alias_add->bind_text(1, static_cast<const char*>(lti_alias.c_str()));
+    SQL->lti_alias_add->bind_int(2, static_cast<uint64_t>(lti_id));
+    SQL->lti_alias_add->execute(soar_module::op_reinit);
+
+    return lti_id;
+}
+
+/** Returns the id of the LTI associated with the given string alias 
+ *    (or creates a new LTI if one does not already exist) **/
+uint64_t SMem_Manager::get_or_add_lti_with_alias(const std::string& lti_alias) {
+    uint64_t lti_id = get_lti_with_alias(lti_alias);
+    if (lti_id == NIL) {
+        lti_id = add_new_lti_with_alias(lti_alias);
+    }
     return lti_id;
 }

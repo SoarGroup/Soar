@@ -44,6 +44,9 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* lti_access_set;
         soar_module::sqlite_statement* lti_get_t;
 
+        soar_module::sqlite_statement* lti_alias_add;
+        soar_module::sqlite_statement* lti_alias_get_id;
+
         soar_module::sqlite_statement* web_add;
         soar_module::sqlite_statement* web_truncate;
         soar_module::sqlite_statement* web_expand;

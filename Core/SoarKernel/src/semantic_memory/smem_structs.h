@@ -96,7 +96,7 @@ typedef std::unordered_map<uint64_t, std::list<smem_edge_update*>> smem_update_m
 
 // Mapping from constant string aliases to integer ids 
 //   for hard-coded LTIs in smem --add commands (such as @red)
-typedef std::map<std::string, uint64_t> alias_to_id_map;
+typedef std::map<std::string, uint64_t> lti_alias_to_id_map;
 
 typedef union ltm_value_union
 {

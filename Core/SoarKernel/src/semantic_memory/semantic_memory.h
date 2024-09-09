@@ -122,9 +122,6 @@ class SMem_Manager
         smem_stat_container*            statistics;
         soar_module::sqlite_database*   DB;
 
-        alias_to_id_map                 lti_alias_map;
-
-
         /* Temporary maps used when creating an instance of an LTM */
         id_to_sym_map                   lti_to_sti_map;
         sym_to_id_map                   iSti_to_lti_map;
@@ -163,7 +160,11 @@ class SMem_Manager
         double          lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges = SMEM_ACT_MAX, double touches = 1, bool increment_timer = true);
         double          lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0);
         id_set          print_LTM(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
-        uint64_t        get_id_for_lti_alias(const std::string& lti_alias);
+
+        /* Methods for LTI aliases */
+        uint64_t        get_lti_with_alias(const std::string& lti_alias);
+        uint64_t        add_new_lti_with_alias(const std::string& lti_alias);
+        uint64_t        get_or_add_lti_with_alias(const std::string& lti_alias);
 
         /* Methods for retrieving an LTM structure to be installed in STM */
         void            add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value);
