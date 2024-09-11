@@ -145,7 +145,7 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 
     m_WorkingMemory.SetAgent(this) ;
 
-    m_pDPI = 0;
+    m_pDPI = nullptr;
 
     ClearError() ;
 }
@@ -1880,7 +1880,7 @@ void Agent::ClearDebuggerProcessInformation()
     if (m_pDPI)
     {
         delete m_pDPI;
-        m_pDPI = 0;
+        m_pDPI = nullptr;
     }
 }
 
