@@ -112,6 +112,14 @@ bool CommandLineInterface::DoVisualize(const std::string* pArg1, const std::stri
                         lti_id = thisAgent->SMem->lti_exists(lexer.current_lexeme.int_val);
                     }
                 }
+                else if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME) 
+                {
+                    if (thisAgent->SMem->connected())
+                    {
+                        std::string lti_alias = lexer.current_lexeme.string();
+                        lti_id = thisAgent->SMem->get_lti_with_alias(lti_alias);
+                    }
+                }
 
                 if (lti_id == NIL)
                 {
