@@ -671,11 +671,18 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                     if (lLti_id)
                     {
                         lLti_id = thisAgent->SMem->lti_exists(lLti_id);
-                        if (lLti_id == NIL)
-                        {
-                            thisAgent->outputManager->printa_sf(thisAgent,  "LTI %s not found in semantic memory.", lexeme.string());
-                            break;
-                        }
+                    }
+                    else 
+                    {
+                        // Treat the rest of the token as an LTI alias
+                        std::string lti_alias(lexeme.string());
+                        lti_alias = lti_alias.substr(1);
+                        lLti_id = thisAgent->SMem->get_lti_with_alias(lti_alias);
+                    }
+                    if (lLti_id == NIL)
+                    {
+                        thisAgent->outputManager->printa_sf(thisAgent,  "LTI %s not found in semantic memory.", lexeme.string());
+                        break;
                     }
                 }
                 thisAgent->SMem->attach();

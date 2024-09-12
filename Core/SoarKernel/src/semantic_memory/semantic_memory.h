@@ -65,6 +65,7 @@ class SMem_Manager
 
         /* Methods for smem CLI commands*/
         uint64_t    lti_exists(uint64_t pLTI_ID);
+        uint64_t    get_lti_with_alias(const std::string& lti_alias);
         bool        CLI_add(const char* str_to_LTMs, std::string** err_msg);
         bool        CLI_query(const char* ltms, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
         bool        CLI_remove(const char* ltms, std::string** err_msg, std::string** result_message, bool force = false);
@@ -162,7 +163,6 @@ class SMem_Manager
         id_set          print_LTM(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
 
         /* Methods for LTI aliases */
-        uint64_t        get_lti_with_alias(const std::string& lti_alias);
         uint64_t        add_new_lti_with_alias(const std::string& lti_alias);
         uint64_t        get_or_add_lti_with_alias(const std::string& lti_alias);
 
