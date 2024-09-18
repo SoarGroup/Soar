@@ -1328,6 +1328,186 @@ int64_t heading_to_point(int64_t current_x, int64_t current_y, int64_t x, int64_
     return convert(bracket_rad_to_deg(heading));
 }
 
+
+/* --------------------------------------------------------------------
+                                compute_x_point
+
+ Takes 4 integer args: x,heading(degrees),speed (distance/tick),elapsed_time(tick))
+ and returns integer x position (rounded to nearest int)
+-------------------------------------------------------------------- */
+int64_t compute_x_point(int64_t current_x, int64_t heading, int64_t speed, int64_t elapsed_time)
+{
+    // Convert heading from degrees to radians
+    double heading_rad = heading * PI / 180.0;
+    
+    // Calculate distance traveled
+    double distance = speed * elapsed_time;
+    
+    // Calculate new x positions
+    return current_x + (int)(round(distance * sin(heading_rad)));
+    //return current_y + (int)(distance * cos(heading_rad));
+}
+
+/* --------------------------------------------------------------------
+                                compute_y_point
+
+ Takes 4 integer args: y,heading(degrees),speed (distance/tick),elapsed_time(tick))
+ and returns integer y position (rounded to nearest int)
+-------------------------------------------------------------------- */
+int64_t compute_y_point(int64_t current_y, int64_t heading, int64_t speed, int64_t elapsed_time)
+{
+    // Convert heading from degrees to radians
+    double heading_rad = heading * PI / 180.0;
+    
+    // Calculate distance traveled
+    double distance = speed * elapsed_time;
+    
+    // Calculate new y positions
+    //return current_x + (int)(distance * sin(heading_rad));
+    return current_y + (int)(round(distance * cos(heading_rad)));
+}
+
+/* --------------------------------------------------------------------
+                                predict-x
+
+ Takes 4 integer args: x1,heading(degrees),speed (distance/tick),elapsed_time(tick))
+ and returns integer x position (rounded to nearest int)
+-------------------------------------------------------------------- */
+
+Symbol* predict_x_position_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    Symbol* arg;
+    int64_t current_x;
+    int64_t heading, speed, elapsed_time;
+    int count;
+    cons* c;
+
+    if (!args)
+    {
+        thisAgent->outputManager->printa(thisAgent, "Error: 'predict-x' function called with no arguments\n");
+        return NIL;
+    }
+
+    for (c = args; c != NIL; c = c->rest)
+    {
+        arg = static_cast<Symbol*>(c->first);
+        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
+                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - predict-x\n", arg);
+            return NIL;
+        }
+    }
+
+    count = 1;
+
+    for (c = args->rest; c != NIL; c = c->rest)
+    {
+        arg = static_cast<Symbol*>(c->first);
+        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
+                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to compute-heading function.\n", arg);
+            return NIL;
+        }
+        else
+        {
+            count++;
+        }
+    }
+
+    if (count != 4)
+    {
+        thisAgent->outputManager->printa(thisAgent, "Error: 'predict-x' takes exactly 4 arguments.\n");
+        return NIL;
+    }
+
+    arg = static_cast<Symbol*>(args->first);
+    current_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    arg = static_cast<Symbol*>(args->rest->first);
+    heading = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    arg = static_cast<Symbol*>(args->rest->rest->first);
+    speed = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    arg = static_cast<Symbol*>(args->rest->rest->rest->first);
+    elapsed_time = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    return thisAgent->symbolManager->make_int_constant(compute_x_point(current_x, heading, speed, elapsed_time));
+}
+
+/* --------------------------------------------------------------------
+                                predict-y
+
+ Takes 4 integer args: y1,heading(degrees),speed (distance/tick),elapsed_time(tick))
+ and returns integer y position (rounded to nearest int)
+-------------------------------------------------------------------- */
+Symbol* predict_y_position_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    Symbol* arg;
+    int64_t current_y;
+    int64_t heading, speed, elapsed_time;
+    int count;
+    cons* c;
+
+    if (!args)
+    {
+        thisAgent->outputManager->printa(thisAgent, "Error: 'predict-y' function called with no arguments\n");
+        return NIL;
+    }
+
+    for (c = args; c != NIL; c = c->rest)
+    {
+        arg = static_cast<Symbol*>(c->first);
+        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
+                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - predict-y\n", arg);
+            return NIL;
+        }
+    }
+
+    count = 1;
+
+    for (c = args->rest; c != NIL; c = c->rest)
+    {
+        arg = static_cast<Symbol*>(c->first);
+        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
+                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to compute-heading function.\n", arg);
+            return NIL;
+        }
+        else
+        {
+            count++;
+        }
+    }
+
+    if (count != 4)
+    {
+        thisAgent->outputManager->printa(thisAgent, "Error: 'predict-y' takes exactly 4 arguments.\n");
+        return NIL;
+    }
+
+
+    arg = static_cast<Symbol*>(args->first);
+    current_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    arg = static_cast<Symbol*>(args->rest->first);
+    heading = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    arg = static_cast<Symbol*>(args->rest->rest->first);
+    speed = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    arg = static_cast<Symbol*>(args->rest->rest->rest->first);
+    elapsed_time = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    return thisAgent->symbolManager->make_int_constant(compute_y_point(current_y, heading, speed, elapsed_time));
+}
+
+
 /* --------------------------------------------------------------------
                                 compute-heading
 
@@ -2228,6 +2408,8 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("round-off"), round_off_air_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-heading"), compute_heading_rhs_function_code, 4, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-range"), compute_range_rhs_function_code, 4, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("predict-x"), predict_x_position_rhs_function_code, 4, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("predict-y"), predict_y_position_rhs_function_code, 4, true, false, 0, true);
 
     /* RHS special purpose functions for Michigan Dice app*/
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-dice-probability"), dice_prob_rhs_function_code, 4, true, false, 0, true);
@@ -2273,6 +2455,8 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-heading"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-range"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-dice-probability"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("predict-x"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("predict-y"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("rand-int"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("rand-float"));
