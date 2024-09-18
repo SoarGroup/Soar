@@ -145,14 +145,14 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 
     m_WorkingMemory.SetAgent(this) ;
 
-    m_pDPI = 0;
+    m_pDPI = nullptr;
 
     ClearError() ;
 }
 
 Agent::~Agent()
 {
-    KillDebugger();
+    KillDebugger(true);
 }
 
 Connection* Agent::GetConnection() const
@@ -1839,11 +1839,14 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 #endif // _WIN32
 }
 
-bool Agent::KillDebugger()
+bool Agent::KillDebugger(bool ignoreNonExistent)
 {
     if (!m_pDPI)
     {
-        std::cerr << "KillDebugger: No existing debugger process information" << std::endl;
+        if (!ignoreNonExistent)
+        {
+            std::cerr << "KillDebugger: No existing debugger process information" << std::endl;
+        }
         return false;
     }
     bool successful = false;
@@ -1877,7 +1880,7 @@ void Agent::ClearDebuggerProcessInformation()
     if (m_pDPI)
     {
         delete m_pDPI;
-        m_pDPI = 0;
+        m_pDPI = nullptr;
     }
 }
 
