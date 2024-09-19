@@ -1329,6 +1329,7 @@ int64_t heading_to_point(int64_t current_x, int64_t current_y, int64_t x, int64_
 }
 
 
+
 /* --------------------------------------------------------------------
                                 compute_x_point
 
@@ -1388,26 +1389,14 @@ Symbol* predict_x_position_rhs_function_code(agent* thisAgent, cons* args, void*
         return NIL;
     }
 
+    count = 0;
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<Symbol*>(c->first);
-        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
-                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
+        if (arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - predict-x\n", arg);
-            return NIL;
-        }
-    }
-
-    count = 1;
-
-    for (c = args->rest; c != NIL; c = c->rest)
-    {
-        arg = static_cast<Symbol*>(c->first);
-        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
-                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to compute-heading function.\n", arg);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non int(%y) passed to predict-x function.\n", arg);
             return NIL;
         }
         else
@@ -1457,26 +1446,13 @@ Symbol* predict_y_position_rhs_function_code(agent* thisAgent, cons* args, void*
         return NIL;
     }
 
+    count = 0;
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<Symbol*>(c->first);
-        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
-                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
+        if (arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - predict-y\n", arg);
-            return NIL;
-        }
-    }
-
-    count = 1;
-
-    for (c = args->rest; c != NIL; c = c->rest)
-    {
-        arg = static_cast<Symbol*>(c->first);
-        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
-                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to compute-heading function.\n", arg);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non int(%y) passed to predict-y function.\n", arg);
             return NIL;
         }
         else
@@ -2029,6 +2005,168 @@ struct wme_val_stats {
     wme_val_stats(): count(0), sum(0.0), product(1.0), min(DBL_MAX), max(-DBL_MAX), mean(0.0), sum_square(0.0) { }
 };
 
+
+
+typedef struct {
+    int64_t x;
+    int64_t y;
+    char * id;
+} Point;
+
+double calculate_angle(Point start, Point end) 
+{
+    // Calculate angle in radians, with 0 pointing east
+    double angle_rad = atan2(end.y - start.y, end.x - start.x);
+   
+    // Convert to degrees
+    double angle_deg = angle_rad * 180 / PI;
+   
+    // Adjust to compass system (0 = North, clockwise)
+    angle_deg = 90 - angle_deg;
+    if (angle_deg < 0) angle_deg += 360;
+   
+    return angle_deg;
+}
+
+double angle_difference(double angle1, double angle2) 
+{
+    double diff = fabs(angle1 - angle2);
+    return (diff > 180) ? 360 - diff : diff;
+}
+
+/* --------------------------------------------------------------------
+                                compute_closest_intercept
+
+ Takes 3 args: point{x,y,id}, heading(int compass degrees),array of points
+ and returns string id of nearest intercept
+-------------------------------------------------------------------- */
+char * compute_closest_intercept(Point starting, int heading, Point* points, int num_points) 
+{
+    double min_angle_diff = DBL_MAX;
+    char nonvalid[] = "no_valid_point";
+    Point nearest_point = {1000, 1000, nonvalid};  // Initialize with invalid point
+
+    for (int i = 0; i < num_points; i++) 
+    {
+        double angle = calculate_angle(starting, points[i]);
+        double angle_diff = angle_difference(heading, angle);
+
+        if (angle_diff < min_angle_diff) 
+        {
+            min_angle_diff = angle_diff;
+            nearest_point = points[i];
+        }
+    }
+
+    return nearest_point.id;
+}
+
+
+/* --------------------------------------------------------------------
+                                compute_closest_intercept
+
+ Takes 4 args: x1(int),y1(int),heading(int compass degrees),set of x,y points with id)
+ set = points.point <p> (<p> ^x <xpos> ^y <ypos> ^id |str-id|)
+ and returns string id of nearest intercept
+-------------------------------------------------------------------- */
+
+Symbol* compute_closest_intercept_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    Symbol* arg;
+    int64_t current_x;
+    int64_t current_y;
+    int64_t heading;
+
+    int count;
+    cons* c;
+
+    if (!args)
+    {
+        thisAgent->outputManager->printa(thisAgent, "Error: 'compute-closest-intercept' function called with no arguments\n");
+        return NIL;
+    }
+
+    count = 0;
+
+    for (c = args; c != NIL; c = c->rest)
+    {
+        arg = static_cast<Symbol*>(c->first);
+        //first 3 args are ints
+        if (count < 3 && (arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE))
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non int (%y) passed to compute-closest-intercept function.\n", arg);
+            return NIL;
+        }
+        else
+        {
+            count++;
+        }
+    }
+
+    if (count != 4)
+    {
+        thisAgent->outputManager->printa(thisAgent, "Error: 'compute-closest-intercept' takes exactly 4 arguments.\n");
+        return NIL;
+    }
+
+    arg = static_cast<Symbol*>(args->first);
+    current_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    arg = static_cast<Symbol*>(args->rest->first);
+    current_y  = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    arg = static_cast<Symbol*>(args->rest->rest->first);
+    heading = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+
+    Symbol* points_arg = static_cast<Symbol*>(args->rest->rest->rest->first);
+    if (points_arg->symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+      thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to compute-closest-intercept function for points\n",points_arg);
+      return NIL;
+    }
+    
+    count = 0;
+    slot* pointslot = points_arg->id->slots; //slots for points
+
+    //count number of points
+    for (wme* curwmeA = pointslot->wmes; curwmeA != 0; curwmeA = curwmeA->next) {
+        count = count + 1;
+    }
+    Point points[count];
+    count = 0;
+    //point attributes
+    Symbol * x_symbol = thisAgent->symbolManager->make_str_constant("x");
+    Symbol * y_symbol = thisAgent->symbolManager->make_str_constant("y");
+    Symbol * id_symbol = thisAgent->symbolManager->make_str_constant("id");
+
+    //for all points in set
+    for (wme* curwmeA = pointslot->wmes; curwmeA != 0; curwmeA = curwmeA->next) {
+        Symbol* next_point = curwmeA->value;
+        if (next_point->symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to compute-closest-intercept function for a point\n",next_point);
+            return NIL;
+        }
+        wme* wme_x = get_wmes_for_named_slot(next_point, x_symbol);
+        wme* wme_y = get_wmes_for_named_slot(next_point, y_symbol);
+        wme* wme_id = get_wmes_for_named_slot(next_point, id_symbol);
+        Symbol * x_value = wme_x->value;
+        Symbol * y_value = wme_y->value;
+        Symbol * id_value = wme_id->value;
+
+        // get values
+        int64_t point_x = (x_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? x_value->ic->value : static_cast<int64_t>(x_value->fc->value);
+        int64_t point_y = (y_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? y_value->ic->value : static_cast<int64_t>(y_value->fc->value);
+        char * id = id_value->to_string(false, false, NIL, 0);
+        
+        //add to point array
+        points[count] = {point_x,point_y,id};
+        count = count + 1;
+    }
+
+    char starting_name[] = "starting";
+    Point starting = {current_x, current_y, starting_name};
+    return thisAgent->symbolManager->make_str_constant(compute_closest_intercept(starting, heading, points, count));
+}
+
 /*
  * Helper for set-based processes.  This calls the given fn for each wme in the set being processed.
  *
@@ -2410,6 +2548,8 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-range"), compute_range_rhs_function_code, 4, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("predict-x"), predict_x_position_rhs_function_code, 4, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("predict-y"), predict_y_position_rhs_function_code, 4, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-closest-intercept"), compute_closest_intercept_rhs_function_code, 4, true, false, 0, true);
+    
 
     /* RHS special purpose functions for Michigan Dice app*/
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-dice-probability"), dice_prob_rhs_function_code, 4, true, false, 0, true);
@@ -2457,6 +2597,7 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-dice-probability"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("predict-x"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("predict-y"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-closest-intercept"));
 
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("rand-int"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("rand-float"));
