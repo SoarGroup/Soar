@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <vector>
 
 
 /* --------------------------------------------------------------------
@@ -1340,10 +1341,10 @@ int64_t compute_x_point(int64_t current_x, int64_t heading, int64_t speed, int64
 {
     // Convert heading from degrees to radians
     double heading_rad = heading * PI / 180.0;
-    
+
     // Calculate distance traveled
     double distance = speed * elapsed_time;
-    
+
     // Calculate new x positions
     return current_x + (int)(round(distance * sin(heading_rad)));
     //return current_y + (int)(distance * cos(heading_rad));
@@ -1359,10 +1360,10 @@ int64_t compute_y_point(int64_t current_y, int64_t heading, int64_t speed, int64
 {
     // Convert heading from degrees to radians
     double heading_rad = heading * PI / 180.0;
-    
+
     // Calculate distance traveled
     double distance = speed * elapsed_time;
-    
+
     // Calculate new y positions
     //return current_x + (int)(distance * sin(heading_rad));
     return current_y + (int)(round(distance * cos(heading_rad)));
@@ -2013,22 +2014,22 @@ typedef struct {
     char * id;
 } Point;
 
-double calculate_angle(Point start, Point end) 
+double calculate_angle(Point start, Point end)
 {
     // Calculate angle in radians, with 0 pointing east
     double angle_rad = atan2(end.y - start.y, end.x - start.x);
-   
+
     // Convert to degrees
     double angle_deg = angle_rad * 180 / PI;
-   
+
     // Adjust to compass system (0 = North, clockwise)
     angle_deg = 90 - angle_deg;
     if (angle_deg < 0) angle_deg += 360;
-   
+
     return angle_deg;
 }
 
-double angle_difference(double angle1, double angle2) 
+double angle_difference(double angle1, double angle2)
 {
     double diff = fabs(angle1 - angle2);
     return (diff > 180) ? 360 - diff : diff;
@@ -2040,21 +2041,21 @@ double angle_difference(double angle1, double angle2)
  Takes 3 args: point{x,y,id}, heading(int compass degrees),array of points
  and returns string id of nearest intercept
 -------------------------------------------------------------------- */
-char * compute_closest_intercept(Point starting, int heading, Point* points, int num_points) 
+char * compute_closest_intercept(Point starting, int heading, const std::vector<Point>& points)
 {
     double min_angle_diff = DBL_MAX;
     char nonvalid[] = "no_valid_point";
     Point nearest_point = {1000, 1000, nonvalid};  // Initialize with invalid point
 
-    for (int i = 0; i < num_points; i++) 
+    for (const auto& point : points)
     {
-        double angle = calculate_angle(starting, points[i]);
+        double angle = calculate_angle(starting, point);
         double angle_diff = angle_difference(heading, angle);
 
-        if (angle_diff < min_angle_diff) 
+        if (angle_diff < min_angle_diff)
         {
             min_angle_diff = angle_diff;
-            nearest_point = points[i];
+            nearest_point = point;
         }
     }
 
@@ -2123,7 +2124,7 @@ Symbol* compute_closest_intercept_rhs_function_code(agent* thisAgent, cons* args
       thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to compute-closest-intercept function for points\n",points_arg);
       return NIL;
     }
-    
+
     count = 0;
     slot* pointslot = points_arg->id->slots; //slots for points
 
@@ -2131,7 +2132,7 @@ Symbol* compute_closest_intercept_rhs_function_code(agent* thisAgent, cons* args
     for (wme* curwmeA = pointslot->wmes; curwmeA != 0; curwmeA = curwmeA->next) {
         count = count + 1;
     }
-    Point points[count];
+    std::vector<Point> points(count);
     count = 0;
     //point attributes
     Symbol * x_symbol = thisAgent->symbolManager->make_str_constant("x");
@@ -2156,15 +2157,15 @@ Symbol* compute_closest_intercept_rhs_function_code(agent* thisAgent, cons* args
         int64_t point_x = (x_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? x_value->ic->value : static_cast<int64_t>(x_value->fc->value);
         int64_t point_y = (y_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? y_value->ic->value : static_cast<int64_t>(y_value->fc->value);
         char * id = id_value->to_string(false, false, NIL, 0);
-        
-        //add to point array
+
+        // add to point array
         points[count] = {point_x,point_y,id};
         count = count + 1;
     }
 
     char starting_name[] = "starting";
     Point starting = {current_x, current_y, starting_name};
-    return thisAgent->symbolManager->make_str_constant(compute_closest_intercept(starting, heading, points, count));
+    return thisAgent->symbolManager->make_str_constant(compute_closest_intercept(starting, heading, points));
 }
 
 /*
@@ -2549,7 +2550,7 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("predict-x"), predict_x_position_rhs_function_code, 4, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("predict-y"), predict_y_position_rhs_function_code, 4, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-closest-intercept"), compute_closest_intercept_rhs_function_code, 4, true, false, 0, true);
-    
+
 
     /* RHS special purpose functions for Michigan Dice app*/
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-dice-probability"), dice_prob_rhs_function_code, 4, true, false, 0, true);
