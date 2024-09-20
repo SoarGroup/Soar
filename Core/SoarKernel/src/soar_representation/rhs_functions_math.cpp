@@ -1090,14 +1090,14 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, cons* args, vo
 
     if (!args)
     {
-        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off_heading' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round-off-heading' function called with no arguments\n");
         return NIL;
     }
 
     if (!args->rest)
     {
         /* --- only one argument --- */
-        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off_heading' function called with only one argument.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round-off-heading' function called with only one argument.\n");
         return NIL;
     }
 
@@ -1116,7 +1116,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, cons* args, vo
     if (c->rest)
     {
         /* --- more than two arguments --- */
-        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off_heading' function called with more than two arguments.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round-off-heading' function called with more than two arguments.\n");
         return NIL;
     }
     arg = static_cast<Symbol*>(c->first);
