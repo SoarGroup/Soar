@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include "common.h"
+#include "portability.h"
 #include "serialize.h"
 
 void serialize(const serializable& v, std::ostream& os)
