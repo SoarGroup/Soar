@@ -11,6 +11,7 @@
 #include "kernel.h"
 #include "Export.h"
 
+#include <string>
 #include <unordered_map>
 
 typedef void* (*MessageFunction)(const char* pMessage, void* pMessageData);
