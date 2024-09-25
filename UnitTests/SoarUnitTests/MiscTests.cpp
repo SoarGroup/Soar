@@ -369,6 +369,24 @@ void MiscTests::testStopPhaseRetrieval()
 	assertTrue(response.GetArgInt(sml::sml_Names::kParamPhase, -1) == sml::smlPhase::sml_APPLY_PHASE);
 }
 
+
+
+void MiscTests::testProductionPrinting()
+{
+    // Tries to fully exercise Symbol::to_string
+    agent->ExecuteCommandLine("sp {foo (state <s> ^superstate nil) --> (<s> ^one 1 ^two 2.0 ^three 3.0e0 ^foo bar ^|| hi ^|<bar>| bar ^|^baz| baz ^1 one ^|2.0| two)}");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+    std::string spMessage = agent->ExecuteCommandLine("print foo");
+//     sp {foo
+//     (state <s> ^superstate nil)
+//     -->
+//     (<s> ^one 1 ^two 2.000000 ^three 3.000000 ^foo bar ^|| hi ^|<bar>| bar
+//            ^|^baz| baz ^1 one ^|2.0| two)
+// }
+//
+    no_agent_assertTrue(spMessage == "sp {foo\n    (state <s> ^superstate nil)\n    -->\n    (<s> ^one 1 ^two 2.000000 ^three 3.000000 ^foo bar ^|| hi ^|<bar>| bar\n           ^|^baz| baz ^1 one ^|2.0| two)\n}\n\n");
+}
+
 //void MiscTests::testSoarDebugger()
 //{
 //	bool result = agent->SpawnDebugger();

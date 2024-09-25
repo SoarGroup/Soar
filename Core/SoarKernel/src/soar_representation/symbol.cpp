@@ -90,7 +90,7 @@ bool make_string_rereadable(std::string &pStr)
 
     // bool has_angle_bracket = pCStr[0] == '<' || pCStr[pLength - 1] == '>';
 
-    if ((!possible_sc)   || possible_var || possible_ic || possible_fc || possible_id || (!is_rereadable))
+    if ((!possible_sc) || possible_var || possible_ic || possible_fc || possible_id || (!is_rereadable) || (!pLength) )
     {
         /* BUGBUG - if in context where id's could occur, should check possible_id flag here also */
         pStr = string_to_escaped_string(pCStr, '|');
