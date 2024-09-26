@@ -374,6 +374,19 @@ public class TestJavaSML
             throw new IllegalStateException("bug 1028 test fail");
         }
 
+        // check exception translation
+        boolean caught = false;
+        try {
+            pInputLink.GetParameterValue("non-existent");
+        } catch (IllegalArgumentException e) {
+            caught = true;
+            System.out.println("Correctly caught exception: " + e);
+        }
+        if (!caught) {
+            throw new IllegalStateException("Failed to catch exception!");
+        }
+
+
         // Clean up
         m_Kernel.Shutdown();
 

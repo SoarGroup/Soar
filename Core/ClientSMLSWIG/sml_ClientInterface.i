@@ -10,6 +10,25 @@
 // see https://www.swig.org/Doc4.1/Windows.html#Windows_interface_file
 %include <windows.i>
 
+// Language-independent exception handler to wrap ALL functions with
+// See https://www.swig.org/Doc4.2/SWIGDocumentation.html#Customization_nn7
+// As more exceptions are added to the codebase, we should add translations here
+%include exception.i
+%exception {
+    try {
+        $action
+    }
+    catch(const std::invalid_argument& e) {
+        SWIG_exception(SWIG_ValueError, e.what());
+    }
+    catch (const std::exception& e) {
+        SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+    catch(...) {
+        SWIG_exception(SWIG_RuntimeError, "Unknown exception");
+    }
+}
+
 //
 // These functions need to be renamed because they only differ by a const type, which isn't enough to distinguish them
 //
