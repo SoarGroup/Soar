@@ -82,8 +82,8 @@ public class EditMenu
     {
         BaseMenu menu = new BaseMenu(parent, title);
 
-        menu.add(m_Copy);
-        menu.add(m_Paste);
+        menu.add(m_Copy, SHORTCUT_KEY + 'C');
+        menu.add(m_Paste, SHORTCUT_KEY + 'V');
         menu.add(m_SelectAll, SHORTCUT_KEY + 'A');
         menu.addSeparator();
         menu.add(m_Search, SHORTCUT_KEY + 'F');
