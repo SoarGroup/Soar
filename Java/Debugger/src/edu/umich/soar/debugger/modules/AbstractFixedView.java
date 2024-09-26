@@ -73,6 +73,11 @@ public abstract class AbstractFixedView extends AbstractView
         // Usually nothing to copy in fixed views
     }
 
+    @Override
+    public void selectAll() {
+        // Usually nothing to select in fixed views
+    }
+
     /************************************************************************
      *
      * Search for the next occurance of 'text' in this view and place the

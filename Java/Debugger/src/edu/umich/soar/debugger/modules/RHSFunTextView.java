@@ -260,6 +260,11 @@ public class RHSFunTextView extends AbstractRHSFunView implements
     {
         textBox.copy();
     }
+    @Override
+    public void selectAll()
+    {
+        textBox.selectAll();
+    }
 
     @Override
     protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX,

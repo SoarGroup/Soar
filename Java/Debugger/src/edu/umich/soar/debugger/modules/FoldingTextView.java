@@ -613,6 +613,12 @@ public class FoldingTextView extends AbstractComboView implements
         m_FoldingText.getTextWindow().copy();
     }
 
+    @Override
+    public void selectAll()
+    {
+        m_FoldingText.getTextWindow().selectAll();
+    }
+
     /************************************************************************
      *
      * Search for the next occurance of 'text' in this view and place the

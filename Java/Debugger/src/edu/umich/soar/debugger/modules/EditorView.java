@@ -115,6 +115,11 @@ public class EditorView extends AbstractView
     }
 
     @Override
+    public void selectAll() {
+        m_Text.selectAll();
+    }
+
+    @Override
     public void setTextFont(Font f)
     {
         m_Text.setFont(f);

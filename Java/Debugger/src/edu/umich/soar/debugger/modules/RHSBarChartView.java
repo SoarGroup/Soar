@@ -242,6 +242,11 @@ public class RHSBarChartView extends AbstractRHSFunView implements
     }
 
     @Override
+    public void selectAll()
+    {
+    }
+
+    @Override
     public void displayText(String text)
     {
     }

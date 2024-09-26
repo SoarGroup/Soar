@@ -81,6 +81,12 @@ public class TextTraceView extends AbstractComboView
         m_Text.copy();
     }
 
+    @Override
+    public void selectAll()
+    {
+        m_Text.selectAll();
+    }
+
     /********************************************************************************************
      *
      * Scroll the display control to the bottom

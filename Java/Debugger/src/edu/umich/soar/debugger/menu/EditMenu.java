@@ -49,6 +49,14 @@ public class EditMenu
         }
     };
 
+    private final AbstractAction m_SelectAll = new AbstractAction("&Select All\t" + SHORTCUT_HINT + "A")
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            selectAll();
+        }
+    };
+
     private final AbstractAction m_Search = new AbstractAction("&Find...\t" + SHORTCUT_HINT + "F")
     {
         @Override
@@ -76,6 +84,7 @@ public class EditMenu
 
         menu.add(m_Copy);
         menu.add(m_Paste);
+        menu.add(m_SelectAll, SHORTCUT_KEY + 'A');
         menu.addSeparator();
         menu.add(m_Search, SHORTCUT_KEY + 'F');
 
@@ -116,5 +125,14 @@ public class EditMenu
 
         if (view != null)
             view.paste();
+    }
+
+    private void selectAll()
+    {
+        edu.umich.soar.debugger.modules.AbstractView view = m_Frame
+            .getMainWindow().getFocusView();
+        if (view != null) {
+            view.selectAll();
+        }
     }
 }

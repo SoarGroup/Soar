@@ -83,6 +83,12 @@ public abstract class AbstractTextView extends AbstractComboView
         m_Text.copy();
     }
 
+    @Override
+    public void selectAll()
+    {
+        m_Text.selectAll();
+    }
+
     /************************************************************************
      *
      * Search for the next occurrence of {@code text} in this view and place the

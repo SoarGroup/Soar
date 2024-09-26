@@ -201,6 +201,8 @@ public abstract class AbstractView implements AgentFocusListener
             this.executeAgentCommand(textData, true);
     }
 
+    public abstract void selectAll();
+
     // Creates a convenient listener for Control-V.
     // Adding a key listener for this event allows us to call our paste method
     // so commands are pasted into the command
