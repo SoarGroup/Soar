@@ -1373,6 +1373,7 @@ int64_t compute_y_point(int64_t current_y, int64_t heading, int64_t speed, int64
                                 predict-x
 
  Takes 4 integer args: x1,heading(degrees),speed (distance/tick),elapsed_time(tick))
+ Assuming coordinate system where positive y is south and positive x is east
  and returns integer x position (rounded to nearest int)
 -------------------------------------------------------------------- */
 
@@ -1431,6 +1432,7 @@ Symbol* predict_x_position_rhs_function_code(agent* thisAgent, cons* args, void*
                                 predict-y
 
  Takes 4 integer args: y1,heading(degrees),speed (distance/tick),elapsed_time(tick))
+  Assuming coordinate system where positive y is south and positive x is east
  and returns integer y position (rounded to nearest int)
 -------------------------------------------------------------------- */
 Symbol* predict_y_position_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
@@ -1471,7 +1473,8 @@ Symbol* predict_y_position_rhs_function_code(agent* thisAgent, cons* args, void*
 
     arg = static_cast<Symbol*>(args->first);
     current_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
-
+    //Convert for coordinate system where postive y is down/south
+    current_y = -1 *current_y;
     arg = static_cast<Symbol*>(args->rest->first);
     heading = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
 
@@ -1481,7 +1484,10 @@ Symbol* predict_y_position_rhs_function_code(agent* thisAgent, cons* args, void*
     arg = static_cast<Symbol*>(args->rest->rest->rest->first);
     elapsed_time = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
 
-    return thisAgent->symbolManager->make_int_constant(compute_y_point(current_y, heading, speed, elapsed_time));
+    //For coordinate system where postive y is down/south
+    int64_t computed_y = -1 * compute_y_point(current_y, heading, speed, elapsed_time);
+
+    return thisAgent->symbolManager->make_int_constant(computed_y);
 }
 
 
@@ -2035,6 +2041,12 @@ double angle_difference(double angle1, double angle2)
     return (diff > 180) ? 360 - diff : diff;
 }
 
+double calculate_distance(Point p1, Point p2) {
+    int dx = p2.x - p1.x;
+    int dy = p2.y - p1.y;
+    return sqrt(dx*dx + dy*dy);
+}
+
 /* --------------------------------------------------------------------
                                 compute_closest_intercept
 
@@ -2057,6 +2069,17 @@ char * compute_closest_intercept(Point starting, int heading, const std::vector<
             min_angle_diff = angle_diff;
             nearest_point = point;
         }
+        //if the angle is the same choose closer point
+        if (angle_diff == min_angle_diff)
+        {
+            double previous_distance = calculate_distance(starting, nearest_point);
+            double new_distance = calculate_distance(starting, point);
+            if (new_distance < previous_distance)
+            {
+                min_angle_diff = angle_diff;
+                nearest_point = point;
+            }
+        }
     }
 
     return nearest_point.id;
@@ -2068,6 +2091,7 @@ char * compute_closest_intercept(Point starting, int heading, const std::vector<
 
  Takes 4 args: x1(int),y1(int),heading(int compass degrees),set of x,y points with id)
  set = points.point <p> (<p> ^x <xpos> ^y <ypos> ^id |str-id|)
+  Assuming coordinate system where positive y is south and positive x is east
  and returns string id of nearest intercept
 -------------------------------------------------------------------- */
 
@@ -2115,6 +2139,8 @@ Symbol* compute_closest_intercept_rhs_function_code(agent* thisAgent, cons* args
 
     arg = static_cast<Symbol*>(args->rest->first);
     current_y  = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
+    //converting to positive y=south coordinates
+    current_y = -1 * current_y;
 
     arg = static_cast<Symbol*>(args->rest->rest->first);
     heading = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
@@ -2156,6 +2182,8 @@ Symbol* compute_closest_intercept_rhs_function_code(agent* thisAgent, cons* args
         // get values
         int64_t point_x = (x_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? x_value->ic->value : static_cast<int64_t>(x_value->fc->value);
         int64_t point_y = (y_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? y_value->ic->value : static_cast<int64_t>(y_value->fc->value);
+        //converting to positive y=south coordinates
+        point_y = -1 * point_y;
         char * id = id_value->to_string(false, false, NIL, 0);
 
         // add to point array
