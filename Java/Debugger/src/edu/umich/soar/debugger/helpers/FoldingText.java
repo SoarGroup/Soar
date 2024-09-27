@@ -979,16 +979,20 @@ public class FoldingText
         setRedraw(true);
     }
 
-    // Returns the line we clicked on based on mouse coordinates
+    // Returns the line we clicked on based on text pane mouse Y position
     public int getLine(int mouseY)
     {
-        int topLine = m_Text.getTopIndex();
-        int lineHeight = m_Text.getLineHeight();
-        int screenLine = mouseY / lineHeight;
-        int line = topLine + screenLine;
+        int verticalScrollOffset = m_Text.getTopPixel();
+        int adjustedMouseY = mouseY + verticalScrollOffset;
 
-        if (line > m_Text.getLineCount())
+        int lineHeight = m_Text.getLineHeight();
+        int line = adjustedMouseY / lineHeight;
+
+        if (line > m_Text.getLineCount()) {
+            System.err.println("WARNING: Right-clicked line number is greater than " +
+                "the number of lines in the text widget.");
             return -1;
+        }
 
         return line;
     }
@@ -1083,8 +1087,7 @@ public class FoldingText
      ********************************************************************************************/
     public int getCharacterPosition(String text, int mouseX)
     {
-        // The only way to compute this I can think of to compute which
-        // character was clicked on
+        // The only way to compute this I can think of
         // is to generate each substring in turn and check its length against
         // the point.
         // When we reach the correct length of string we've found the character.

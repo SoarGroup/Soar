@@ -751,10 +751,12 @@ public class FoldingTextView extends AbstractComboView implements
     protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX,
                                                                    int mouseY)
     {
-        // Switchfrom screen coords to coords based on the text window
+        // Switch from screen coords to coords based on the text window
         Point pt = m_FoldingText.getTextWindow().toControl(mouseX, mouseY);
         mouseX = pt.x;
         mouseY = pt.y;
+
+//        System.out.println("Received right-click at (" + mouseX + "," + mouseY + ")");
 
         int line = m_FoldingText.getLine(mouseY);
         if (line == -1)
