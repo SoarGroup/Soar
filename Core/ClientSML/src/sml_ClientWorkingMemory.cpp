@@ -38,6 +38,10 @@
 #include "sml_ClientDirect.h"
 #include <cassert>
 
+// Null attribute name and value strings must be converted to legal strings;
+#define STRINGIFIED_NULL "nil"
+#define SAFE_STRING(s, location) ((s) ? (s) : (std::cerr << "Warning: Null string encountered at: " << location << std::endl, STRINGIFIED_NULL))
+
 using namespace sml ;
 using namespace soarxml;
 
@@ -838,8 +842,10 @@ Identifier* WorkingMemory::GetOutputLink()
 StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
 {
     assert(m_Agent == parent->GetAgent()) ;
+    const char* pAttributeSafe = SAFE_STRING(pAttribute, "CreateStringWME, argument 'pAttribute'");
+    const char* pValueSafe = SAFE_STRING(pValue, "CreateStringWME, argument 'pValue'");
 
-    StringElement* pWME = new StringElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pValue, GenerateTimeTag()) ;
+    StringElement* pWME = new StringElement(GetAgent(), parent, parent->GetValueAsString(), pAttributeSafe, pValueSafe, GenerateTimeTag()) ;
 
     // Record that the identifer owns this new WME
     parent->AddChild(pWME) ;
@@ -848,7 +854,7 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
     if (GetConnection()->IsDirectConnection())
     {
         EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetConnection());
-        pConnection->DirectAddWME_String(m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, pValue, pWME->GetTimeTag());
+        pConnection->DirectAddWME_String(m_AgentSMLHandle, parent->GetValueAsString(), pAttributeSafe, pValueSafe, pWME->GetTimeTag());
 
         // Return immediately, without adding it to the commit list.
         return pWME ;
@@ -874,8 +880,9 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribute, long long value)
 {
     assert(m_Agent == parent->GetAgent()) ;
+    const char* pAttributeSafe = SAFE_STRING(pAttribute, "CreateIntWME, argument 'pAttribute'");
 
-    IntElement* pWME = new IntElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag()) ;
+    IntElement* pWME = new IntElement(GetAgent(), parent, parent->GetValueAsString(), pAttributeSafe, value, GenerateTimeTag()) ;
 
     // Record that the identifer owns this new WME
     parent->AddChild(pWME) ;
@@ -884,7 +891,7 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
     if (GetConnection()->IsDirectConnection())
     {
         EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetConnection());
-        pConnection->DirectAddWME_Int(m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, value, pWME->GetTimeTag());
+        pConnection->DirectAddWME_Int(m_AgentSMLHandle, parent->GetValueAsString(), pAttributeSafe, value, pWME->GetTimeTag());
 
         // Return immediately, without adding it to the commit list.
         return pWME ;
@@ -910,8 +917,9 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
 FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAttribute, double value)
 {
     assert(m_Agent == parent->GetAgent()) ;
+    const char* pAttributeSafe = SAFE_STRING(pAttribute, "CreateFloatWME, argument 'pAttribute'");
 
-    FloatElement* pWME = new FloatElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag()) ;
+    FloatElement* pWME = new FloatElement(GetAgent(), parent, parent->GetValueAsString(), pAttributeSafe, value, GenerateTimeTag()) ;
 
     // Record that the identifer owns this new WME
     parent->AddChild(pWME) ;
@@ -920,7 +928,7 @@ FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAtt
     if (GetConnection()->IsDirectConnection())
     {
         EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetConnection());
-        pConnection->DirectAddWME_Double(m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, value, pWME->GetTimeTag());
+        pConnection->DirectAddWME_Double(m_AgentSMLHandle, parent->GetValueAsString(), pAttributeSafe, value, pWME->GetTimeTag());
 
         // Return immediately, without adding it to the commit list.
         return pWME ;
@@ -1148,12 +1156,14 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 {
     assert(m_Agent == parent->GetAgent()) ;
 
+    char const* pAttributeSafe = SAFE_STRING(pAttribute, "CreateIdWME, argument 'pAttribute'"); ;
+
     // Create a new, unique id (e.g. "i3").  This id will be mapped to a different id
     // in the kernel.
     std::string id ;
-    GenerateNewID(pAttribute, &id) ;
+    GenerateNewID(pAttributeSafe, &id) ;
 
-    Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, id.c_str(), GenerateTimeTag()) ;
+    Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttributeSafe, id.c_str(), GenerateTimeTag()) ;
 
     // Record that the identifer owns this new WME
     parent->AddChild(pWME) ;
@@ -1162,7 +1172,7 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
     if (GetConnection()->IsDirectConnection())
     {
         EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetConnection());
-        pConnection->DirectAddID(m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, id.c_str(), pWME->GetTimeTag());
+        pConnection->DirectAddID(m_AgentSMLHandle, parent->GetValueAsString(), pAttributeSafe, id.c_str(), pWME->GetTimeTag());
 
         // Return immediately, without adding it to the commit list.
         return pWME ;
@@ -1190,13 +1200,14 @@ Identifier* WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 {
     assert(m_Agent == parent->GetAgent()) ;
     assert(m_Agent == pSharedValue->GetAgent()) ;
+    const char* pAttributeSafe = SAFE_STRING(pAttribute, "CreateSharedIdWME, argument 'pAttribute'"); ;
 
     // bug 1060
     // need to check and make sure that this shared wme will not violate the set
     {
         // find other wmes on parent with same attribute
         WMElement* wme = 0;
-        for (int i = 0; (wme = parent->FindByAttribute(pAttribute, i)) != 0; ++i)
+        for (int i = 0; (wme = parent->FindByAttribute(pAttributeSafe, i)) != 0; ++i)
         {
             if (wme == pSharedValue)
             {
@@ -1209,7 +1220,7 @@ Identifier* WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
     std::string id = pSharedValue->GetValueAsString() ;
 
     // Create the new WME with the same value
-    Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pSharedValue, GenerateTimeTag()) ;
+    Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttributeSafe, pSharedValue, GenerateTimeTag()) ;
 
     // Record that the identifer owns this new WME
     parent->AddChild(pWME) ;
@@ -1218,7 +1229,7 @@ Identifier* WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
     if (GetConnection()->IsDirectConnection())
     {
         EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetConnection());
-        pConnection->DirectAddID(m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, id.c_str(), pWME->GetTimeTag());
+        pConnection->DirectAddID(m_AgentSMLHandle, parent->GetValueAsString(), pAttributeSafe, id.c_str(), pWME->GetTimeTag());
 
         // Return immediately, without adding it to the commit list.
         return pWME ;

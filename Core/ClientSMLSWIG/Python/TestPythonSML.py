@@ -7,8 +7,9 @@
 #
 # This file needs to be compatible with python 3.5, to run on CI jobs testing the lowest supported python version.
 from pathlib import Path
-import sys
 import os
+import re
+import sys
 import time
 
 try:
@@ -188,6 +189,33 @@ agent.UnregisterForProductionEvent(prod_fired_callback_id)
 agent.UnregisterForRunEvent(runCallbackId)
 
 test_agent_reinit(agent)
+
+def test_pass_null_to_WME_constructors(agent):
+    # The logic for safley handling null arguments in the C++ code is not language-specific,
+    # so this test does not need to be run in the other SWIG-binding languages
+    link = agent.GetInputLink()
+
+    id_wme = link.CreateIdWME("foo")
+    link.CreateSharedIdWME(None, id_wme)
+    link.CreateIdWME(None)
+    link.CreateStringWME(None, None)
+    link.CreateIntWME(None, 1)
+    link.CreateFloatWME(None, 1.0)
+
+    agent.ExecuteCommandLine("step")
+
+    result_string = agent.ExecuteCommandLine("print I2")
+    failure_message = lambda details: f"❌ Pass null to WME constructors: {details}\nResult string was: " + result_string + "\n"
+    assert "^foo F1" in result_string, failure_message("CreateIdWME('foo') failed")
+    assert "^nil F1" in result_string, failure_message("CreateSharedIdWME(None, id_wme) failed")
+    assert "^nil N1" in result_string, failure_message("CreateIdWME(None) failed")
+    assert "^nil nil" in result_string, failure_message("CreateStringWME(None, None) failed")
+    assert re.search(r"\^nil 1(?!\.)", result_string), failure_message("CreateIntWME(None) failed")
+    assert "^nil 1.0" in result_string, failure_message("CreateFloatWME(None) failed")
+
+    print("✅ Pass null to WME constructors")
+
+test_pass_null_to_WME_constructors(agent)
 
 def test_agent_destroy(agent):
     assert not agent_destroy_called.called, "❌ Agent destroy handler called before destroy"
