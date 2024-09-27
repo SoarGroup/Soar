@@ -1,0 +1,56 @@
+# Exercises predict-x, predict-y, and compute-closest-intercept RHS functions
+
+sp {elaborate*predict-position*variables
+  (state <s> ^superstate nil)
+-->
+  (<s> ^current-x 0
+       ^current-y 0
+       ^heading 120
+       ^speed 10
+       ^elapsed-time 2)
+}
+
+#Result for predict-x is 10
+sp {test*rhs*predict-x
+  (state <s> ^current-x <x>
+       ^heading <heading>
+       ^speed <speed>
+       ^elapsed-time <time>)
+-->
+  (<s> ^new-x-position (predict-x <x> <heading> <speed> <time>))
+}
+
+#Result for predict-y is 17
+sp {test*rhs*predict-y
+  (state <s> ^current-y <y>
+       ^heading <heading>
+       ^speed <speed>
+       ^elapsed-time <time>)
+-->
+  (<s> ^new-y-position (predict-y <y> <heading> <speed> <time>))
+}
+
+sp {elaborate*locations
+  (state <s> ^superstate nil)
+-->
+  (<s> ^locations <locations>)
+  (<locations> ^point <a> <b> <c> <d> <e> <f> <g> <h>)
+  (<a> ^x 5 ^y 0 ^id |east-location|)
+  (<b> ^x 5 ^y -5 ^id |northeast-location|)
+  (<c> ^x 0 ^y -5 ^id |north-location|)
+  (<d> ^x -5 ^y -5 ^id |northwest-location|)
+  (<e> ^x -5 ^y 0 ^id |west-location|)
+  (<f> ^x -5 ^y 5 ^id |southwest-location|)
+  (<g> ^x 0 ^y 5 ^id |south-location|)
+  (<h> ^x 5 ^y 5 ^id |southeast-location|)
+}
+
+# Result for compute-closest-intercept is southeast-location
+sp {test*rhs*compute-nearest-intercept
+  (state <s> ^current-y <y>
+       ^current-x <x>
+       ^heading <heading>
+       ^locations <locations>)
+-->
+  (<s> ^predicted-destination (compute-closest-intercept <x> <y> <heading> <locations>))
+}

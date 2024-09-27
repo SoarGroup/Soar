@@ -369,21 +369,12 @@ void MiscTests::testStopPhaseRetrieval()
 	assertTrue(response.GetArgInt(sml::sml_Names::kParamPhase, -1) == sml::smlPhase::sml_APPLY_PHASE);
 }
 
-
-
 void MiscTests::testProductionPrinting()
 {
     // Tries to fully exercise Symbol::to_string
     agent->ExecuteCommandLine("sp {foo (state <s> ^superstate nil) --> (<s> ^one 1 ^two 2.0 ^three 3.0e0 ^foo bar ^|| hi ^|<bar>| bar ^|^baz| baz ^1 one ^|2.0| two)}");
     no_agent_assertTrue(agent->GetLastCommandLineResult());
     std::string spMessage = agent->ExecuteCommandLine("print foo");
-//     sp {foo
-//     (state <s> ^superstate nil)
-//     -->
-//     (<s> ^one 1 ^two 2.000000 ^three 3.000000 ^foo bar ^|| hi ^|<bar>| bar
-//            ^|^baz| baz ^1 one ^|2.0| two)
-// }
-//
     no_agent_assertTrue(spMessage == "sp {foo\n    (state <s> ^superstate nil)\n    -->\n    (<s> ^one 1 ^two 2.000000 ^three 3.000000 ^foo bar ^|| hi ^|<bar>| bar\n           ^|^baz| baz ^1 one ^|2.0| two)\n}\n\n");
 }
 
@@ -401,6 +392,19 @@ void MiscTests::testSvsSceneCaseInsensitivity()
 
     result = agent->ExecuteCommandLine("svs D34.scene.world");
     no_agent_assertTrue_msg("D34 scene name found: " + result, result == "path not found\n");
+}
+
+void MiscTests::testLocationPredictionRhs()
+{
+	source("predict-location.soar");
+    agent->RunSelf(1);
+    std::string result = agent->ExecuteCommandLine("p s1");
+    // Should contain "^new-x-position 17"
+    no_agent_assertTrue_msg("predict-x failed: " + result, result.find("^new-x-position 17") != std::string::npos);
+    // Should contain ^new-y-position 10
+    no_agent_assertTrue_msg("predict-y failed: " + result, result.find("^new-y-position 10") != std::string::npos);
+    // Should contain ^predicted-destination southeast-location
+    no_agent_assertTrue_msg("compute-closest-intercept failed: " + result, result.find("^predicted-destination southeast-location") != std::string::npos);
 }
 
 //void MiscTests::testSoarDebugger()
