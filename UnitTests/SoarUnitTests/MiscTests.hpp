@@ -66,9 +66,6 @@ public:
 	TEST(testProductionPrinting, -1)
     void testProductionPrinting();
 
-	TEST(testSvsSceneCaseInsensitivity, -1)
-    void testSvsSceneCaseInsensitivity();
-
     TEST(testLocationPredictionRhs, -1)
     void testLocationPredictionRhs();
 

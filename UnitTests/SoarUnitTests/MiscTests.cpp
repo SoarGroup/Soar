@@ -378,22 +378,6 @@ void MiscTests::testProductionPrinting()
     no_agent_assertTrue(spMessage == "sp {foo\n    (state <s> ^superstate nil)\n    -->\n    (<s> ^one 1 ^two 2.000000 ^three 3.000000 ^foo bar ^|| hi ^|<bar>| bar\n           ^|^baz| baz ^1 one ^|2.0| two)\n}\n\n");
 }
 
-void MiscTests::testSvsSceneCaseInsensitivity()
-{
-    agent->ExecuteCommandLine("svs --enable");
-    no_agent_assertTrue_msg("failed to enable SVS", agent->GetLastCommandLineResult());
-
-    std::string result;
-    result = agent->ExecuteCommandLine("svs S1.scene.world");
-    no_agent_assertFalse_msg("could not find S1 scene", result == "path not found\n");
-
-    result = agent->ExecuteCommandLine("svs s1.scene.world");
-    no_agent_assertFalse_msg("lower-case s1 scene name not found", result == "path not found\n");
-
-    result = agent->ExecuteCommandLine("svs D34.scene.world");
-    no_agent_assertTrue_msg("D34 scene name found: " + result, result == "path not found\n");
-}
-
 void MiscTests::testLocationPredictionRhs()
 {
 	source("predict-location.soar");

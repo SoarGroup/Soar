@@ -54,6 +54,9 @@ public:
 
     TEST(testSubstateWhenDisabledInSubstates, -1);
     void testSubstateWhenDisabledInSubstates();
+
+    TEST(testSvsSceneCaseInsensitivity, -1);
+    void testSvsSceneCaseInsensitivity();
 };
 
 #endif /* SvsTests_cpp */
