@@ -42,6 +42,12 @@ void cliproxy::proxy_use(const std::string& path, const std::vector<std::string>
         std::map<std::string, cliproxy*> c;
 
         partition(path, child, rest);
+
+        if(proxy_uppercase_paths()) {
+            // uppercase child
+            std::transform(child.begin(), child.end(), child.begin(), ::toupper);
+        }
+
         proxy_get_children(c);
         if (has(c, child))
         {
@@ -52,6 +58,7 @@ void cliproxy::proxy_use(const std::string& path, const std::vector<std::string>
             os << "path not found" << std::endl;
         }
 
+        // deallocate copy of children
         std::map<std::string, cliproxy*>::const_iterator i, iend;
         for (i = c.begin(), iend = c.end(); i != iend; ++i)
         {

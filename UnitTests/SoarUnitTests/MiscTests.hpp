@@ -66,6 +66,9 @@ public:
 	TEST(testProductionPrinting, -1)
     void testProductionPrinting();
 
+	TEST(testSvsSceneCaseInsensitivity, -1)
+    void testSvsSceneCaseInsensitivity();
+
 	// If you would like to test the Soar Debugger Spawning, uncomment below.
 	// It may or may not work but should unless you're running without a GUI.
 //	TEST(testSoarDebugger, -1)
