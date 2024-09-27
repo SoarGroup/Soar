@@ -205,7 +205,7 @@ def test_pass_null_to_WME_constructors(agent):
     agent.ExecuteCommandLine("step")
 
     result_string = agent.ExecuteCommandLine("print I2")
-    failure_message = lambda details: f"❌ Pass null to WME constructors: {details}\nResult string was: " + result_string + "\n"
+    failure_message = lambda details: "❌ Pass null to WME constructors: " + details + "\nResult string was: " + result_string + "\n"
     assert "^foo F1" in result_string, failure_message("CreateIdWME('foo') failed")
     assert "^nil F1" in result_string, failure_message("CreateSharedIdWME(None, id_wme) failed")
     assert "^nil N1" in result_string, failure_message("CreateIdWME(None) failed")
