@@ -78,4 +78,8 @@ Development versions are built and uploaded to [`test.pypi.org/p/soar-sml`](http
 These will also upload on manual triggers.
 
 If needed, uploading to pypi can be done manually using the
-[twine CLI tool](https://twine.readthedocs.io/en/stable/#using-twine).
+[twine CLI tool](https://twine.readthedocs.io/en/stable/#using-twine). Download all of the wheels from the CI build artifacts into a directory `dist/`, and run:
+
+```shell
+twine upload dist/*
+```
