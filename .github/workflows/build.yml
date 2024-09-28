@@ -483,7 +483,8 @@ jobs:
   python_push_release:
     name: Publish to pypi.org
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    # TODO: uncomment after releasing once
+    # if: github.event_name == 'release'
     needs: test_python
 
     # We use Trusted Publishing to manage our access to pypi:
