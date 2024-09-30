@@ -1,0 +1,67 @@
+smem --set learning on
+
+# Testing that an LTI alias can be used as both an ID and value 
+#   across different smem --add commands
+
+smem --add {
+   (<a> ^distractor a)
+
+   (@test2 ^name test2 ^info @test2-info ^test @test2)
+
+   (<b> ^distractor b)
+   (<test2> ^distractor c)
+}
+
+smem --add {
+   (<d> ^distractor d)
+
+   (@test2-info ^test-num 2)
+
+   (<e> ^distractor e)
+}
+
+smem --add {
+   (<f> ^distractor g)
+
+   (@test2-info ^category smem)
+
+   (<g> ^distractor h)
+}
+
+sp {propose*retrieve
+  (state <s> ^superstate nil 
+            -^retrieved)
+--> 
+  (<s> ^operator.name retrieve)
+}
+
+sp {apply*retrieve*do*query
+  (state <s> ^operator.name retrieve
+             ^smem.command <sc>)
+-->
+  (<sc> ^query <q>
+        ^depth 2)
+  (<q> ^name test2)
+}
+
+sp {apply*retreve*copy*result
+   (state <s> ^operator.name retrieve
+              ^smem.result.retrieved <test>)
+-->
+   (<s> ^retrieved <test>)
+}
+
+sp {success
+   (state <s> ^retrieved <test>)
+
+   # The value alias and LTI alias were connected correctly!
+   (<test> ^name test2
+           ^info <info>
+           ^test <test>
+          -^distractor)
+   (<info> ^test-num 2
+           ^category smem
+          -^distractor)
+-->
+  (succeeded)
+}

@@ -132,6 +132,16 @@ public:
 
 	TEST(testMultiAgent, -1)
 	void testMultiAgent();
+
+    // Tests for LTI Aliases (LTI string constants in CLI commands)
+	TEST(testLTIAlias_SameRoot, -1)
+	void testLTIAlias_SameRoot();
+
+	TEST(testLTIAlias_RootAndValue, -1)
+	void testLTIAlias_RootAndValue();
+
+	TEST(testLTIAlias_CLICommands, -1)
+	void testLTIAlias_CLICommands();
 };
 
 #endif /* SMemFunctionalTests_cpp */

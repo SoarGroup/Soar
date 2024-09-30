@@ -467,3 +467,36 @@ void SMemFunctionalTests::testISupportWithLearning()
 	std::string result = agent->ExecuteCommandLine("chunk always") ;
 	runTest("smem-i-support", 6);
 }
+
+/***** Tests for LTI Aliases (LTI string constants in CLI commands) *****/
+void SMemFunctionalTests::testLTIAlias_SameRoot()
+{
+	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
+	runTest("testLTIAlias_SameRoot", 2);
+}
+
+void SMemFunctionalTests::testLTIAlias_RootAndValue()
+{
+	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
+	runTest("testLTIAlias_RootAndValue", 2);
+}
+
+void SMemFunctionalTests::testLTIAlias_CLICommands()
+{
+    // Testing to make sure other CLI commands support LTI alises
+    //   (This tests print and query)
+    agent->ExecuteCommandLine("smem --add { (@test1 ^name test1 ^info @info1) (@info1 ^number 1) }");
+
+    std::string result, expected;
+    result = agent->ExecuteCommandLine("print @test1");
+    expected = "(@1 ^info @2 ^name test1 [+0.000])\n";
+    assertTrue_msg(std::string("Did not print correct sme: ") + expected + std::string(" != " + result), result == expected);
+
+    result = agent->ExecuteCommandLine("print @info1");
+    expected = "(@2 ^number 1 [+0.000])\n";
+    assertTrue_msg(std::string("Did not print correct sme: ") + expected + std::string(" != " + result), result == expected);
+
+    result = agent->ExecuteCommandLine("smem --query {(<test> ^info @info1)}");
+    expected = "(@1 ^info @2 ^name test1 [+1.000])\n\nSMem| Query complete.\n";
+    assertTrue_msg(std::string("Did not retrieve correct sme: ") + expected + std::string(" != " + result), result == expected);
+}

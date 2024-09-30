@@ -1,0 +1,55 @@
+smem --set learning on
+
+# Testing that the same LTI alias in two different smem --add commands
+#   connects to the same LTI 
+
+smem --add {
+   (<a> ^distractor a)
+
+   (@test1 ^name test1)
+
+   (<b> ^distractor b)
+   (<test1> ^distractor c)
+}
+
+smem --add {
+   (<d> ^distractor d)
+
+   (@test1 ^test-num 1)
+
+   (<e> ^distractor e)
+   (@TEST1 ^distractor g) # not the same!
+}
+
+sp {propose*retrieve
+  (state <s> ^superstate nil 
+            -^retrieved)
+--> 
+  (<s> ^operator.name retrieve)
+}
+
+sp {apply*retrieve*do*query
+  (state <s> ^operator.name retrieve
+             ^smem.command <sc>)
+-->
+  (<sc> ^query <q>)
+  (<q> ^name test1)
+}
+
+sp {apply*retreve*copy*result
+   (state <s> ^operator.name retrieve
+              ^smem.result.retrieved <test>)
+-->
+   (<s> ^retrieved <test>)
+}
+
+sp {success
+   (state <s> ^retrieved <test>)
+
+   # Both wmes are on the LTI - success!
+   (<test> ^name test1
+           ^test-num 1
+          -^distractor)
+-->
+  (succeeded)
+}
