@@ -63,7 +63,9 @@ void usage(std::string arg0)
     std::cout << "Usage: " << arg0 << " [options]" << std::endl << std::endl;
     std::cout << "OPTIONS:" << std::endl;
     std::cout << "\t" << "-c --category"                    << "\t\t\t\t" << "Run only these categories." << std::endl;
+    std::cout << "\t" << "   --list-categories"             << "\t\t\t" << "Prints a list of all test categories" << std::endl;
     std::cout << "\t" << "-t --test"                        << "\t\t\t\t" << "Run only these tests." << std::endl;
+    std::cout << "\t" << "   --list-tests"                  << "\t\t\t\t" << "Prints a list of all test names" << std::endl;
     std::cout << "\t" << "-E --exclude-category"            << "\t\t\t" << "Exclude this category." << std::endl;
     std::cout << "\t" << "-e --exclude-test"                << "\t\t\t" << "Exclude this test." << std::endl;
     std::cout << "\t" << "-F --expected-failure-category"   << "\t\t" << "Ignore failures in this category." << std::endl;
@@ -78,6 +80,27 @@ void usage(std::string arg0)
     std::cout << std::endl;
 }
 
+void print_categories(const std::vector<TestCategory*>& tests) {
+    std::cout << "Registered Test Categories" << std::endl;
+    for (TestCategory* category : tests) 
+    {
+        std::cout << "> " << category->getCategoryName() << std::endl;
+    }
+}
+
+void print_test_names(const std::vector<TestCategory*>& tests) {
+    std::cout << "Registered Tests" << std::endl;
+    for (TestCategory* category : tests) 
+    {
+        std::cout << "===== " << category->getCategoryName() << " ======" << std::endl;
+        for (TestCategory::TestCategory_test test : category->getTests())
+        {
+            std::cout << "> " << std::get<2>(test) << std::endl;
+        }
+        std::cout << std::endl;
+    }
+}
+
 int main(int argc, char** argv)
 {
     std::vector<std::string> runCategories;
@@ -87,6 +110,8 @@ int main(int argc, char** argv)
     std::vector<std::string> expectedFailureCategories;
     std::vector<std::string> expectedFailureTests;
     bool silent = false;
+    bool list_categories = false;
+    bool list_tests = false;
 
     #if defined(_WIN32) || defined(WIN32)
     // Allows printing emoji ✅
@@ -163,6 +188,14 @@ int main(int argc, char** argv)
             usage(argv[0]);
             exit(0);
         }
+        else if (argument == "--list-categories")
+        {
+            list_categories = true;
+        }
+        else if (argument == "--list-tests")
+        {
+            list_tests = true;
+        }
         else if ((argument == "--silent" || argument == "-s"))
         {
             silent = true;
@@ -207,6 +240,19 @@ int main(int argc, char** argv)
     TEST_DECLARATION(TokenizerTest);
     TEST_DECLARATION(WmaFunctionalTests);
 
+    // Support options to print a list of categories or tests, then exit
+    if (list_categories) 
+    {
+        print_categories(tests);
+        exit(0);
+    }
+
+    if (list_tests) 
+    {
+        print_test_names(tests);
+        exit(0);
+    }
+
     size_t successCount = 0;
     size_t expectedFailureCount = 0;
     size_t testCount = 0;
@@ -222,6 +268,7 @@ int main(int argc, char** argv)
 
     std::ofstream xml("TestResults.xml");
     xml << "<testsuite tests=\"" << tests.size() << "\">" << std::endl;
+
 
     for (TestCategory* category : tests)
     {
