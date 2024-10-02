@@ -102,7 +102,7 @@ std::string GraphViz_Visualizer::get_color_for_id(uint64_t pID)
         {
             uint64_t lIDColor = iter->second;
             assert(lIDColor < m_num_colors);
-            returnStr += m_X11_Colors[iter->second];
+            returnStr += m_X11_Colors[lIDColor];
         } else {
             m_identity_colors[pID] = m_next_color;
             if (++m_next_color == m_num_colors) m_next_color = 1;
