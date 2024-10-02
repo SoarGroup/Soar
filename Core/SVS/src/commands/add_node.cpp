@@ -32,7 +32,7 @@ class add_node_command : public command
 {
     public:
         add_node_command(svs_state* state, Symbol* root)
-            : command(state, root), root(root), scn(state->get_scene()), parent(NULL), first(true)
+            : command(state, root), scn(state->get_scene()), root(root), first(true), parent(NULL)
         {
             si = state->get_svs()->get_soar_interface();
         }

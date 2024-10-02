@@ -20,7 +20,7 @@ namespace cli
     class SoarCommand : public cli::ParserCommand
     {
         public:
-            SoarCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            SoarCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~SoarCommand() {}
             virtual const char* GetString() const
             {

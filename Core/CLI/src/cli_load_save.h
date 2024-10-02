@@ -19,7 +19,7 @@ namespace cli
     class LoadCommand : public cli::ParserCommand
     {
         public:
-            LoadCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            LoadCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~LoadCommand() {}
             virtual const char* GetString() const
             {
@@ -82,7 +82,7 @@ namespace cli
     class SaveCommand : public cli::ParserCommand
     {
         public:
-            SaveCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            SaveCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~SaveCommand() {}
             virtual const char* GetString() const
             {

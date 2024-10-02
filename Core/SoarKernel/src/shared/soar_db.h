@@ -341,11 +341,11 @@ namespace soar_module
 
                 //asm("int $3");
 
-                #ifdef DEBUG_SQL_ERRORS
+                // #ifdef DEBUG_SQL_ERRORS
                     fprintf(stderr, "SoarDB| Unexpected sqlite result!  result = %d. error = %d (%s)\n", sqlite_res, sqlite3_errcode(my_db->get_db()),
                             sqlite3_errmsg(my_db->get_db()));
                     fprintf(stderr, "SoarDB|...in SQL statement: %s\n", sql);
-                #endif
+                // #endif
             }
             virtual bool _prep()
             {

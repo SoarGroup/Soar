@@ -20,7 +20,7 @@ namespace cli
     class WMCommand : public cli::ParserCommand
     {
         public:
-            WMCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            WMCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~WMCommand() {}
             virtual const char* GetString() const
             {

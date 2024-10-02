@@ -20,7 +20,7 @@ namespace cli
     class OutputCommand : public cli::ParserCommand
     {
         public:
-            OutputCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            OutputCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~OutputCommand() {}
             virtual const char* GetString() const
             {

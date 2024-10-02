@@ -780,7 +780,7 @@ template <class T>
 class const_filter : public typed_filter<T>
 {
     public:
-        const_filter(const T& v) : typed_filter<T>(NULL, NULL, NULL), added(false), v(v) {}
+        const_filter(const T& v) : typed_filter<T>(NULL, NULL, NULL), v(v), added(false) {}
 
 
         bool update_outputs()

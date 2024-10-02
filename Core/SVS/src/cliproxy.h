@@ -84,10 +84,10 @@ class memfunc_proxy : public cliproxy
         typedef void (T::*fargc_ptr)(const std::vector<std::string>& args, std::ostream& os) const;
         typedef void (T::*foutc_ptr)(std::ostream& os) const;
 
-        memfunc_proxy(T* p, farg_ptr f)        : p(p), pc(NULL), farg(f),    fout(NULL),  fargc(NULL), foutc(NULL) {}
-        memfunc_proxy(T* p, fout_ptr f)        : p(p), pc(NULL), farg(NULL), fargc(NULL), fout(f),     foutc(NULL) {}
-        memfunc_proxy(const T* p, fargc_ptr f) : p(NULL), pc(p), farg(NULL), fargc(f),    fout(NULL),  foutc(NULL) {}
-        memfunc_proxy(const T* p, foutc_ptr f) : p(NULL), pc(p), farg(NULL), fout(NULL),  fargc(NULL), foutc(f)    {}
+        memfunc_proxy(T* p, farg_ptr f)        : p(p), pc(NULL), farg(f),    fout(NULL), fargc(NULL), foutc(NULL) {}
+        memfunc_proxy(T* p, fout_ptr f)        : p(p), pc(NULL), farg(NULL), fout(f),    fargc(NULL), foutc(NULL) {}
+        memfunc_proxy(const T* p, fargc_ptr f) : p(NULL), pc(p), farg(NULL), fout(NULL), fargc(f),    foutc(NULL) {}
+        memfunc_proxy(const T* p, foutc_ptr f) : p(NULL), pc(p), farg(NULL), fout(NULL), fargc(NULL), foutc(f)    {}
 
         void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os)
         {

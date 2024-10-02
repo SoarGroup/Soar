@@ -20,7 +20,7 @@ namespace cli
     class ExplainCommand : public cli::ParserCommand
     {
         public:
-            ExplainCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ExplainCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~ExplainCommand() {}
             virtual const char* GetString() const
             {

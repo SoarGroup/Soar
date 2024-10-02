@@ -269,13 +269,13 @@ void unserialize(std::map<K, V>& m, std::istream& is)
 class serializer
 {
     public:
-        serializer(std::ostream& os) : delim(true), os(os) {}
-        
+        serializer(std::ostream& os) : os(os), delim(true) {}
+
         ~serializer()
         {
             os.put('\n');
         }
-        
+
         template <typename T>
         serializer& operator<<(const T& obj)
         {
@@ -287,9 +287,9 @@ class serializer
             delim = false;
             return *this;
         }
-        
+
         serializer& operator<<(char c);
-        
+
     private:
         std::ostream& os;
         bool delim;
@@ -299,14 +299,14 @@ class unserializer
 {
     public:
         unserializer(std::istream& is) : is(is) {}
-        
+
         template <typename T>
         unserializer& operator>>(T& obj)
         {
             ::unserialize(obj, is);
             return *this;
         }
-        
+
     private:
         std::istream& is;
 };

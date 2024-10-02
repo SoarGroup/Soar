@@ -29,7 +29,7 @@ svs_interface* make_svs(agent* a)
 
 
 sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
-    : soarint(si), id(ident), parent(parent), node(node)
+    : parent(parent), node(node), id(ident), soarint(si)
 {
     node->listen(this);
     id_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_id());
@@ -164,8 +164,8 @@ void sgwme::delete_tag(const std::string& tag_name)
 
 
 svs_state::svs_state(svs* svsp, Symbol* state, soar_interface* si, scene* scn)
-    : svsp(svsp), parent(NULL), state(state), si(si), level(0),
-      scene_num(-1), scene_num_wme(NULL), scn(scn), scene_link(NULL)
+    : svsp(svsp), level(0), parent(NULL), scn(scn), si(si),
+      state(state), scene_link(NULL), scene_num(-1), scene_num_wme(NULL)
 {
     assert(state->is_top_state());
     state->get_id_name(name);
@@ -173,9 +173,8 @@ svs_state::svs_state(svs* svsp, Symbol* state, soar_interface* si, scene* scn)
 }
 
 svs_state::svs_state(Symbol* state, svs_state* parent)
-    : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
-      level(parent->level + 1), scene_num(-1),
-      scene_num_wme(NULL), scn(NULL), scene_link(NULL)
+    : svsp(parent->svsp), level(parent->level + 1), parent(parent), scn(NULL),
+      si(parent->si), state(state), scene_link(NULL), scene_num(-1), scene_num_wme(NULL)
 {
     assert(state->get_parent_state() == parent->state);
     init();

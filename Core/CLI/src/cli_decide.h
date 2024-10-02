@@ -20,7 +20,7 @@ namespace cli
     class DecideCommand : public cli::ParserCommand
     {
         public:
-            DecideCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            DecideCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~DecideCommand() {}
             virtual const char* GetString() const
             {

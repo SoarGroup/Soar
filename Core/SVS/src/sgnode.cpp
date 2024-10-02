@@ -14,9 +14,9 @@ typedef std::vector<sgnode*>::iterator childiter;
 typedef std::vector<sgnode*>::const_iterator const_childiter;
 
 sgnode::sgnode(const std::string& id, bool group)
-    : parent(NULL), group(group), id(id),
-      trans_dirty(true), shape_dirty(true), bounds_dirty(true),
-      pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
+    : id(id), parent(NULL), group(group),
+      pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0),
+      shape_dirty(true), bounds_dirty(true), trans_dirty(true)
 {
     set_help("Reports information about this node.");
 }

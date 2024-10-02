@@ -21,7 +21,7 @@ class delete_node_command : public command
 {
     public:
         delete_node_command(svs_state* state, Symbol* root)
-            : command(state, root), root(root), scn(state->get_scene()), first(true)
+            : command(state, root), scn(state->get_scene()), root(root), first(true)
         {
             si = state->get_svs()->get_soar_interface();
         }

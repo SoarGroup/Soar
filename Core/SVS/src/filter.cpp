@@ -31,7 +31,7 @@ std::string filter_val_c<sgnode*>::toString() const
  ********/
 
 filter::filter(Symbol* root, soar_interface* si, filter_input* in)
-    : root(root), si(si), status_wme(NULL), input(in)
+    : input(in), si(si), root(root), status_wme(NULL)
 {
     if (input == NULL)
     {

@@ -20,7 +20,7 @@ namespace cli
     class ChunkCommand : public cli::ParserCommand
     {
         public:
-            ChunkCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ChunkCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~ChunkCommand() {}
             virtual const char* GetString() const
             {

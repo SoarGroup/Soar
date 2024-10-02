@@ -20,7 +20,7 @@ namespace cli
     class VisualizeCommand : public cli::ParserCommand
     {
         public:
-            VisualizeCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            VisualizeCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~VisualizeCommand() {}
             virtual const char* GetString() const
             {

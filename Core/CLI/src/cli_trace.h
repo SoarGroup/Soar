@@ -22,7 +22,7 @@ namespace cli
     class TraceCommand : public cli::ParserCommand
     {
         public:
-            TraceCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            TraceCommand(cli::CommandLineInterface& cli) : ParserCommand(),  cli(cli) {}
             virtual ~TraceCommand() {}
             virtual const char* GetString() const
             {

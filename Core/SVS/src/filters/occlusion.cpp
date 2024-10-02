@@ -42,7 +42,7 @@ typedef std::map<const filter_params*, sgnode*> element_map;
 class occlusion_filter : public typed_filter<double> {
 public:
 	occlusion_filter(Symbol *root, soar_interface *si, scene* scn, filter_input *input)
-	: typed_filter<double>(root, si, input), a(0), eye(0), scn(scn)
+	: typed_filter<double>(root, si, input), scn(scn), a(0), eye(0)
 	{}
 
 	~occlusion_filter(){

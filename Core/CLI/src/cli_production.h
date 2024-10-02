@@ -20,7 +20,7 @@ namespace cli
     class ProductionCommand : public cli::ParserCommand
     {
         public:
-            ProductionCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
+            ProductionCommand(cli::CommandLineInterface& cli) : ParserCommand(), cli(cli) {}
             virtual ~ProductionCommand() {}
             virtual const char* GetString() const
             {
