@@ -232,7 +232,7 @@ lnflags = []
 libs = ['Soar']
 
 # TODO: Enabling all the warnings is a WIP! These are very thorough and need to be disabled for
-# parts we don't control, like the SWIG-generated code.
+# parts we don't control, like the SWIG-generated code. See https://github.com/SoarGroup/Soar/issues/347.
 if compiler == "msvc":
     pass
     # show all warnings
@@ -246,7 +246,7 @@ else:
     # cflags.extend(['-Werror'])
 
     # We're starting with something simple. We'll add more as we go.
-    cflags.extend(['-Wunused-variable', '-Wreorder'])
+    cflags.extend(['-Wunused-variable', '-Wreorder', '-Wunused-but-set-variable'])
 
     # warning doesn't exist in Apple's clang
     if sys.platform != 'darwin':
