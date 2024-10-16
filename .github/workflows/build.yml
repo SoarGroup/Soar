@@ -1,7 +1,7 @@
 # Build, test and upload executables to GitHub
 # depends on pre-installed software; see image definitions:
 #  - https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2404-Readme.md
-#  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+#  - https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
 # We use these tools from the runner images: git, gcc/XCode/MSVC, swig, Tcl/Tk on MacOS, pkg-config
 
 # TODO: not building svs_viewer ('Cannot find GL, GLU, not building svs_viewer' and 'Cannot find opengl32, glu32, not building svs_viewer')
@@ -30,8 +30,8 @@ jobs:
         os: [
           # Use v24 beta for now to get newer SWIG; TODO: change back to ubuntu-latest once it points to v24
           ubuntu-24.04,
-          # latest available X86_64 target
-          macos-12,
+          # latest available free X86_64 target
+          macos-13,
           # latest is ARM
           macos-latest,
         ]
@@ -277,8 +277,8 @@ jobs:
         os: [
             # 20.04 to preserve compatibility with testing stage
             ubuntu-20.04,
-            # latest available X86_64 target
-            macos-12,
+            # latest available free X86_64 target
+            macos-13,
             # latest is ARM
             macos-latest,
 
@@ -363,8 +363,8 @@ jobs:
         os:
           # linux target which supports all python versions we want to install for
           - ubuntu-20.04
-            # latest available X86_64 target
-          - macos-12
+            # latest available free X86_64 target
+          - macos-13
             # latest is ARM
           - macos-latest
           - windows-latest
