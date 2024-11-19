@@ -18,7 +18,7 @@
 
 #include "agent.h"
 #include "soarversion.h"
-#include "build_time_date.h"
+// #include "build_time_date.h"
 #include "decider.h"
 #include "decider_settings.h"
 #include "ebc.h"
