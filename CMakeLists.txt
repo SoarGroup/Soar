@@ -40,7 +40,14 @@ file(GLOB_RECURSE HEADERS
   "Core/shared/*.h"
 )
 
-add_compile_definitions(NO_SVS)
+# ASAN only works in debug mode.
+option(ASAN "Enable AddressSanitizer" OFF)
+option(SVS "SVS Enabled" OFF)
+
+if(NOT SVS)
+  message(STATUS "Soar: Disabling SVS")
+  add_compile_definitions(NO_SVS)
+endif()
 
 # Add executable/library target
 add_library(${PROJECT_NAME}_static STATIC ${SOURCES})
@@ -79,11 +86,26 @@ target_compile_features(${PROJECT_NAME}_static PUBLIC
   cxx_std_17
 )
 
-set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*)
-
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  target_compile_options(${PROJECT_NAME}_static PRIVATE -Wall -Wextra -Wpedantic -fsanitize=address -fno-omit-frame-pointer)
-  target_link_options(${PROJECT_NAME}_static PRIVATE -fsanitize=address)
+  target_compile_options(${PROJECT_NAME}_static PRIVATE -Wall -Wpedantic)
+
+  if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    if(ASAN)
+      message(STATUS "Soar: Enabling AddressSanitizer")
+      add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+      add_link_options(-fsanitize=address)
+    endif()
+
+    find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+
+    if(CLANG_TIDY_EXE)
+      set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE} -checks=-*,readability-*)
+    else()
+      message(WARNING "clang-tidy not found!")
+    endif()
+  else()
+    message(WARNING "Debug flags for windows not set up.")
+  endif()
 endif()
 
 # This only sets up the install structure, but no installation happens yet.
@@ -123,4 +145,6 @@ export(EXPORT SoarTargets
 
 add_library(soar::soar_static ALIAS soar_static)
 
+include(CTest)
 add_subdirectory(SoarCLI)
+add_subdirectory(UnitTests)

@@ -32,16 +32,6 @@
 #include <exception>
 #include <sstream>
 
-bool isfile(const char* path)
-{
-#ifdef _WIN32
-	DWORD a = GetFileAttributes(path);
-	return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
-#else
-	struct stat st;
-	return (stat(path, &st) == 0 && !S_ISDIR(st.st_mode));
-#endif
-}
 
 void setCWDToEnv()
 {

@@ -1,5 +1,5 @@
 [requires]
-sqlite3/3.47.0
+sqlite3/3.40.0
 
 [generators]
 CMakeDeps

@@ -521,6 +521,7 @@ build/
 /.pydevproject
 user-env*.*
 build_*.*
+!build_time_date.h
 testCommandToFile-output.soar
 soarversion
 build_time_date
@@ -528,3 +529,4 @@ backup.sqlite
 temp_chunks.soar
 
 CMakeUserPresets.json
+Testing/*
