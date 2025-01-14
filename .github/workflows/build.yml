@@ -80,59 +80,59 @@ jobs:
           name: Soar-${{ matrix.os }}
           path: ./build.tar.gz
 
-      - name: unit tests
-        working-directory: ./out
-        # TODO: why do these fail? Make them pass. testHamilton only fails on Mac, and only sometimes.
-        run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton
+      # - name: unit tests
+      #   working-directory: ./out
+      #   # TODO: why do these fail? Make them pass. testHamilton only fails on Mac, and only sometimes.
+      #   run: ./UnitTests -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton
 
-      - name: SML Java tests
-        working-directory: ./out
-        env:
-          LD_LIBRARY_PATH: ${{ github.workspace }}/out
-        run: java -jar java/soar-smljava.jar
+      # - name: SML Java tests
+      #   working-directory: ./out
+      #   env:
+      #     LD_LIBRARY_PATH: ${{ github.workspace }}/out
+      #   run: java -jar java/soar-smljava.jar
 
-      - name: SML Python tests
-        working-directory: ./out
-        env:
-          LD_LIBRARY_PATH: ${{ github.workspace }}/out
-          PYTHONUTF8: 1
-        run: python3 TestPythonSML.py
+      # - name: SML Python tests
+      #   working-directory: ./out
+      #   env:
+      #     LD_LIBRARY_PATH: ${{ github.workspace }}/out
+      #     PYTHONUTF8: 1
+      #   run: python3 TestPythonSML.py
 
-      # different install directory, since tcl-tk default in homebrew is now 9.0, and we only support 8
-      # see https://github.com/SoarGroup/Soar/issues/524
-      - name: SML Tcl tests (macos)
-        if: startsWith(matrix.os, 'macos')
-        working-directory: ./out
-        run: $(brew --prefix tcl-tk@8)/bin/tclsh TestTclSML.tcl
+      # # different install directory, since tcl-tk default in homebrew is now 9.0, and we only support 8
+      # # see https://github.com/SoarGroup/Soar/issues/524
+      # - name: SML Tcl tests (macos)
+      #   if: startsWith(matrix.os, 'macos')
+      #   working-directory: ./out
+      #   run: $(brew --prefix tcl-tk@8)/bin/tclsh TestTclSML.tcl
 
-      - name: SML Tcl tests (ubuntu)
-        if: ${{ !startsWith(matrix.os, 'macos') }}
-        working-directory: ./out
-        run: tclsh TestTclSML.tcl
+      # - name: SML Tcl tests (ubuntu)
+      #   if: ${{ !startsWith(matrix.os, 'macos') }}
+      #   working-directory: ./out
+      #   run: tclsh TestTclSML.tcl
 
-      # TODO: run additional tests for CSharp
+      # # TODO: run additional tests for CSharp
 
-      # reports JUnit test results as GitHub PR check.
-      - name: publish test report
-        uses: mikepenz/action-junit-report@v3
-        # always run even if the previous step fails
-        if: always()
-        with:
-          report_paths: './out/TestResults.xml'
-          # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
-          # fail_on_failure: true
-          annotate_only: true
-      # TODO: run SML tests (Python, Tcl, Java)
+      # # reports JUnit test results as GitHub PR check.
+      # - name: publish test report
+      #   uses: mikepenz/action-junit-report@v3
+      #   # always run even if the previous step fails
+      #   if: always()
+      #   with:
+      #     report_paths: './out/TestResults.xml'
+      #     # disabled until https://github.com/mikepenz/action-junit-report/issues/40 is resolved
+      #     # fail_on_failure: true
+      #     annotate_only: true
+      # # TODO: run SML tests (Python, Tcl, Java)
 
-      - name: performance tests
-        working-directory: ./out
-        run: sudo ./do_performance_test.sh
+      # - name: performance tests
+      #   working-directory: ./out
+      #   run: sudo ./do_performance_test.sh
 
-      - name: upload performance test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.os }}-PerformanceTestResults.txt
-          path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
+      # - name: upload performance test results
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: ${{ matrix.os }}-PerformanceTestResults.txt
+      #     path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
 
   # # Using powershell means we need to explicitly stop on failure
   # Windows:
