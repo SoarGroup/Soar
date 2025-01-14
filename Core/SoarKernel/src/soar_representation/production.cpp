@@ -390,21 +390,9 @@ production* make_production(agent*          thisAgent,
     production* p;
     action* a;
 
-    if (type != JUSTIFICATION_PRODUCTION_TYPE)
+    for (a = *rhs_top; a != NIL; a = a->next)
     {
-        for (a = *rhs_top; a != NIL; a = a->next)
-        {
-            a->support = UNKNOWN_SUPPORT;
-        }
-    }
-    else
-    {
-        /* --- for justifications --- */
-        /* force run-time o-support (it'll only be done once) */
-        for (a = *rhs_top; a != NIL; a = a->next)
-        {
-            a->support = UNKNOWN_SUPPORT;
-        }
+        a->support = UNKNOWN_SUPPORT;
     }
 
     thisAgent->memoryManager->allocate_with_pool(MP_production, &p);

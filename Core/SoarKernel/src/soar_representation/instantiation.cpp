@@ -673,6 +673,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                 }
             }
         }
+        thisAgent->outputManager->printa_sf(thisAgent, "instantiation: Production %y is %s-supported\n", inst->prod_name, o_support ? "o" : "i");
     }
 
     if (o_support == true)

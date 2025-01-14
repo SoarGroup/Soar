@@ -5861,11 +5861,13 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         if (node->b.p.prod->already_fired)
         {
+            thisAgent->outputManager->printa_sf(thisAgent, "BUG_139:  Justification %y already fired, not firing again.\n", node->b.p.prod->name);
             return;
         }
         else
         {
             node->b.p.prod->already_fired = 1;
+            thisAgent->outputManager->printa_sf(thisAgent, "BUG_139:  Marking justification %y as fired.\n", node->b.p.prod->name);
         }
     }
 #endif
@@ -6126,7 +6128,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             i need to talk to him about it. */
 
         }  /* end if (operator_proposal == false) */
-
+        thisAgent->outputManager->printa_sf(thisAgent, "rete: Production %y is %s-supported\n", node->b.p.prod->name, prod_type);
     }        /* end UNDECLARED_SUPPORT */
 
     if (prod_type == PE_PRODS)
