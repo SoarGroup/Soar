@@ -1,0 +1,3 @@
+pushd justification-bug
+source justification-bug_source.soar
+popd

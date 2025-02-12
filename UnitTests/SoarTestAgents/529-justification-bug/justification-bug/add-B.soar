@@ -1,0 +1,8 @@
+
+sp {justification-bug*propose*add-B
+   (state <s> ^name justification-bug)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name add-B)
+}
+

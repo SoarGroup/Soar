@@ -1,0 +1,17 @@
+
+sp {add-A*propose*add-A-sub
+   (state <s> ^name add-B
+              ^superstate.attribute B)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name add-A-sub)
+}
+
+sp {apply*add-A-sub
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name add-A-sub)
+-->
+   (<ss> ^attribute A
+                    B -)
+}

@@ -1,0 +1,22 @@
+# Count the number of times we set s1.attribute to B;
+# in other words, the number of times that the justification
+# fires.
+
+sp {justification-bug*propose*count-B
+   (state <s> ^name justification-bug
+              ^attribute B
+              ^counted false)
+-->
+   (<s> ^operator <op> + !)
+   (<op> ^name count-B)
+}
+
+sp {apply*count-B
+   (state <s> ^operator <op>
+              ^count <count>
+              ^counted <counted>)
+   (<op> ^name count-B)
+-->
+   (<s> ^count (+ <count> 1) <count> -
+        ^counted <counted> -)
+}

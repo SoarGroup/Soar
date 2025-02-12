@@ -1,0 +1,14 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source add-B.soar
+pushd add-B
+source add-B_source.soar
+popd
+source count-B.soar
+source initialize-justification-bug.soar
+source succeed.soar

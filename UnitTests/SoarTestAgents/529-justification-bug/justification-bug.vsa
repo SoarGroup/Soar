@@ -1,0 +1,16 @@
+VERSION 4
+/justification-bug/justification-bug.dm
+0	ROOT justification-bug justification-bug 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	HLOPERATOR add-B add-B.soar add-B 21 7
+7	6	FOPERATOR elaborations elaborations.soar 8
+8	6	OPERATOR add-A-sub add-A-sub.soar 9
+9	6	OPERATOR add-B-sub add-B-sub.soar 10
+10	0	OPERATOR count-B count-B.soar 13
+11	0	OPERATOR initialize-justification-bug initialize-justification-bug.soar 11
+12	0	OPERATOR succeed succeed.soar 14
+END

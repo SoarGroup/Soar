@@ -1,0 +1,19 @@
+# If duplicates are ignored, the justification will only fire once.
+# We want to see the duplicate *not* ignored, and thus will succeed
+# if see it fire twice.
+sp {justification-bug*propose*succeed
+   (state <s> ^name justification-bug
+              ^count 2)
+-->
+   (<s> ^operator <op> !)
+   (<op> ^name succeed)
+}
+
+sp {apply*succeed
+   (state <s> ^operator <op>)
+   (<op> ^name succeed)
+-->
+   (<s> ^success true)
+   (write |succeeded!|)
+   (succeeded)
+}

@@ -1,0 +1,16 @@
+sp {propose*initialize-justification-bug
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-justification-bug)
+}
+
+sp {apply*initialize-justification-bug
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-justification-bug)
+-->
+   (<s> ^name justification-bug
+        ^attribute A
+        ^count 0)
+}

@@ -1,0 +1,18 @@
+
+sp {add-B*propose*add-B-sub
+   (state <s> ^name add-B)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name add-B-sub)
+}
+
+sp {apply*add-B-sub
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name add-B-sub)
+-->
+   (<ss> ^attribute B
+                    A -
+         ^counted false)
+   (log 1 (crlf) |RHS function in add-B-sub|)
+}

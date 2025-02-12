@@ -1,0 +1,24 @@
+# show justifications being created
+trace -L 2 
+watch 5
+echo //////////////////////////////////////////////////////////////
+echo This is a demonstration of a simple justification bug:
+echo Soar does not re-apply RHS WM changes when they come
+echo from a substate result that would create a duplicate,
+echo o-supported justification.
+echo 
+echo Instructions:
+echo >d 9
+echo Notice that 'RHS function in add-B-sub' has been printed once,
+echo as apply*add-B-sub has fired once.
+echo ">matches -w apply*add-B-sub"
+echo Notice that apply*add-B-sub is going to fire again, removing
+echo S1.attribute A and adding a value of B instead.
+echo >step
+echo You should see this warning:
+echo Ignoring justify5 because it is a duplicate of justify1
+echo Notice also that 'RHS function in add-B-sub' has been printed, 
+echo so the production definitely fired. However:
+echo >p s1
+echo Notice that S1.attribute is still A and not B!
+echo ///////////////////////////////////////////////////////////////

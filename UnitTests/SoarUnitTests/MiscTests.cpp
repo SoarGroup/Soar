@@ -391,6 +391,16 @@ void MiscTests::testLocationPredictionRhs()
     no_agent_assertTrue_msg("compute-closest-intercept failed: " + result, result.find("^predicted-destination southeast-location") != std::string::npos);
 }
 
+
+void MiscTests::test529JustificationBug()
+{
+	std::string testName = "529-justification-bug";
+	runTestSetup(testName);
+	runTestExecute(testName, 11);
+
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
+}
+
 //void MiscTests::testSoarDebugger()
 //{
 //	bool result = agent->SpawnDebugger();

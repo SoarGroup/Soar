@@ -1,0 +1,3 @@
+source elaborations.soar
+source add-A-sub.soar
+source add-B-sub.soar
