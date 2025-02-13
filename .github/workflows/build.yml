@@ -75,7 +75,7 @@ jobs:
       - name: Pack artifacts
         run: tar -czvf build.tar.gz out/
       - name: upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Soar-${{ matrix.os }}
           path: ./build.tar.gz
@@ -121,7 +121,7 @@ jobs:
         run: sudo ./do_performance_test.sh
 
       - name: upload performance test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-PerformanceTestResults.txt
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
@@ -199,7 +199,7 @@ jobs:
         shell: bash
         run: tar -czvf build.tar.gz out/
       - name: upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Soar-Windows
           path: ./build.tar.gz
@@ -263,7 +263,7 @@ jobs:
           }
 
       - name: upload performance test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Windows-PerformanceTestResults.txt
           path: ./out/SoarPerformanceTests/PerformanceTestResults.txt
