@@ -3802,18 +3802,34 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         }
         /* --- duplicate production found --- */
         duplicate_rule = p_node->b.p.prod;
+        // For o-supported justifications, we have to excise the original and
+        // add the duplicate so that the RHS is re-applied
+        // TODO: only excise previous if o-supported
+        if (p->type == JUSTIFICATION_PRODUCTION_TYPE) {
+            if (warn_on_duplicates)
+            {
+                std::stringstream output;
+                output << "\nExcising justification"
+                    << duplicate_rule->name->to_string(true)
+                    << " to replace with duplicate "
+                    << p->name->to_string(true)
+                    << " ";
+                xml_generate_warning(thisAgent, output.str().c_str());
+                thisAgent->outputManager->printa(thisAgent, output.str().c_str());
+            }
+            excise_production_from_rete(thisAgent, duplicate_rule);
+            break;
+        }
         if (warn_on_duplicates)
         {
             std::stringstream output;
             output << "\nIgnoring "
                    << p->name->to_string(true)
                    << " because it is a duplicate of "
-                   << p_node->b.p.prod->name->to_string(true)
+                   << duplicate_rule->name->to_string(true)
                    << " ";
             xml_generate_warning(thisAgent, output.str().c_str());
-
-            thisAgent->outputManager->printa_sf(thisAgent, "Ignoring %y because it is a duplicate of %y\n",
-                               p->name, p_node->b.p.prod->name);
+            thisAgent->outputManager->printa(thisAgent, output.str().c_str());
         }
         thisAgent->symbolManager->deallocate_symbol_list_removing_references(rhs_unbound_vars_for_new_prod);
         return DUPLICATE_PRODUCTION;
