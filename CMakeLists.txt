@@ -153,4 +153,5 @@ add_library(soar::soar_static ALIAS soar_static)
 
 include(CTest)
 add_subdirectory(SoarCLI)
+add_subdirectory(PerformanceTests)
 add_subdirectory(UnitTests)
