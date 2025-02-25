@@ -10,9 +10,11 @@ target_compile_features(${EXEC_NAME} PUBLIC
     cxx_std_17
 )
 
-# install(DIRECTORY TestAgents DESTINATION ${CMAKE_INSTALL_PREFIX}/SoarPerformanceTests/)
-install(DIRECTORY TestAgents/ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/PerformanceTests/)
-install(FILES do_performance_test.sh DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/PerformanceTests/)
+file(COPY ${CMAKE_SOURCE_DIR}/PerformanceTests/TestAgents/ DESTINATION ${CMAKE_BINARY_DIR}/PerformanceTests/)
+file(COPY ${CMAKE_SOURCE_DIR}/PerformanceTests/do_performance_test.sh DESTINATION ${CMAKE_BINARY_DIR}/PerformanceTests/)
 
-install(TARGETS ${EXEC_NAME}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/PerformanceTests/)
+enable_testing()
+
+if(BUILD_TESTING)
+    add_test(NAME test_performance COMMAND do_performance_test.sh)
+endif()

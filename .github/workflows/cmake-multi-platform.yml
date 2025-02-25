@@ -64,15 +64,11 @@ jobs:
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-      # Install is required to add the SoarTestAgents directory to the build directory
-      - name: Install
-        run: sudo cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
       - name: Test
         working-directory:
         # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: sudo ctest --test-dir ${{ steps.strings.outputs.build-output-dir }}/UnitTests/ --output-on-failure  --build-config ${{ matrix.build_type }}
+        run: ctest --test-dir ${{ steps.strings.outputs.build-output-dir }}/UnitTests/ --output-on-failure  --build-config ${{ matrix.build_type }}
 
   build-windows:
     runs-on: ${{ matrix.os }}
@@ -127,10 +123,6 @@ jobs:
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
-      # Install is required to add the SoarTestAgents directory to the build directory
-      - name: Install
-        run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
       - name: Test
         working-directory:

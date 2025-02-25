@@ -37,12 +37,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/SoarUnitTests/wma
 )
 
-install(TARGETS ${PROJECT_NAME} test_external_lib
-    DESTINATION bin)
-
-install(DIRECTORY SoarTestAgents DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)
-
-enable_testing()
+file(COPY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION ${CMAKE_BINARY_DIR}/UnitTests/)
 
 # TESTS FROM CI:
 if(BUILD_TESTING)
