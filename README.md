@@ -26,6 +26,10 @@ Disclaimer: These are worst case tests.  Average performance is probably much hi
 
 ## Development
 
+The Soar project builds with `scons`, but an alternative build based on `CMake`
+is under development. The following section refers to building with scons.
+For building with CMake refer to the [CMake section](#build-with-cmake).
+
 ### Prerequisites
 
 The instructions below are cursory and may be out of date; the most up-to-date instructions for compiling Soar from source will always be the CI build scripts. You can find them [here](.github/workflows/build.yml).
@@ -81,6 +85,19 @@ If you want an optimized build instead:
 ```shell
     python3 scons/scons.py --opt --verbose all
 ```
+
+## Build with CMake
+
+The following prerequisites must be available:
+
+* CMake
+* Python3, including pip for the [conan](https://conan.io) package manager.
+
+Once the dependencies are set up, the project can be built with the
+[`build.sh` script](./build.sh).
+
+The VS Code extension for CMake should also work for triggering `build` and
+`install` commands, adding build problems to the warnings.
 
 ## License
 

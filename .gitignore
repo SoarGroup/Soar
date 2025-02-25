@@ -81,6 +81,7 @@ venv
 .Python
 env/
 build/
+install/
 develop-eggs/
 dist/
 downloads/

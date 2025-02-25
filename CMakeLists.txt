@@ -5,7 +5,13 @@ project(soar
 
 find_package(SQLite3 REQUIRED)
 
-include(GNUInstallDirs)
+option(SYSTEM_INSTALL "Install to system directories" OFF)
+
+if(SYSTEM_INSTALL)
+    include(GNUInstallDirs)
+else()
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Installation Directory" FORCE)
+endif()
 
 # Add your source files
 set(SOURCES

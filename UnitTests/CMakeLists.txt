@@ -40,8 +40,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 install(TARGETS ${PROJECT_NAME} test_external_lib
     DESTINATION bin)
 
-install(DIRECTORY SoarTestAgents DESTINATION ${CMAKE_INSTALL_PREFIX}/SoarTestAgents)
-install(DIRECTORY SoarTestAgents DESTINATION ${CMAKE_BINARY_DIR}/UnitTests)
+install(DIRECTORY SoarTestAgents DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)
 
 enable_testing()
 

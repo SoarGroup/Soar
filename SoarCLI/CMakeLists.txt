@@ -7,4 +7,4 @@ add_executable(soar soar_cli.cpp)
 target_link_libraries(soar soar::soar_static)
 
 install(TARGETS soar
-    DESTINATION bin)
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
