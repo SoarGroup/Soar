@@ -40,6 +40,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 file(COPY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION ${CMAKE_BINARY_DIR}/UnitTests)
 
 # TODO: re-enable SVS tests once we implement the CMake build for it
+# TODO: re-enable testLoadLibrary once we implement the CMake build for it
 # TESTS FROM CI:
 if(BUILD_TESTING)
     add_test(NAME test_ci COMMAND test_soar -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton -E SvsTests)
