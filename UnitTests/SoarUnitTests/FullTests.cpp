@@ -18,6 +18,7 @@
 #include "sml_ClientKernel.h"
 #include "soar_instance.h"
 
+#include <filesystem>
 #include <functional>
 
 bool g_Cancel = false;
@@ -1657,15 +1658,22 @@ void FullTests_Parent::testCommandToFile()
 
     std::string resourceDirectory = SoarHelper::ResourceDirectory;
 
-    if (workingDirectory)
+    if (workingDirectory) {
         resourceDirectory = workingDirectory;
+    } else {
+        // Ensure the resource directory exists
+        std::filesystem::create_directories(resourceDirectory);
+    }
 
-    agent->ExecuteCommandLine(("command-to-file \"" + resourceDirectory + "testCommandToFile-output.soar\" print --rl --full").c_str());
-    no_agent_assertTrue(agent->GetLastCommandLineResult());
-    const char* result = agent->ExecuteCommandLine(("source \"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"").c_str());
-    no_agent_assertTrue(result);
-    const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\n");
-    no_agent_assertTrue(result == resultString);
+    std::string command = "command-to-file \"" + resourceDirectory + "testCommandToFile-output.soar\" print --rl --full";
+    const char* result = agent->ExecuteCommandLine(command.c_str());
+    no_agent_assertTrue_msg(result, agent->GetLastCommandLineResult());
+
+    command = "source \"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"";
+    const char* actual = agent->ExecuteCommandLine(command.c_str());
+    no_agent_assertTrue_msg("source command failed", actual);
+    const std::string expected("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\n");
+    assertEquals(expected, actual);
     remove(("\"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"").c_str());
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
