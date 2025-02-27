@@ -1,6 +1,6 @@
-BUILD_TYPE="Debug" # Possible values are ['Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel']
+BUILD_TYPE="Release" # Possible values are ['Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel']
 
-rm -rf build
+rm -rf build/ install/
 pip install conan
 conan profile detect --force
 conan install . --build=missing --settings=build_type=$BUILD_TYPE
