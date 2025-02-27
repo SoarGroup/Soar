@@ -37,7 +37,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/SoarUnitTests/wma
 )
 
-file(COPY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION ${CMAKE_BINARY_DIR}/UnitTests/)
+file(COPY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION ${CMAKE_BINARY_DIR}/UnitTests)
 
 # TESTS FROM CI:
 if(BUILD_TESTING)
