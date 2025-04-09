@@ -19,13 +19,13 @@ file(GLOB TEST_HEADERS
 )
 
 add_executable(${PROJECT_NAME} TestHarness/testMain.cpp ${TEST_SOURCES})
-target_link_libraries(${PROJECT_NAME} soar_static)
+target_link_libraries(${PROJECT_NAME} soar_lib)
 target_compile_features(${PROJECT_NAME} PUBLIC
     cxx_std_17
 )
 
 add_executable(test_external_lib TestExternalLibraryLib.cpp)
-target_link_libraries(test_external_lib soar_static)
+target_link_libraries(test_external_lib soar_lib)
 target_compile_features(test_external_lib PUBLIC
     cxx_std_17
 )
@@ -51,6 +51,6 @@ if(BUILD_TESTING)
 endif()
 
 if(ENABLE_TEST_COVERAGE)
-    target_compile_options(soar_static PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
-    target_link_options(soar_static PUBLIC -fprofile-arcs -ftest-coverage)
+    target_compile_options(soar_lib PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
+    target_link_options(soar_lib PUBLIC -fprofile-arcs -ftest-coverage)
 endif()

@@ -5,7 +5,7 @@ project(performance_tests
 # The executable is also called PerformanceTests by scons.
 set(EXEC_NAME PerformanceTests)
 add_executable(${EXEC_NAME} PerformanceTests.cpp)
-target_link_libraries(${EXEC_NAME} soar_static)
+target_link_libraries(${EXEC_NAME} soar_lib)
 target_compile_features(${EXEC_NAME} PUBLIC
     cxx_std_17
 )

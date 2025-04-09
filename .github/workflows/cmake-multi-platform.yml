@@ -20,6 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         build_type: [Release, Debug]
+        build_shared_libs: [ON, OFF]
 
     steps:
       - uses: actions/checkout@v4
@@ -57,6 +58,7 @@ jobs:
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
           -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type}}/generators/conan_toolchain.cmake
           -S ${{ github.workspace }}
 
@@ -80,6 +82,7 @@ jobs:
       matrix:
         os: [windows-latest]
         build_type: [Release, Debug]
+        build_shared_libs: [ON, OFF]
 
     steps:
       - uses: actions/checkout@v4
@@ -117,6 +120,7 @@ jobs:
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
           -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.build-output-dir }}\generators\conan_toolchain.cmake
           -S ${{ github.workspace }}
 

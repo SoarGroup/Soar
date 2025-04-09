@@ -56,8 +56,8 @@ if(NOT SVS)
 endif()
 
 # Add executable/library target
-add_library(${PROJECT_NAME}_static STATIC ${SOURCES})
-target_include_directories(${PROJECT_NAME}_static PUBLIC
+add_library(${PROJECT_NAME}_lib ${SOURCES})
+target_include_directories(${PROJECT_NAME}_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/CLI/src>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/ClientSML/src>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/ConnectionSML/src>
@@ -79,21 +79,21 @@ target_include_directories(${PROJECT_NAME}_static PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/shared>
   $<INSTALL_INTERFACE:include/soar>
 )
-target_link_libraries(${PROJECT_NAME}_static PUBLIC SQLite::SQLite3)
+target_link_libraries(${PROJECT_NAME}_lib PUBLIC SQLite::SQLite3)
 
-set_target_properties(${PROJECT_NAME}_static
+set_target_properties(${PROJECT_NAME}_lib
   PROPERTIES
   PUBLIC_HEADER "${HEADERS}")
 
 set(CXX_STANDARD_REQUIRED True)
 
 # Set the C++ standard for this and all downstream targets
-target_compile_features(${PROJECT_NAME}_static PUBLIC
+target_compile_features(${PROJECT_NAME}_lib PUBLIC
   cxx_std_17
 )
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  target_compile_options(${PROJECT_NAME}_static PRIVATE -Wall -Wpedantic)
+  target_compile_options(${PROJECT_NAME}_lib PRIVATE -Wall -Wpedantic)
 
   if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     if(ASAN)
@@ -115,7 +115,7 @@ if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 endif()
 
 # This only sets up the install structure, but no installation happens yet.
-install(TARGETS ${PROJECT_NAME}_static
+install(TARGETS ${PROJECT_NAME}_lib
   EXPORT SoarTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -149,7 +149,7 @@ export(EXPORT SoarTargets
   FILE "${CMAKE_CURRENT_BINARY_DIR}/SoarTargets.cmake"
 )
 
-add_library(soar::soar_static ALIAS soar_static)
+add_library(soar::soar ALIAS soar_lib)
 
 include(CTest)
 add_subdirectory(SoarCLI)
