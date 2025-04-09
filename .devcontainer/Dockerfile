@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/base:jammy
+FROM mcr.microsoft.com/devcontainers/base:noble
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -13,4 +13,6 @@ RUN apt-get update && apt-get install -y \
     swig \
     tcl-dev
 
-RUN pip install scons
+RUN pip install --break-system-packages \
+    scons \
+    conan
