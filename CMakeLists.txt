@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.23)
 project(soar
   VERSION 9.6.3
   LANGUAGES CXX)
@@ -8,9 +8,9 @@ find_package(SQLite3 REQUIRED)
 option(SYSTEM_INSTALL "Install to system directories" OFF)
 
 if(SYSTEM_INSTALL)
-    include(GNUInstallDirs)
+  include(GNUInstallDirs)
 else()
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Installation Directory" FORCE)
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Installation Directory" FORCE)
 endif()
 
 # Add your source files
