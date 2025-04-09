@@ -26,9 +26,33 @@ Disclaimer: These are worst case tests.  Average performance is probably much hi
 
 ## Development
 
-The Soar project builds with `scons`, but an alternative build based on `CMake`
-is under development. The following section refers to building with scons.
-For building with CMake refer to the [CMake section](#build-with-cmake).
+The Soar project builds with `scons`, see [build with scons](#build-with-scons),
+but an alternative build based on `CMake`, see
+[CMake section](#build-with-cmake), is under development.
+
+The following table provides a comparison of supported build features for Soar
+between both build systems.
+
+| Feature                           | Scons | CMake |
+| --------------------------------- | ----- | ----- |
+| Soar dynamic lib                  | ✅     | ✅     |
+| Soar static lib                   | ❌     | ✅     |
+| Soar CLI                          | ✅     | ✅     |
+| Unit tests                        | ✅     | ✅     |
+| Performance tests                 | ✅     | ✅     |
+| Exnternal lib test                | ✅     | ✅     |
+| SVS                               | ✅     | ❌     |
+| SWIG                              | ✅     | ❌     |
+| Python package soar-sml           | ✅     | ❌     |
+| Generate compile commands         | ✅     | ❌     |
+| Release                           | ✅     | ✅     |
+| Debug                             | ✅     | ✅     |
+| Debug with address sanitizer      | ❌     | ✅     |
+| Conan package manager integration | ❌     | ✅     |
+| MacOS                             | ✅     | ✅     |
+| Linux                             | ✅     | ✅     |
+| Windows                           | ✅     | ❌     |
+| Java builds (Debugger)            | ✅     | ❌     |
 
 ### Prerequisites
 
@@ -59,9 +83,13 @@ To compile the extra SML wrapper libs, you will need the following:
 * Tcl (only needed for Tcl wrapper and TclSoarlib)
     * Mac: `brew install tcl-tk`
 
+## Build with Scons
+
 The project supports generating compile_commands.json, which can be used by e.g. VSCode with the C/C++ plugin to provide IntelliSense. To generate this file, run scons with the `cdb` target:
 
+```shell
    python3 scons/scons.py --scu --opt --verbose cdb
+```
 
 Note for M-series Mac users: you'll want to make sure you're compiling for ARM64, not x86_64. Sometimes users have Python installed in compatibility mode, leading to compiles for the wrong architecture. You can check which architecture your Python is built for using this:
 
