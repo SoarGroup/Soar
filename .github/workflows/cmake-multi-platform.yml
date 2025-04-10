@@ -60,6 +60,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
           -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type}}/generators/conan_toolchain.cmake
+          -DBUILD_TESTS=ON
           -S ${{ github.workspace }}
 
       - name: Build
@@ -122,6 +123,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
           -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.build-output-dir }}\generators\conan_toolchain.cmake
+          -DBUILD_TESTS=ON
           -S ${{ github.workspace }}
 
       - name: Build

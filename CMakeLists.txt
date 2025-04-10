@@ -6,6 +6,11 @@ project(soar
 find_package(SQLite3 REQUIRED)
 
 option(SYSTEM_INSTALL "Install to system directories" OFF)
+option(BUILD_TESTS "Build tests" OFF)
+
+# ASAN only works in debug mode.
+option(ASAN "Enable AddressSanitizer" OFF)
+option(SVS "SVS Enabled" OFF)
 
 if(SYSTEM_INSTALL)
   include(GNUInstallDirs)
@@ -45,10 +50,6 @@ file(GLOB_RECURSE HEADERS
   "Core/SoarKernel/src/visualizer/*.h"
   "Core/shared/*.h"
 )
-
-# ASAN only works in debug mode.
-option(ASAN "Enable AddressSanitizer" OFF)
-option(SVS "SVS Enabled" OFF)
 
 if(NOT SVS)
   message(STATUS "Soar: Disabling SVS")
@@ -151,7 +152,10 @@ export(EXPORT SoarTargets
 
 add_library(soar::soar ALIAS soar_lib)
 
-include(CTest)
 add_subdirectory(SoarCLI)
-add_subdirectory(PerformanceTests)
-add_subdirectory(UnitTests)
+
+if(BUILD_TESTS)
+  include(CTest)
+  add_subdirectory(PerformanceTests)
+  add_subdirectory(UnitTests)
+endif()
