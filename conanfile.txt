@@ -1,9 +1,0 @@
-[requires]
-sqlite3/3.40.0
-
-[generators]
-CMakeDeps
-CMakeToolchain
-
-[layout]
-cmake_layout

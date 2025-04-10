@@ -127,6 +127,28 @@ Once the dependencies are set up, the project can be built with the
 The VS Code extension for CMake should also work for triggering `build` and
 `install` commands, adding build problems to the warnings.
 
+The CMake build system for Soar includes a set of build presets setting defaults
+for several build options. See [CMakePrestes.json](./CMakePresets.json) for
+options. Using these presets requires the installation of debug and release
+dependencies by Conan, due to the resolution of dependencies via CMake toolchains:
+
+```shell
+conan install . --build=missing
+conan install . --build=missing -s build_type=Debug
+```
+
+Afterwards, different presets can be built with
+
+```shell
+cmake --preset debug-test
+cmake --build --preset debug-test
+```
+
+The default options are covered through presets `conan-release` and
+`conan-debug` provided by Conan. Extensions, like VS Code CMake tools,
+integrate well with these presets.
+
+
 ## License
 
 Soar is available under the following [LICENSE](https://github.com/SoarGroup/Soar/blob/development/LICENSE.md).  This license is [BSD](http://opensource.org/licenses/BSD-2-Clause)

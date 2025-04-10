@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     gdb \
     libswt-gtk-4-java \
     mono-complete \
+    ninja-build \
     openjdk-11-jdk \
     python3-pip \
     swig \

@@ -1,0 +1,82 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "include": ["./ConanPresets.json"],
+  "configurePresets": [
+    {
+        "name": "release-test",
+        "inherits": "conan-release",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release",
+          "BUILD_TESTS": "ON",
+          "SYSTEM_INSTALL": "OFF",
+          "ASAN": "OFF",
+          "SVS": "OFF"
+        }
+    },
+    {
+        "name": "debug-shared",
+        "inherits": "conan-debug",
+        "cacheVariables": {
+          "BUILD_SHARED_LIBS": "ON",
+          "CMAKE_BUILD_TYPE": "Debug",
+          "BUILD_TESTS": "ON",
+          "SYSTEM_INSTALL": "OFF",
+          "ASAN": "OFF",
+          "SVS": "OFF"
+        }
+    },
+    {
+        "name": "debug-test",
+        "inherits": "conan-debug",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug",
+          "BUILD_TESTS": "ON",
+          "SYSTEM_INSTALL": "OFF",
+          "ASAN": "OFF",
+          "SVS": "OFF"
+        }
+    },
+    {
+        "name": "debug-test-asan",
+        "inherits": "conan-debug",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug",
+          "BUILD_TESTS": "ON",
+          "SYSTEM_INSTALL": "OFF",
+          "ASAN": "ON",
+          "SVS": "OFF"
+        }
+    }
+  ],
+  "buildPresets": [
+    { 
+        "name": "debug-shared",
+        "configurePreset": "debug-shared",
+        "configuration": "debug",
+        "inherits": "conan-debug"
+    },
+    { 
+        "name": "debug-test",
+        "configurePreset": "debug-test",
+        "configuration": "debug",
+        "inherits": "conan-debug"
+    },
+    { 
+        "name": "debug-test-asan",
+        "configurePreset": "debug-test-asan",
+        "configuration": "debug",
+        "inherits": "conan-debug"
+    },
+    { 
+        "name": "release-test",
+        "configurePreset": "release-test",
+        "configuration": "release",
+        "inherits": "conan-release"
+    }
+  ]
+}
