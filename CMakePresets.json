@@ -15,7 +15,8 @@
           "BUILD_TESTS": "ON",
           "SYSTEM_INSTALL": "OFF",
           "ASAN": "OFF",
-          "SVS": "OFF"
+          "SVS": "OFF",
+          "CLI": "ON"
         }
     },
     {
@@ -27,7 +28,8 @@
           "BUILD_TESTS": "ON",
           "SYSTEM_INSTALL": "OFF",
           "ASAN": "OFF",
-          "SVS": "OFF"
+          "SVS": "OFF",
+          "CLI": "ON"
         }
     },
     {
@@ -38,7 +40,8 @@
           "BUILD_TESTS": "ON",
           "SYSTEM_INSTALL": "OFF",
           "ASAN": "OFF",
-          "SVS": "OFF"
+          "SVS": "OFF",
+          "CLI": "ON"
         }
     },
     {
@@ -49,7 +52,8 @@
           "BUILD_TESTS": "ON",
           "SYSTEM_INSTALL": "OFF",
           "ASAN": "ON",
-          "SVS": "OFF"
+          "SVS": "OFF",
+          "CLI": "ON"
         }
     }
   ],

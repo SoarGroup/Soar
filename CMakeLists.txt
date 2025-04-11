@@ -7,6 +7,7 @@ find_package(SQLite3 REQUIRED)
 
 option(SYSTEM_INSTALL "Install to system directories" OFF)
 option(BUILD_TESTS "Build tests" OFF)
+option(CLI "Build Soar command line interface" OFF)
 
 # ASAN only works in debug mode.
 option(ASAN "Enable AddressSanitizer" OFF)
@@ -152,9 +153,13 @@ export(EXPORT SoarTargets
 
 add_library(soar::soar_lib ALIAS soar_lib)
 
-add_subdirectory(SoarCLI)
+if(CLI)
+  message(STATUS "Soar: Building CLI")
+  add_subdirectory(SoarCLI)
+endif()
 
 if(BUILD_TESTS)
+  message(STATUS "Soar: Building tests")
   include(CTest)
   add_subdirectory(PerformanceTests)
   add_subdirectory(UnitTests)
