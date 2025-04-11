@@ -150,7 +150,7 @@ export(EXPORT SoarTargets
   FILE "${CMAKE_CURRENT_BINARY_DIR}/SoarTargets.cmake"
 )
 
-add_library(soar::soar ALIAS soar_lib)
+add_library(soar::soar_lib ALIAS soar_lib)
 
 add_subdirectory(SoarCLI)
 
