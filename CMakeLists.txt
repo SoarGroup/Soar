@@ -5,6 +5,9 @@ project(soar
 
 find_package(SQLite3 REQUIRED)
 
+# All options should be turned off by default to avoid building unnecessary
+# components in downstream projects relying on cmake's FetchContent module.
+# FetchContent does not allow to set options for dependencies.
 option(SYSTEM_INSTALL "Install to system directories" OFF)
 option(BUILD_TESTS "Build tests" OFF)
 option(CLI "Build Soar command line interface" OFF)
@@ -13,7 +16,7 @@ option(CLI "Build Soar command line interface" OFF)
 option(ASAN "Enable AddressSanitizer" OFF)
 option(SVS "SVS Enabled" OFF)
 
-  include(GNUInstallDirs)
+include(GNUInstallDirs)
 
 if(NOT SYSTEM_INSTALL)
   set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Installation Directory" FORCE)
@@ -95,7 +98,9 @@ target_compile_features(${PROJECT_NAME}_lib PUBLIC
 )
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  target_compile_options(${PROJECT_NAME}_lib PRIVATE -Wall -Wpedantic)
+  target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wpedantic>)
+
+  target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:MSVC>: /Wall /permissive>)
 
   if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     if(ASAN)
@@ -112,7 +117,7 @@ if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
       message(WARNING "clang-tidy not found!")
     endif()
   else()
-    message(WARNING "Debug flags for windows not set up.")
+    message(WARNING "ASAN Debug flags for Windows not set up.")
   endif()
 endif()
 
