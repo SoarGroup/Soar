@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 23,
@@ -89,6 +89,90 @@
         "configurePreset": "release-test",
         "configuration": "release",
         "inherits": "conan-release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "debug-test",
+      "displayName": "Test Debug",
+      "configurePreset": "debug-test",
+      "inherits": "conan-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "debug-test-asan",
+      "displayName": "Test Debug",
+      "configurePreset": "debug-test-asan",
+      "inherits": "conan-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "release-test",
+      "displayName": "Test Release",
+      "configurePreset": "release-test",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ],
+  "workflowPresets": [
+    {
+        "name": "debug-test-workflow",
+        "displayName": "Debug Test Workflow",
+        "steps": [
+          {
+            "type": "configure",
+            "name": "debug-test"
+          },
+          {
+            "type": "build",
+            "name": "debug-test"
+          },
+          {
+            "type": "test",
+            "name": "debug-test"
+          }
+        ]
+    },
+    {
+        "name": "debug-test-asan-workflow",
+        "displayName": "Debug Test Workflow",
+        "steps": [
+          {
+            "type": "configure",
+            "name": "debug-test-asan"
+          },
+          {
+            "type": "build",
+            "name": "debug-test-asan"
+          },
+          {
+            "type": "test",
+            "name": "debug-test-asan"
+          }
+        ]
+    },
+    {
+        "name": "release-test-workflow",
+        "displayName": "Release Test Workflow",
+        "steps": [
+          {
+            "type": "configure",
+            "name": "release-test"
+          },
+          {
+            "type": "build",
+            "name": "release-test"
+          },
+          {
+            "type": "test",
+            "name": "release-test"
+          }
+        ]
     }
   ]
 }

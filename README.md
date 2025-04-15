@@ -83,7 +83,7 @@ To compile the extra SML wrapper libs, you will need the following:
 * Tcl (only needed for Tcl wrapper and TclSoarlib)
     * Mac: `brew install tcl-tk`
 
-## Build with Scons
+### Build with Scons
 
 The project supports generating compile_commands.json, which can be used by e.g. VSCode with the C/C++ plugin to provide IntelliSense. To generate this file, run scons with the `cdb` target:
 
@@ -114,7 +114,7 @@ If you want an optimized build instead:
     python3 scons/scons.py --opt --verbose all
 ```
 
-## Build with CMake
+### Build with CMake
 
 The following prerequisites must be available:
 
@@ -144,9 +144,18 @@ cmake --preset debug-test
 cmake --build --preset debug-test
 ```
 
+or predefined workflows can be run with the following command, running
+configure, build and test stages:
+
+```shell
+cmake --workflow --preset debug-test-workflow
+```
+
 The default options are covered through presets `conan-release` and
 `conan-debug` provided by Conan. Extensions, like VS Code CMake tools,
-integrate well with these presets.
+integrate well with these presets. A list of all presets is availble via `cmake
+--list-presets` or for workflows with `cmake --workflow --list-presets`.
+
 
 
 ## License
