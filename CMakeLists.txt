@@ -13,9 +13,9 @@ option(CLI "Build Soar command line interface" OFF)
 option(ASAN "Enable AddressSanitizer" OFF)
 option(SVS "SVS Enabled" OFF)
 
-if(SYSTEM_INSTALL)
   include(GNUInstallDirs)
-else()
+
+if(NOT SYSTEM_INSTALL)
   set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Installation Directory" FORCE)
 endif()
 
