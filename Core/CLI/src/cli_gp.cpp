@@ -29,7 +29,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
 {
     // set up collection of collections of strings segments:
     std::list< valueCollection > topLevel;
-    
+
     bool pipe = false;
     bool inValues = false;
     std::string::size_type pos = 0;            // result of current search
@@ -38,13 +38,13 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
     valueCollection currentValueCollection;
     std::string currentValueToken;
     size_t total = 0;
-    
+
     for (pos = productionString.find_first_of(targets, searchpos); pos != std::string::npos; pos = productionString.find_first_of(targets, searchpos))
     {
         switch (productionString[ pos ])
         {
             case '\\': // skip backslashes
-            
+
                 // if the escaped char is a space, consume the space and drop the backslash
                 if (productionString[ pos + 1 ] == ' ')
                 {
@@ -57,17 +57,17 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                 }
                 searchpos = pos + 2;
                 break;
-                
+
             case '|': // note pipe
                 pipe = !pipe;
-                
+
                 // consume it
                 currentValueToken += productionString.substr(searchpos, (pos - searchpos) + 1);
                 searchpos = pos + 1;
-                
+
                 if (!pipe && inValues)
                 {
-                
+
                     if (currentValueToken.size())   // I don't think this is necessary since it should always contain at least the pipes
                     {
                         // tokenize
@@ -76,7 +76,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                     }
                 }
                 break;
-                
+
             case '[': // start of value list
                 if (!pipe)
                 {
@@ -89,12 +89,12 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                     {
                         return SetError("gp can't have empty value collections");
                     }
-                    
+
                     // we've started a values list, finish and save the previous segment
                     currentValueToken += productionString.substr(searchpos, pos - searchpos);
                     currentValueCollection.push_back(currentValueToken);
                     topLevel.push_back(currentValueCollection);
-                    
+
                     inValues = true;
                     currentValueCollection.clear();
                     currentValueToken.clear();
@@ -104,11 +104,11 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                     // in a pipe, append it
                     currentValueToken += productionString.substr(searchpos, (pos - searchpos) + 1);
                 }
-                
+
                 // consume it
                 searchpos = pos + 1;
                 break;
-                
+
             case ']': // end of values list
                 if (!pipe)
                 {
@@ -121,7 +121,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                     {
                         return SetError("gp production requires space between value lists");
                     }
-                    
+
                     // end of values list
                     currentValueToken += productionString.substr(searchpos, pos - searchpos);
                     if (currentValueToken.size())
@@ -143,7 +143,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                         //std::cout << "total: " << total << std::endl;
                         topLevel.push_back(currentValueCollection);
                     }
-                    
+
                     inValues = false;
                     currentValueCollection.clear();
                 }
@@ -152,11 +152,11 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                     // in a pipe, append it
                     currentValueToken += productionString.substr(searchpos, (pos - searchpos) + 1);
                 }
-                
+
                 // consume it
                 searchpos = pos + 1;
                 break;
-                
+
             case ' ':    // whitespace
             case '\n':
             case '\r':
@@ -170,7 +170,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                     else
                     {
                         currentValueToken += productionString.substr(searchpos, pos - searchpos);
-                        
+
                         if (currentValueToken.size())
                         {
                             // tokenize
@@ -184,11 +184,11 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                     // not in values list, append it
                     currentValueToken += productionString.substr(searchpos, (pos - searchpos) + 1);
                 }
-                
+
                 // consume it
                 searchpos = pos + 1;
                 break;
-                
+
             case '#':
                 if (!pipe)
                 {
@@ -201,13 +201,13 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                     currentValueToken += productionString.substr(searchpos, (pos - searchpos) + 1);
                 }
                 break;
-                
+
             default:
                 assert(false);
                 break;
         }
     }
-    
+
     // grab end of production
     currentValueToken += productionString.substr(searchpos, std::string::npos);
     if (currentValueToken.size())
@@ -217,7 +217,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
         currentValueToken.clear();
     }
     topLevel.push_back(currentValueCollection);
-    
+
     if (pipe || inValues)
     {
         std::ostringstream message;
@@ -237,17 +237,17 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
         message << ".";
         return SetError(message.str());;
     }
-    
+
     if (m_GPMax != 0)
     {
         if (total > m_GPMax)
         {
             std::ostringstream message;
-            message << "gp-max exceeded, current production produces " << total << " productions.";
+            message << "gp-max of " << m_GPMax << "exceeded, current production produces " << total << " productions. You can run 'soar gp-max' to set a higher limit.";
             return SetError(message.str());
         }
     }
-    
+
     // final output
     //std::cout << "****DoGP collections:" << std::endl;
     //for ( std::list< valueCollection >::iterator topIter = topLevel.begin(), endIter = topLevel.end(); topIter != endIter; ++topIter )
@@ -259,7 +259,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
     //    }
     //    std::cout << std::endl;
     //}
-    
+
     // create a collection of iterators
     // two for each value collection in the topLevel collection
     // one that points to the current value, and one that represents the end of the value collection
@@ -272,7 +272,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
         it.end = topIter->end();
         valueIters.push_back(it);
     }
-    
+
     bool finished = false;
     uint64_t prodnum = 1;
     while (!finished)
@@ -293,13 +293,13 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
                 ++prodnum;
             }
         }
-        
-        //std::cout << std::endl << "++++++" << std::endl << generatedProduction <<  std::endl << "++++++" << std::endl;
+
+        // std::cout << std::endl << "++++++" << std::endl << generatedProduction <<  std::endl << "++++++" << std::endl;
         if (!DoSP(generatedProduction))
         {
             return false;
         }
-        
+
         // update value iterators
         finished = true;
         for (std::list< iterTriple >::iterator valueItersIter = valueIters.begin(), endIter = valueIters.end(); valueItersIter != endIter; ++valueItersIter)
@@ -319,7 +319,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
             }
         }
     }
-    
+
     return true;
 }
 
