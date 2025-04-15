@@ -9,6 +9,7 @@
   "configurePresets": [
     {
         "name": "release-test",
+        "displayName": "Release Test Configuration",
         "inherits": "conan-release",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Release",
@@ -21,6 +22,7 @@
     },
     {
         "name": "debug-shared",
+        "displayName": "Debug Shared Configuration",
         "inherits": "conan-debug",
         "cacheVariables": {
           "BUILD_SHARED_LIBS": "ON",
@@ -34,6 +36,7 @@
     },
     {
         "name": "debug-test",
+        "displayName": "Debug Test Configuration",
         "inherits": "conan-debug",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Debug",
@@ -46,6 +49,7 @@
     },
     {
         "name": "debug-test-asan",
+        "displayName": "Debug Test with ASAN",
         "inherits": "conan-debug",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Debug",
@@ -60,24 +64,28 @@
   "buildPresets": [
     { 
         "name": "debug-shared",
+        "displayName": "Build Debug Shared",
         "configurePreset": "debug-shared",
         "configuration": "debug",
         "inherits": "conan-debug"
     },
     { 
         "name": "debug-test",
+        "displayName": "Build Debug Test",
         "configurePreset": "debug-test",
         "configuration": "debug",
         "inherits": "conan-debug"
     },
     { 
         "name": "debug-test-asan",
+        "displayName": "Build Debug Test with ASAN",
         "configurePreset": "debug-test-asan",
         "configuration": "debug",
         "inherits": "conan-debug"
     },
     { 
         "name": "release-test",
+        "displayName": "Build Release Test",
         "configurePreset": "release-test",
         "configuration": "release",
         "inherits": "conan-release"
