@@ -1,3 +1,9 @@
+# This file defines the cmake toolchain with the required dependencies to build
+# Soar. The Python version is used instead of the pure text version since the
+# user presets file must be changed.
+# 
+# Conan documentation: https://docs.conan.io/2/
+
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
 
@@ -20,6 +26,9 @@ class soarRecipe(ConanFile):
         deps = CMakeDeps(self)
         deps.generate()
         tc = CMakeToolchain(self)
+        # The cmake user presets file must be changed from the default,
+        # otherwise cyclic imports with toolchain file CMakePresets.json will
+        # occur
         tc.user_presets_path = 'ConanPresets.json'
         tc.generate()
 
