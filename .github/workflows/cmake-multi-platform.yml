@@ -15,19 +15,12 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         build_type: [Release, Debug]
         build_shared_libs: [ON, OFF]
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set reusable strings
-        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-        id: strings
-        shell: bash
-        run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -43,83 +36,31 @@ jobs:
 
       - name: Install dependencies
         run: |
-          conan install . --build=missing --settings=build_type=${{ matrix.build_type }}
+          conan install . --build=missing -s build_type=Release
+          conan install . --build=missing -s build_type=Debug
 
+      # Usage of cmake workflow feature prevents passing options via -D thereby
+      # creating a lot of duplicated code in the CMakePresets.txt. For this
+      # reason, we use the cmake --preset command.
       - name: Configure CMake
         run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
-          -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type}}/generators/conan_toolchain.cmake
-          -DBUILD_TESTS=ON
-          -S ${{ github.workspace }}
+          cmake --preset ${{ matrix.build_type }}-test -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
 
       - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+        run: cmake --build --preset ${{ matrix.build_type }}-test -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
 
       - name: Test
         working-directory:
-        run: ctest --test-dir ${{ steps.strings.outputs.build-output-dir }}/UnitTests/ --output-on-failure  --build-config ${{ matrix.build_type }}
+        run: ctest --preset ${{ matrix.build_type }}-test
 
       - name: Package
+        if: ${{ matrix.build_type == 'Release'}}
         run: |
-          cpack --config ${{ steps.strings.outputs.build-output-dir }}/CPackConfig.cmake
+          cpack --preset release-test
 
       - name: Upload package
         uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release'}}
         with:
           name: ${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'static' }}
-          path: ${{ steps.strings.outputs.build-output-dir }}/../_CPack_Packages/*
-
-  build-windows:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-
-      matrix:
-        os: [windows-latest]
-        build_type: [Release, Debug]
-        build_shared_libs: [ON, OFF]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set reusable strings
-        id: strings
-        shell: bash
-        run: |
-          echo "build-output-dir=${{ github.workspace }}\build" >> "$GITHUB_OUTPUT"
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.13
-
-      - name: Install Conan
-        run: pip install conan
-
-      - name: Configure Conan
-        run: |
-          conan profile detect
-
-      - name: Install dependencies
-        run: |
-          conan install . --build=missing --settings=build_type=${{ matrix.build_type }}
-
-      - name: Configure CMake Windows
-        run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
-          -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.build-output-dir }}\generators\conan_toolchain.cmake
-          -DBUILD_TESTS=ON
-          -S ${{ github.workspace }}
-
-      - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
-      - name: Test
-        working-directory:
-        run: ctest --test-dir ${{ steps.strings.outputs.build-output-dir }}\UnitTests\ --output-on-failure  --build-config ${{ matrix.build_type }}
+          path: soar-*
