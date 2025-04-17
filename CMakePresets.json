@@ -8,7 +8,7 @@
     "include": ["./ConanPresets.json"],
     "configurePresets": [
         {
-            "name": "release-test",
+            "name": "Release-test",
             "displayName": "Release Test Configuration",
             "inherits": "conan-release",
             "cacheVariables": {
@@ -21,7 +21,7 @@
             }
         },
         {
-            "name": "debug-shared",
+            "name": "Debug-shared",
             "displayName": "Debug Shared Configuration",
             "inherits": "conan-debug",
             "cacheVariables": {
@@ -35,7 +35,7 @@
             }
         },
         {
-            "name": "debug-test",
+            "name": "Debug-test",
             "displayName": "Debug Test Configuration",
             "inherits": "conan-debug",
             "cacheVariables": {
@@ -48,7 +48,7 @@
             }
         },
         {
-            "name": "debug-test-asan",
+            "name": "Debug-test-asan",
             "displayName": "Debug Test with ASAN",
             "inherits": "conan-debug",
             "cacheVariables": {
@@ -63,57 +63,57 @@
     ],
     "buildPresets": [
         {
-            "name": "debug-shared",
+            "name": "Debug-shared",
             "displayName": "Build Debug Shared",
-            "configurePreset": "debug-shared",
+            "configurePreset": "Debug-shared",
             "configuration": "debug",
             "inherits": "conan-debug"
         },
         {
-            "name": "debug-test",
+            "name": "Debug-test",
             "displayName": "Build Debug Test",
-            "configurePreset": "debug-test",
+            "configurePreset": "Debug-test",
             "configuration": "debug",
             "inherits": "conan-debug"
         },
         {
-            "name": "debug-test-asan",
+            "name": "Debug-test-asan",
             "displayName": "Build Debug Test with ASAN",
-            "configurePreset": "debug-test-asan",
+            "configurePreset": "Debug-test-asan",
             "configuration": "debug",
             "inherits": "conan-debug"
         },
         {
-            "name": "release-test",
+            "name": "Release-test",
             "displayName": "Build Release Test",
-            "configurePreset": "release-test",
+            "configurePreset": "Release-test",
             "configuration": "release",
             "inherits": "conan-release"
         }
     ],
     "testPresets": [
         {
-            "name": "debug-test",
+            "name": "Debug-test",
             "displayName": "Test Debug",
-            "configurePreset": "debug-test",
+            "configurePreset": "Debug-test",
             "inherits": "conan-debug",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "debug-test-asan",
+            "name": "Debug-test-asan",
             "displayName": "Test Debug",
-            "configurePreset": "debug-test-asan",
+            "configurePreset": "Debug-test-asan",
             "inherits": "conan-debug",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "release-test",
+            "name": "Release-test",
             "displayName": "Test Release",
-            "configurePreset": "release-test",
+            "configurePreset": "Release-test",
             "output": {
                 "outputOnFailure": true
             }
@@ -121,65 +121,65 @@
     ],
     "packagePresets": [
         {
-            "name": "release-test",
+            "name": "Release-test",
             "displayName": "Package Release Test",
-            "configurePreset": "release-test",
+            "configurePreset": "Release-test",
             "generators": ["TGZ"],
             "packageDirectory": "${sourceDir}/"
         }
     ],
     "workflowPresets": [
         {
-            "name": "debug-test-workflow",
+            "name": "Debug-test-workflow",
             "displayName": "Debug Test Workflow",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "debug-test"
+                    "name": "Debug-test"
                 },
                 {
                     "type": "build",
-                    "name": "debug-test"
+                    "name": "Debug-test"
                 },
                 {
                     "type": "test",
-                    "name": "debug-test"
+                    "name": "Debug-test"
                 }
             ]
         },
         {
-            "name": "debug-test-asan-workflow",
+            "name": "Debug-test-asan-workflow",
             "displayName": "Debug Test Workflow",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "debug-test-asan"
+                    "name": "Debug-test-asan"
                 },
                 {
                     "type": "build",
-                    "name": "debug-test-asan"
+                    "name": "Debug-test-asan"
                 },
                 {
                     "type": "test",
-                    "name": "debug-test-asan"
+                    "name": "Debug-test-asan"
                 }
             ]
         },
         {
-            "name": "release-test-workflow",
+            "name": "Release-test-workflow",
             "displayName": "Release Test Workflow",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "release-test"
+                    "name": "Release-test"
                 },
                 {
                     "type": "build",
-                    "name": "release-test"
+                    "name": "Release-test"
                 },
                 {
                     "type": "test",
-                    "name": "release-test"
+                    "name": "Release-test"
                 }
             ]
         }
