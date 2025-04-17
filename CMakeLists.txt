@@ -169,3 +169,26 @@ if(BUILD_TESTS)
   add_subdirectory(PerformanceTests)
   add_subdirectory(UnitTests)
 endif()
+
+# Include CPack module
+include(CPack)
+
+# Set CPack variables
+set(CPACK_PACKAGE_NAME "Soar")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Soar Cognitive Architecture")
+set(CPACK_PACKAGE_VENDOR "Soar Technology")
+set(CPACK_PACKAGE_CONTACT "support@soartech.com")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_BUILD_TYPE}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-Source")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
+
+# Specify installation directories
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
+
+# Set CPack generators
+if(UNIX AND NOT APPLE)
+    set(CPACK_GENERATOR "TGZ;DEB;RPM")
+elseif(APPLE)
+    set(CPACK_GENERATOR "TGZ")
+endif()
