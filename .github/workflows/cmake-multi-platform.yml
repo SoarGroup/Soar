@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: ["development"]
   workflow_dispatch:
+  release:
+    types:
+      - prereleased
+      - released
+  schedule:
+    # 5AM every Monday, to catch breaks due to changes in dependencies
+    - cron: "0 5 * * 1"
 
 jobs:
   build-nix:
@@ -50,11 +57,10 @@ jobs:
         run: cmake --build --preset ${{ matrix.build_type }}-test -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
 
       - name: Test
-        working-directory:
         run: ctest --preset ${{ matrix.build_type }}-test
 
       - name: Package
-        if: ${{ matrix.build_type == 'Release'}}
+        if: ${{ matrix.build_type == 'Release' &&  (github.event_name == 'release' || github.event_name == 'workflow_dispatch')  }}
         run: |
           cpack --preset Release-test
 
@@ -62,7 +68,7 @@ jobs:
       # incompatibilities between Windows and Linux/Mac
       - name: Upload package
         uses: actions/upload-artifact@v4
-        if: ${{ matrix.build_type == 'Release'}}
+        if: ${{ matrix.build_type == 'Release' &&  (github.event_name == 'release' || github.event_name == 'workflow_dispatch')  }}
         with:
           name: ${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'static' }}
           path: soar-*
