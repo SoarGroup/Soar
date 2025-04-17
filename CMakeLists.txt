@@ -19,7 +19,7 @@ option(SVS "SVS Enabled" OFF)
 include(GNUInstallDirs)
 
 if(NOT SYSTEM_INSTALL)
-  set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Installation Directory" FORCE)
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install")
 endif()
 
 # Add your source files
