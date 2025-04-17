@@ -140,23 +140,21 @@ conan install . --build=missing -s build_type=Debug
 Afterwards, different presets can be built with
 
 ```shell
-cmake --preset debug-test
-cmake --build --preset debug-test
+cmake --preset Debug-test
+cmake --build --preset Debug-test
 ```
 
 or predefined workflows can be run with the following command, running
 configure, build and test stages:
 
 ```shell
-cmake --workflow --preset debug-test-workflow
+cmake --workflow --preset Debug-test-workflow
 ```
 
 The default options are covered through presets `conan-release` and
 `conan-debug` provided by Conan. Extensions, like VS Code CMake tools,
 integrate well with these presets. A list of all presets is availble via `cmake
 --list-presets` or for workflows with `cmake --workflow --list-presets`.
-
-
 
 ## License
 
