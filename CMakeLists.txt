@@ -97,7 +97,7 @@ target_compile_features(${PROJECT_NAME}_lib PUBLIC
   cxx_std_17
 )
 
-if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+if($<CONFIG:DEBUG>)
   target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wpedantic>)
 
   target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:MSVC>: /Wall /permissive>)
@@ -121,6 +121,13 @@ if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
   endif()
 endif()
 
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/soarConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion)
+
 # This only sets up the install structure, but no installation happens yet.
 install(TARGETS ${PROJECT_NAME}_lib
   EXPORT SoarTargets
@@ -142,21 +149,22 @@ install(EXPORT SoarTargets
 include(CMakePackageConfigHelpers)
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
   "${CMAKE_CURRENT_BINARY_DIR}/soarConfig.cmake"
-  INSTALL_DESTINATION "lib/cmake/soar"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/soar"
   NO_SET_AND_CHECK_MACRO
   NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
 
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/soarConfig.cmake
-  DESTINATION lib/cmake/soar
+  ${CMAKE_CURRENT_BINARY_DIR}/soarConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/soar
 )
 
 export(EXPORT SoarTargets
   FILE "${CMAKE_CURRENT_BINARY_DIR}/SoarTargets.cmake"
 )
 
-add_library(soar::soar_lib ALIAS soar_lib)
+add_library(soar::soar_lib ALIAS ${PROJECT_NAME}_lib)
 
 if(CLI)
   message(STATUS "Soar: Building CLI")
