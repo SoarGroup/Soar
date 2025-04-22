@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 project(test_soar
     LANGUAGES CXX)
 
-option(ENABLE_TEST_COVERAGE "Enable test coverage" OFF)
-
 file(GLOB TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/TestHarness/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SoarHelpers/*.cpp
@@ -48,9 +46,4 @@ if(BUILD_TESTING)
     if(SVS)
         add_test(NAME test_svs COMMAND test_soar -c SvsTests)
     endif()
-endif()
-
-if(ENABLE_TEST_COVERAGE)
-    target_compile_options(soar_lib PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
-    target_link_options(soar_lib PUBLIC -fprofile-arcs -ftest-coverage)
 endif()
