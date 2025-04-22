@@ -16,11 +16,12 @@ option(CLI "Build Soar command line interface" OFF)
 option(ASAN "Enable AddressSanitizer" OFF)
 option(SVS "SVS Enabled" OFF)
 
-include(GNUInstallDirs)
-
-if(NOT SYSTEM_INSTALL)
-  set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  message(STATUS "Soar: Insallation prefix not set. Defaulting to ${CMAKE_INSTALL_PREFIX}")
+  set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${CMAKE_CURRENT_SOURCE_DIR}/install")
 endif()
+
+include(GNUInstallDirs)
 
 # Add your source files
 set(SOURCES
