@@ -53,7 +53,6 @@ file(GLOB_RECURSE HEADERS
   "Core/SoarKernel/src/shared/*.h"
   "Core/SoarKernel/src/soar_representation/*.h"
   "Core/SoarKernel/src/visualizer/*.h"
-  "Core/shared/*.h"
 )
 
 if(NOT SVS)
