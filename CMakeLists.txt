@@ -8,7 +8,6 @@ find_package(SQLite3 REQUIRED)
 # All options should be turned off by default to avoid building unnecessary
 # components in downstream projects relying on cmake's FetchContent module.
 # FetchContent does not allow to set options for dependencies.
-option(SYSTEM_INSTALL "Install to system directories" OFF)
 option(BUILD_TESTS "Build tests" OFF)
 option(CLI "Build Soar command line interface" OFF)
 
