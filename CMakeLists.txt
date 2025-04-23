@@ -52,6 +52,13 @@ file(GLOB_RECURSE HEADERS
   "Core/SoarKernel/src/shared/*.h"
   "Core/SoarKernel/src/soar_representation/*.h"
   "Core/SoarKernel/src/visualizer/*.h"
+  "Core/shared/Export.h"
+  "Core/shared/build_time_date.h"
+  "Core/shared/soarversion.h"
+  "Core/shared/tokenizer.h"
+  "Core/shared/soar_TraceNames.h"
+  "Core/shared/portability.h"
+  "Core/shared/portability_posix.h"
 )
 
 if(NOT SVS)
