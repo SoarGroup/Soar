@@ -184,9 +184,6 @@ if(BUILD_TESTS)
   add_subdirectory(UnitTests)
 endif()
 
-# Include CPack module
-include(CPack)
-
 # Set CPack variables
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Soar is a cognitive architecture for developing systems that exhibit intelligent behavior.")
@@ -194,3 +191,12 @@ set(CPACK_PACKAGE_CONTACT "soar-admin@umich.edu")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-Source")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
 set(CPACK_PACKAGE_VENDOR "University of Michigan Soar Group")
+list(APPEND CPACK_GENERATOR "TGZ")
+
+if(UNIX AND NOT APPLE)
+  list(APPEND CPACK_GENERATOR "DEB")
+  set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+endif()
+
+# Include CPack module - MUST be included last!
+include(CPack)

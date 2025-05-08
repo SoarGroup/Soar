@@ -66,9 +66,17 @@ jobs:
 
       # Packages are put in the current working directory to prevent path
       # incompatibilities between Windows and Linux/Mac
-      - name: Upload package
+      - name: Upload tarballs
         uses: actions/upload-artifact@v4
         if: ${{ matrix.build_type == 'Release' &&  (github.event_name == 'release' || github.event_name == 'workflow_dispatch')  }}
         with:
-          name: ${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'static' }}
-          path: soar-*
+          name: ${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'static' }}.tar.gz
+          path: |
+            soar-*.tar.gz
+      - name: Upload Debian
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.build_type == 'Release' &&  (matrix.os == 'ubuntu-latest') && (github.event_name == 'release' || github.event_name == 'workflow_dispatch')  }}
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'static' }}.deb
+          path: |
+            soar-*.deb

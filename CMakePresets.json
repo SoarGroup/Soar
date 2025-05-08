@@ -120,7 +120,6 @@
             "name": "Release-test",
             "displayName": "Package Release Test",
             "configurePreset": "Release-test",
-            "generators": ["TGZ"],
             "packageDirectory": "${sourceDir}/"
         }
     ],
