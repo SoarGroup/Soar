@@ -94,7 +94,8 @@ target_link_libraries(${PROJECT_NAME}_lib PUBLIC SQLite::SQLite3)
 
 set_target_properties(${PROJECT_NAME}_lib
   PROPERTIES
-  PUBLIC_HEADER "${HEADERS}")
+  PUBLIC_HEADER "${HEADERS}"
+  OUTPUT_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 
 set(CXX_STANDARD_REQUIRED True)
 
