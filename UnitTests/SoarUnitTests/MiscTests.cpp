@@ -406,6 +406,15 @@ void MiscTests::test494Cd()
     agent->ExecuteCommandLine("cd");
 }
 
+void MiscTests::test533ConjunctionMultiEq()
+{
+    // one equality test for a const and one for a var should be okay
+    agent->ExecuteCommandLine("sp {foo (state <s> ^foo {bar <att>}) --> }");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+    std::string spMessage = agent->ExecuteCommandLine("print foo");
+    no_agent_assertTrue_msg("Unexpected message returned: " + spMessage, spMessage == "sp {foo\n    (state <s> ^foo {bar <att>})\n    -->\n\n}");
+}
+
 //void MiscTests::testSoarDebugger()
 //{
 //	bool result = agent->SpawnDebugger();

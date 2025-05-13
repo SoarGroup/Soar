@@ -260,7 +260,7 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
             return true;
         }
     }
-    /* --- now add add_test to the conjunct list --- */
+    /* --- now add new_test to the conjunct list --- */
     allocate_cons(thisAgent, &c);
     c->first = new_test;
     c->rest = destination->data.conjunct_list;
@@ -278,10 +278,6 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
 ---------------------------------------------------------------- */
 bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool merge_disjunctions)
 {
-
-    test destination = 0;//, original = 0;
-    cons* c;//, *c_orig;
-
     if (!new_test)
     {
         return false;
@@ -293,7 +289,7 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool mer
         return true;
     }
 
-    destination = *dest_test_address;
+    test destination = *dest_test_address;
 
     /* Since this function is called frequently but merges infrequently, we call a special
      * version of this function instead */
@@ -302,6 +298,7 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool mer
         return add_test_merge_disjunctions(thisAgent, dest_test_address, new_test);
     }
 
+    cons* c;
     if (destination->type != CONJUNCTIVE_TEST)
     {
         destination = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
@@ -318,7 +315,7 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool mer
         destination->eq_test = new_test->eq_test;
     }
 
-    /* --- now add add_test to the conjunct list --- */
+    /* --- now add new_test to the conjunct list --- */
     allocate_cons(thisAgent, &c);
     c->first = new_test;
     c->rest = destination->data.conjunct_list;

@@ -188,9 +188,9 @@ throw SoarAssertionException("Assert: Expected container to be non-zero in size.
 throw SoarAssertionException("Assert: Boolean true check failed.", __FILE__, __LINE__); \
 }
 
-#define no_agent_assertTrue_msg(X, Y) if (!(Y)) \
+#define no_agent_assertTrue_msg(msg, statement) if (!(statement)) \
 { \
-throw SoarAssertionException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+throw SoarAssertionException(std::string("Assert: ") + std::string(msg), __FILE__, __LINE__); \
 }
 
 #define no_agent_assertFalse(Y) if (Y) \

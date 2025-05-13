@@ -2527,7 +2527,7 @@ bool find_var_location(Symbol* var, rete_node_level current_depth,
                        var_location* result)
 {
     void* dummy;
-    if (! var->var->rete_binding_locations)
+    if (!var_is_bound(var))
     {
         return false;
     }

@@ -82,7 +82,7 @@ void usage(std::string arg0)
 
 void print_categories(const std::vector<TestCategory*>& tests) {
     std::cout << "Registered Test Categories" << std::endl;
-    for (TestCategory* category : tests) 
+    for (TestCategory* category : tests)
     {
         std::cout << "> " << category->getCategoryName() << std::endl;
     }
@@ -90,7 +90,7 @@ void print_categories(const std::vector<TestCategory*>& tests) {
 
 void print_test_names(const std::vector<TestCategory*>& tests) {
     std::cout << "Registered Tests" << std::endl;
-    for (TestCategory* category : tests) 
+    for (TestCategory* category : tests)
     {
         std::cout << "===== " << category->getCategoryName() << " ======" << std::endl;
         for (TestCategory::TestCategory_test test : category->getTests())
@@ -241,13 +241,13 @@ int main(int argc, char** argv)
     TEST_DECLARATION(WmaFunctionalTests);
 
     // Support options to print a list of categories or tests, then exit
-    if (list_categories) 
+    if (list_categories)
     {
         print_categories(tests);
         exit(0);
     }
 
-    if (list_tests) 
+    if (list_tests)
     {
         print_test_names(tests);
         exit(0);
@@ -326,7 +326,6 @@ int main(int argc, char** argv)
                     break;
             }
 
-            bool unexpectedFailure = false;
             if (timeElapsed > timeout)
             {
                 std::cout << "Timeout" << std::endl;
@@ -364,7 +363,6 @@ int main(int argc, char** argv)
                 std::cout.flush();
 
                 failedTests.push_back({category->getCategoryName() + "::" + std::get<2>(test), runner->failureMessage + "\n\n" + runner->output.str()});
-                unexpectedFailure = true;
 
                 xml << " >" << std::endl
                     << "\t\t" << "<failure type=\"Test Failure\">" << runner->failureMessage << "</failure>" << std::endl

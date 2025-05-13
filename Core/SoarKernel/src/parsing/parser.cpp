@@ -540,7 +540,7 @@ test parse_simple_test(agent* thisAgent, Lexer* lexer)
 
 test parse_test(agent* thisAgent, Lexer* lexer)
 {
-    test t, temp;
+    test entire_test, current_simple_test;
 
     if (lexer->current_lexeme.type != L_BRACE_LEXEME)
     {
@@ -549,53 +549,54 @@ test parse_test(agent* thisAgent, Lexer* lexer)
     /* --- parse and return conjunctive test --- */
     if (!lexer->get_lexeme()) return NULL;
 
-    t = NULL;
+    entire_test = NULL;
     do
     {
-        temp = parse_simple_test(thisAgent, lexer);
-        if (!temp)
+        current_simple_test = parse_simple_test(thisAgent, lexer);
+        if (!current_simple_test)
         {
-            if (t)
+            if (entire_test)
             {
-                deallocate_test(thisAgent, t);
+                deallocate_test(thisAgent, entire_test);
             }
             return NIL;
         }
-        if (t && t->eq_test && temp->eq_test)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "Soar does not support having two equality tests in one conjunctive test!\n");
-            if (t->type == EQUALITY_TEST && temp->type == EQUALITY_TEST)
-            {
-                if (!t->data.referent->is_constant() && temp->data.referent->is_constant())
-                {
-                    thisAgent->outputManager->printa_sf(thisAgent, "Ignoring %t in favor of constant %t.  Rule semantics may have changed!\n", t, temp);
-                    deallocate_test(thisAgent, t);
-                    t = temp;
-                } else {
-                    thisAgent->outputManager->printa_sf(thisAgent, "Ignoring %t in favor of existing %t.  Rule semantics may have changed!\n", temp, t->eq_test);
-                    deallocate_test(thisAgent, temp);
-                }
-            } else {
-                thisAgent->outputManager->printa_sf(thisAgent, "Ignoring %t in favor of existing %t.  Rule semantics may have changed!\n", temp, t->eq_test);
-                deallocate_test(thisAgent, temp);
-            }
-        } else {
-            add_test(thisAgent, &t, temp);
-        }
+        add_test(thisAgent, &entire_test, current_simple_test);
+        // TODO: NEXT: why do we get here for {const <var>}? Is variable also a test? No it can't be...
+        // if (entire_test && entire_test->eq_test && current_simple_test->eq_test)
+        // {
+        //     thisAgent->outputManager->printa_sf(thisAgent, "Soar does not support having two equality tests in one conjunctive test!\n");
+        //     if (entire_test->type == EQUALITY_TEST && current_simple_test->type == EQUALITY_TEST)
+        //     {
+        //         if (!entire_test->data.referent->is_constant() && current_simple_test->data.referent->is_constant())
+        //         {
+        //             thisAgent->outputManager->printa_sf(thisAgent, "1. Ignoring %t in favor of constant %t.  Rule semantics may have changed!\n", entire_test, current_simple_test);
+        //             deallocate_test(thisAgent, entire_test);
+        //             entire_test = current_simple_test;
+        //         } else {
+        //             thisAgent->outputManager->printa_sf(thisAgent, "2. Ignoring %t in favor of existing %t.  Rule semantics may have changed!\n", current_simple_test, entire_test->eq_test);
+        //             deallocate_test(thisAgent, current_simple_test);
+        //         }
+        //     } else {
+        //         thisAgent->outputManager->printa_sf(thisAgent, "3. Ignoring %t in favor of existing %t.  Rule semantics may have changed!\n", current_simple_test, entire_test->eq_test);
+        //         deallocate_test(thisAgent, current_simple_test);
+        //     }
+        // } else {
+        // }
     }
     while (lexer->current_lexeme.type != R_BRACE_LEXEME);
     if (!lexer->get_lexeme())
     {
-        deallocate_test(thisAgent, t);
+        deallocate_test(thisAgent, entire_test);
         return NULL;
     }
-    if (t->type == CONJUNCTIVE_TEST)
+    if (entire_test->type == CONJUNCTIVE_TEST)
     {
-        t->data.conjunct_list =
-            destructively_reverse_list(t->data.conjunct_list);
+        entire_test->data.conjunct_list =
+            destructively_reverse_list(entire_test->data.conjunct_list);
     }
 
-    return t;
+    return entire_test;
 }
 
 /* =================================================================
