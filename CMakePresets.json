@@ -55,6 +55,18 @@
                 "SVS": "OFF",
                 "CLI": "ON"
             }
+        },
+        {
+            "name": "Release-svs-test",
+            "displayName": "Release with SVS Test Configuration",
+            "inherits": "conan-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "ON",
+                "ASAN": "OFF",
+                "SVS": "ON",
+                "CLI": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -85,6 +97,13 @@
             "configurePreset": "Release-test",
             "configuration": "release",
             "inherits": "conan-release"
+        },
+        {
+            "name": "Release-svs-test",
+            "displayName": "Build Release with SVS Test",
+            "configurePreset": "Release-svs-test",
+            "configuration": "release",
+            "inherits": "conan-release"
         }
     ],
     "testPresets": [
@@ -113,6 +132,14 @@
             "output": {
                 "outputOnFailure": true
             }
+        },
+        {
+            "name": "Release-svs-test",
+            "displayName": "Test Release with SVS",
+            "configurePreset": "Release-svs-test",
+            "output": {
+                "outputOnFailure": true
+            }
         }
     ],
     "packagePresets": [
@@ -120,6 +147,13 @@
             "name": "Release-test",
             "displayName": "Package Release Test",
             "configurePreset": "Release-test",
+            "generators": ["TGZ"],
+            "packageDirectory": "${sourceDir}/"
+        },
+        {
+            "name": "Release-svs-test",
+            "displayName": "Package Release with SVS Test",
+            "configurePreset": "Release-svs-test",
             "generators": ["TGZ"],
             "packageDirectory": "${sourceDir}/"
         }
