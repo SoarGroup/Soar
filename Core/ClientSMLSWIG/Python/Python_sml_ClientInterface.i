@@ -62,13 +62,26 @@
 
 	void PythonProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
 	{
+		if (!pUserData) return;
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 
 		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
-		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, agent, pProdName, pInstantiation);
+		if (!agent) {
+			PyGILState_Release(gstate);
+			return;
+		}
+		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, agent,
+									   pProdName ? pProdName : "",
+									   pInstantiation ? pInstantiation : "");
+		if (!args) {
+			Py_DECREF(agent);
+			PyGILState_Release(gstate);
+			return;
+		}
 		PyObject* result = PyObject_Call(pud->func, args, NULL);
 
 		Py_DECREF(agent);
@@ -84,13 +97,24 @@
 
 	void PythonRunEventCallback(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase)
 	{
+		if (!pUserData) return;
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 
 		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		if (!agent) {
+			PyGILState_Release(gstate);
+			return;
+		}
 		PyObject* args = Py_BuildValue("(iOOi)", id, pud->userdata, agent, phase);
+		if (!args) {
+			Py_DECREF(agent);
+			PyGILState_Release(gstate);
+			return;
+		}
 		PyObject* result = PyObject_Call(pud->func, args, NULL);
 
 		Py_DECREF(agent);
@@ -106,13 +130,15 @@
 
 	void PythonPrintEventCallback(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage)
 	{
+		if (!pUserData) return;
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 
 		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
-		PyObject* args = Py_BuildValue("(iOOs)", id, pud->userdata, agent, pMessage);
+		PyObject* args = Py_BuildValue("(iOOs)", id, pud->userdata, agent, pMessage ? pMessage : "");
 		PyObject* result = PyObject_Call(pud->func, args, NULL);
 
 		Py_DECREF(agent);
@@ -128,6 +154,8 @@
 
 	void PythonXMLEventCallback(sml::smlXMLEventId id, void* pUserData, sml::Agent* pAgent, sml::ClientXML* pXML)
 	{
+		if (!pUserData) return;
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
@@ -152,6 +180,8 @@
 
 	void PythonOutputEventCallback(void* pUserData, sml::Agent* pAgent, char const* commandName, sml::WMElement* pOutputWme)
 	{
+		if (!pUserData) return;
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
@@ -159,7 +189,7 @@
 
 		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
 		PyObject* wme = SWIG_NewInstanceObj((void *) pOutputWme, SWIGTYPE_p_sml__WMElement,0);
-		PyObject* args = Py_BuildValue("(OOsO)", pud->userdata, agent, commandName, wme);
+		PyObject* args = Py_BuildValue("(OOsO)", pud->userdata, agent, commandName ? commandName : "", wme);
         PyObject *result = PyObject_Call(pud->func, args, NULL);
 
         Py_DECREF(agent);
@@ -176,6 +206,8 @@
 
 	void PythonOutputNotificationEventCallback(void* pUserData, sml::Agent* pAgent)
 	{
+		if (!pUserData) return;
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
@@ -198,6 +230,8 @@
 
 	void PythonSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel)
 	{
+		if (!pUserData) return;
+
         std::cerr << "PythonSystemEventCallback1: " << id << std::endl;
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
@@ -221,6 +255,8 @@
 
 	void PythonUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags)
 	{
+		if (!pUserData) return;
+
 	    PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
@@ -243,13 +279,15 @@
 
 	std::string PythonStringEventCallback(sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pData)
 	{
+		if (!pUserData) return "";
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 
 		PyObject* kernel = SWIG_NewInstanceObj((void *) pKernel, SWIGTYPE_p_sml__Kernel,0);
-		PyObject* args = Py_BuildValue("(iOOs)", id, pud->userdata, kernel, pData);
+		PyObject* args = Py_BuildValue("(iOOs)", id, pud->userdata, kernel, pData ? pData : "");
 		PyObject* result = PyObject_Call(pud->func, args, NULL);
 
 		Py_DECREF(kernel);
@@ -257,6 +295,8 @@
 		if(!result) {
 			show_exception_and_exit("string event", id);
 		} else if (!PyUnicode_Check(result)) {
+			Py_DECREF(result);
+			PyGILState_Release(gstate);
 			return "";
 		}
 
@@ -280,6 +320,8 @@
 
 	void PythonAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent)
 	{
+		if (!pUserData) return;
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
@@ -302,13 +344,17 @@
 
 	static std::string PythonRhsEventCallback(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument)
 	{
+		if (!pUserData) return "";
+
 	    PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
 
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 
 		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
-		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, agent, pFunctionName, pArgument);
+		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, agent,
+									   pFunctionName ? pFunctionName : "",
+									   pArgument ? pArgument : "");
 
 		PyObject* result = PyObject_Call(pud->func, args, NULL);
 
@@ -317,7 +363,10 @@
 		if(!result) {
 			show_exception_and_exit("RHS event", id);
 		} else if (!PyUnicode_Check(result)) {
-            // TODO: perhaps log a warning here?
+			std::cerr << "Warning: RHS function '" << (pFunctionName ? pFunctionName : "unknown")
+					  << "' returned non-string result, expected string. Returning empty string." << std::endl;
+			Py_DECREF(result);
+			PyGILState_Release(gstate);
 			return "";
 		}
 
