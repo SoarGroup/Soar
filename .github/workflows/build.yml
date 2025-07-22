@@ -362,6 +362,9 @@ jobs:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
+      - name: Identify dirty files
+        run: git diff-files
+
   test_python:
     name: Test wheel on all python versions
     runs-on: ${{ matrix.os }}
