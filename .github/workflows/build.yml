@@ -363,7 +363,7 @@ jobs:
           path: ./wheelhouse/*.whl
 
       - name: Identify dirty files
-        run: git diff-files
+        run: git diff
 
   test_python:
     name: Test wheel on all python versions
