@@ -174,15 +174,15 @@ jobs:
       - name: download, build and install Tcl
         if: steps.tcl-msvc-cache.outputs.cache-hit != 'true'
         run: |
-          (new-object System.Net.WebClient).DownloadFile($Env:TCL_DOWNLOAD_URL, 'tcl901-src.zip')
+          (new-object System.Net.WebClient).DownloadFile($Env:TCL_DOWNLOAD_URL, 'tcl902-src.zip')
           # check that the file hash matches what we expect
-          $FileHash = Get-FileHash -Algorithm SHA1 tcl901-src.zip
+          $FileHash = Get-FileHash -Algorithm SHA1 tcl902-src.zip
           if ( $FileHash.Hash -ne $Env:EXPECTED_TCL_HASH ) {
              throw "tcl download hash mismatch: $($FileHash.Hash)"
           }
 
-          Expand-Archive tcl901-src.zip -DestinationPath tcl901-src
-          cd tcl901-src\tcl9.0.1\win
+          Expand-Archive tcl902-src.zip -DestinationPath tcl902-src
+          cd tcl902-src\tcl9.0.2\win
           # Build and install must be done in two steps: https://core.tcl-lang.org/tcl/tktview/aa6e42643794ecff2f3508d7306c702baf4f4c0f
           nmake /D /f makefile.vc INSTALLDIR="$env:TCL_HOME"
           if ($lastexitcode -ne 0) {
