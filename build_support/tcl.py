@@ -58,7 +58,7 @@ def __get_tcl_from_local_dir_mac(env, local_compiled_dir=None, tcl_suffix=None) 
 
 def __get_brew_tcl_install_info_mac(env) -> Optional[TclInstallInfo]:
     # TODO: Tcl 9 is out! Can we support that? https://github.com/SoarGroup/Soar/issues/524
-    prefix_candidates = ["tcl-tk@8", "tcl-tk"]
+    prefix_candidates = ["tcl-tk"]
 
     for prefix in prefix_candidates:
         print(f"{env['INDENT']}Checking brew prefix {prefix}...")
@@ -75,8 +75,8 @@ def __get_brew_tcl_install_info_mac(env) -> Optional[TclInstallInfo]:
             home=home_dir,
             lib_dir=home_dir / "lib",
             include_dir=home_dir / "include" / "tcl-tk",
-            dyn_lib_name="libtcl8.6.dylib",
-            include_lib_name="tcl8.6",
+            dyn_lib_name="libtcl9.0.dylib",
+            include_lib_name="tcl9.0",
         )
         valid, msg = install_info.is_valid()
         if not valid:
