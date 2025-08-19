@@ -78,7 +78,7 @@ lib = clone.Install(lib_install_dir, tclstep2)
 
 # Create the pkgIndex file for the SWIG dll (so tcl can find it with a package require command)
 if sys.platform == 'win32':
-    tcl_shname = 'tclsh90t'
+    tcl_shname = 'tclsh90'
     tcl_pkgindex_name = 'pkgIndex_win.tcl'
 elif sys.platform == 'darwin':
     tcl_shname = 'tclsh9.0'

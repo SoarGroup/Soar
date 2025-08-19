@@ -244,7 +244,7 @@ jobs:
         run: |
           # have to add Tcl to path every time we use it (permanent add is possible but troublesome)
           $env:path += "$env:path;$env:TCL_HOME\bin"
-          tclsh90t TestTclSML.tcl
+          tclsh90 TestTclSML.tcl
           if ($lastexitcode -ne 0) {
              throw "TestTclSML.tcl exit code: $lastexitcode"
           }

@@ -129,7 +129,7 @@ def __prepare_for_compiling_with_tcl_linux(env, tcl_path_override, tcl_suffix):
     indent = env["INDENT"]
 
     if tcl_suffix is None:
-        tcl_suffix = "t"
+        tcl_suffix = ""#"t"
 
     if tcl_path_override:
         home_dir = Path(tcl_path_override)
@@ -163,7 +163,7 @@ def __prepare_for_compiling_with_tcl_windows(env, tcl_path_override, tcl_suffix)
     indent = env["INDENT"]
 
     if tcl_suffix is None:
-        tcl_suffix = "t"
+        tcl_suffix = ""#"t"
 
     if tcl_path_override:
         home_dir = Path(tcl_path_override)
