@@ -140,8 +140,8 @@ jobs:
     runs-on: [windows-latest]
     env:
       TCL_HOME: c:\progra~1\tcl
-      TCL_DOWNLOAD_URL: https://master.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip
-      EXPECTED_TCL_HASH: 8999fcafab2d85473280e0bf6e390480496dfd53
+      TCL_DOWNLOAD_URL: https://master.dl.sourceforge.net/project/tcl/Tcl/9.0.2/tcl902-src.zip
+      EXPECTED_TCL_HASH: a82b493e7811c5cf79dd8c2a6d0c4d9436d2a6c1
 
     steps:
       - name: Checkout
@@ -174,15 +174,15 @@ jobs:
       - name: download, build and install Tcl
         if: steps.tcl-msvc-cache.outputs.cache-hit != 'true'
         run: |
-          (new-object System.Net.WebClient).DownloadFile($Env:TCL_DOWNLOAD_URL, 'tcl8613-src.zip')
+          (new-object System.Net.WebClient).DownloadFile($Env:TCL_DOWNLOAD_URL, 'tcl901-src.zip')
           # check that the file hash matches what we expect
-          $FileHash = Get-FileHash -Algorithm SHA1 tcl8613-src.zip
+          $FileHash = Get-FileHash -Algorithm SHA1 tcl901-src.zip
           if ( $FileHash.Hash -ne $Env:EXPECTED_TCL_HASH ) {
              throw "tcl download hash mismatch: $($FileHash.Hash)"
           }
 
-          Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
-          cd tcl8613-src\tcl8.6.13\win
+          Expand-Archive tcl901-src.zip -DestinationPath tcl901-src
+          cd tcl901-src\tcl9.0.1\win
           # Build and install must be done in two steps: https://core.tcl-lang.org/tcl/tktview/aa6e42643794ecff2f3508d7306c702baf4f4c0f
           nmake /D /f makefile.vc INSTALLDIR="$env:TCL_HOME"
           if ($lastexitcode -ne 0) {
@@ -244,7 +244,7 @@ jobs:
         run: |
           # have to add Tcl to path every time we use it (permanent add is possible but troublesome)
           $env:path += "$env:path;$env:TCL_HOME\bin"
-          tclsh86t TestTclSML.tcl
+          tclsh90t TestTclSML.tcl
           if ($lastexitcode -ne 0) {
              throw "TestTclSML.tcl exit code: $lastexitcode"
           }

@@ -46,8 +46,8 @@ def __get_tcl_from_local_dir_mac(env, local_compiled_dir=None, tcl_suffix=None) 
         home=home_dir,
         lib_dir=home_dir / "lib",
         include_dir=home_dir / "include",
-        dyn_lib_name=f"libtcl8.6{tcl_suffix}.dylib",
-        include_lib_name=f"tcl8.6{tcl_suffix}",
+        dyn_lib_name=f"libtcl9.0{tcl_suffix}.dylib",
+        include_lib_name=f"tcl9.0{tcl_suffix}",
     )
     valid, msg = install_info.is_valid()
     if not valid:
@@ -137,8 +137,8 @@ def __prepare_for_compiling_with_tcl_linux(env, tcl_path_override, tcl_suffix):
             home=home_dir,
             lib_dir=home_dir / "lib",
             include_dir=home_dir / "include",
-            dyn_lib_name=f"tcl86{tcl_suffix}.so",
-            include_lib_name=f"tcl86{tcl_suffix}",
+            dyn_lib_name=f"tcl90{tcl_suffix}.so",
+            include_lib_name=f"tcl90{tcl_suffix}",
         )
         valid, msg = install_info.is_valid()
         if not valid:
@@ -174,8 +174,8 @@ def __prepare_for_compiling_with_tcl_windows(env, tcl_path_override, tcl_suffix)
         home=home_dir,
         lib_dir=home_dir / "lib",
         include_dir=home_dir / "include",
-        dyn_lib_name=f"tcl86{tcl_suffix}.lib",
-        include_lib_name=f"tcl86{tcl_suffix}",
+        dyn_lib_name=f"tcl90{tcl_suffix}.lib",
+        include_lib_name=f"tcl90{tcl_suffix}",
     )
     valid, msg = install_info.is_valid()
     if not valid:
