@@ -103,7 +103,7 @@ jobs:
       - name: SML Tcl tests (macos)
         if: startsWith(matrix.os, 'macos')
         working-directory: ./out
-        run: $(brew --prefix tcl-tk@8)/bin/tclsh TestTclSML.tcl
+        run: $(brew --prefix tcl-tk)/bin/tclsh TestTclSML.tcl
 
       - name: SML Tcl tests (ubuntu)
         if: ${{ !startsWith(matrix.os, 'macos') }}
