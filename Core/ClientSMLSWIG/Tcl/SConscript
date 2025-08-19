@@ -81,7 +81,7 @@ if sys.platform == 'win32':
     tcl_shname = 'tclsh86t'
     tcl_pkgindex_name = 'pkgIndex_win.tcl'
 elif sys.platform == 'darwin':
-    tcl_shname = 'tclsh8.6'
+    tcl_shname = 'tclsh9.0'
     tcl_pkgindex_name = 'pkgIndex_mac.tcl'
 else:
     tcl_shname = 'tclsh8.6'
