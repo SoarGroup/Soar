@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup tcl (macos)
         if: startsWith(matrix.os, 'macos')
-        run: brew install tcl-tk@8
+        run: brew install tcl-tk
 
       - name: Setup SWIG (macos)
         if: startsWith(matrix.os, 'macos')
