@@ -141,7 +141,7 @@ AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT
 AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR', help='Directory to store intermediate (object) files. Defaults to "build".')
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable; defaults to same executable used to run SCons')
 AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Path to Tcl installation (ActiveTcl or otherwise)')
-AddOption('--tcl-suffix', action='store', type='string', dest='tcl_suffix', default="t", nargs=1, help='Tcl binary suffix (defaults to "t", which is used to indicate full threading support in the standard Tcl build)')
+AddOption('--tcl-suffix', action='store', type='string', dest='tcl_suffix', default="", nargs=1, help='Tcl binary suffix (defaults to "", for trying Tcl 9.0)')
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Enable debug build.  Disables compiler optimizations, includes debugging symbols, debug trace statements and assertions')
 AddOption('--opt', action='store_false', dest='dbg', default=False, help='Enable optimized build.  Enables compiler optimizations, removes debugging symbols, debug trace statements and assertions')
