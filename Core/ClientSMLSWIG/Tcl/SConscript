@@ -53,7 +53,9 @@ includes = ' '.join(f'-I{d}' for d in include_dirs)
 nosvs = ''
 if GetOption('nosvs'):
   nosvs = '-DNO_SVS'
-wrap_cmd = f'swig -o {swig_tcl_wrapper_cpp.abspath} -c++ -tcl -pkgversion {clone["SOAR_VERSION"]} -Wall {includes} {nosvs} {swig_tcl_interface}'
+# Add TCL 9 version flags to help SWIG generate compatible code
+tcl9_flags = '-DTCL_MAJOR_VERSION=9 -DTCL_MINOR_VERSION=0'
+wrap_cmd = f'swig -o {swig_tcl_wrapper_cpp.abspath} -c++ -tcl -pkgversion {clone["SOAR_VERSION"]} -Wall {includes} {nosvs} {tcl9_flags} {swig_tcl_interface}'
 
 
 # Set up SWIGScanner to find dependencies for .i file
