@@ -10,6 +10,25 @@
 // So I am including the header file for smlEventId here and forward declaring Agent
 // Even though the header for smlEventId is included later, this isn't harmful
 %{
+	#include <tcl.h>
+	
+	// TCL 9 compatibility shims for SWIG
+	#if TCL_MAJOR_VERSION >= 9
+		// Handle Tcl_Size vs int differences
+		#if !defined(SWIG_TCL_SIZE_COMPAT)
+		#define SWIG_TCL_SIZE_COMPAT
+		// Map new TCL 9 types back to what SWIG expects
+		typedef int swig_tcl_size_t;
+		// Provide compatibility wrappers for changed function signatures
+		#define SWIG_TCL_DECL static
+		#endif
+		
+		// Handle ClientData -> void* change
+		#ifndef ClientData
+		#define ClientData void*
+		#endif
+	#endif
+
 	// helps quell warnings
 	#ifndef unused
 	#define unused(x) (void)(x)
