@@ -2,6 +2,8 @@
 #include "ebc_repair.h"
 #include "ebc_timers.h"
 
+#include <set>
+
 #include "agent.h"
 #include "condition.h"
 #include "explanation_memory.h"
@@ -377,5 +379,79 @@ void Explanation_Based_Chunker::report_reorder_errors(ProdReorderFailureType reo
     {
         thisAgent->stop_soar = true;
         thisAgent->reason_for_stopping = message;
+    }
+}
+
+void Explanation_Based_Chunker::remove_contradictory_tests_from_chunk()
+{
+    /* Simple hack to remove contradictory tests like {<> <o6> <o6>} from chunks.
+     * For every conjunctive condition, if we find both a positive test and a 
+     * negative test for the same symbol, we remove only the negative test. */
+    
+    condition* cond;
+    for (cond = m_lhs; cond != NIL; cond = cond->next)
+    {
+        if (cond->type == POSITIVE_CONDITION)
+        {
+            // Check each field of the condition for conjunctive tests
+            if (cond->data.tests.id_test && cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
+            {
+                remove_contradictory_tests_from_test(&(cond->data.tests.id_test));
+            }
+            if (cond->data.tests.attr_test && cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
+            {
+                remove_contradictory_tests_from_test(&(cond->data.tests.attr_test));
+            }
+            if (cond->data.tests.value_test && cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
+            {
+                remove_contradictory_tests_from_test(&(cond->data.tests.value_test));
+            }
+        }
+    }
+}
+
+void Explanation_Based_Chunker::remove_contradictory_tests_from_test(test* conjunctive_test)
+{
+    /* Walk through a conjunctive test and remove negative tests that contradict positive tests */
+    
+    if (!conjunctive_test || !(*conjunctive_test) || (*conjunctive_test)->type != CONJUNCTIVE_TEST)
+        return;
+        
+    cons* c;
+    test subtest;
+    
+    // First pass: collect all symbols that have positive (equality) tests
+    std::set<Symbol*> positive_symbols;
+    for (c = (*conjunctive_test)->data.conjunct_list; c != NIL; c = c->rest)
+    {
+        subtest = static_cast<test>(c->first);
+        if (subtest->type == EQUALITY_TEST)
+        {
+            positive_symbols.insert(subtest->data.referent);
+        }
+    }
+    
+    // Second pass: remove negative tests for symbols that also have positive tests
+    cons** current_cons_ptr = &((*conjunctive_test)->data.conjunct_list);
+    while (*current_cons_ptr != NIL)
+    {
+        subtest = static_cast<test>((*current_cons_ptr)->first);
+        
+        if (subtest->type == NOT_EQUAL_TEST && 
+            positive_symbols.find(subtest->data.referent) != positive_symbols.end())
+        {
+            // This is a contradictory negative test - remove it
+            cons* cons_to_remove = *current_cons_ptr;
+            *current_cons_ptr = (*current_cons_ptr)->rest;
+            
+            // Deallocate the test and cons cell
+            deallocate_test(thisAgent, subtest);
+            free_cons(thisAgent, cons_to_remove);
+        }
+        else
+        {
+            // Keep this test, move to next
+            current_cons_ptr = &((*current_cons_ptr)->rest);
+        }
     }
 }
