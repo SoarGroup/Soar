@@ -431,16 +431,18 @@ void Explanation_Based_Chunker::remove_contradictory_tests_from_test(test* conju
         }
     }
     
-    // Second pass: remove negative tests for symbols that also have positive tests
+    // Second pass: remove contradictory tests for symbols that also have positive tests
     cons** current_cons_ptr = &((*conjunctive_test)->data.conjunct_list);
     while (*current_cons_ptr != NIL)
     {
         subtest = static_cast<test>((*current_cons_ptr)->first);
         
-        if (subtest->type == NOT_EQUAL_TEST && 
+        if ((subtest->type == NOT_EQUAL_TEST || 
+             subtest->type == LESS_TEST || 
+             subtest->type == GREATER_TEST) &&
             positive_symbols.find(subtest->data.referent) != positive_symbols.end())
         {
-            // This is a contradictory negative test - remove it
+            // This is a contradictory test - remove it (!=, <, or > with same symbol as positive test)
             cons* cons_to_remove = *current_cons_ptr;
             *current_cons_ptr = (*current_cons_ptr)->rest;
             
