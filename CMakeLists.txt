@@ -94,7 +94,10 @@ target_link_libraries(${PROJECT_NAME}_lib PUBLIC SQLite::SQLite3)
 
 # Define appropriate macros for static vs shared library builds
 target_compile_definitions(${PROJECT_NAME}_lib PUBLIC 
-  $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:STATIC_LINKED>
+  $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:STATIC_LINKED>)
+
+# Define _USRDLL only when building the library itself, not when consuming it
+target_compile_definitions(${PROJECT_NAME}_lib PRIVATE
   $<$<BOOL:${BUILD_SHARED_LIBS}>:_USRDLL>)
 
 # Add /bigobj for MSVC to handle large amalgamation files
