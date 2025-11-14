@@ -100,6 +100,14 @@ target_compile_definitions(${PROJECT_NAME}_lib PUBLIC
 # Add /bigobj for MSVC to handle large amalgamation files
 target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
 
+# For Windows static builds, ensure consumers can link all symbols from static library
+if(WIN32 AND NOT BUILD_SHARED_LIBS)
+  # Force consumers to use WHOLEARCHIVE when linking to this static library
+  target_link_options(${PROJECT_NAME}_lib INTERFACE
+    $<$<CXX_COMPILER_ID:MSVC>:/WHOLEARCHIVE:$<TARGET_FILE:${PROJECT_NAME}_lib>>
+  )
+endif()
+
 set_target_properties(${PROJECT_NAME}_lib
   PROPERTIES
   PUBLIC_HEADER "${HEADERS}"
