@@ -30,8 +30,6 @@ ignorearray=("./Core/SVS/ccd"
               "./Core/shared/msvc"
               "./Core/shared/pcreposix.h"
               "./Core/shared/portability_windows.h"
-              "./Core/SoarKernel/sqlite"
-              "./Core/SoarKernel/src/sqlite3.h"
               "./Core/ConnectionSML/src/thread_OSspecific.cpp"
               "./Core/ConnectionSML/src/thread_OSspecific.h"
               "./Core/CLI/src/cli_help.cpp")

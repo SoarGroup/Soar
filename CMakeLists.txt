@@ -92,6 +92,10 @@ target_include_directories(${PROJECT_NAME}_lib PUBLIC
 )
 target_link_libraries(${PROJECT_NAME}_lib PUBLIC SQLite::SQLite3)
 
+
+# Add /bigobj for MSVC to handle large amalgamation files
+target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
+
 set_target_properties(${PROJECT_NAME}_lib
   PROPERTIES
   PUBLIC_HEADER "${HEADERS}"
@@ -107,7 +111,7 @@ target_compile_features(${PROJECT_NAME}_lib PUBLIC
 if($<CONFIG:DEBUG>)
   target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wpedantic>)
 
-  target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:MSVC>: /Wall /permissive>)
+  target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:MSVC>: /Wall /permissive /bigobj>)
 
   if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     if(ASAN)

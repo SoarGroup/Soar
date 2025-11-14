@@ -10,7 +10,7 @@
 
 #include "kernel.h"
 #include "soar_module.h"
-#include "sqlite3.h"
+#include <sqlite3.h>
 
 #include <list>
 #include <cassert>
