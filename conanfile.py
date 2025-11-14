@@ -30,6 +30,9 @@ class soarRecipe(ConanFile):
         # otherwise cyclic imports with toolchain file CMakePresets.json will
         # occur
         tc.user_presets_path = 'ConanPresets.json'
+        # Force Ninja generator on all platforms for consistent preset structure
+        if self.settings.os == "Windows":
+            tc.generator = "Ninja"
         tc.generate()
 
     def build(self):
