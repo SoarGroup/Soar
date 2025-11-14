@@ -46,6 +46,10 @@ jobs:
           conan install . --build=missing -s build_type=Release
           conan install . --build=missing -s build_type=Debug
 
+      - name: Setup MSVC (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
       # Usage of cmake workflow feature prevents passing options via -D thereby
       # creating a lot of duplicated code in the CMakePresets.txt. For this
       # reason, we use the cmake --preset command.
