@@ -92,6 +92,9 @@ target_include_directories(${PROJECT_NAME}_lib PUBLIC
 )
 target_link_libraries(${PROJECT_NAME}_lib PUBLIC SQLite::SQLite3)
 
+# Define STATIC_LINKED when building static libraries to disable DLL import/export
+target_compile_definitions(${PROJECT_NAME}_lib PUBLIC 
+  $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:STATIC_LINKED>)
 
 # Add /bigobj for MSVC to handle large amalgamation files
 target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
