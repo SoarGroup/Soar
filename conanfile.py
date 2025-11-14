@@ -17,7 +17,8 @@ class soarRecipe(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
     def layout(self):
-        cmake_layout(self)
+        # Ensure build type separation on all platforms
+        cmake_layout(self, build_folder=f"build/{self.settings.build_type}")
     
     def requirements(self):
         self.requires("sqlite3/3.40.0")
