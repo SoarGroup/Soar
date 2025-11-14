@@ -58,7 +58,7 @@ jobs:
           cmake --preset ${{ matrix.build_type }}-test -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
 
       - name: Build
-        run: cmake --build --preset ${{ matrix.build_type }}-test -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
+        run: cmake --build --preset ${{ matrix.build_type }}-test
 
       - name: Test
         run: ctest --preset ${{ matrix.build_type }}-test
