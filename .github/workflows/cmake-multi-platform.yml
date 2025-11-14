@@ -43,7 +43,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          conan install . --build=missing -s build_type=${{ matrix.build_type }}
+          conan install . --build=missing -s build_type=Release
+          conan install . --build=missing -s build_type=Debug
 
       # Usage of cmake workflow feature prevents passing options via -D thereby
       # creating a lot of duplicated code in the CMakePresets.txt. For this
