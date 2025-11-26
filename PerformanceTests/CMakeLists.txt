@@ -16,5 +16,8 @@ file(COPY ${CMAKE_SOURCE_DIR}/PerformanceTests/do_performance_test.sh DESTINATIO
 enable_testing()
 
 if(BUILD_TESTING)
-    add_test(NAME test_performance COMMAND do_performance_test.sh)
+    # Disable performance test on Windows (shell script not compatible)
+    if(NOT WIN32)
+        add_test(NAME test_performance COMMAND do_performance_test.sh)
+    endif()
 endif()

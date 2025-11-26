@@ -22,6 +22,16 @@ target_compile_features(${PROJECT_NAME} PUBLIC
     cxx_std_17
 )
 
+# Build the external library as a shared library (for LoadExternalLibrary to load)
+add_library(TestExternalLibraryLib SHARED TestExternalLibraryLib.cpp)
+target_link_libraries(TestExternalLibraryLib soar_lib)
+target_compile_features(TestExternalLibraryLib PUBLIC
+    cxx_std_17
+)
+# Make sure the library exports symbols properly on Windows
+target_compile_definitions(TestExternalLibraryLib PRIVATE RHS_EXPORT=__declspec\(dllexport\))
+
+# Also build as executable (for standalone testing)
 add_executable(test_external_lib TestExternalLibraryLib.cpp)
 target_link_libraries(test_external_lib soar_lib)
 target_compile_features(test_external_lib PUBLIC
@@ -37,11 +47,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 file(COPY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION ${CMAKE_BINARY_DIR}/UnitTests)
 
-# TODO: re-enable SVS tests once we implement the CMake build for it
-# TODO: re-enable testLoadLibrary once we implement the CMake build for it
+# TODO: re-enable testSmemArithmetic and testHamilton once we implement the CMake build for them
 # TESTS FROM CI:
 if(BUILD_TESTING)
-    add_test(NAME test_ci COMMAND test_soar -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton -E SvsTests)
+    add_test(NAME test_ci COMMAND test_soar -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testSmemArithmetic -f testHamilton -E SvsTests)
 
     if(SVS)
         add_test(NAME test_svs COMMAND test_soar -c SvsTests)

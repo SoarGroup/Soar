@@ -382,7 +382,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             std::map<uint64_t, double> edge_weight_update_map_for_children;
             std::list<smem_edge_update*>* edge_updates = &(smem_edges_to_update->find(lti_id)->second);
             uint64_t time;
-            uint64_t previous_time;
+            uint64_t previous_time = 0;  // Initialize to avoid runtime check failure
             double total_touches = 0;
             std::list<smem_edge_update*>::iterator edge_begin_it = edge_updates->begin();
             std::list<smem_edge_update*>::iterator edge_it;
