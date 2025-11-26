@@ -534,3 +534,5 @@ Testing/*
 ConanPresets.json
 _CPack*/*
 soar-*
+Soar.code-workspace
+.github/copilot-instructions.md
