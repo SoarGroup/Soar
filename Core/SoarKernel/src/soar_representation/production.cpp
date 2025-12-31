@@ -465,6 +465,14 @@ void deallocate_production(agent* thisAgent, production* prod)
         }
     }
 
+    for (instantiation* lInst = thisAgent->newly_created_instantiations; lInst != NULL; lInst = lInst->next)
+    {
+        if (lInst->prod == prod)
+        {
+            lInst->prod = NULL;
+        }
+    }
+
     deallocate_action_list(thisAgent, prod->action_list);
     thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
     thisAgent->symbolManager->symbol_remove_ref(&prod->name);

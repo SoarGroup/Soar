@@ -730,7 +730,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
 
     /* We don't add a prod refcount for justifications so that they will be
      * excised when they no longer match or no longer have preferences asserted */
-    if (inst->prod && (inst->prod->type != JUSTIFICATION_PRODUCTION_TYPE))
+    if (inst->prod)
     {
         production_add_ref(inst->prod);
     }
@@ -1379,15 +1379,21 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
         if (lDelInst->prod)
         {
-            if ((lDelInst->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (lDelInst->prod->reference_count == 1))
+            if (lDelInst->prod->type == JUSTIFICATION_PRODUCTION_TYPE)
             {
-                /* We are about to remove a justification that has not been excised from the rete.
-                 * Normally, justifications are excised as soon as they don't have any matches in
-                 * rete.cpp.  But if removing the preference will remove the instantiation, we
-                 * need to excise it now so that the rete doesn't try to later */
-                excise_production(thisAgent, lDelInst->prod, false, true);
-            } else if (lDelInst->prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
-                production_remove_ref(thisAgent, lDelInst->prod);
+                /* If the reference count is 2, it means that the only references are the
+                 * one from the creation of the production and the one from this instantiation.
+                 * We should excise the production now.
+                 * We also check p_node to make sure it hasn't already been excised (e.g. by rete). */
+                if ((lDelInst->prod->reference_count == 2) && (lDelInst->prod->p_node != NIL))
+                {
+                    excise_production(thisAgent, lDelInst->prod, false, true);
+                    production_remove_ref(thisAgent, lDelInst->prod);
+                }
+                else
+                {
+                    production_remove_ref(thisAgent, lDelInst->prod);
+                }
             }
         }
 

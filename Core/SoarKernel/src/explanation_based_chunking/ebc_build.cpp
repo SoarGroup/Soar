@@ -959,7 +959,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     m_chunk_inst->prod_name                         = m_prod->name;
     thisAgent->symbolManager->symbol_add_ref(m_chunk_inst->prod_name);
     m_chunk_inst->in_ms                             = true;                     /* set true for now, we'll find out later... */
-    m_chunk_inst->in_newly_created                  = true;
+    m_chunk_inst->in_newly_created                  = false;
     m_chunk_inst->tested_local_negation             = m_tested_local_negation;
     m_chunk_inst->creates_deep_copy                 = m_tested_deep_copy;
     m_chunk_inst->tested_LTM                        = m_tested_ltm_recall;
@@ -977,6 +977,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         /* --- Add chunk instantiation to list of newly generated instantiations --- */
         m_chunk_inst->next = (*new_inst_list);
         (*new_inst_list) = m_chunk_inst;
+        m_chunk_inst->in_newly_created = true;  /* Set flag AFTER adding to list */
 
         /* Clean up.  (Now that m_chunk_inst s on the list of insts to be asserted, we
          *             set it to to null because so that clean_up() won't delete it.) */

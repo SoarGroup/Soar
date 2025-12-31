@@ -3089,8 +3089,15 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
         {
             if (inst->in_ms)
             {
-                inst->in_newly_created = false;
-                insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
+                if (inst->prod)
+                {
+                    inst->in_newly_created = false;
+                    insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
+                }
+                else
+                {
+                    inst->in_ms = false;
+                }
             }
 
             if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
