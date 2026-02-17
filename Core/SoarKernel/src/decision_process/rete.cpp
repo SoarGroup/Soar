@@ -1515,8 +1515,7 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
 #endif
                 epmem_return_id_pool::iterator p = thisAgent->EpMem->epmem_id_replacement->find(w->epmem_id);
                 epmem_id_pool* return_pool = p->second.first;
-                epmem_node_id stored_child_n_id = p->second.second;
-                return_pool->push_front(std::make_pair(stored_child_n_id, w->epmem_id));
+                return_pool->push_front(std::make_pair(p->second.second, w->epmem_id));
                 thisAgent->EpMem->epmem_id_replacement->erase(p);
             }
         }

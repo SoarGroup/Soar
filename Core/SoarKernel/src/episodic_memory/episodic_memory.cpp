@@ -15,6 +15,7 @@
 #include "working_memory_activation.h"
 #include "xml.h"
 
+#include <cassert>
 #include <cmath>
 #include <algorithm>
 #include <iterator>
@@ -2599,7 +2600,7 @@ inline void _epmem_store_level(agent* thisAgent,
                         if (r_p->second->my_id != EPMEM_NODEID_BAD)
                         {
                             (*w_p)->epmem_id = r_p->second->my_id;
-                            (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = {my_id_repo2, (*w_p)->value->id->epmem_id};
+                            (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = std::make_pair(my_id_repo2, (*w_p)->value->id->epmem_id);
 #ifdef DEBUG_EPMEM_WME_ADD
                             fprintf(stderr, "   Assigning id from existing pool: %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
@@ -2637,7 +2638,7 @@ inline void _epmem_store_level(agent* thisAgent,
                                     {
                                         (*w_p)->epmem_id = pool_p->second;
                                         (*my_id_repo)->erase(pool_p);
-                                        (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = {(*my_id_repo), (*w_p)->value->id->epmem_id};
+                                        (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = std::make_pair((*my_id_repo), (*w_p)->value->id->epmem_id);
 #ifdef DEBUG_EPMEM_WME_ADD
                                         fprintf(stderr, "   Assigning id from existing pool: %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
@@ -2704,7 +2705,7 @@ inline void _epmem_store_level(agent* thisAgent,
 #endif
                                     (*w_p)->value->id->epmem_valid = thisAgent->EpMem->epmem_validation;
                                     (*my_id_repo)->erase(pool_p);
-                                    (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = {(*my_id_repo), (*w_p)->value->id->epmem_id};
+                                    (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = std::make_pair((*my_id_repo), (*w_p)->value->id->epmem_id);
 
 #ifdef DEBUG_EPMEM_WME_ADD
                                     fprintf(stderr, "   Assigning id from existing pool %d.\n", (unsigned int)(*w_p)->epmem_id);
@@ -2775,61 +2776,6 @@ inline void _epmem_store_level(agent* thisAgent,
 
                 fprintf(stderr, "   Adding wme to epmem_wmes_identifier table.\n");
 #endif
-                // DEBUG: dump state before insert to diagnose UNIQUE constraint violations
-                if (parent_id == 25 && (*w_p)->value->id->epmem_id == 21)
-                {
-                    fprintf(stderr, "EPMEM_INSERT_DEBUG: About to INSERT into epmem_wmes_identifier: parent_n_id=%lld, attribute_s_id=%lld, child_n_id=%lld\n",
-                            (long long)parent_id, (long long)my_hash, (long long)(*w_p)->value->id->epmem_id);
-                    fprintf(stderr, "  value_known_apriori=%d, wme_attr=%s, value_sym=%s\n",
-                            (int)value_known_apriori,
-                            (*w_p)->attr->to_string(true),
-                            (*w_p)->value->to_string(true));
-                    fprintf(stderr, "  value->epmem_valid=%llu, current_validation=%llu\n",
-                            (unsigned long long)(*w_p)->value->id->epmem_valid,
-                            (unsigned long long)thisAgent->EpMem->epmem_validation);
-                    fprintf(stderr, "  value->LTI_ID=%llu, value->is_lti()=%d\n",
-                            (unsigned long long)(*w_p)->value->id->LTI_ID,
-                            (int)(*w_p)->value->id->is_lti());
-                    // Check pool state for this parent+attr
-                    epmem_hashed_id_pool* hp_debug = (*thisAgent->EpMem->epmem_id_repository)[parent_id];
-                    if (hp_debug)
-                    {
-                        epmem_id_pool* ip_debug = (*hp_debug)[my_hash];
-                        if (ip_debug)
-                        {
-                            fprintf(stderr, "  Pool (parent=%lld, attr=%lld) has %zu entries: ",
-                                    (long long)parent_id, (long long)my_hash, ip_debug->size());
-                            for (auto& pp : *ip_debug)
-                            {
-                                fprintf(stderr, "{child=%lld, wi=%lld} ", (long long)pp.first, (long long)pp.second);
-                            }
-                            fprintf(stderr, "\n");
-                        }
-                        else
-                        {
-                            fprintf(stderr, "  Pool (parent=%lld, attr=%lld) is NULL\n",
-                                    (long long)parent_id, (long long)my_hash);
-                        }
-                    }
-                    else
-                    {
-                        fprintf(stderr, "  No hashed_id_pool for parent=%lld\n", (long long)parent_id);
-                    }
-                    // Check ref counts for the child_n_id
-                    epmem_node_id child_debug = (*w_p)->value->id->epmem_id;
-                    if (thisAgent->EpMem->epmem_id_ref_counts->count(child_debug))
-                    {
-                        fprintf(stderr, "  ref_counts[%lld] size=%zu\n",
-                                (long long)child_debug,
-                                (*thisAgent->EpMem->epmem_id_ref_counts)[child_debug]->size());
-                    }
-                    else
-                    {
-                        fprintf(stderr, "  ref_counts[%lld] does not exist\n", (long long)child_debug);
-                    }
-                    // Check if this row already exists via a direct query
-                    fprintf(stderr, "  time_counter=%lld\n", (long long)time_counter);
-                }
 
                 thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier->bind_int(1, parent_id);
                 thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier->bind_int(2, my_hash);
@@ -2842,7 +2788,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 fprintf(stderr, "   Incrementing and setting wme id to %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
                 // replace the epmem_id and wme id in the right place
-                (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = {my_id_repo2, (*w_p)->value->id->epmem_id};
+                (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = std::make_pair(my_id_repo2, (*w_p)->value->id->epmem_id);
 
                 // new nodes definitely start
                 epmem_edge.emplace((*w_p)->epmem_id,static_cast<int64_t>((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));
@@ -2973,6 +2919,44 @@ inline void _epmem_store_level(agent* thisAgent,
                 }
             }
         }
+    }
+
+    // FIX 2: Bump ref counts for excluded WMEs whose values are new identifiers.
+    // These WMEs were skipped by the main loop's exclusion 'continue', so
+    // they are invisible to the ref counting system — never incremented,
+    // never decremented.  The problem is the ref count set is then too small:
+    // when OTHER (non-excluded) WMEs referencing the same identifier are
+    // removed, the set drains to 0 while the excluded WME still holds the
+    // identifier alive in working memory, causing premature invalidation.
+    for (w_p = w_b; w_p != w_e; w_p++)
+    {
+        if ((*w_p)->value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+            continue;
+        if (!thisAgent->EpMem->epmem_params->exclusions->in_set((*w_p)->attr))
+            continue;
+        if (new_identifiers.find((*w_p)->value) == new_identifiers.end())
+            continue;
+        // Value was a new identifier this episode.  The excluded WME missed
+        // the catch-up at the end of the main loop.
+        epmem_node_id child_id = (*w_p)->value->id->epmem_id;
+        if (child_id == EPMEM_NODEID_BAD)
+            continue;
+        if (thisAgent->EpMem->epmem_id_ref_counts->count(child_id) == 0)
+        {
+#ifdef USE_MEM_POOL_ALLOCATORS
+            (*thisAgent->EpMem->epmem_id_ref_counts)[child_id] =
+                new epmem_wme_set(std::less<wme*>(),
+                    soar_module::soar_memory_pool_allocator<wme*>(thisAgent));
+#else
+            (*thisAgent->EpMem->epmem_id_ref_counts)[child_id] = new epmem_wme_set();
+#endif
+        }
+        (*thisAgent->EpMem->epmem_id_ref_counts)[child_id]->insert((*w_p));
+#ifdef DEBUG_EPMEM_WME_ADD
+        fprintf(stderr, "   FIX2: bumped ref_count for excluded WME value %d; new ref_count is %d\n",
+                (unsigned int)child_id,
+                (unsigned int)(*thisAgent->EpMem->epmem_id_ref_counts)[child_id]->size());
+#endif
     }
 }
 
