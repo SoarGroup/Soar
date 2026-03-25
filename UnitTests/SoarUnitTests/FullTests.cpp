@@ -1759,13 +1759,14 @@ void FullTests_Parent::testRLConvergenceGate()
 {
     loadProductions(SoarHelper::GetResource("testRLConvergenceGate.soar"));
 
-    m_pKernel->RunAllAgentsForever();
+    agent->RunSelf(50, sml::sml_DECIDE);
 
     {
         sml::ClientAnalyzedXML response;
         agent->ExecuteCommandLineXML("stats", &response);
-        // Agent should complete all 50 decisions and halt
-        no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 50);
+        int decisions = response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1);
+        // Agent should complete all 50 decisions
+        no_agent_assertTrue(decisions == 50);
     }
 }
 
@@ -1775,12 +1776,13 @@ void FullTests_Parent::testRLConvergenceGateOff()
 {
     loadProductions(SoarHelper::GetResource("testRLConvergenceGateOff.soar"));
 
-    m_pKernel->RunAllAgentsForever();
+    agent->RunSelf(50, sml::sml_DECIDE);
 
     {
         sml::ClientAnalyzedXML response;
         agent->ExecuteCommandLineXML("stats", &response);
-        no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 50);
+        int decisions = response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1);
+        no_agent_assertTrue(decisions == 50);
     }
 }
 
