@@ -1752,11 +1752,14 @@ void FullTests_Parent::testOutputLinkRemovalOrdering()
 }
 
 // RL convergence gate: verify agent runs to completion with chunk-gate enabled.
-// The agent has two RL operators with consistent reward, EMA decay of 0.5,
-// threshold of 0.1. After ~4 decisions with stable Q-values, the gate should
-// fire, forcing greedy selection for the remainder of the run.
+// After ~4 decisions with stable Q-values (EMA decay=0.5, threshold=0.1),
+// the gate fires, forcing greedy selection for the remainder of the run.
 void FullTests_Parent::testRLConvergenceGate()
 {
+    agent->ExecuteCommandLine("rl --set chunk-gate on");
+    agent->ExecuteCommandLine("rl --set chunk-gate-ema-decay 0.5");
+    agent->ExecuteCommandLine("rl --set chunk-gate-threshold 0.1");
+
     loadProductions(SoarHelper::GetResource("testRLConvergenceGate.soar"));
 
     agent->RunSelf(50, sml::sml_DECIDE);
@@ -1765,7 +1768,6 @@ void FullTests_Parent::testRLConvergenceGate()
         sml::ClientAnalyzedXML response;
         agent->ExecuteCommandLineXML("stats", &response);
         int decisions = response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1);
-        // Agent should complete all 50 decisions
         no_agent_assertTrue(decisions == 50);
     }
 }
@@ -1774,7 +1776,7 @@ void FullTests_Parent::testRLConvergenceGate()
 // confirming no regression in existing RL behavior.
 void FullTests_Parent::testRLConvergenceGateOff()
 {
-    loadProductions(SoarHelper::GetResource("testRLConvergenceGateOff.soar"));
+    loadProductions(SoarHelper::GetResource("testRLConvergenceGate.soar"));
 
     agent->RunSelf(50, sml::sml_DECIDE);
 

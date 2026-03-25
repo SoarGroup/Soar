@@ -1,14 +1,10 @@
-# Tests the RL convergence gate feature.
+# RL convergence gate test agent.
 # Two operators, consistent reward favoring op-a.
-# With chunk-gate on and fast EMA decay, the convergence gate
-# forces greedy selection after Q-values stabilize.
+# RL params (chunk-gate, etc.) are set by the C++ test before sourcing.
 
 srand 42
 
 rl --set learning on
-rl --set chunk-gate on
-rl --set chunk-gate-ema-decay 0.5
-rl --set chunk-gate-threshold 0.1
 
 sp {init
    (state <s> ^superstate nil)
