@@ -345,6 +345,8 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
         soar_module::sqlite_statement* consolidate_evict_episode;
         soar_module::sqlite_statement* consolidate_evict_constant_point;
         soar_module::sqlite_statement* consolidate_evict_identifier_point;
+        soar_module::sqlite_statement* consolidate_evict_constant_range;
+        soar_module::sqlite_statement* consolidate_evict_identifier_range;
 
         //
 

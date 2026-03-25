@@ -1208,6 +1208,14 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
             "DELETE FROM epmem_wmes_identifier_point WHERE episode_id < ?");
     add(consolidate_evict_identifier_point);
 
+    consolidate_evict_constant_range = new soar_module::sqlite_statement(new_db,
+            "DELETE FROM epmem_wmes_constant_range WHERE end_episode_id < ?");
+    add(consolidate_evict_constant_range);
+
+    consolidate_evict_identifier_range = new soar_module::sqlite_statement(new_db,
+            "DELETE FROM epmem_wmes_identifier_range WHERE end_episode_id < ?");
+    add(consolidate_evict_identifier_range);
+
     // init statement pools
     {
         int j, k, m;
@@ -6111,6 +6119,21 @@ void epmem_consolidate(agent* thisAgent)
     {
         epmem_time_id evict_before = current_episode - evict_age;
 
+        // Wrap eviction in a transaction if lazy_commit is off
+        // (when lazy_commit is on, we're already inside a transaction)
+        bool needs_txn = (thisAgent->EpMem->epmem_params->lazy_commit->get_value() == off);
+        if (needs_txn)
+        {
+            thisAgent->EpMem->epmem_stmts_common->begin->execute(soar_module::op_reinit);
+        }
+
+        // Delete range entries whose intervals end entirely before the cutoff
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_constant_range->bind_int(1, evict_before);
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_constant_range->execute(soar_module::op_reinit);
+
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_identifier_range->bind_int(1, evict_before);
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_identifier_range->execute(soar_module::op_reinit);
+
         // Delete point entries for old episodes
         thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_constant_point->bind_int(1, evict_before);
         thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_constant_point->execute(soar_module::op_reinit);
@@ -6121,6 +6144,11 @@ void epmem_consolidate(agent* thisAgent)
         // Delete old episode rows
         thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_episode->bind_int(1, evict_before);
         thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_episode->execute(soar_module::op_reinit);
+
+        if (needs_txn)
+        {
+            thisAgent->EpMem->epmem_stmts_common->commit->execute(soar_module::op_reinit);
+        }
     }
 
     // Update last consolidation stat
