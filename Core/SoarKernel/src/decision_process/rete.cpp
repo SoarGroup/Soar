@@ -7821,6 +7821,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             prod->rl_ecr = 0.0;
             prod->rl_efr = 0.0;
             prod->rl_gql = 0.0;
+            prod->rl_ema_delta_q = 1.0;     // start unconverged
             if ((prod->type != JUSTIFICATION_PRODUCTION_TYPE) && (prod->type != TEMPLATE_PRODUCTION_TYPE))
             {
                 prod->rl_rule = rl_valid_rule(prod);

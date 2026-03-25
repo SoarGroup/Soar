@@ -1739,7 +1739,35 @@ byte run_preference_semantics(agent* thisAgent,
     {
         if (!consistency)
         {
-            (*result_candidates) = exploration_choose_according_to_policy(thisAgent, s, candidates);
+            // RL convergence gate: if all RL rules on this slot have converged,
+            // select greedily (highest Q-value) instead of stochastically.
+            // This makes the decision deterministic, enabling chunking.
+            bool rl_converged = !predict && some_numeric && rl_slot_converged(thisAgent, s);
+
+            if (rl_converged)
+            {
+                // Greedy selection: pick candidate with highest numeric value
+                preference* best = candidates;
+                for (preference* cand = candidates->next_candidate; cand; cand = cand->next_candidate)
+                {
+                    if (cand->numeric_value > best->numeric_value)
+                    {
+                        best = cand;
+                    }
+                }
+                (*result_candidates) = best;
+
+                if (thisAgent->trace_settings[TRACE_RL_SYSPARAM])
+                {
+                    thisAgent->outputManager->printa_sf(thisAgent,
+                        "RL convergence gate: slot converged, selecting greedily\n");
+                }
+            }
+            else
+            {
+                (*result_candidates) = exploration_choose_according_to_policy(thisAgent, s, candidates);
+            }
+
             if (!predict && rl_enabled(thisAgent))
             {
                 build_rl_trace(thisAgent, candidates, *result_candidates);

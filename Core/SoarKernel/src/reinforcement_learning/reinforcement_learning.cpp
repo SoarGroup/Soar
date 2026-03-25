@@ -155,6 +155,18 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     chunk_stop = new soar_module::boolean_param("chunk-stop", on, new soar_module::f_predicate<boolean>());
     add(chunk_stop);
 
+    // chunk-gate — gate chunking on RL convergence
+    chunk_gate = new soar_module::boolean_param("chunk-gate", off, new soar_module::f_predicate<boolean>());
+    add(chunk_gate);
+
+    // chunk-gate-threshold — EMA of |delta_Q| below which an RL rule is considered converged
+    chunk_gate_threshold = new soar_module::decimal_param("chunk-gate-threshold", 0.01, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(chunk_gate_threshold);
+
+    // chunk-gate-ema-decay — EMA decay rate for convergence tracking (higher = smoother)
+    chunk_gate_ema_decay = new soar_module::decimal_param("chunk-gate-ema-decay", 0.95, new soar_module::btw_predicate<double>(0, 1, false), new soar_module::f_predicate<double>());
+    add(chunk_gate_ema_decay);
+
     // meta
     meta = new soar_module::boolean_param("meta", off, new soar_module::f_predicate<boolean>());
     add(meta);
@@ -609,6 +621,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             new_production->rl_ecr = 0.0;
             new_production->rl_efr = init_value;
             new_production->rl_gql = 0.0;
+            new_production->rl_ema_delta_q = 1.0;  // start unconverged
 
             // attempt to add to rete, remove if duplicate
             production* duplicate_rule = NULL;
@@ -994,6 +1007,13 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
                     prod->rl_gql = new_gql;
+
+                    // Update EMA of |delta_Q| for convergence gating
+                    {
+                        double abs_delta = fabs(delta_ecr + delta_efr);
+                        double ema_decay = thisAgent->RL->rl_params->chunk_gate_ema_decay->get_value();
+                        prod->rl_ema_delta_q = ema_decay * prod->rl_ema_delta_q + (1.0 - ema_decay) * abs_delta;
+                    }
                 }
 
                 if (thisAgent->RL->rl_params->learning_policy->get_value() & rl_param_container::gql)
@@ -1065,4 +1085,32 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
 void rl_watkins_clear(agent* /*thisAgent*/, Symbol* goal)
 {
     goal->id->rl_info->eligibility_traces->clear();
+}
+
+// Returns true when chunk-gate is enabled and every RL rule contributing
+// numeric-indifferent preferences to |s| has EMA(|delta_Q|) below threshold.
+// When chunk-gate is off, returns false (no gating, preserve existing behavior).
+bool rl_slot_converged(agent* thisAgent, slot* s)
+{
+    if (thisAgent->RL->rl_params->chunk_gate->get_value() != on)
+    {
+        return false;
+    }
+
+    double threshold = thisAgent->RL->rl_params->chunk_gate_threshold->get_value();
+    bool found_rl_rule = false;
+
+    for (preference* p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+    {
+        if (p->inst && p->inst->prod && p->inst->prod->rl_rule)
+        {
+            found_rl_rule = true;
+            if (p->inst->prod->rl_ema_delta_q >= threshold)
+            {
+                return false;  // at least one rule hasn't converged
+            }
+        }
+    }
+
+    return found_rl_rule;  // true only if there were RL rules and all converged
 }
