@@ -180,6 +180,22 @@ epmem_param_container::epmem_param_container(agent* new_agent): soar_module::par
     merge->add_mapping(merge_none, "none");
     merge->add_mapping(merge_add, "add");
     add(merge);
+
+    ////////////////////
+    // Consolidation
+    ////////////////////
+
+    // consolidate on/off
+    consolidate = new soar_module::boolean_param("consolidate", off, new soar_module::f_predicate<boolean>());
+    add(consolidate);
+
+    // consolidate-interval
+    consolidate_interval = new soar_module::integer_param("consolidate-interval", 100, new soar_module::gt_predicate<int64_t>(0, true), new soar_module::f_predicate<int64_t>());
+    add(consolidate_interval);
+
+    // consolidate-threshold
+    consolidate_threshold = new soar_module::integer_param("consolidate-threshold", 10, new soar_module::gt_predicate<int64_t>(0, true), new soar_module::f_predicate<int64_t>());
+    add(consolidate_threshold);
 }
 
 //
@@ -599,6 +615,10 @@ epmem_stat_container::epmem_stat_container(agent* new_agent): soar_module::stat_
     next_id = new epmem_node_id_stat("next-id", 0, new epmem_db_predicate<epmem_node_id>(thisAgent));
     add(next_id);
 
+    // last-consolidation
+    last_consolidation = new epmem_time_id_stat("last-consolidation", 0, new soar_module::f_predicate<epmem_time_id>());
+    add(last_consolidation);
+
     // rit-offset-1
     rit_offset_1 = new soar_module::integer_stat("rit-offset-1", 0, new epmem_db_predicate<int64_t>(thisAgent));
     add(rit_offset_1);
@@ -966,6 +986,7 @@ void epmem_graph_statement_container::create_graph_tables()
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_constant (wc_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_n_id INTEGER,attribute_s_id INTEGER, value_s_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier (wi_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_n_id INTEGER,attribute_s_id INTEGER,child_n_id INTEGER, last_episode_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_ascii (ascii_num INTEGER PRIMARY KEY, ascii_chr TEXT)");
+    add_structure("CREATE TABLE IF NOT EXISTS epmem_consolidated (wc_id INTEGER PRIMARY KEY)");
 }
 
 void epmem_graph_statement_container::create_graph_indices()
@@ -1014,6 +1035,7 @@ void epmem_graph_statement_container::drop_graph_tables()
     add_structure("DROP TABLE IF EXISTS epmem_wmes_identifier_range");
     add_structure("DROP TABLE IF EXISTS epmem_wmes_constant");
     add_structure("DROP TABLE IF EXISTS epmem_wmes_identifier");
+    add_structure("DROP TABLE IF EXISTS epmem_consolidated");
 }
 
 epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agent): soar_module::sqlite_statement_container(new_agent->EpMem->epmem_db)
@@ -1152,6 +1174,22 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
 
     update_epmem_wmes_identifier_last_episode_id = new soar_module::sqlite_statement(new_db, "UPDATE epmem_wmes_identifier SET last_episode_id=? WHERE wi_id=?");
     add(update_epmem_wmes_identifier_last_episode_id);
+
+    // consolidation query: find constant WMEs present for >= threshold episodes, excluding already-consolidated
+    consolidate_find_stable = new soar_module::sqlite_statement(new_db,
+            "SELECT wc.wc_id, wc.parent_n_id, wc.attribute_s_id, wc.value_s_id "
+            "FROM epmem_wmes_constant wc "
+            "JOIN epmem_wmes_constant_now cn ON cn.wc_id = wc.wc_id "
+            "LEFT JOIN epmem_consolidated ec ON ec.wc_id = wc.wc_id "
+            "WHERE cn.start_episode_id <= (? - ?) "
+            "  AND ec.wc_id IS NULL "
+            "ORDER BY wc.parent_n_id");
+    add(consolidate_find_stable);
+
+    // consolidation: mark wc_id as consolidated
+    consolidate_mark = new soar_module::sqlite_statement(new_db,
+            "INSERT OR IGNORE INTO epmem_consolidated (wc_id) VALUES (?)");
+    add(consolidate_mark);
 
     // init statement pools
     {
@@ -5913,6 +5951,147 @@ void epmem_respond_to_cmd(agent* thisAgent)
  * Notes        : The kernel calls this function to implement Soar-EpMem:
  *                consider new storage and respond to any commands
  **************************************************************************/
+/***************************************************************************
+ * Function     : epmem_consolidate
+ * Author       : June Kim
+ * Notes        : Scans episodic memory for stable WME structures and
+ *                writes them to semantic memory. Implements the
+ *                compose+test framework (Casteigts et al., 2019) for
+ *                episodic-to-semantic consolidation.
+ *
+ *                Compose: union of WMEs active in the current window
+ *                Test: continuous presence >= consolidate-threshold episodes
+ *                Write: create new smem LTI with qualifying augmentations
+ *
+ *                Runs periodically based on consolidate-interval parameter.
+ *                Off by default (consolidate = off).
+ **************************************************************************/
+void epmem_consolidate(agent* thisAgent)
+{
+    // Check if consolidation is enabled
+    if (thisAgent->EpMem->epmem_params->consolidate->get_value() == off)
+    {
+        return;
+    }
+
+    // Check if epmem DB is connected
+    if (thisAgent->EpMem->epmem_db->get_status() != soar_module::connected)
+    {
+        return;
+    }
+
+    // Check if smem is enabled (CLI_add will handle connection)
+    if (!thisAgent->SMem->enabled())
+    {
+        return;
+    }
+
+    epmem_time_id current_episode = thisAgent->EpMem->epmem_stats->time->get_value();
+    epmem_time_id last_consol = thisAgent->EpMem->epmem_stats->last_consolidation->get_value();
+    int64_t interval = thisAgent->EpMem->epmem_params->consolidate_interval->get_value();
+    int64_t threshold = thisAgent->EpMem->epmem_params->consolidate_threshold->get_value();
+
+    // Check if enough episodes have passed since last consolidation
+    if ((current_episode - last_consol) < static_cast<epmem_time_id>(interval))
+    {
+        return;
+    }
+
+    // Run the compose+test query: find constant WMEs present for >= threshold episodes
+    // Query now excludes already-consolidated wc_ids via LEFT JOIN
+    soar_module::sqlite_statement* find_stable = thisAgent->EpMem->epmem_stmts_graph->consolidate_find_stable;
+    find_stable->bind_int(1, current_episode);
+    find_stable->bind_int(2, threshold);
+
+    // Collect results grouped by parent, filtering empty symbols before building string
+    struct consolidation_entry {
+        epmem_node_id wc_id;
+        std::string attr;
+        std::string value;
+    };
+
+    std::map<epmem_node_id, std::vector<consolidation_entry>> parent_groups;
+
+    while (find_stable->execute() == soar_module::row)
+    {
+        epmem_node_id wc_id = find_stable->column_int(0);
+        epmem_node_id parent_n_id = find_stable->column_int(1);
+        epmem_hash_id attr_s_id = find_stable->column_int(2);
+        epmem_hash_id value_s_id = find_stable->column_int(3);
+
+        // Reverse-hash the attribute and value to get printable strings
+        std::string attr_str, value_str;
+        epmem_reverse_hash_print(thisAgent, attr_s_id, attr_str);
+        epmem_reverse_hash_print(thisAgent, value_s_id, value_str);
+
+        if (attr_str.empty() || value_str.empty()) continue;
+
+        // Skip symbols containing pipe characters — they can't be safely quoted
+        if (attr_str.find('|') != std::string::npos || value_str.find('|') != std::string::npos)
+        {
+            continue;
+        }
+
+        // Pipe-quote strings that contain special characters
+        auto needs_quoting = [](const std::string& s) {
+            for (char c : s) {
+                if (c == ' ' || c == '(' || c == ')' || c == '^' || c == '{' || c == '}')
+                    return true;
+            }
+            return false;
+        };
+
+        if (needs_quoting(attr_str)) attr_str = "|" + attr_str + "|";
+        if (needs_quoting(value_str)) value_str = "|" + value_str + "|";
+
+        consolidation_entry e;
+        e.wc_id = wc_id;
+        e.attr = attr_str;
+        e.value = value_str;
+        parent_groups[parent_n_id].push_back(e);
+    }
+    find_stable->reinitialize();
+
+    // Build smem add string and collect wc_ids
+    std::string smem_add_str;
+    std::vector<epmem_node_id> consolidated_wc_ids;
+    int lti_count = 0;
+
+    for (auto& kv : parent_groups)
+    {
+        if (kv.second.empty()) continue;
+        lti_count++;
+        smem_add_str += "(<c" + std::to_string(lti_count) + ">";
+        for (auto& e : kv.second)
+        {
+            smem_add_str += " ^" + e.attr + " " + e.value;
+            consolidated_wc_ids.push_back(e.wc_id);
+        }
+        smem_add_str += ")\n";
+    }
+
+    // Write to smem if we found anything
+    if (lti_count > 0)
+    {
+        std::string* err_msg = new std::string("");
+        bool success = thisAgent->SMem->CLI_add(smem_add_str.c_str(), &err_msg);
+        delete err_msg;
+
+        if (success)
+        {
+            // Record consolidated wc_ids to prevent duplicates on next run
+            for (epmem_node_id wc_id : consolidated_wc_ids)
+            {
+                thisAgent->EpMem->epmem_stmts_graph->consolidate_mark->bind_int(1, wc_id);
+                thisAgent->EpMem->epmem_stmts_graph->consolidate_mark->execute(soar_module::op_reinit);
+            }
+        }
+    }
+
+    // Update last consolidation stat
+    thisAgent->EpMem->epmem_stats->last_consolidation->set_value(current_episode);
+}
+
 void epmem_go(agent* thisAgent, bool allow_store)
 {
 
@@ -5924,6 +6103,8 @@ void epmem_go(agent* thisAgent, bool allow_store)
     }
     epmem_respond_to_cmd(thisAgent);
 
+    // Periodic consolidation: episodic -> semantic
+    epmem_consolidate(thisAgent);
 
     thisAgent->EpMem->epmem_timers->total->stop();
 

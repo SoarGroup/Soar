@@ -81,6 +81,11 @@ class epmem_param_container: public soar_module::param_container
         soar_module::constant_param<gm_ordering_choices>* gm_ordering;
         soar_module::constant_param<merge_choices>* merge;
 
+        // consolidation
+        soar_module::boolean_param* consolidate;
+        soar_module::integer_param* consolidate_interval;
+        soar_module::integer_param* consolidate_threshold;
+
         epmem_param_container(agent* new_agent);
 };
 
@@ -134,6 +139,8 @@ class epmem_stat_container: public soar_module::stat_container
         soar_module::integer_stat* qry_lits;
 
         epmem_node_id_stat* next_id;
+
+        epmem_time_id_stat* last_consolidation;
 
         soar_module::integer_stat* rit_offset_1;
         soar_module::integer_stat* rit_left_root_1;
@@ -329,6 +336,10 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
         soar_module::sqlite_statement* update_epmem_wmes_identifier_last_episode_id;
 
+        // consolidation
+        soar_module::sqlite_statement* consolidate_find_stable;
+        soar_module::sqlite_statement* consolidate_mark;
+
         //
 
         soar_module::sqlite_statement_pool* pool_find_edge_queries[2][2];
@@ -471,6 +482,7 @@ extern void epmem_clear_transient_structures(agent* thisAgent);
 
 // perform epmem actions
 extern void epmem_go(agent* thisAgent, bool allow_store = true);
+extern void epmem_consolidate(agent* thisAgent);
 extern bool epmem_backup_db(agent* thisAgent, const char* file_name, std::string* err);
 extern void epmem_init_db(agent* thisAgent, bool readonly = false);
 // visualization

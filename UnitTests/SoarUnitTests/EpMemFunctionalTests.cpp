@@ -303,6 +303,29 @@ void EpMemFunctionalTests::testEpmemUnit_14()
     runTest("epmem_unit_test_14", 113);
 }
 
+void EpMemFunctionalTests::testConsolidation()
+{
+    runTestSetup("testConsolidation");
+    agent->RunSelf(25);
+
+    // Verify consolidation wrote to smem
+    std::string smemResult = agent->ExecuteCommandLine("p @");
+    assertTrue_msg("SMem should contain consolidated entries after 25 cycles:\n" + smemResult,
+                   smemResult.find("red") != std::string::npos);
+}
+
+void EpMemFunctionalTests::testConsolidationOff()
+{
+    runTestSetup("testConsolidation");
+    agent->ExecuteCommandLine("epmem --set consolidate off");
+    agent->RunSelf(25);
+
+    // Verify smem has no consolidated entries when consolidation is off
+    std::string smemResult = agent->ExecuteCommandLine("p @");
+    assertTrue_msg("SMem should not contain 'red' with consolidation off",
+                   smemResult.find("red") == std::string::npos);
+}
+
 void EpMemFunctionalTests::testEpMemSmemFactorizationCombinationTest()
 {
     runTestSetup("testSMemEpMemFactorization");

@@ -58,8 +58,10 @@ public:
 	TEST(testWMELength_FiveCycle, -1)
 	TEST(testWMELength_InfiniteCycle, -1)
 	TEST(testWMELength_MultiCycle, -1)
-	TEST(testWMELength_OneCycle, -1);
-	
+	TEST(testWMELength_OneCycle, -1)
+	TEST(testConsolidation, -1)
+	TEST(testConsolidationOff, -1);
+
 	void testAfterEpMem();
 	void testAllNegQueriesEpMem();
 	void testBeforeAfterProhibitEpMem();
@@ -105,6 +107,8 @@ public:
 	void testWMELength_InfiniteCycle();
 	void testWMELength_MultiCycle();
 	void testWMELength_OneCycle();
+	void testConsolidation();
+	void testConsolidationOff();
 
     void after(bool caught) { tearDown(caught); }
 	void tearDown(bool caught);
