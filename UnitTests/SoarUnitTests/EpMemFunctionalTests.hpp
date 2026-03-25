@@ -60,7 +60,8 @@ public:
 	TEST(testWMELength_MultiCycle, -1)
 	TEST(testWMELength_OneCycle, -1)
 	TEST(testConsolidation, -1)
-	TEST(testConsolidationOff, -1);
+	TEST(testConsolidationOff, -1)
+	TEST(testConsolidationEviction, -1);
 
 	void testAfterEpMem();
 	void testAllNegQueriesEpMem();
@@ -109,6 +110,7 @@ public:
 	void testWMELength_OneCycle();
 	void testConsolidation();
 	void testConsolidationOff();
+	void testConsolidationEviction();
 
     void after(bool caught) { tearDown(caught); }
 	void tearDown(bool caught);

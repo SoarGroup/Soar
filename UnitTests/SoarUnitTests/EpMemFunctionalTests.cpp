@@ -326,6 +326,27 @@ void EpMemFunctionalTests::testConsolidationOff()
                    smemResult.find("red") == std::string::npos);
 }
 
+void EpMemFunctionalTests::testConsolidationEviction()
+{
+    runTestSetup("testConsolidationEviction");
+    agent->RunSelf(25);
+
+    // Verify consolidation still wrote to smem
+    std::string smemResult = agent->ExecuteCommandLine("p @");
+    assertTrue_msg("SMem should contain consolidated entries after 25 cycles:\n" + smemResult,
+                   smemResult.find("red") != std::string::npos);
+
+    // Verify old episodes were evicted (episode 1 should be gone, evict_before = 25 - 12 = 13)
+    std::string ep1 = agent->ExecuteCommandLine("epmem --print 1");
+    assertTrue_msg("Episode 1 should have been evicted:\n" + ep1,
+                   ep1.find("Episode 1") == std::string::npos);
+
+    // Verify recent episodes still exist (episode 20 should still be there)
+    std::string ep20 = agent->ExecuteCommandLine("epmem --print 20");
+    assertTrue_msg("Episode 20 should still exist:\n" + ep20,
+                   ep20.find("Episode 20") != std::string::npos);
+}
+
 void EpMemFunctionalTests::testEpMemSmemFactorizationCombinationTest()
 {
     runTestSetup("testSMemEpMemFactorization");

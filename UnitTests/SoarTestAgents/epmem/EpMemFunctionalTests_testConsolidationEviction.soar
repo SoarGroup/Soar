@@ -1,0 +1,50 @@
+# Test episodic memory eviction after consolidation
+# Enable epmem with dc trigger
+epmem --set trigger dc
+epmem --set learning on
+
+# Enable smem
+smem --set learning on
+
+# Enable consolidation with short interval for testing
+epmem --set consolidate on
+epmem --set consolidate-interval 15
+epmem --set consolidate-threshold 10
+
+# Enable eviction: episodes older than 12 cycles get evicted
+epmem --set consolidate-evict-age 12
+
+### Initialize: create a stable structure that will persist
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init)
+-->
+   (<s> ^name eviction-test
+        ^item <i>
+        ^counter 0)
+   (<i> ^color red ^shape circle)
+}
+
+### Count decision cycles to keep the agent running
+sp {propose*count
+   (state <s> ^name eviction-test
+              ^counter <c>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name count)
+}
+
+sp {apply*count
+   (state <s> ^operator.name count
+              ^counter <c>)
+-->
+   (<s> ^counter <c> -)
+   (<s> ^counter (+ <c> 1))
+}

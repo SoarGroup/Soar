@@ -196,6 +196,10 @@ epmem_param_container::epmem_param_container(agent* new_agent): soar_module::par
     // consolidate-threshold
     consolidate_threshold = new soar_module::integer_param("consolidate-threshold", 10, new soar_module::gt_predicate<int64_t>(0, true), new soar_module::f_predicate<int64_t>());
     add(consolidate_threshold);
+
+    // consolidate-evict-age: min episode age before eviction eligible (0 = no eviction)
+    consolidate_evict_age = new soar_module::integer_param("consolidate-evict-age", 0, new soar_module::gt_predicate<int64_t>(0, true), new soar_module::f_predicate<int64_t>());
+    add(consolidate_evict_age);
 }
 
 //
@@ -1190,6 +1194,19 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
     consolidate_mark = new soar_module::sqlite_statement(new_db,
             "INSERT OR IGNORE INTO epmem_consolidated (wc_id) VALUES (?)");
     add(consolidate_mark);
+
+    // eviction: delete old episode rows and their point entries
+    consolidate_evict_episode = new soar_module::sqlite_statement(new_db,
+            "DELETE FROM epmem_episodes WHERE episode_id < ?");
+    add(consolidate_evict_episode);
+
+    consolidate_evict_constant_point = new soar_module::sqlite_statement(new_db,
+            "DELETE FROM epmem_wmes_constant_point WHERE episode_id < ?");
+    add(consolidate_evict_constant_point);
+
+    consolidate_evict_identifier_point = new soar_module::sqlite_statement(new_db,
+            "DELETE FROM epmem_wmes_identifier_point WHERE episode_id < ?");
+    add(consolidate_evict_identifier_point);
 
     // init statement pools
     {
@@ -6086,6 +6103,24 @@ void epmem_consolidate(agent* thisAgent)
                 thisAgent->EpMem->epmem_stmts_graph->consolidate_mark->execute(soar_module::op_reinit);
             }
         }
+    }
+
+    // Eviction: remove old episodes if evict-age is set
+    int64_t evict_age = thisAgent->EpMem->epmem_params->consolidate_evict_age->get_value();
+    if (evict_age > 0 && current_episode > static_cast<epmem_time_id>(evict_age))
+    {
+        epmem_time_id evict_before = current_episode - evict_age;
+
+        // Delete point entries for old episodes
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_constant_point->bind_int(1, evict_before);
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_constant_point->execute(soar_module::op_reinit);
+
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_identifier_point->bind_int(1, evict_before);
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_identifier_point->execute(soar_module::op_reinit);
+
+        // Delete old episode rows
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_episode->bind_int(1, evict_before);
+        thisAgent->EpMem->epmem_stmts_graph->consolidate_evict_episode->execute(soar_module::op_reinit);
     }
 
     // Update last consolidation stat

@@ -85,6 +85,7 @@ class epmem_param_container: public soar_module::param_container
         soar_module::boolean_param* consolidate;
         soar_module::integer_param* consolidate_interval;
         soar_module::integer_param* consolidate_threshold;
+        soar_module::integer_param* consolidate_evict_age;
 
         epmem_param_container(agent* new_agent);
 };
@@ -339,6 +340,11 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
         // consolidation
         soar_module::sqlite_statement* consolidate_find_stable;
         soar_module::sqlite_statement* consolidate_mark;
+
+        // eviction
+        soar_module::sqlite_statement* consolidate_evict_episode;
+        soar_module::sqlite_statement* consolidate_evict_constant_point;
+        soar_module::sqlite_statement* consolidate_evict_identifier_point;
 
         //
 
