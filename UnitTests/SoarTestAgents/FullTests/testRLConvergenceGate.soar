@@ -1,0 +1,87 @@
+# Tests the RL convergence gate feature.
+# Agent has two operators with RL numeric preferences.
+# Reward consistently favors op-a, so Q-values converge.
+# With chunk-gate on and fast EMA decay, the convergence gate
+# should fire after a few decisions, forcing greedy selection.
+
+srand 42
+
+rl --set learning on
+rl --set chunk-gate on
+rl --set chunk-gate-ema-decay 0.5
+rl --set chunk-gate-threshold 0.1
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^name rl-gate-test ^step 0)
+}
+
+sp {propose*op-a
+   (state <s> ^name rl-gate-test)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name op-a)
+}
+
+sp {propose*op-b
+   (state <s> ^name rl-gate-test)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name op-b)
+}
+
+# RL rules: op-a starts with higher value
+sp {rl*value*op-a
+   (state <s> ^name rl-gate-test
+              ^operator <o> +)
+   (<o> ^name op-a)
+-->
+   (<s> ^operator <o> = 1.0)
+}
+
+sp {rl*value*op-b
+   (state <s> ^name rl-gate-test
+              ^operator <o> +)
+   (<o> ^name op-b)
+-->
+   (<s> ^operator <o> = 0.0)
+}
+
+# Reward for choosing op-a
+sp {reward*op-a
+   (state <s> ^name rl-gate-test
+              ^reward-link <rl>
+              ^operator <o>)
+   (<o> ^name op-a)
+-->
+   (<rl> ^reward.value 1.0)
+}
+
+# Reward for choosing op-b (penalty)
+sp {reward*op-b
+   (state <s> ^name rl-gate-test
+              ^reward-link <rl>
+              ^operator <o>)
+   (<o> ^name op-b)
+-->
+   (<rl> ^reward.value -1.0)
+}
+
+# Apply operators (advance step count to prevent infinite loop)
+sp {apply*op
+   (state <s> ^name rl-gate-test
+              ^operator <o>
+              ^step <n>)
+   (<o> ^name <name>)
+-->
+   (<s> ^step <n> - ^step (+ <n> 1))
+}
+
+# Halt after 50 decisions
+sp {halt*done
+   (state <s> ^name rl-gate-test
+              ^step >= 50)
+-->
+   (halt)
+}

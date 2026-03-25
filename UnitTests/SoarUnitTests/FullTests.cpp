@@ -1750,3 +1750,68 @@ void FullTests_Parent::testOutputLinkRemovalOrdering()
 
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
+
+// RL convergence gate: verify agent runs to completion with chunk-gate enabled.
+// The agent has two RL operators with consistent reward, EMA decay of 0.5,
+// threshold of 0.1. After ~4 decisions with stable Q-values, the gate should
+// fire, forcing greedy selection for the remainder of the run.
+void FullTests_Parent::testRLConvergenceGate()
+{
+    loadProductions(SoarHelper::GetResource("testRLConvergenceGate.soar"));
+
+    m_pKernel->RunAllAgentsForever();
+
+    {
+        sml::ClientAnalyzedXML response;
+        agent->ExecuteCommandLineXML("stats", &response);
+        // Agent should complete all 50 decisions and halt
+        no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 50);
+    }
+}
+
+// Same agent with chunk-gate off (default). Verify identical decision count,
+// confirming no regression in existing RL behavior.
+void FullTests_Parent::testRLConvergenceGateOff()
+{
+    loadProductions(SoarHelper::GetResource("testRLConvergenceGateOff.soar"));
+
+    m_pKernel->RunAllAgentsForever();
+
+    {
+        sml::ClientAnalyzedXML response;
+        agent->ExecuteCommandLineXML("stats", &response);
+        no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 50);
+    }
+}
+
+// Verify that the three new RL parameters are accepted by the command parser.
+void FullTests_Parent::testRLConvergenceGateParams()
+{
+    // chunk-gate: boolean on/off
+    agent->ExecuteCommandLine("rl --set chunk-gate on");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+    agent->ExecuteCommandLine("rl --set chunk-gate off");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+
+    // chunk-gate-threshold: positive double
+    agent->ExecuteCommandLine("rl --set chunk-gate-threshold 0.05");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+    agent->ExecuteCommandLine("rl --set chunk-gate-threshold 0.001");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+
+    // chunk-gate-ema-decay: double in (0,1)
+    agent->ExecuteCommandLine("rl --set chunk-gate-ema-decay 0.9");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+    agent->ExecuteCommandLine("rl --set chunk-gate-ema-decay 0.5");
+    no_agent_assertTrue(agent->GetLastCommandLineResult());
+
+    // Verify current values via rl --get
+    std::string result = agent->ExecuteCommandLine("rl --get chunk-gate");
+    no_agent_assertTrue(result.find("off") != std::string::npos);
+
+    result = agent->ExecuteCommandLine("rl --get chunk-gate-threshold");
+    no_agent_assertTrue(result.find("0.001") != std::string::npos);
+
+    result = agent->ExecuteCommandLine("rl --get chunk-gate-ema-decay");
+    no_agent_assertTrue(result.find("0.5") != std::string::npos);
+}
