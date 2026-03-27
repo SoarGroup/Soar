@@ -316,6 +316,8 @@ static bool smem_lti_includes(SMem_Manager* smem, soar_module::sqlite_statement*
     std::map<uint64_t, smem_lti_augmentations> aug_cache;
     std::set<lti_pair> active_pairs;
     std::map<uint64_t, uint64_t> b_to_a;
+    // Pin root: B's root must map to A's root (rooted inclusion)
+    b_to_a[lti_b] = lti_a;
     return smem_lti_includes_impl(smem, expand_q, lti_a, lti_b, aug_cache, active_pairs, b_to_a);
 }
 
