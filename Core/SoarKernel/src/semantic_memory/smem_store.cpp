@@ -209,6 +209,19 @@ void SMem_Manager::delete_ltm(uint64_t pLTI_ID)
             }
             remaining_attr_q->reinitialize();
         }
+
+        // Invalidate cached spreading trajectories rooted at this parent,
+        // since its outgoing child set has changed.
+        // Only run if spreading activation is enabled (avoids hangs when
+        // spreading tables are empty / not initialized).
+        if (thisAgent->SMem->settings->spreading->get_value() == on)
+        {
+            invalidate_trajectories(parent->first, NULL);
+
+            // Renormalize remaining edge weights on this parent (spreading fan)
+            SQL->web_update_all_lti_child_edges->bind_int(1, parent->first);
+            SQL->web_update_all_lti_child_edges->execute(soar_module::op_reinit);
+        }
     }
 
     delete inbound_q;
