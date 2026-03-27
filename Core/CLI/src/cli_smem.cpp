@@ -208,7 +208,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
     else if (pOp == 'R')
     {
         std::string result;
-        thisAgent->SMem->CLI_redundancy_check(result);
+        if (!thisAgent->SMem->CLI_redundancy_check(result))
+        {
+            return SetError(result);
+        }
         PrintCLIMessage(&result);
         return true;
     }
