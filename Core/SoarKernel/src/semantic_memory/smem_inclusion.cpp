@@ -132,13 +132,14 @@ static bool smem_lti_includes_impl(
     uint64_t lti_b,
     std::map<uint64_t, smem_lti_augmentations>& aug_cache,
     std::set<lti_pair>& active_pairs,
-    std::map<lti_pair, bool>& memo,
     std::map<uint64_t, uint64_t>& b_to_a);
 
 /* Backtracking injective matcher for child LTIs under one attribute.
  * Tries to assign each b_lti to a distinct a_lti that includes it.
  * Returns true if a complete injective matching exists.
- * Enforces global injectivity via b_to_a map. */
+ * Enforces global injectivity via b_to_a map.
+ * Snapshots b_to_a before each speculative branch and restores on
+ * failure to prevent leaked descendant bindings. */
 static bool match_children_backtrack(
     SMem_Manager* smem,
     soar_module::sqlite_statement* expand_q,
@@ -148,7 +149,6 @@ static bool match_children_backtrack(
     std::vector<bool>& a_used,
     std::map<uint64_t, smem_lti_augmentations>& aug_cache,
     std::set<lti_pair>& active_pairs,
-    std::map<lti_pair, bool>& memo,
     std::map<uint64_t, uint64_t>& b_to_a)
 {
     if (b_idx == b_ltis.size()) return true; // all B children matched
@@ -164,7 +164,7 @@ static bool match_children_backtrack(
         {
             if (a_used[ai] || a_ltis[ai] != required_a) continue;
             a_used[ai] = true;
-            if (match_children_backtrack(smem, expand_q, a_ltis, b_ltis, b_idx + 1, a_used, aug_cache, active_pairs, memo, b_to_a))
+            if (match_children_backtrack(smem, expand_q, a_ltis, b_ltis, b_idx + 1, a_used, aug_cache, active_pairs, b_to_a))
             {
                 return true;
             }
@@ -189,17 +189,24 @@ static bool match_children_backtrack(
         }
         if (a_claimed) continue;
 
-        if (smem_lti_includes_impl(smem, expand_q, a_ltis[ai], b_child, aug_cache, active_pairs, memo, b_to_a))
+        // Snapshot b_to_a before speculative branch
+        std::map<uint64_t, uint64_t> b_to_a_snapshot = b_to_a;
+
+        // Pre-bind before recursion so descendant checks see the intended assignment
+        b_to_a[b_child] = a_ltis[ai];
+
+        if (smem_lti_includes_impl(smem, expand_q, a_ltis[ai], b_child, aug_cache, active_pairs, b_to_a))
         {
             a_used[ai] = true;
-            b_to_a[b_child] = a_ltis[ai];
-            if (match_children_backtrack(smem, expand_q, a_ltis, b_ltis, b_idx + 1, a_used, aug_cache, active_pairs, memo, b_to_a))
+            if (match_children_backtrack(smem, expand_q, a_ltis, b_ltis, b_idx + 1, a_used, aug_cache, active_pairs, b_to_a))
             {
                 return true;
             }
             a_used[ai] = false;
-            b_to_a.erase(b_child);
         }
+
+        // Restore full b_to_a state on failure (undoes all descendant bindings)
+        b_to_a = b_to_a_snapshot;
     }
     return false;
 }
@@ -211,16 +218,11 @@ static bool smem_lti_includes_impl(
     uint64_t lti_b,
     std::map<uint64_t, smem_lti_augmentations>& aug_cache,
     std::set<lti_pair>& active_pairs,
-    std::map<lti_pair, bool>& memo,
     std::map<uint64_t, uint64_t>& b_to_a)
 {
     if (lti_a == lti_b) return true;
 
     lti_pair pair_key = std::make_pair(lti_a, lti_b);
-
-    // Check memo first (proven true or proven false)
-    auto memo_it = memo.find(pair_key);
-    if (memo_it != memo.end()) return memo_it->second;
 
     // Coinductive cycle handling: if we're currently exploring this pair,
     // optimistically assume inclusion holds. If the assumption is wrong,
@@ -291,7 +293,7 @@ static bool smem_lti_includes_impl(
             }
 
             std::vector<bool> a_used(a_ltis.size(), false);
-            if (!match_children_backtrack(smem, expand_q, a_ltis, b_ltis, 0, a_used, aug_cache, active_pairs, memo, b_to_a))
+            if (!match_children_backtrack(smem, expand_q, a_ltis, b_ltis, 0, a_used, aug_cache, active_pairs, b_to_a))
             {
                 result = false;
                 break;
@@ -300,7 +302,9 @@ static bool smem_lti_includes_impl(
     }
 
     active_pairs.erase(pair_key);
-    memo[pair_key] = result;
+    // No memoization: results depend on b_to_a context, which changes
+    // during backtracking. Smem entries are shallow, so the perf cost
+    // of re-evaluation is negligible.
     return result;
 }
 
@@ -311,9 +315,8 @@ static bool smem_lti_includes(SMem_Manager* smem, soar_module::sqlite_statement*
 {
     std::map<uint64_t, smem_lti_augmentations> aug_cache;
     std::set<lti_pair> active_pairs;
-    std::map<lti_pair, bool> memo;
-    std::map<uint64_t, uint64_t> b_to_a; // global B node → A node assignment
-    return smem_lti_includes_impl(smem, expand_q, lti_a, lti_b, aug_cache, active_pairs, memo, b_to_a);
+    std::map<uint64_t, uint64_t> b_to_a;
+    return smem_lti_includes_impl(smem, expand_q, lti_a, lti_b, aug_cache, active_pairs, b_to_a);
 }
 
 /* ----------------------------------------------------------------
