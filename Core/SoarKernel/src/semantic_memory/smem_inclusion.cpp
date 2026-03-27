@@ -109,6 +109,16 @@ static smem_lti_augmentations load_lti_augs(SMem_Manager* smem, soar_module::sql
  *   active_pairs: recursion stack — pair is currently being explored
  *   memo: proven results — pair has been fully evaluated
  *
+ * Cycle handling is coinductive: revisiting an active pair returns true
+ * (optimistic assumption). If the assumption is wrong, the non-cyclic
+ * parts of the proof will fail. This correctly handles self-referential
+ * structures like @1 ^next @1 vs @2 ^next @2.
+ *
+ * Global injectivity is enforced via b_to_a: a map from B node IDs to
+ * their assigned A node IDs, threaded through all recursion. Two
+ * distinct B nodes cannot map to the same A node even if reached
+ * through different attributes.
+ *
  * Child matching uses backtracking (not greedy) to ensure correct
  * injective assignment when first-fit would block later matches.
  * ---------------------------------------------------------------- */
@@ -122,11 +132,13 @@ static bool smem_lti_includes_impl(
     uint64_t lti_b,
     std::map<uint64_t, smem_lti_augmentations>& aug_cache,
     std::set<lti_pair>& active_pairs,
-    std::map<lti_pair, bool>& memo);
+    std::map<lti_pair, bool>& memo,
+    std::map<uint64_t, uint64_t>& b_to_a);
 
 /* Backtracking injective matcher for child LTIs under one attribute.
  * Tries to assign each b_lti to a distinct a_lti that includes it.
- * Returns true if a complete injective matching exists. */
+ * Returns true if a complete injective matching exists.
+ * Enforces global injectivity via b_to_a map. */
 static bool match_children_backtrack(
     SMem_Manager* smem,
     soar_module::sqlite_statement* expand_q,
@@ -136,22 +148,57 @@ static bool match_children_backtrack(
     std::vector<bool>& a_used,
     std::map<uint64_t, smem_lti_augmentations>& aug_cache,
     std::set<lti_pair>& active_pairs,
-    std::map<lti_pair, bool>& memo)
+    std::map<lti_pair, bool>& memo,
+    std::map<uint64_t, uint64_t>& b_to_a)
 {
     if (b_idx == b_ltis.size()) return true; // all B children matched
+
+    uint64_t b_child = b_ltis[b_idx];
+
+    // If this B node was already assigned globally, only try that A node
+    auto prior = b_to_a.find(b_child);
+    if (prior != b_to_a.end())
+    {
+        uint64_t required_a = prior->second;
+        for (size_t ai = 0; ai < a_ltis.size(); ai++)
+        {
+            if (a_used[ai] || a_ltis[ai] != required_a) continue;
+            a_used[ai] = true;
+            if (match_children_backtrack(smem, expand_q, a_ltis, b_ltis, b_idx + 1, a_used, aug_cache, active_pairs, memo, b_to_a))
+            {
+                return true;
+            }
+            a_used[ai] = false;
+        }
+        return false;
+    }
 
     for (size_t ai = 0; ai < a_ltis.size(); ai++)
     {
         if (a_used[ai]) continue;
 
-        if (smem_lti_includes_impl(smem, expand_q, a_ltis[ai], b_ltis[b_idx], aug_cache, active_pairs, memo))
+        // Check global injectivity: is this A node already claimed by a different B node?
+        bool a_claimed = false;
+        for (auto& ba : b_to_a)
+        {
+            if (ba.second == a_ltis[ai] && ba.first != b_child)
+            {
+                a_claimed = true;
+                break;
+            }
+        }
+        if (a_claimed) continue;
+
+        if (smem_lti_includes_impl(smem, expand_q, a_ltis[ai], b_child, aug_cache, active_pairs, memo, b_to_a))
         {
             a_used[ai] = true;
-            if (match_children_backtrack(smem, expand_q, a_ltis, b_ltis, b_idx + 1, a_used, aug_cache, active_pairs, memo))
+            b_to_a[b_child] = a_ltis[ai];
+            if (match_children_backtrack(smem, expand_q, a_ltis, b_ltis, b_idx + 1, a_used, aug_cache, active_pairs, memo, b_to_a))
             {
                 return true;
             }
-            a_used[ai] = false; // undo and try next candidate
+            a_used[ai] = false;
+            b_to_a.erase(b_child);
         }
     }
     return false;
@@ -164,7 +211,8 @@ static bool smem_lti_includes_impl(
     uint64_t lti_b,
     std::map<uint64_t, smem_lti_augmentations>& aug_cache,
     std::set<lti_pair>& active_pairs,
-    std::map<lti_pair, bool>& memo)
+    std::map<lti_pair, bool>& memo,
+    std::map<uint64_t, uint64_t>& b_to_a)
 {
     if (lti_a == lti_b) return true;
 
@@ -174,9 +222,10 @@ static bool smem_lti_includes_impl(
     auto memo_it = memo.find(pair_key);
     if (memo_it != memo.end()) return memo_it->second;
 
-    // Cycle detection: if we're currently exploring this pair, conservatively
-    // return false (don't assume inclusion for cycles)
-    if (active_pairs.count(pair_key)) return false;
+    // Coinductive cycle handling: if we're currently exploring this pair,
+    // optimistically assume inclusion holds. If the assumption is wrong,
+    // the non-cyclic parts of the proof will fail.
+    if (active_pairs.count(pair_key)) return true;
     active_pairs.insert(pair_key);
 
     // Load augmentations (with caching)
@@ -242,7 +291,7 @@ static bool smem_lti_includes_impl(
             }
 
             std::vector<bool> a_used(a_ltis.size(), false);
-            if (!match_children_backtrack(smem, expand_q, a_ltis, b_ltis, 0, a_used, aug_cache, active_pairs, memo))
+            if (!match_children_backtrack(smem, expand_q, a_ltis, b_ltis, 0, a_used, aug_cache, active_pairs, memo, b_to_a))
             {
                 result = false;
                 break;
@@ -263,7 +312,8 @@ static bool smem_lti_includes(SMem_Manager* smem, soar_module::sqlite_statement*
     std::map<uint64_t, smem_lti_augmentations> aug_cache;
     std::set<lti_pair> active_pairs;
     std::map<lti_pair, bool> memo;
-    return smem_lti_includes_impl(smem, expand_q, lti_a, lti_b, aug_cache, active_pairs, memo);
+    std::map<uint64_t, uint64_t> b_to_a; // global B node → A node assignment
+    return smem_lti_includes_impl(smem, expand_q, lti_a, lti_b, aug_cache, active_pairs, memo, b_to_a);
 }
 
 /* ----------------------------------------------------------------
