@@ -118,6 +118,143 @@ inline void SMem_Manager::count_child_connection(std::map<uint64_t,uint64_t>* ch
     }
 }
 
+/* ----------------------------------------------------------------
+ * delete_ltm: fully delete an LTI with proper bookkeeping.
+ * Composes existing routines: disconnect outgoing edges, update
+ * inbound parent bookkeeping, clean all auxiliary tables, invalidate
+ * spreading activation, delete the LTI row.
+ * ---------------------------------------------------------------- */
+void SMem_Manager::delete_ltm(uint64_t pLTI_ID)
+{
+    assert(pLTI_ID);
+
+    // Step 1: Disconnect outgoing edges (updates frequency tables, truncates augmentations)
+    disconnect_ltm(pLTI_ID, NULL);
+
+    // Step 2: Update inbound edges — parents that point to this LTI as a child value
+    std::map<uint64_t, uint64_t> inbound_edge_counts;
+    std::map<uint64_t, std::set<uint64_t> > inbound_attrs;
+    uint64_t inbound_edges = 0;
+
+    soar_module::sqlite_statement* inbound_q =
+            new soar_module::sqlite_statement(DB, "SELECT lti_id, attribute_s_id FROM smem_augmentations WHERE value_lti_id=?");
+    soar_module::sqlite_statement* remaining_attr_q =
+            new soar_module::sqlite_statement(DB, "SELECT 1 FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_lti_id<>? LIMIT 1");
+    inbound_q->prepare();
+    remaining_attr_q->prepare();
+
+    inbound_q->bind_int(1, pLTI_ID);
+    while (inbound_q->execute() == soar_module::row)
+    {
+        uint64_t parent_lti_id = inbound_q->column_int(0);
+        uint64_t child_attr = inbound_q->column_int(1);
+
+        inbound_edges++;
+        inbound_edge_counts[parent_lti_id]++;
+        inbound_attrs[parent_lti_id].insert(child_attr);
+
+        // Decrement LTI-value frequency for this attribute+value pair
+        SQL->wmes_lti_frequency_update->bind_int(1, -1);
+        SQL->wmes_lti_frequency_update->bind_int(2, child_attr);
+        SQL->wmes_lti_frequency_update->bind_int(3, pLTI_ID);
+        SQL->wmes_lti_frequency_update->execute(soar_module::op_reinit);
+    }
+    inbound_q->reinitialize();
+
+    // Update parent child counts and attribute frequencies
+    for (std::map<uint64_t, uint64_t>::iterator parent = inbound_edge_counts.begin(); parent != inbound_edge_counts.end(); ++parent)
+    {
+        uint64_t existing_edges = 0;
+        uint64_t existing_lti_edges = 0;
+
+        SQL->act_lti_child_ct_get->bind_int(1, parent->first);
+        if (SQL->act_lti_child_ct_get->execute() == soar_module::row)
+        {
+            existing_edges = static_cast<uint64_t>(SQL->act_lti_child_ct_get->column_int(0));
+        }
+        SQL->act_lti_child_ct_get->reinitialize();
+
+        SQL->act_lti_child_lti_ct_get->bind_int(1, parent->first);
+        if (SQL->act_lti_child_lti_ct_get->execute() == soar_module::row)
+        {
+            existing_lti_edges = static_cast<uint64_t>(SQL->act_lti_child_lti_ct_get->column_int(0));
+        }
+        SQL->act_lti_child_lti_ct_get->reinitialize();
+
+        assert(existing_edges >= parent->second);
+        assert(existing_lti_edges >= parent->second);
+
+        SQL->act_lti_child_ct_set->bind_int(1, existing_edges - parent->second);
+        SQL->act_lti_child_ct_set->bind_int(2, parent->first);
+        SQL->act_lti_child_ct_set->execute(soar_module::op_reinit);
+
+        SQL->act_lti_child_lti_ct_set->bind_int(1, existing_lti_edges - parent->second);
+        SQL->act_lti_child_lti_ct_set->bind_int(2, parent->first);
+        SQL->act_lti_child_lti_ct_set->execute(soar_module::op_reinit);
+
+        // If no other augmentations use this attribute on the parent, decrement attribute frequency
+        for (std::set<uint64_t>::iterator attr = inbound_attrs[parent->first].begin(); attr != inbound_attrs[parent->first].end(); ++attr)
+        {
+            remaining_attr_q->bind_int(1, parent->first);
+            remaining_attr_q->bind_int(2, *attr);
+            remaining_attr_q->bind_int(3, pLTI_ID);
+            if (remaining_attr_q->execute() != soar_module::row)
+            {
+                SQL->attribute_frequency_update->bind_int(1, -1);
+                SQL->attribute_frequency_update->bind_int(2, *attr);
+                SQL->attribute_frequency_update->execute(soar_module::op_reinit);
+            }
+            remaining_attr_q->reinitialize();
+        }
+    }
+
+    delete inbound_q;
+    delete remaining_attr_q;
+
+    // Delete inbound augmentation rows and update edge count
+    if (inbound_edges)
+    {
+        std::string sql = "DELETE FROM smem_augmentations WHERE value_lti_id=" + std::to_string(pLTI_ID);
+        DB->sql_execute(sql.c_str());
+        statistics->edges->set_value(statistics->edges->get_value() - inbound_edges);
+    }
+
+    // Step 3: Invalidate spreading activation
+    invalidate_from_lti(pLTI_ID);
+
+    // Step 4: Clean all auxiliary tables
+    SQL->prohibit_remove->bind_int(1, pLTI_ID);
+    SQL->prohibit_remove->execute(soar_module::op_reinit);
+
+    SQL->trajectory_remove_lti->bind_int(1, pLTI_ID);
+    SQL->trajectory_remove_lti->execute(soar_module::op_reinit);
+
+    SQL->likelihood_cond_count_remove->bind_int(1, pLTI_ID);
+    SQL->likelihood_cond_count_remove->execute(soar_module::op_reinit);
+
+    SQL->lti_count_num_appearances_remove->bind_int(1, pLTI_ID);
+    SQL->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
+
+    SQL->delete_old_spread->bind_int(1, pLTI_ID);
+    SQL->delete_old_spread->execute(soar_module::op_reinit);
+
+    SQL->act_lti_fake_delete->bind_int(1, pLTI_ID);
+    SQL->act_lti_fake_delete->execute(soar_module::op_reinit);
+
+    DB->sql_execute(("DELETE FROM smem_activation_history WHERE lti_id=" + std::to_string(pLTI_ID)).c_str());
+    DB->sql_execute(("DELETE FROM smem_lti_alias WHERE lti_id=" + std::to_string(pLTI_ID)).c_str());
+    DB->sql_execute(("DELETE FROM smem_likelihoods WHERE lti_i=" + std::to_string(pLTI_ID)).c_str());
+    DB->sql_execute(("DELETE FROM smem_trajectory_num WHERE lti_id=" + std::to_string(pLTI_ID)).c_str());
+    DB->sql_execute(("DELETE FROM smem_current_spread WHERE lti_id=" + std::to_string(pLTI_ID)).c_str());
+    DB->sql_execute(("DELETE FROM smem_uncommitted_spread WHERE lti_id=" + std::to_string(pLTI_ID) + " OR lti_source=" + std::to_string(pLTI_ID)).c_str());
+    DB->sql_execute(("DELETE FROM smem_committed_spread WHERE lti_id=" + std::to_string(pLTI_ID) + " OR lti_source=" + std::to_string(pLTI_ID)).c_str());
+
+    // Step 5: Delete the LTI itself
+    DB->sql_execute(("DELETE FROM smem_lti WHERE lti_id=" + std::to_string(pLTI_ID)).c_str());
+
+    statistics->nodes->set_value(statistics->nodes->get_value() - 1);
+}
+
 void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>* old_children = NULL)
 {
     // adjust attr, attr/value counts

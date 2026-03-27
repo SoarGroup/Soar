@@ -588,27 +588,10 @@ bool SMem_Manager::CLI_sweep_dominated(std::string& result, int64_t budget)
     {
         uint64_t lti_id = to_evict[i];
 
-        // Step 1: Disconnect augmentations (updates frequency tables, edge stats)
-        disconnect_ltm(lti_id, NULL);
-
-        // Step 2: Delete from all smem tables via raw SQL
-        // (No prepared DELETE FROM smem_lti statement exists)
-        std::string sql;
-
-        sql = "DELETE FROM smem_augmentations WHERE value_lti_id=" + std::to_string(lti_id);
-        DB->sql_execute(sql.c_str());
-
-        sql = "DELETE FROM smem_activation_history WHERE lti_id=" + std::to_string(lti_id);
-        DB->sql_execute(sql.c_str());
-
-        sql = "DELETE FROM smem_lti_alias WHERE lti_id=" + std::to_string(lti_id);
-        DB->sql_execute(sql.c_str());
-
-        sql = "DELETE FROM smem_lti WHERE lti_id=" + std::to_string(lti_id);
-        DB->sql_execute(sql.c_str());
-
-        // Step 3: Update node count
-        statistics->nodes->set_value(statistics->nodes->get_value() - 1);
+        // Full LTI deletion with proper bookkeeping: disconnects outgoing edges,
+        // updates inbound parent counts/frequencies, cleans all auxiliary tables,
+        // invalidates spreading activation, deletes the LTI row.
+        delete_ltm(lti_id);
 
         out << "  @" << lti_id << " (was dominated by @" << dominated_by[lti_id] << ") -- evicted\n";
         swept++;

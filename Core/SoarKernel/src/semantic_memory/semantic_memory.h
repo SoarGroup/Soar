@@ -179,6 +179,7 @@ class SMem_Manager
         inline void     count_child_connection(std::map<uint64_t, int64_t>* children, uint64_t child_lti_id);
         inline void     count_child_connection(std::map<uint64_t, uint64_t>* children, uint64_t child_lti_id);
         void            disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>* old_children);
+        void            delete_ltm(uint64_t pLTI_ID);
         ltm_slot*       make_ltm_slot(ltm_slot_map* slots, Symbol* attr);
         bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
