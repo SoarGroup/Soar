@@ -66,6 +66,7 @@
 #include <smem_print.cpp>
 #include <smem_query.cpp>
 #include <smem_settings.cpp>
+#include <smem_inclusion.cpp>
 #include <smem_store.cpp>
 #include <smem_timers.cpp>
 #include <soar_db.cpp>

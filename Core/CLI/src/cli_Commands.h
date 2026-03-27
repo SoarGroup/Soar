@@ -1283,6 +1283,7 @@ namespace cli
                     {'S', "stats",      OPTARG_NONE},
                     {'t', "timers",     OPTARG_NONE},
                     {'x', "export",     OPTARG_NONE},
+                    {'R', "redundancy-check", OPTARG_NONE},
                     {0, nullptr, OPTARG_NONE} // null
                 };
 
@@ -1393,6 +1394,15 @@ namespace cli
 
                     case 'P':
                         // case: precalculate takes no arguments
+                        if (!opt.CheckNumNonOptArgs(0,0))
+                        {
+                            return cli.SetError(opt.GetError());
+                        }
+
+                        return cli.DoSMem(option);
+
+                    case 'R':
+                        // case: redundancy-check takes no arguments
                         if (!opt.CheckNumNonOptArgs(0,0))
                         {
                             return cli.SetError(opt.GetError());

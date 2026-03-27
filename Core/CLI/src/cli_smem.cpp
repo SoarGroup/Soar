@@ -205,6 +205,13 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         thisAgent->SMem->calc_spread_trajectories();
         thisAgent->SMem->timers->total->stop();
     }
+    else if (pOp == 'R')
+    {
+        std::string result;
+        thisAgent->SMem->CLI_redundancy_check(result);
+        PrintCLIMessage(&result);
+        return true;
+    }
     else if (pOp == 'q')
     {
         std::string* err = new std::string;
