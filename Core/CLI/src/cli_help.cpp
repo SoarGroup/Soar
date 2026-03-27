@@ -3045,6 +3045,7 @@ void initdocstrings()
 		"  smem --query                           {(cue)* [<num>]}   Query smem via given cue\n"
 		"  smem --remove                 { (id [^attr [value]])* }   Remove smem structures\n"
 		"  smem --redundancy-check                                   Find dominated LTIs (experimental)\n"
+		"  smem --sweep-dominated                          [<num>]   Evict dominated LTIs (experimental)\n"
 		"  ------------------------ Printing ---------------------\n"
 		"  print                                                 @   Print all smem contents\n"
 		"  print                                             <LTI>   Print specific smem memory\n"

@@ -1284,6 +1284,7 @@ namespace cli
                     {'t', "timers",     OPTARG_NONE},
                     {'x', "export",     OPTARG_NONE},
                     {'R', "redundancy-check", OPTARG_NONE},
+                    {'W', "sweep-dominated", OPTARG_NONE},
                     {0, nullptr, OPTARG_NONE} // null
                 };
 
@@ -1409,6 +1410,22 @@ namespace cli
                         }
 
                         return cli.DoSMem(option);
+
+                    case 'W':
+                    {
+                        // case: sweep-dominated takes zero or one non-option argument (budget)
+                        if (!opt.CheckNumNonOptArgs(0, 1))
+                        {
+                            return cli.SetError(opt.GetError());
+                        }
+
+                        if (opt.GetNonOptionArguments() == 0)
+                        {
+                            return cli.DoSMem(option);
+                        }
+
+                        return cli.DoSMem(option, &(argv[2]));
+                    }
 
                     case 'r':
                     {

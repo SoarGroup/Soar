@@ -468,6 +468,38 @@ void SMemFunctionalTests::testISupportWithLearning()
 	runTest("smem-i-support", 6);
 }
 
+void SMemFunctionalTests::testSweepDominated()
+{
+    // Add three entries: @1 subset of @2, @3 independent
+    agent->ExecuteCommandLine("smem --add {(<a> ^name alice ^age 30)}");
+    agent->ExecuteCommandLine("smem --add {(<b> ^name alice ^age 30 ^city boston)}");
+    agent->ExecuteCommandLine("smem --add {(<c> ^name bob)}");
+
+    // Verify all three exist
+    std::string result = agent->ExecuteCommandLine("print @");
+    assertTrue_msg("Expected 3 LTIs before sweep", result.find("@1") != std::string::npos);
+    assertTrue_msg("Expected 3 LTIs before sweep", result.find("@2") != std::string::npos);
+    assertTrue_msg("Expected 3 LTIs before sweep", result.find("@3") != std::string::npos);
+
+    // Redundancy check should find @1 dominated by @2
+    result = agent->ExecuteCommandLine("smem --redundancy-check");
+    assertTrue_msg("Expected @1 dominated by @2", result.find("@1 is dominated by @2") != std::string::npos);
+
+    // Sweep should evict @1
+    result = agent->ExecuteCommandLine("smem --sweep-dominated");
+    assertTrue_msg("Expected @1 evicted", result.find("@1") != std::string::npos && result.find("evicted") != std::string::npos);
+
+    // Verify @1 is gone, @2 and @3 survive
+    result = agent->ExecuteCommandLine("print @");
+    assertTrue_msg("@1 should be gone after sweep", result.find("@1") == std::string::npos);
+    assertTrue_msg("@2 should survive sweep", result.find("@2") != std::string::npos);
+    assertTrue_msg("@3 should survive sweep", result.find("@3") != std::string::npos);
+
+    // Redundancy check should find nothing now
+    result = agent->ExecuteCommandLine("smem --redundancy-check");
+    assertTrue_msg("No redundancy after sweep", result.find("No redundant") != std::string::npos);
+}
+
 /***** Tests for LTI Aliases (LTI string constants in CLI commands) *****/
 void SMemFunctionalTests::testLTIAlias_SameRoot()
 {

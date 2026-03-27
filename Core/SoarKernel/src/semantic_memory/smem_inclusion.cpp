@@ -2,7 +2,7 @@
  * smem_inclusion.cpp
  *
  * Structural inclusion check for semantic memory (Kilpeläinen-Mannila 1995).
- * Experimental -- detection only, no eviction.
+ * Experimental -- detection and budgeted eviction (sweep).
  *
  * An LTI A "includes" LTI B if B's augmentation graph embeds injectively
  * into A's: every slot (attribute -> values) in B has a matching slot in A
@@ -17,10 +17,13 @@
 #include "semantic_memory.h"
 #include "smem_db.h"
 #include "smem_settings.h"
+#include "smem_stats.h"
 
 #include "agent.h"
 #include "output_manager.h"
 
+#include <algorithm>
+#include <functional>
 #include <map>
 #include <set>
 #include <vector>
@@ -415,6 +418,203 @@ bool SMem_Manager::CLI_redundancy_check(std::string& result)
         }
         out << "\n" << dominated_by.size() << " redundant LTI(s) found.\n";
     }
+
+    result.append(out.str());
+    return true;
+}
+
+/* ----------------------------------------------------------------
+ * R4 safety check: is an LTI currently referenced in working memory?
+ *
+ * Derbinsky & Laird's R4 forgetting policy removes WMEs that augment
+ * LTI-backed objects. If we evict the smem entry while WMEs in
+ * working memory still reference it, those WMEs become orphaned.
+ *
+ * Current implementation: conservative check via smem_in_wmem
+ * reference count. If the LTI has any WM references, it is
+ * protected from eviction.
+ *
+ * TODO: Track which WMEs were forgotten under R4 with a specific
+ * smem entry as backup. The current check protects live references
+ * but cannot detect already-forgotten WMEs that might need the
+ * smem entry for re-retrieval.
+ * ---------------------------------------------------------------- */
+static bool smem_lti_has_r4_dependents(SMem_Manager* smem, uint64_t lti_id)
+{
+    // Check if this LTI is currently referenced in working memory
+    if (smem->smem_in_wmem->find(lti_id) != smem->smem_in_wmem->end())
+    {
+        return true;
+    }
+    return false;
+}
+
+/* ----------------------------------------------------------------
+ * CLI_sweep_dominated: evict dominated LTIs with safety checks.
+ *
+ * 1. Run the dominated-set detection (same as CLI_redundancy_check)
+ * 2. Filter out R4-protected entries (in working memory)
+ * 3. For each entry to evict (up to budget):
+ *    a. Disconnect augmentations (update frequency tables)
+ *    b. Delete from smem_augmentations, smem_lti, smem_activation_history, smem_lti_alias
+ *    c. Decrement node count
+ * 4. Report what was evicted
+ * ---------------------------------------------------------------- */
+bool SMem_Manager::CLI_sweep_dominated(std::string& result, int64_t budget)
+{
+    attach();
+    if (!connected())
+    {
+        result.append("Semantic memory database not connected.");
+        return false;
+    }
+
+    // --- Mark phase: find dominated LTIs (same logic as CLI_redundancy_check) ---
+
+    std::vector<uint64_t> all_ltis;
+    soar_module::sqlite_statement* q = SQL->lti_all;
+    while (q->execute() == soar_module::row)
+    {
+        all_ltis.push_back(static_cast<uint64_t>(q->column_int(0)));
+    }
+    q->reinitialize();
+
+    if (all_ltis.empty())
+    {
+        result.append("No LTIs in semantic memory.\n");
+        return true;
+    }
+
+    std::ostringstream out;
+    out << "Scanning " << all_ltis.size() << " LTIs for redundancy...\n";
+
+    soar_module::sqlite_statement* expand_q = SQL->web_expand;
+
+    // Track domination relationships: dominated_lti -> dominator_lti
+    std::map<uint64_t, uint64_t> dominated_by;
+    size_t pairs_checked = 0;
+
+    for (size_t i = 0; i < all_ltis.size(); i++)
+    {
+        uint64_t lti_a = all_ltis[i];
+        if (dominated_by.count(lti_a)) continue;
+
+        for (size_t j = 0; j < all_ltis.size(); j++)
+        {
+            if (i == j) continue;
+
+            uint64_t lti_b = all_ltis[j];
+            if (dominated_by.count(lti_b) && dominated_by[lti_b] == lti_a) continue;
+            if (dominated_by.count(lti_a)) break;
+
+            pairs_checked++;
+
+            if (smem_lti_includes(this, expand_q, lti_a, lti_b))
+            {
+                if (!smem_lti_includes(this, expand_q, lti_b, lti_a))
+                {
+                    dominated_by[lti_b] = lti_a;
+                }
+                else if (lti_a < lti_b)
+                {
+                    dominated_by[lti_b] = lti_a;
+                }
+            }
+        }
+    }
+
+    out << "Checked " << pairs_checked << " pairs.\n";
+
+    if (dominated_by.empty())
+    {
+        out << "No redundant LTIs found. Nothing to sweep.\n";
+        result.append(out.str());
+        return true;
+    }
+
+    out << "Found " << dominated_by.size() << " dominated LTI(s).\n\n";
+
+    // --- Filter phase: exclude R4-protected entries ---
+
+    std::vector<uint64_t> to_evict;
+    std::vector<uint64_t> protected_ltis;
+
+    for (auto& entry : dominated_by)
+    {
+        if (smem_lti_has_r4_dependents(this, entry.first))
+        {
+            protected_ltis.push_back(entry.first);
+        }
+        else
+        {
+            to_evict.push_back(entry.first);
+        }
+    }
+
+    if (!protected_ltis.empty())
+    {
+        out << "R4-protected (in working memory), skipping " << protected_ltis.size() << ":\n";
+        for (auto lti_id : protected_ltis)
+        {
+            out << "  @" << lti_id << " (dominated by @" << dominated_by[lti_id] << ")\n";
+        }
+        out << "\n";
+    }
+
+    if (to_evict.empty())
+    {
+        out << "All dominated LTIs are R4-protected. Nothing to sweep.\n";
+        result.append(out.str());
+        return true;
+    }
+
+    // Apply budget
+    int64_t evict_count = static_cast<int64_t>(to_evict.size());
+    if (budget > 0 && budget < evict_count)
+    {
+        evict_count = budget;
+        out << "Budget limits sweep to " << budget << " of " << to_evict.size() << " candidates.\n";
+    }
+
+    // --- Sweep phase: evict in dependency-safe order ---
+    // Process in reverse LTI ID order so children are removed before parents
+    // (a dominated child is more likely to have a higher ID than its dominator)
+    std::sort(to_evict.begin(), to_evict.end(), std::greater<uint64_t>());
+
+    int64_t swept = 0;
+    out << "Sweeping:\n";
+
+    for (size_t i = 0; i < static_cast<size_t>(evict_count); i++)
+    {
+        uint64_t lti_id = to_evict[i];
+
+        // Step 1: Disconnect augmentations (updates frequency tables, edge stats)
+        disconnect_ltm(lti_id, NULL);
+
+        // Step 2: Delete from all smem tables via raw SQL
+        // (No prepared DELETE FROM smem_lti statement exists)
+        std::string sql;
+
+        sql = "DELETE FROM smem_augmentations WHERE value_lti_id=" + std::to_string(lti_id);
+        DB->sql_execute(sql.c_str());
+
+        sql = "DELETE FROM smem_activation_history WHERE lti_id=" + std::to_string(lti_id);
+        DB->sql_execute(sql.c_str());
+
+        sql = "DELETE FROM smem_lti_alias WHERE lti_id=" + std::to_string(lti_id);
+        DB->sql_execute(sql.c_str());
+
+        sql = "DELETE FROM smem_lti WHERE lti_id=" + std::to_string(lti_id);
+        DB->sql_execute(sql.c_str());
+
+        // Step 3: Update node count
+        statistics->nodes->set_value(statistics->nodes->get_value() - 1);
+
+        out << "  @" << lti_id << " (was dominated by @" << dominated_by[lti_id] << ") -- evicted\n";
+        swept++;
+    }
+
+    out << "\n" << swept << " LTI(s) evicted.\n";
 
     result.append(out.str());
     return true;

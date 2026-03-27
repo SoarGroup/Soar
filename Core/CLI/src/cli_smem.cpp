@@ -215,6 +215,25 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         PrintCLIMessage(&result);
         return true;
     }
+    else if (pOp == 'W')
+    {
+        int64_t budget = -1; // default: no limit
+        if (pArg1)
+        {
+            from_c_string(budget, pArg1->c_str());
+            if (budget <= 0)
+            {
+                return SetError("Budget must be a positive integer.");
+            }
+        }
+        std::string result;
+        if (!thisAgent->SMem->CLI_sweep_dominated(result, budget))
+        {
+            return SetError(result);
+        }
+        PrintCLIMessage(&result);
+        return true;
+    }
     else if (pOp == 'q')
     {
         std::string* err = new std::string;

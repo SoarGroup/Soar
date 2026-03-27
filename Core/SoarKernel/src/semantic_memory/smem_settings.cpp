@@ -339,6 +339,7 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --query ","{(cue)* [<num>]}", 55).c_str(), "Query for concepts in semantic store matching cue");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --remove","{ (id [^attr [value]])* }", 55).c_str(), "Remove semantic memory structures");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --redundancy-check","", 55).c_str(), "Find dominated LTIs (experimental)");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --sweep-dominated","[<num>]", 55).c_str(), "Evict dominated LTIs (experimental)");
     outputManager->printa(thisAgent, "------------------------ Printing ---------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("print","@", 55).c_str(), "Print all of semantic memory");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("print","<LTI>", 55).c_str(), "Print specific semantic memory");

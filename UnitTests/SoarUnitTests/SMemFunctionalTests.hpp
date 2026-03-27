@@ -133,6 +133,9 @@ public:
 	TEST(testMultiAgent, -1)
 	void testMultiAgent();
 
+	TEST(testSweepDominated, -1)
+	void testSweepDominated();
+
     // Tests for LTI Aliases (LTI string constants in CLI commands)
 	TEST(testLTIAlias_SameRoot, -1)
 	void testLTIAlias_SameRoot();
