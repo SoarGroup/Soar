@@ -136,6 +136,9 @@ public:
 	TEST(testSweepDominated, -1)
 	void testSweepDominated();
 
+	TEST(testSweepDominatedWithInboundRefs, -1)
+	void testSweepDominatedWithInboundRefs();
+
     // Tests for LTI Aliases (LTI string constants in CLI commands)
 	TEST(testLTIAlias_SameRoot, -1)
 	void testLTIAlias_SameRoot();

@@ -138,8 +138,11 @@ void SMem_Manager::delete_ltm(uint64_t pLTI_ID)
 
     soar_module::sqlite_statement* inbound_q =
             new soar_module::sqlite_statement(DB, "SELECT lti_id, attribute_s_id FROM smem_augmentations WHERE value_lti_id=?");
+    // Check if parent retains this attribute via any other augmentation (LTI or constant).
+    // value_lti_id is NULL for constants, so use (value_lti_id IS NULL OR value_lti_id<>?)
+    // to correctly include constant-valued rows in the check.
     soar_module::sqlite_statement* remaining_attr_q =
-            new soar_module::sqlite_statement(DB, "SELECT 1 FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_lti_id<>? LIMIT 1");
+            new soar_module::sqlite_statement(DB, "SELECT 1 FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND (value_lti_id IS NULL OR value_lti_id<>?) LIMIT 1");
     inbound_q->prepare();
     remaining_attr_q->prepare();
 

@@ -500,6 +500,40 @@ void SMemFunctionalTests::testSweepDominated()
     assertTrue_msg("No redundancy after sweep", result.find("No redundant") != std::string::npos);
 }
 
+void SMemFunctionalTests::testSweepDominatedWithInboundRefs()
+{
+    // @1 has ^name alice (constant) and ^friend @2 (LTI child)
+    // @2 has ^name bob
+    // @3 has ^name bob ^age 30 (dominates @2)
+    // After sweep: @2 should be evicted (dominated by @3),
+    // @1 should survive with ^name alice intact, ^friend edge removed
+    agent->ExecuteCommandLine("smem --add {(<a> ^name alice ^friend <b>) (<b> ^name bob)}");
+    agent->ExecuteCommandLine("smem --add {(<c> ^name bob ^age 30)}");
+
+    // Verify setup: @1 has ^name (constant) and ^friend @2 (LTI)
+    std::string result = agent->ExecuteCommandLine("print @1");
+    assertTrue_msg("@1 should have ^friend before sweep", result.find("friend") != std::string::npos);
+    assertTrue_msg("@1 should have ^name before sweep", result.find("name") != std::string::npos);
+
+    // @2 is dominated by @3
+    result = agent->ExecuteCommandLine("smem --redundancy-check");
+    assertTrue_msg("Expected @2 dominated by @3", result.find("@2 is dominated by @3") != std::string::npos);
+
+    // Sweep should evict @2
+    result = agent->ExecuteCommandLine("smem --sweep-dominated");
+    assertTrue_msg("Expected @2 evicted", result.find("@2") != std::string::npos && result.find("evicted") != std::string::npos);
+
+    // @2 should be gone
+    result = agent->ExecuteCommandLine("print @");
+    assertTrue_msg("@2 should be gone after sweep", result.find("@2") == std::string::npos);
+    assertTrue_msg("@1 should survive", result.find("@1") != std::string::npos);
+    assertTrue_msg("@3 should survive", result.find("@3") != std::string::npos);
+
+    // @1 should still have ^name (constant attribute retained despite LTI child removed)
+    result = agent->ExecuteCommandLine("print @1");
+    assertTrue_msg("@1 should retain ^name after sweep", result.find("name") != std::string::npos);
+}
+
 /***** Tests for LTI Aliases (LTI string constants in CLI commands) *****/
 void SMemFunctionalTests::testLTIAlias_SameRoot()
 {
