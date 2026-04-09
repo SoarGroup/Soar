@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.23)
 project(soar
   VERSION 9.6.5
-  LANGUAGES CXX)
+  LANGUAGES CXX C)
+
+set(SOAR_LIB "${PROJECT_NAME}_lib")
 
 # Generate compile_commands.json for IDE support and static analysis tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -74,15 +76,36 @@ file(GLOB_RECURSE HEADERS
   "Core/shared/portability_posix.h"
 )
 
-if(NOT SVS)
+# Add additional files/dependencies if SVS is enabled
+if(SVS)
+  message(STATUS "Soar: Enabling SVS")
+  find_package(asio REQUIRED)
+  find_package(Eigen3 REQUIRED)
+
+  # Build ccd as a static library (conan's libccd does not work for our needs)
+  add_subdirectory(Core/SVS/ccd)
+
+  list(APPEND SOURCES
+    Core/SVS/SVS_cmake.cxx
+  )
+
+  file(GLOB_RECURSE SVS_HEADERS
+    "Core/SVS/src/*.h"
+    "Core/SVS/src/commands/*.h"
+    "Core/SVS/src/filters/*.h"
+  )
+  list(APPEND HEADERS ${SVS_HEADERS})
+else()
   message(STATUS "Soar: Disabling SVS")
   add_compile_definitions(NO_SVS)
 endif()
 
+
+
 # Add executable/library target
-add_library(${PROJECT_NAME}_lib ${SOURCES})
-set_target_properties(${PROJECT_NAME}_lib PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_include_directories(${PROJECT_NAME}_lib PUBLIC
+add_library(${SOAR_LIB} ${SOURCES})
+set_target_properties(${SOAR_LIB} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(${SOAR_LIB} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/CLI/src>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/ClientSML/src>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/ConnectionSML/src>
@@ -104,9 +127,28 @@ target_include_directories(${PROJECT_NAME}_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/shared>
   $<INSTALL_INTERFACE:include/soar>
 )
-target_link_libraries(${PROJECT_NAME}_lib PUBLIC SQLite::SQLite3)
+target_link_libraries(${SOAR_LIB} PUBLIC SQLite::SQLite3)
 
-set_target_properties(${PROJECT_NAME}_lib
+if(SVS)
+  target_include_directories(${SOAR_LIB} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SVS/ccd>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SVS/src>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SVS/src/filters>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SVS/src/commands>
+  )
+
+  target_link_libraries(${SOAR_LIB} PUBLIC asio::asio)
+  target_link_libraries(${SOAR_LIB} PUBLIC Eigen3::Eigen)
+  target_link_libraries(${SOAR_LIB} PUBLIC ccd)
+
+  # asio requires _WIN32_WINNT >= 0x0601 (Windows 7+)
+  if(WIN32)
+    target_compile_definitions(${SOAR_LIB} PRIVATE _WIN32_WINNT=0x0601)
+  endif()
+endif()
+
+
+set_target_properties(${SOAR_LIB}
   PROPERTIES
   PUBLIC_HEADER "${HEADERS}"
   OUTPUT_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
@@ -114,7 +156,7 @@ set_target_properties(${PROJECT_NAME}_lib
 set(CXX_STANDARD_REQUIRED True)
 
 # Set the C++ standard for this and all downstream targets
-target_compile_features(${PROJECT_NAME}_lib PUBLIC
+target_compile_features(${SOAR_LIB} PUBLIC
   cxx_std_17
 )
 
@@ -124,16 +166,16 @@ target_compile_features(${PROJECT_NAME}_lib PUBLIC
 # Without either, EXPORT resolves to __declspec(dllimport) which breaks compilation.
 if(WIN32)
   if(BUILD_SHARED_LIBS)
-    target_compile_definitions(${PROJECT_NAME}_lib PRIVATE _USRDLL)
+    target_compile_definitions(${SOAR_LIB} PRIVATE _USRDLL)
   else()
-    target_compile_definitions(${PROJECT_NAME}_lib PUBLIC STATIC_LINKED)
+    target_compile_definitions(${SOAR_LIB} PUBLIC STATIC_LINKED)
   endif()
 endif()
 
 if($<CONFIG:DEBUG>)
-  target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wpedantic>)
+  target_compile_options(${SOAR_LIB} PRIVATE $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wpedantic>)
 
-  target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:MSVC>: /Wall /permissive>)
+  target_compile_options(${SOAR_LIB} PRIVATE $<$<CXX_COMPILER_ID:MSVC>: /Wall /permissive>)
 
   if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     if(ASAN)
@@ -162,7 +204,7 @@ write_basic_package_version_file(
   COMPATIBILITY SameMajorVersion)
 
 # This only sets up the install structure, but no installation happens yet.
-install(TARGETS ${PROJECT_NAME}_lib
+install(TARGETS ${SOAR_LIB}
   EXPORT SoarTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -197,7 +239,7 @@ export(EXPORT SoarTargets
   FILE "${CMAKE_CURRENT_BINARY_DIR}/SoarTargets.cmake"
 )
 
-add_library(soar::soar_lib ALIAS ${PROJECT_NAME}_lib)
+add_library(soar::soar_lib ALIAS ${SOAR_LIB})
 
 if(CLI)
   message(STATUS "Soar: Building CLI")
