@@ -84,3 +84,58 @@ jobs:
           name: ${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'static' }}.deb
           path: |
             soar-*.deb
+
+  build-windows:
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        build_type: [Release, Debug]
+        build_shared_libs: [ON, OFF]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+
+      - name: Install Conan and Ninja
+        run: pip install conan ninja
+
+      - name: Configure Conan
+        run: conan profile detect
+
+      - name: Install dependencies
+        run: |
+          conan install . --build=missing -s build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
+          conan install . --build=missing -s build_type=Debug -c tools.cmake.cmaketoolchain:generator=Ninja
+
+      - name: Configure CMake
+        run: >
+          cmake --preset ${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'test' }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'test' }}
+
+      - name: Test
+        run: ctest --preset ${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'test' }}
+
+      - name: Package
+        if: ${{ matrix.build_type == 'Release' &&  (github.event_name == 'release' || github.event_name == 'workflow_dispatch')  }}
+        run: |
+          cpack --preset ${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'test' }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.build_type == 'Release' &&  (github.event_name == 'release' || github.event_name == 'workflow_dispatch')  }}
+        with:
+          name: windows-${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'static' }}.zip
+          path: |
+            soar-*.zip

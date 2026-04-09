@@ -10,7 +10,7 @@ from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
 
 class soarRecipe(ConanFile):
     name = "soar"
-    version = "9.6.3"
+    version = "9.6.5"
     package_type = "application"
 
     # Binary configuration

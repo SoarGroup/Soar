@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 project(soar_cli
-    VERSION 9.6.3
+    VERSION 9.6.5
     LANGUAGES CXX)
 
 add_executable(soar soar_cli.cpp)

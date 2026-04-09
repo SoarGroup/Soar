@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 project(soar
-  VERSION 9.6.3
+  VERSION 9.6.5
   LANGUAGES CXX)
 
 # Generate compile_commands.json for IDE support and static analysis tools
@@ -118,6 +118,18 @@ target_compile_features(${PROJECT_NAME}_lib PUBLIC
   cxx_std_17
 )
 
+# On Windows, Export.h needs a define to resolve the EXPORT macro correctly:
+#   Shared builds: _USRDLL  -> __declspec(dllexport)
+#   Static builds: STATIC_LINKED -> (empty)
+# Without either, EXPORT resolves to __declspec(dllimport) which breaks compilation.
+if(WIN32)
+  if(BUILD_SHARED_LIBS)
+    target_compile_definitions(${PROJECT_NAME}_lib PRIVATE _USRDLL)
+  else()
+    target_compile_definitions(${PROJECT_NAME}_lib PUBLIC STATIC_LINKED)
+  endif()
+endif()
+
 if($<CONFIG:DEBUG>)
   target_compile_options(${PROJECT_NAME}_lib PRIVATE $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wpedantic>)
 
@@ -216,6 +228,10 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSIO
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
 set(CPACK_PACKAGE_VENDOR "University of Michigan Soar Group")
 list(APPEND CPACK_GENERATOR "TGZ")
+
+if(WIN32)
+  list(APPEND CPACK_GENERATOR "ZIP")
+endif()
 
 if(UNIX AND NOT APPLE)
   list(APPEND CPACK_GENERATOR "DEB")
