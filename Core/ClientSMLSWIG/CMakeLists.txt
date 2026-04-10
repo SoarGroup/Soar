@@ -6,15 +6,19 @@ option(SWIG "Build all SWIG bindings" OFF)
 option(SWIG_PYTHON "Build Python SWIG bindings" OFF)
 option(SWIG_JAVA "Build Java SWIG bindings" OFF)
 option(SWIG_JAVASCRIPT "Build JavaScript SWIG bindings" OFF)
+option(SWIG_TCL "Build Tcl SWIG bindings" OFF)
+option(SWIG_CSHARP "Build C# SWIG bindings" OFF)
 
 if(SWIG)
     set(SWIG_PYTHON ON CACHE BOOL "Build Python SWIG bindings" FORCE)
     set(SWIG_JAVA ON CACHE BOOL "Build Java SWIG bindings" FORCE)
     set(SWIG_JAVASCRIPT ON CACHE BOOL "Build JavaScript SWIG bindings" FORCE)
+    set(SWIG_TCL ON CACHE BOOL "Build Tcl SWIG bindings" FORCE)
+    set(SWIG_CSHARP ON CACHE BOOL "Build C# SWIG bindings" FORCE)
 endif()
 
 # Find SWIG (required for all bindings)
-if(SWIG OR SWIG_PYTHON OR SWIG_JAVA OR SWIG_JAVASCRIPT)
+if(SWIG OR SWIG_PYTHON OR SWIG_JAVA OR SWIG_JAVASCRIPT OR SWIG_TCL OR SWIG_CSHARP)
     find_package(SWIG REQUIRED)
     include(${SWIG_USE_FILE})
 
@@ -273,6 +277,7 @@ if(SWIG_JAVA)
 
     # Add Java directory to SWIG flags
     list(APPEND JAVA_SWIG_FLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/Java)
+    list(APPEND JAVA_SWIG_FLAGS -package sml)
 
     # Copy JavaCallbackByHand.h to the build directory
     configure_file(
@@ -321,23 +326,15 @@ if(SWIG_JAVA)
         target_compile_options(soar_sml_java PRIVATE -Wno-unused -fno-strict-aliasing)
     endif()
 
-    # Create a script to compile Java files and create JAR
-    set(COMPILE_JAVA_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/compile_java.sh")
-    file(WRITE "${COMPILE_JAVA_SCRIPT}"
-        "#!/bin/bash
-set -e
-cd \"${CMAKE_CURRENT_BINARY_DIR}/java\"
-mkdir -p classes
-${Java_JAVAC_EXECUTABLE} -d classes *.java
-${Java_JAR_EXECUTABLE} cf sml.jar -C classes .
-echo \"Java compilation and JAR creation completed\"
-")
-
+    # Compile Java files and create JAR (cross-platform)
     add_custom_command(
         TARGET soar_sml_java POST_BUILD
-        COMMAND chmod +x "${COMPILE_JAVA_SCRIPT}"
-        COMMAND "${COMPILE_JAVA_SCRIPT}"
-        COMMENT "Compiling Java files and creating JAR"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/java/classes"
+        COMMAND ${Java_JAVAC_EXECUTABLE} -d "${CMAKE_CURRENT_BINARY_DIR}/java/classes"
+                "${CMAKE_CURRENT_BINARY_DIR}/java/*.java"
+        COMMAND ${Java_JAR_EXECUTABLE} cf "${CMAKE_CURRENT_BINARY_DIR}/java/sml.jar"
+                -C "${CMAKE_CURRENT_BINARY_DIR}/java/classes" .
+        COMMENT "Compiling Java files and creating sml.jar"
         VERBATIM
     )
 
@@ -356,4 +353,196 @@ echo \"Java compilation and JAR creation completed\"
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/java/sml.jar"
         DESTINATION java
     )
+endif()
+
+# Tcl bindings
+if(SWIG_TCL)
+    message(STATUS "Soar SWIG: Building Tcl bindings")
+
+    find_package(TCL REQUIRED)
+
+    # Set Tcl-specific SWIG flags
+    set(TCL_SWIG_FLAGS ${CMAKE_SWIG_FLAGS})
+
+    # Add include directories to SWIG flags
+    foreach(dir ${SWIG_INCLUDE_DIRS})
+        list(APPEND TCL_SWIG_FLAGS -I${dir})
+    endforeach()
+
+    list(APPEND TCL_SWIG_FLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/Tcl)
+
+    set(TCL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/tcl")
+    set(TCL_INTERFACE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Tcl/Tcl_sml_ClientInterface.i")
+    set(TCL_COMMON_INTERFACE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/sml_ClientInterface.i")
+    set(TCL_WRAP_FILE "${CMAKE_CURRENT_BINARY_DIR}/Tcl_sml_ClientInterface_wrap.cpp")
+
+    add_custom_command(
+        OUTPUT ${TCL_WRAP_FILE}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${TCL_OUTPUT_DIR}"
+        COMMAND ${SWIG_EXECUTABLE} ${TCL_SWIG_FLAGS}
+                -tcl
+                -pkgversion ${PROJECT_VERSION}
+                -o "${TCL_WRAP_FILE}"
+                "${TCL_INTERFACE_FILE}"
+        DEPENDS ${TCL_INTERFACE_FILE} ${TCL_COMMON_INTERFACE_FILE}
+        COMMENT "Generating Tcl SWIG wrapper sources"
+        VERBATIM
+    )
+
+    add_library(soar_sml_tcl MODULE ${TCL_WRAP_FILE})
+
+    target_link_libraries(soar_sml_tcl PRIVATE soar_lib ${TCL_LIBRARY})
+    target_include_directories(soar_sml_tcl PRIVATE
+        ${TCL_INCLUDE_PATH}
+        ${SWIG_INCLUDE_DIRS}
+    )
+
+    set_target_properties(soar_sml_tcl PROPERTIES
+        OUTPUT_NAME "Tcl_sml_ClientInterface"
+        PREFIX ""
+    )
+
+    if(APPLE)
+        set_target_properties(soar_sml_tcl PROPERTIES SUFFIX ".dylib")
+    elseif(UNIX)
+        set_target_properties(soar_sml_tcl PROPERTIES SUFFIX ".so")
+    endif()
+
+    # Determine platform for pkgIndex.tcl
+    if(WIN32)
+        set(TCL_PLATFORM "win")
+    elseif(APPLE)
+        set(TCL_PLATFORM "mac")
+    else()
+        set(TCL_PLATFORM "linux")
+    endif()
+
+    # Copy platform-specific pkgIndex.tcl
+    add_custom_command(TARGET soar_sml_tcl POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/Tcl/pkgIndex_${TCL_PLATFORM}.tcl"
+            "${TCL_OUTPUT_DIR}/pkgIndex.tcl"
+        COMMENT "Copying pkgIndex_${TCL_PLATFORM}.tcl"
+    )
+
+    # Copy the shared library to the tcl output directory
+    add_custom_command(TARGET soar_sml_tcl POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "$<TARGET_FILE:soar_sml_tcl>"
+            "${TCL_OUTPUT_DIR}/"
+        COMMENT "Copying Tcl SWIG module to output directory"
+    )
+
+    install(TARGETS soar_sml_tcl
+        LIBRARY DESTINATION tcl
+        RUNTIME DESTINATION tcl
+    )
+
+    install(FILES "${TCL_OUTPUT_DIR}/pkgIndex.tcl"
+        DESTINATION tcl
+    )
+
+    install(FILES "Tcl/TestTclSML.tcl"
+        DESTINATION tcl
+    )
+endif()
+
+# C# bindings
+if(SWIG_CSHARP)
+    message(STATUS "Soar SWIG: Building C# bindings")
+
+    find_program(DOTNET_EXECUTABLE dotnet)
+    if(NOT DOTNET_EXECUTABLE)
+        message(WARNING "SWIG_CSHARP is ON, but dotnet executable was not found. Native wrapper will be built but managed assembly requires dotnet.")
+    endif()
+
+    # Set C#-specific SWIG flags
+    set(CSHARP_SWIG_FLAGS ${CMAKE_SWIG_FLAGS})
+
+    # Add include directories to SWIG flags
+    foreach(dir ${SWIG_INCLUDE_DIRS})
+        list(APPEND CSHARP_SWIG_FLAGS -I${dir})
+    endforeach()
+
+    list(APPEND CSHARP_SWIG_FLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/CSharp)
+
+    set(CSHARP_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/csharp/src")
+    set(CSHARP_INTERFACE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CSharp/CSharp_sml_ClientInterface.i")
+    set(CSHARP_COMMON_INTERFACE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/sml_ClientInterface.i")
+    set(CSHARP_WRAP_FILE "${CMAKE_CURRENT_BINARY_DIR}/CSharp_sml_ClientInterface_wrap.cpp")
+
+    add_custom_command(
+        OUTPUT ${CSHARP_WRAP_FILE}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CSHARP_OUTPUT_DIR}"
+        COMMAND ${SWIG_EXECUTABLE} ${CSHARP_SWIG_FLAGS}
+                -csharp
+                -namespace sml
+                -dllimport CSharp_sml_ClientInterface
+                -outdir "${CSHARP_OUTPUT_DIR}"
+                -o "${CSHARP_WRAP_FILE}"
+                "${CSHARP_INTERFACE_FILE}"
+        DEPENDS ${CSHARP_INTERFACE_FILE} ${CSHARP_COMMON_INTERFACE_FILE}
+        COMMENT "Generating C# SWIG wrapper sources"
+        VERBATIM
+    )
+
+    # Build the native wrapper library
+    add_library(soar_sml_csharp MODULE ${CSHARP_WRAP_FILE})
+
+    target_link_libraries(soar_sml_csharp PRIVATE soar_lib)
+    target_include_directories(soar_sml_csharp PRIVATE
+        ${SWIG_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/CSharp
+    )
+
+    set_target_properties(soar_sml_csharp PROPERTIES
+        OUTPUT_NAME "CSharp_sml_ClientInterface"
+        PREFIX ""
+    )
+
+    # Copy native library to csharp output
+    set(CSHARP_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/csharp")
+    add_custom_command(TARGET soar_sml_csharp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "$<TARGET_FILE:soar_sml_csharp>"
+            "${CSHARP_LIB_OUTPUT_DIR}/"
+        COMMENT "Copying C# native wrapper to output directory"
+    )
+
+    # Build the managed assembly if dotnet is available
+    if(DOTNET_EXECUTABLE)
+        set(CSHARP_CSPROJ "${CSHARP_LIB_OUTPUT_DIR}/sml_csharp.csproj")
+        file(WRITE "${CSHARP_CSPROJ}"
+"<Project Sdk=\"Microsoft.NET.Sdk\">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>sml_csharp</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include=\"src/**/*.cs\" />
+  </ItemGroup>
+</Project>
+")
+
+        add_custom_command(TARGET soar_sml_csharp POST_BUILD
+            COMMAND ${DOTNET_EXECUTABLE} build "${CSHARP_CSPROJ}"
+                    -o "${CSHARP_LIB_OUTPUT_DIR}" -c Release --nologo -v quiet
+            COMMENT "Building C# managed assembly (sml_csharp.dll)"
+            VERBATIM
+        )
+    endif()
+
+    install(TARGETS soar_sml_csharp
+        LIBRARY DESTINATION csharp
+        RUNTIME DESTINATION csharp
+    )
+
+    if(DOTNET_EXECUTABLE)
+        install(FILES "${CSHARP_LIB_OUTPUT_DIR}/sml_csharp.dll"
+            DESTINATION csharp
+            OPTIONAL
+        )
+    endif()
 endif()
