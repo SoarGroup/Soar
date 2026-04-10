@@ -101,6 +101,20 @@
                 "SVS": "ON",
                 "CLI": "ON"
             }
+        },
+        {
+            "name": "Release-swig",
+            "displayName": "Release with all SWIG bindings + Java Debugger",
+            "inherits": "conan-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "ON",
+                "SVS": "ON",
+                "CLI": "ON",
+                "SWIG_TCL": "ON",
+                "SWIG_JAVA": "ON",
+                "JAVA_DEBUGGER": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -138,6 +152,11 @@
             "name": "Release-svs-test",
             "displayName": "Build Release with SVS Test",
             "configurePreset": "Release-svs-test"
+        },
+        {
+            "name": "Release-swig",
+            "displayName": "Build Release with SWIG bindings",
+            "configurePreset": "Release-swig"
         }
     ],
     "testPresets": [
