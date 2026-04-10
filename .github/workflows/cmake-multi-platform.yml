@@ -85,6 +85,95 @@ jobs:
           path: |
             soar-*.deb
 
+  build-swig:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install Conan and Ninja
+        run: pip install conan ninja
+
+      - name: Configure Conan
+        run: conan profile detect
+
+      - name: Install SWIG (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y swig
+
+      - name: Install SWIG (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install swig
+
+      - name: Install SWIG (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install swig -y
+
+      - name: Install Tcl dev headers (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y tcl-dev
+
+      - name: Install Tcl dev headers (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install tcl-tk@8
+
+      - name: Install dependencies (Unix)
+        if: matrix.os != 'windows-latest'
+        run: conan install . --build=missing -s build_type=Release
+
+      - name: Install dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: conan install . --build=missing -s build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
+
+      - name: Configure CMake (Unix — with Tcl)
+        if: matrix.os != 'windows-latest'
+        run: cmake --preset Release-swig
+
+      - name: Configure CMake (Windows — without Tcl)
+        if: matrix.os == 'windows-latest'
+        run: cmake --preset Release-swig -DSWIG_TCL=OFF
+
+      - name: Build
+        run: cmake --build --preset Release-swig
+
+      - name: Verify SWIG artifacts
+        shell: bash
+        run: |
+          echo "=== Checking SWIG artifacts ==="
+          find . -name "sml.jar" -o -name "*sml_ClientInterface*" -o -name "soar-debugger*.jar" -o -name "soar-smljava.jar" -o -name "SoarJavaDebugger.jar" | head -20
+          echo "=== Done ==="
+
+      - name: Upload SWIG artifacts
+        uses: actions/upload-artifact@v4
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+        with:
+          name: swig-${{ matrix.os }}
+          path: |
+            build/**/java/*.jar
+            build/**/SoarJavaDebugger.jar
+            build/**/*sml_ClientInterface*
+            build/**/pkgIndex.tcl
+
   build-windows:
     runs-on: windows-latest
 
