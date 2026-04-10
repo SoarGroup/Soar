@@ -185,6 +185,13 @@ if { [string first "^rhstest success" [$kernel ExecuteCommandLine "print s1" Soa
 
 set result [$kernel ExecuteCommandLine "init-soar" Soar1]
 
+set input_link [$agent GetInputLink]
+if {[catch {$input_link GetParameterValue "non-existent"} msg]} {
+   puts "✅Correctly caught error:\n$errorInfo\n"
+} else {
+    puts "❌ Catching error FAILED"
+}
+
 $kernel DestroyAgent $agent
 
 # remove all the remaining kernel callback functions (not required, just to test)
