@@ -534,3 +534,8 @@ Testing/*
 ConanPresets.json
 _CPack*/*
 soar-*
+
+# CMake build artifacts at repo root
+CMakeCache.txt
+CMakeFiles/
+
