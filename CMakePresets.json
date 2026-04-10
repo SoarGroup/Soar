@@ -23,7 +23,7 @@
         {
             "name": "Debug-shared",
             "displayName": "Debug Shared Configuration",
-            "inherits": "conan-debug",
+            "inherits": "conan-release",
             "cacheVariables": {
                 "BUILD_SHARED_LIBS": "ON",
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -51,7 +51,7 @@
         {
             "name": "Debug-test",
             "displayName": "Debug Test Configuration",
-            "inherits": "conan-debug",
+            "inherits": "conan-release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "BUILD_TESTS": "ON",
@@ -65,7 +65,7 @@
         {
             "name": "Debug-swig",
             "displayName": "Debug with SWIG bindings",
-            "inherits": "conan-debug",
+            "inherits": "conan-release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "SWIG": "ON",
@@ -79,7 +79,7 @@
         {
             "name": "Debug-test-asan",
             "displayName": "Debug Test with ASAN",
-            "inherits": "conan-debug",
+            "inherits": "conan-release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "BUILD_TESTS": "ON",
@@ -107,51 +107,37 @@
         {
             "name": "Debug-shared",
             "displayName": "Build Debug Shared",
-            "configurePreset": "Debug-shared",
-            "configuration": "debug",
-            "inherits": "conan-debug"
+            "configurePreset": "Debug-shared"
         },
         {
             "name": "Release-shared",
             "displayName": "Build Release Shared",
-            "configurePreset": "Release-shared",
-            "configuration": "release",
-            "inherits": "conan-release"
+            "configurePreset": "Release-shared"
         },
         {
             "name": "Debug-test",
             "displayName": "Build Debug Test",
-            "configurePreset": "Debug-test",
-            "configuration": "debug",
-            "inherits": "conan-debug"
+            "configurePreset": "Debug-test"
         },
         {
             "name": "Debug-test-asan",
             "displayName": "Build Debug Test with ASAN",
-            "configurePreset": "Debug-test-asan",
-            "configuration": "debug",
-            "inherits": "conan-debug"
+            "configurePreset": "Debug-test-asan"
         },
         {
             "name": "Release-test",
             "displayName": "Build Release Test",
-            "configurePreset": "Release-test",
-            "configuration": "release",
-            "inherits": "conan-release"
+            "configurePreset": "Release-test"
         },
         {
             "name": "Debug-swig",
             "displayName": "Build Debug with SWIG bindings",
-            "configurePreset": "Debug-swig",
-            "configuration": "debug",
-            "inherits": "conan-debug"
+            "configurePreset": "Debug-swig"
         },
         {
             "name": "Release-svs-test",
             "displayName": "Build Release with SVS Test",
-            "configurePreset": "Release-svs-test",
-            "configuration": "release",
-            "inherits": "conan-release"
+            "configurePreset": "Release-svs-test"
         }
     ],
     "testPresets": [
@@ -159,7 +145,6 @@
             "name": "Debug-test",
             "displayName": "Test Debug",
             "configurePreset": "Debug-test",
-            "inherits": "conan-debug",
             "output": {
                 "outputOnFailure": true
             }
@@ -168,7 +153,6 @@
             "name": "Debug-test-asan",
             "displayName": "Test Debug ASAN",
             "configurePreset": "Debug-test-asan",
-            "inherits": "conan-debug",
             "output": {
                 "outputOnFailure": true
             }
@@ -177,7 +161,6 @@
             "name": "Debug-shared",
             "displayName": "Test Debug Shared",
             "configurePreset": "Debug-shared",
-            "inherits": "conan-debug",
             "output": {
                 "outputOnFailure": true
             }
