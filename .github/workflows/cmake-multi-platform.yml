@@ -145,9 +145,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: conan install . --build=missing -s build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
 
-      - name: Configure CMake (Unix — with Tcl)
-        if: matrix.os != 'windows-latest'
+      - name: Configure CMake (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: cmake --preset Release-swig
+
+      - name: Configure CMake (macOS — brew Tcl is keg-only)
+        if: matrix.os == 'macos-latest'
+        run: cmake --preset Release-swig -DCMAKE_PREFIX_PATH=$(brew --prefix tcl-tk@8)
 
       - name: Configure CMake (Windows — without Tcl)
         if: matrix.os == 'windows-latest'

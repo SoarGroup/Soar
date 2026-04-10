@@ -23,7 +23,7 @@
         {
             "name": "Debug-shared",
             "displayName": "Debug Shared Configuration",
-            "inherits": "conan-release",
+            "inherits": "conan-debug",
             "cacheVariables": {
                 "BUILD_SHARED_LIBS": "ON",
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -51,7 +51,7 @@
         {
             "name": "Debug-test",
             "displayName": "Debug Test Configuration",
-            "inherits": "conan-release",
+            "inherits": "conan-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "BUILD_TESTS": "ON",
@@ -65,7 +65,7 @@
         {
             "name": "Debug-swig",
             "displayName": "Debug with SWIG bindings",
-            "inherits": "conan-release",
+            "inherits": "conan-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "SWIG": "ON",
@@ -79,7 +79,7 @@
         {
             "name": "Debug-test-asan",
             "displayName": "Debug Test with ASAN",
-            "inherits": "conan-release",
+            "inherits": "conan-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "BUILD_TESTS": "ON",
