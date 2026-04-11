@@ -1,0 +1,159 @@
+# RL-substate agent for eval harness.
+#
+# Top-level: runs episodes. Each episode proposes a "solve" operator.
+# Operator-no-change impasse creates a substate.
+# In the substate: RL picks between pick-high and pick-low (stochastic),
+# reward fires, then a deterministic finish operator returns the result.
+#
+# Upstream: chunking blocked because the pick decision uses numeric prefs.
+# PR #577 chunk-gate on: after RL converges, pick becomes greedy → chunk fires.
+
+chunk always
+rl --set learning on
+
+# ============ TOP LEVEL ============
+
+sp {elaborate*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
+}
+
+sp {elaborate*top-state*down
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+
+sp {propose*solve
+   (state <s> ^name rl-substate-task
+              ^goal-value <gv>
+              ^episode <ep>
+              ^max-episodes {<max> >= <ep>}
+             -^episode-done <ep>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name solve ^goal-value <gv> ^episode <ep>)
+}
+
+sp {apply*next-episode
+   (state <s> ^name rl-substate-task
+              ^episode-done <ep>
+              ^episode <ep>)
+-->
+   (<s> ^episode <ep> - ^episode (+ <ep> 1)
+        ^episode-done <ep> -)
+}
+
+sp {halt*done
+   (state <s> ^name rl-substate-task
+              ^episode {<ep> > <max>}
+              ^max-episodes <max>)
+-->
+   (halt)
+}
+
+# ============ SUBSTATE ============
+
+sp {substate*elaborate
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^superstate <ss>)
+   (<ss> ^operator <so>)
+   (<so> ^name solve ^goal-value <gv> ^episode <ep>)
+-->
+   (<s> ^name solve-substate ^goal-value <gv> ^episode <ep>)
+}
+
+# --- RL choice (stochastic until convergence) ---
+
+sp {substate*propose*pick-high
+   (state <s> ^name solve-substate
+             -^picked)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name pick-high ^answer high)
+}
+
+sp {substate*propose*pick-low
+   (state <s> ^name solve-substate
+             -^picked)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name pick-low ^answer low)
+}
+
+sp {substate*rl*value
+   :template
+   (state <s> ^name solve-substate
+              ^goal-value <gv>
+             -^picked
+              ^operator <o> +)
+   (<o> ^name <op-name> ^answer <answer>)
+-->
+   (<s> ^operator <o> = 0.0)
+}
+
+# --- Apply pick: directly return result to superstate ---
+# This is the ONLY result-producing step. Since the pick decision
+# uses numeric preferences (RL), chunking is blocked on upstream.
+# PR #577 with chunk-gate on: after convergence, greedy selection
+# makes this deterministic → chunking fires.
+
+sp {substate*apply*pick-high
+   (state <s> ^name solve-substate
+              ^operator <o>
+              ^episode <ep>
+              ^superstate <ss>)
+   (<o> ^name pick-high ^answer high)
+-->
+   (<ss> ^episode-done <ep>)
+}
+
+sp {substate*apply*pick-low
+   (state <s> ^name solve-substate
+              ^operator <o>
+              ^episode <ep>
+              ^superstate <ss>)
+   (<o> ^name pick-low ^answer low)
+-->
+   (<ss> ^episode-done <ep>)
+}
+
+# --- Reward (fires on the pick operator's application) ---
+
+sp {substate*reward*correct-high
+   (state <s> ^name solve-substate
+              ^reward-link <rl>
+              ^goal-value high
+              ^operator.answer high)
+-->
+   (<rl> ^reward.value 1.0)
+}
+
+sp {substate*reward*correct-low
+   (state <s> ^name solve-substate
+              ^reward-link <rl>
+              ^goal-value low
+              ^operator.answer low)
+-->
+   (<rl> ^reward.value 1.0)
+}
+
+sp {substate*reward*wrong-high
+   (state <s> ^name solve-substate
+              ^reward-link <rl>
+              ^goal-value low
+              ^operator.answer high)
+-->
+   (<rl> ^reward.value -1.0)
+}
+
+sp {substate*reward*wrong-low
+   (state <s> ^name solve-substate
+              ^reward-link <rl>
+              ^goal-value high
+              ^operator.answer low)
+-->
+   (<rl> ^reward.value -1.0)
+}
