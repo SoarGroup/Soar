@@ -284,6 +284,9 @@ def apply_policy(diff, policy=None):
 
     lower_is_better = set(policy.get("lower_is_better", []))
     neutral = set(policy.get("neutral", []))
+    timing_floor = policy.get("timing_noise_floor", 0)
+    timing_rel = policy.get("timing_relative_threshold", 0)
+    timing_metrics = {"kernel_cpu_sec", "total_cpu_sec"}
 
     regressions = []
     improvements = []
@@ -306,6 +309,13 @@ def apply_policy(diff, policy=None):
             delta = info.get("delta", 0)
             if delta == 0:
                 continue
+
+            # Apply timing noise thresholds
+            if metric in timing_metrics:
+                abs_delta = abs(delta)
+                pct = abs(info.get("pct_change", 0))
+                if abs_delta < timing_floor and pct < timing_rel:
+                    continue  # below both thresholds, treat as noise
 
             if metric in neutral:
                 neutral_changes.append({
