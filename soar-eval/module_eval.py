@@ -237,8 +237,10 @@ def print_diff(diff):
         if status == "MISSING":
             print(f"{agent:<60} {'(missing)':<25}")
             continue
+        first_line = True
         if status:
             print(f"{agent:<60} {'status':<25} {status}")
+            first_line = False
         for m, info in sorted(metrics.items()):
             bv = info.get("base", "—")
             cv = info.get("candidate", "—")
@@ -246,7 +248,9 @@ def print_diff(diff):
             pct = info.get("pct_change", "")
             delta_str = f"{delta:+}" if isinstance(delta, (int, float)) else ""
             pct_str = f"{pct:+.1f}%" if isinstance(pct, (int, float)) else ""
-            print(f"{'':60} {m:<25} {str(bv):>10} {str(cv):>10} {delta_str:>10} {pct_str:>8}")
+            label = agent if first_line else ""
+            print(f"{label:<60} {m:<25} {str(bv):>10} {str(cv):>10} {delta_str:>10} {pct_str:>8}")
+            first_line = False
 
 
 ## ---------------------------------------------------------------------------

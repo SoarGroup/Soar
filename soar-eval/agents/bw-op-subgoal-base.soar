@@ -1,7 +1,10 @@
 # BW-Op-Subgoal agent WITHOUT the hardcoded initialization.
 # The eval harness sources a generated task initialization separately.
+#
+# Path is relative to the repo root. Run from the repo root or set
+# the working directory before sourcing this file.
 
-pushd "/Users/junekim/Documents/Soar/UnitTests/SoarTestAgents/Chunking/tests/BW-Op-Subgoal/BW-Op-Subgoal"
+pushd "UnitTests/SoarTestAgents/Chunking/tests/BW-Op-Subgoal/BW-Op-Subgoal"
 source _firstload.soar
 pushd all
 source all_source.soar
