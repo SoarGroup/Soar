@@ -19,9 +19,12 @@ from pathlib import Path
 
 from tasks.blocks_world import generate_tasks, write_task_file
 
-SOAR_CLI = Path(__file__).parent.parent / "build" / "SoarCLI" / "soar"
-BASE_AGENT = Path(__file__).parent / "agents" / "bw-op-subgoal-base.soar"
-RESULTS_DIR = Path(__file__).parent / "results"
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+
+SOAR_CLI = REPO_ROOT / "build" / "SoarCLI" / "soar"
+BASE_AGENT = SCRIPT_DIR / "agents" / "bw-op-subgoal-base.soar"
+RESULTS_DIR = SCRIPT_DIR / "results"
 MAX_DECISIONS = 500
 
 
@@ -71,7 +74,7 @@ def run_single_task(soar_cli, base_agent, task_file, chunking=True,
 
     proc = subprocess.run(
         [str(soar_cli), "-s", str(base_agent), cmd_str],
-        capture_output=True, text=True, timeout=30
+        capture_output=True, text=True, timeout=30, cwd=str(REPO_ROOT)
     )
 
     output = proc.stdout + proc.stderr
@@ -120,7 +123,7 @@ def save_chunks(soar_cli, base_agent, task_files, chunking=True,
 
     proc = subprocess.run(
         [str(soar_cli), "-s", str(base_agent), cmd_str],
-        capture_output=True, text=True, timeout=120
+        capture_output=True, text=True, timeout=120, cwd=str(REPO_ROOT)
     )
 
     output = proc.stdout + proc.stderr

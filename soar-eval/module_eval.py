@@ -17,8 +17,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-SOAR_CLI_DEFAULT = Path(__file__).parent.parent / "build" / "SoarCLI" / "soar"
-TEST_AGENTS_DIR = Path(__file__).parent.parent / "UnitTests" / "SoarTestAgents"
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+
+SOAR_CLI_DEFAULT = REPO_ROOT / "build" / "SoarCLI" / "soar"
+TEST_AGENTS_DIR = REPO_ROOT / "UnitTests" / "SoarTestAgents"
 
 # Suite definitions: directory glob patterns for test agents
 SUITES = {
@@ -35,8 +38,13 @@ SUITES = {
         "description": "Semantic memory functional tests",
     },
     "EpMemFunctionalTests": {
-        "glob": "epmem/EpMemFunctionalTests_*.soar",
+        "glob": "epmem/EpMem*.soar",
         "description": "Episodic memory functional tests",
+    },
+    "PerformanceTests": {
+        "glob": "*.soar",
+        "root": REPO_ROOT / "PerformanceTests" / "TestAgents",
+        "description": "Performance benchmark agents",
     },
 }
 
@@ -103,7 +111,7 @@ def run_test(soar_cli, agent_path, max_decisions=10000):
     try:
         proc = subprocess.run(
             [str(soar_cli), "-s", str(agent_path), f"run {max_decisions}; stats"],
-            capture_output=True, text=True, timeout=30
+            capture_output=True, text=True, timeout=30, cwd=str(REPO_ROOT)
         )
         output = proc.stdout + proc.stderr
         stats = parse_stats(output)
@@ -122,12 +130,13 @@ def discover_tests(suite_name):
         print(f"Unknown suite: {suite_name}. Available: {list(SUITES.keys())}")
         sys.exit(1)
 
-    pattern = SUITES[suite_name]["glob"]
-    agents = sorted(TEST_AGENTS_DIR.glob(pattern))
+    suite = SUITES[suite_name]
+    pattern = suite["glob"]
+    root = suite.get("root", TEST_AGENTS_DIR)
+    agents = sorted(root.glob(pattern))
 
-    # Also check non-nested patterns
     if not agents:
-        agents = sorted(TEST_AGENTS_DIR.glob(f"**/{pattern}"))
+        agents = sorted(root.glob(f"**/{pattern}"))
 
     return agents
 
@@ -371,7 +380,7 @@ def print_judgment(judgment):
 
 
 def cmd_run(args):
-    soar_cli = Path(args.soar)
+    soar_cli = Path(args.soar).expanduser().resolve()
     suites = args.suite if args.suite else list(SUITES.keys())
 
     all_results = {}
