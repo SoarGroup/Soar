@@ -1,3 +1,14 @@
 @PACKAGE_INIT@
 
-include ( "${CMAKE_CURRENT_LIST_DIR}/SoarTargets.cmake" )
+include(CMakeFindDependencyMacro)
+
+find_dependency(SQLite3)
+
+set(_soar_svs @SVS@)
+if(_soar_svs)
+  find_dependency(asio)
+  find_dependency(Eigen3)
+endif()
+unset(_soar_svs)
+
+include("${CMAKE_CURRENT_LIST_DIR}/SoarTargets.cmake")
