@@ -5,6 +5,10 @@ project(soar
 
 set(SOAR_LIB "${PROJECT_NAME}_lib")
 
+# Generate soarversion.h from template using project(VERSION) as single source of truth.
+# The generated file goes in the build tree; SCons builds use the hand-maintained original.
+configure_file(Core/shared/soarversion.h.in ${CMAKE_BINARY_DIR}/Core/shared/soarversion.h)
+
 # Generate compile_commands.json for IDE support and static analysis tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -74,7 +78,7 @@ file(GLOB_RECURSE HEADERS
   "Core/SoarKernel/src/visualizer/*.h"
   "Core/shared/Export.h"
   "Core/shared/build_time_date.h"
-  "Core/shared/soarversion.h"
+  "${CMAKE_BINARY_DIR}/Core/shared/soarversion.h"
   "Core/shared/tokenizer.h"
   "Core/shared/soar_TraceNames.h"
   "Core/shared/portability.h"
@@ -129,6 +133,7 @@ target_include_directories(${SOAR_LIB} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SoarKernel/src/shared>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SoarKernel/src/soar_representation>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SoarKernel/src/visualizer>
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/Core/shared>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/shared>
   $<INSTALL_INTERFACE:include/soar>
 )
