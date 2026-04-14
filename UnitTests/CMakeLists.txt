@@ -17,6 +17,7 @@ file(GLOB TEST_HEADERS
 )
 
 add_executable(${PROJECT_NAME} TestHarness/testMain.cpp ${TEST_SOURCES})
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "UnitTests")
 target_link_libraries(${PROJECT_NAME} soar_lib)
 target_compile_features(${PROJECT_NAME} PUBLIC
     cxx_std_17
@@ -37,17 +38,18 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 file(COPY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION ${CMAKE_BINARY_DIR}/UnitTests)
 
-# TODO: re-enable SVS tests once we implement the CMake build for it
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION .)
 # TODO: re-enable testLoadLibrary once we implement the CMake build for it
 # TESTS FROM CI:
 if(BUILD_TESTING)
     # Add CI tests only if TEST_CI_ENABLED is enabled (default ON if not specified)
     if(NOT DEFINED TEST_CI_ENABLED OR TEST_CI_ENABLED)
-        add_test(NAME test_ci COMMAND test_soar -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton -E SvsTests)
+        add_test(NAME test_ci COMMAND ${PROJECT_NAME} -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton -E SvsTests)
     endif()
 
     if(SVS)
-        add_test(NAME test_svs COMMAND test_soar -c SvsTests)
+        add_test(NAME test_svs COMMAND ${PROJECT_NAME} -c SvsTests)
     endif()
 
     # Python SML Interface Test

@@ -192,3 +192,7 @@ install(FILES ${LAUNCHER_JAR}
 foreach(jar ${DEBUGGER_EXTERNAL_JARS})
   install(FILES "${jar}" DESTINATION java)
 endforeach()
+
+foreach(jar ${SMLJAVA_EXTERNAL_JARS})
+  install(FILES "${jar}" DESTINATION java)
+endforeach()

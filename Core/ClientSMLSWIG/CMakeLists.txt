@@ -303,10 +303,10 @@ if(SWIG_JAVA)
         OUTPUT_NAME "Java_sml_ClientInterface"
     )
 
-    # On macOS, use .dylib extension for JNI libraries (not .jnilib)
+    # On macOS, use .jnilib extension for JNI libraries
     if(APPLE)
         set_target_properties(soar_sml_java PROPERTIES
-            SUFFIX ".dylib"
+            SUFFIX ".jnilib"
         )
     endif()
 
@@ -399,8 +399,12 @@ if(SWIG_TCL)
 
     set_target_properties(soar_sml_tcl PROPERTIES
         OUTPUT_NAME "Tcl_sml_ClientInterface"
-        PREFIX ""
     )
+
+    # Windows: no lib prefix; Unix: keep default lib prefix
+    if(WIN32)
+        set_target_properties(soar_sml_tcl PROPERTIES PREFIX "")
+    endif()
 
     if(APPLE)
         set_target_properties(soar_sml_tcl PROPERTIES SUFFIX ".dylib")
@@ -497,8 +501,12 @@ if(SWIG_CSHARP)
 
     set_target_properties(soar_sml_csharp PROPERTIES
         OUTPUT_NAME "CSharp_sml_ClientInterface"
-        PREFIX ""
     )
+
+    # Windows: no lib prefix; Unix: keep default lib prefix
+    if(WIN32)
+        set_target_properties(soar_sml_csharp PROPERTIES PREFIX "")
+    endif()
 
     # Copy native library to csharp output
     set(CSHARP_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/csharp")
