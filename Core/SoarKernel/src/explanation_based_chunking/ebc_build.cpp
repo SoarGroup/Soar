@@ -898,6 +898,12 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     if (m_rule_type == ebc_chunk)
     {
         lChunkValidated = reorder_and_validate_chunk();
+        
+        /* Remove contradictory tests from chunk if validation succeeded */
+        if (lChunkValidated)
+        {
+            remove_contradictory_tests_from_chunk();
+        }
     }
 
     /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there
