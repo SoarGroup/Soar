@@ -539,3 +539,6 @@ soar-*
 CMakeCache.txt
 CMakeFiles/
 
+# VS Code workspace file (personal IDE config)
+*.code-workspace
+
