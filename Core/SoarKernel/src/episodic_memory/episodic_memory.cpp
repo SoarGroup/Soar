@@ -2600,7 +2600,7 @@ inline void _epmem_store_level(agent* thisAgent,
                         if (r_p->second->my_id != EPMEM_NODEID_BAD)
                         {
                             (*w_p)->epmem_id = r_p->second->my_id;
-                            (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = my_id_repo2;
+                            (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = {my_id_repo2, (*w_p)->value->id->epmem_id};
 #ifdef DEBUG_EPMEM_WME_ADD
                             fprintf(stderr, "   Assigning id from existing pool: %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
@@ -2638,7 +2638,7 @@ inline void _epmem_store_level(agent* thisAgent,
                                     {
                                         (*w_p)->epmem_id = pool_p->second;
                                         (*my_id_repo)->erase(pool_p);
-                                        (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = (*my_id_repo);
+                                        (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = {(*my_id_repo), (*w_p)->value->id->epmem_id};
 #ifdef DEBUG_EPMEM_WME_ADD
                                         fprintf(stderr, "   Assigning id from existing pool: %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
@@ -2705,7 +2705,7 @@ inline void _epmem_store_level(agent* thisAgent,
 #endif
                                     (*w_p)->value->id->epmem_valid = thisAgent->EpMem->epmem_validation;
                                     (*my_id_repo)->erase(pool_p);
-                                    (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = (*my_id_repo);
+                                    (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = {(*my_id_repo), (*w_p)->value->id->epmem_id};
 
 #ifdef DEBUG_EPMEM_WME_ADD
                                     fprintf(stderr, "   Assigning id from existing pool %d.\n", (unsigned int)(*w_p)->epmem_id);
@@ -2788,7 +2788,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 fprintf(stderr, "   Incrementing and setting wme id to %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
                 // replace the epmem_id and wme id in the right place
-                (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = my_id_repo2;
+                (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = {my_id_repo2, (*w_p)->value->id->epmem_id};
 
                 // new nodes definitely start
                 epmem_edge.emplace((*w_p)->epmem_id,static_cast<int64_t>((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));

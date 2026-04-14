@@ -407,7 +407,8 @@ typedef std::pair<epmem_node_id, epmem_node_id> epmem_id_pair;
 typedef std::list<epmem_id_pair> epmem_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool*> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool*> epmem_parent_id_pool;
-typedef std::map<epmem_node_id, epmem_id_pool*> epmem_return_id_pool;
+typedef std::pair<epmem_id_pool*, epmem_node_id> epmem_return_id_info;  // {pool*, child_n_id at assignment time}
+typedef std::map<epmem_node_id, epmem_return_id_info> epmem_return_id_pool;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > epmem_wme_set;

@@ -1514,8 +1514,9 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
                         (unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id->epmem_id);
 #endif
                 epmem_return_id_pool::iterator p = thisAgent->EpMem->epmem_id_replacement->find(w->epmem_id);
-                epmem_id_pool* return_pool = p->second;
-                return_pool->push_front(std::make_pair(w->value->id->epmem_id, w->epmem_id));
+                epmem_id_pool* return_pool = p->second.first;
+                epmem_node_id stored_child_n_id = p->second.second;
+                return_pool->push_front(std::make_pair(stored_child_n_id, w->epmem_id));
                 thisAgent->EpMem->epmem_id_replacement->erase(p);
             }
         }
