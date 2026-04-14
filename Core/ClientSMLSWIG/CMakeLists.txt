@@ -341,6 +341,8 @@ if(SWIG_JAVA)
     # Install Java files
     install(TARGETS soar_sml_java
         LIBRARY DESTINATION java
+        RUNTIME DESTINATION java
+        ARCHIVE DESTINATION java
     )
 
     # Install generated Java source files

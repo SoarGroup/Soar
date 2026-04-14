@@ -108,6 +108,7 @@
             "inherits": "conan-release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_SHARED_LIBS": "ON",
                 "BUILD_TESTS": "ON",
                 "SVS": "ON",
                 "CLI": "ON",
