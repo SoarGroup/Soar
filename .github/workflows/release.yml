@@ -1,0 +1,185 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 9.6.5)'
+        required: true
+      create_release:
+        description: 'Create GitHub release'
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win_x86-64
+          - os: ubuntu-latest
+            platform: linux_x86-64
+          - os: macos-13
+            platform: mac_x86-64
+          - os: macos-latest
+            platform: mac_ARM64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install Conan and Ninja
+        run: pip install conan ninja
+
+      - name: Configure Conan
+        run: conan profile detect
+
+      # ── System dependencies ──
+
+      - name: Install SWIG and Tcl (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y swig tcl-dev
+
+      - name: Install SWIG and Tcl (macOS)
+        if: runner.os == 'macOS'
+        run: brew install swig tcl-tk@8
+
+      - name: Install SWIG (Windows)
+        if: runner.os == 'Windows'
+        run: choco install swig -y
+
+      # ── Conan dependencies ──
+
+      - name: Install Conan dependencies (Unix)
+        if: runner.os != 'Windows'
+        run: conan install . --build=missing -s build_type=Release
+
+      - name: Install Conan dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          conan install . --build=missing -s build_type=Release
+          -c tools.cmake.cmaketoolchain:generator=Ninja
+
+      # ── Configure ──
+
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
+        run: >
+          cmake --preset Release-swig
+          -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON
+
+      - name: Configure CMake (macOS)
+        if: runner.os == 'macOS'
+        run: >
+          cmake --preset Release-swig
+          -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON
+          -DCMAKE_PREFIX_PATH=$(brew --prefix tcl-tk@8)
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          cmake --preset Release-swig
+          -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON -DSWIG_TCL=OFF
+
+      # ── Build & Install ──
+
+      - name: Build
+        run: cmake --build --preset Release-swig
+
+      - name: Install
+        run: cmake --install build/Release --prefix ${{ github.workspace }}/install
+
+      - name: List install tree
+        shell: bash
+        run: find ${{ github.workspace }}/install -type f | head -60
+
+      # ── Upload ──
+
+      - name: Upload install tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: soar-${{ matrix.platform }}
+          path: install/
+
+  assemble:
+    name: Assemble multiplatform release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all platform builds
+        uses: actions/download-artifact@v4
+        with:
+          path: platforms/
+
+      - name: Clone external repos
+        run: |
+          mkdir -p repos
+          git clone --depth 1 https://github.com/SoarGroup/Agents.git repos/Agents
+          git clone --depth 1 https://github.com/SoarGroup/Release-Support.git repos/Release-Support
+          git clone --depth 1 https://github.com/SoarGroup/VisualSoar.git repos/VisualSoar
+          git clone --depth 1 https://github.com/SoarGroup/Domains-Eaters-TankSoar.git repos/Domains-Eaters-TankSoar
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build VisualSoar
+        continue-on-error: true
+        run: |
+          cd repos/VisualSoar
+          chmod +x gradlew
+          ./gradlew build
+
+      - name: Assemble release
+        run: |
+          chmod +x scripts/assemble-release.sh
+          ./scripts/assemble-release.sh \
+            "${{ github.event.inputs.version }}" \
+            platforms \
+            repos
+
+      - name: Upload multiplatform zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoarSuite_${{ github.event.inputs.version }}-Multiplatform
+          path: SoarSuite_${{ github.event.inputs.version }}-Multiplatform.zip
+
+      - name: Create GitHub Release
+        if: github.event.inputs.create_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: releases/${{ github.event.inputs.version }}
+          name: Soar ${{ github.event.inputs.version }}
+          draft: true
+          files: |
+            SoarSuite_${{ github.event.inputs.version }}-Multiplatform.zip
+            repos/Release-Support/pdf/SoarManual.pdf
+            repos/Release-Support/pdf/Soar Tutorial Part 1*.pdf
+            repos/Release-Support/pdf/Soar Tutorial Part 2*.pdf
+            repos/Release-Support/pdf/Soar Tutorial Part 3*.pdf
+            repos/Release-Support/pdf/Soar Tutorial Part 4*.pdf
+            repos/Release-Support/pdf/Soar Tutorial Part 5*.pdf
+            repos/Release-Support/pdf/Soar Tutorial Part 6*.pdf
+            repos/Release-Support/pdf/Soar Tutorial Part 7*.pdf
+            repos/Release-Support/pdf/Soar Tutorial Part 8*.pdf
