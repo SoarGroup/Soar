@@ -61,9 +61,9 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install swig tcl-tk@8
 
-      - name: Install SWIG (Windows)
+      - name: Install SWIG and Tcl (Windows)
         if: runner.os == 'Windows'
-        run: choco install swig -y
+        run: choco install swig magicsplat-tcl-tk -y
 
       # ── Conan dependencies ──
 
@@ -96,7 +96,7 @@ jobs:
         if: runner.os == 'Windows'
         run: >
           cmake --preset Release-swig
-          -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON -DSWIG_TCL=OFF
+          -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON -DSWIG_TCL=ON
 
       # ── Build & Install ──
 

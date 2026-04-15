@@ -114,7 +114,8 @@
                 "CLI": "ON",
                 "SWIG_TCL": "ON",
                 "SWIG_JAVA": "ON",
-                "JAVA_DEBUGGER": "ON"
+                "JAVA_DEBUGGER": "ON",
+                "TCLSOARLIB": "ON"
             }
         }
     ],

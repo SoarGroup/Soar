@@ -68,6 +68,12 @@ for PLAT in "${PLATFORM_IDS[@]}"; do
     -exec cp -v {} "$DEST/" \;  2>/dev/null || true
   cp "$SRC/tcl/pkgIndex.tcl" "$DEST/" 2>/dev/null || true
 
+  # TclSoarLib — Tcl interpreter embedded in Soar (loaded at runtime)
+  # Windows: tclsoarlib.dll (bin/), Unix: libtclsoarlib.{so,dylib} (lib/)
+  cp "$SRC"/bin/tclsoarlib.dll "$DEST/" 2>/dev/null || true
+  find "$SRC/lib" -maxdepth 1 -name "libtclsoarlib.*" \
+    -exec cp -v {} "$DEST/" \;  2>/dev/null || true
+
   # C# SWIG binding
   find "$SRC/csharp" -maxdepth 1 -name "*CSharp_sml_ClientInterface*" \
     -exec cp -v {} "$DEST/" \;  2>/dev/null || true
@@ -97,6 +103,14 @@ echo "=== Cross-platform resources (from $ANY) ==="
 # Headers
 mkdir -p "$SUITE/include"
 cp -r "$ANY"/include/* "$SUITE/include/"
+
+# TclSoarLib support scripts (cross-platform)
+if [ -d "$ANY/tcl" ]; then
+  mkdir -p "$SUITE/bin/tcl"
+  cp "$ANY"/tcl/*.tcl "$SUITE/bin/tcl/" 2>/dev/null || true
+  cp "$ANY"/tcl/*.soar "$SUITE/bin/tcl/" 2>/dev/null || true
+  cp "$ANY"/tcl/tclIndex "$SUITE/bin/tcl/" 2>/dev/null || true
+fi
 
 # Java JARs
 mkdir -p "$SUITE/bin/java"

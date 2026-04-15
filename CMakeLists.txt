@@ -269,6 +269,10 @@ if(JAVA_DEBUGGER)
   add_subdirectory(Java)
 endif()
 
+# TclSoarLib — Tcl interpreter embedded in Soar (loaded at runtime).
+# Separate from SWIG_TCL (Tcl_sml_ClientInterface), which is the SML binding.
+add_subdirectory(Tcl)
+
 if(BUILD_TESTS)
   message(STATUS "Soar: Building tests")
   include(CTest)
