@@ -45,7 +45,14 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION .)
 if(BUILD_TESTING)
     # Add CI tests only if TEST_CI_ENABLED is enabled (default ON if not specified)
     if(NOT DEFINED TEST_CI_ENABLED OR TEST_CI_ENABLED)
-        add_test(NAME test_ci COMMAND ${PROJECT_NAME} -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton -E SvsTests)
+        add_test(NAME test_ci COMMAND ${PROJECT_NAME} -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton -f Demo_ToH_Recursive -f Demo_Arithmetic -E SvsTests)
+
+        # On Windows shared builds, the test executable needs Soar.dll on PATH.
+        if(WIN32 AND BUILD_SHARED_LIBS)
+            set_tests_properties(test_ci PROPERTIES
+                ENVIRONMENT "PATH=$<TARGET_FILE_DIR:soar_lib>;$ENV{PATH}"
+            )
+        endif()
     endif()
 
     if(SVS)

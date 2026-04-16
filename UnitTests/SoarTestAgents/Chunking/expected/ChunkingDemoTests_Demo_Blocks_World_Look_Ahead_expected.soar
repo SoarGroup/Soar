@@ -1,5 +1,4 @@
 sp {answer*selection*select*success-evaluation-becomes-best-preference*t28-1
-   
     (state <s1> ^name blocks-world ^object <o1> ^object <o2>
           ^object { <o3> <> <o2> <> <o1> } ^object { <o4> <> <o1> <> <o3> }
           ^problem-space <p1> ^desired <d1> ^ontop <o5> ^ontop <o6>
@@ -22,7 +21,6 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*t28-1
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*t26-2
-   
     (state <s1> ^name blocks-world ^object <o1> ^object <o2>
           ^object { <> <o3> <o3> <> <o1> } ^object { <o4> <> <o1> <> <o3> }
           ^problem-space <p1> ^desired <d1> ^ontop <o5> ^ontop <o6>
@@ -45,7 +43,6 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*t26-2
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t26-1
-   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
@@ -72,7 +69,6 @@ sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t26-
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*t20-2
-   
     (state <s1> ^name blocks-world ^object { <> <o1> <o1> } ^object <o2>
           ^object { <> <o3> <o3> <> <o1> } ^object { <o4> <> <o1> <> <o3> }
           ^problem-space <p1> ^desired <d1> ^ontop <o5> ^ontop <o6>
@@ -95,7 +91,6 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*t20-2
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t20-1
-   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
@@ -122,7 +117,6 @@ sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t20-
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t18-1
-   
     (state <s1> ^name blocks-world ^object <o1> ^object { <o2> <> <o1> }
           ^object { <o3> <> <o1> } ^problem-space <p1> ^desired <d1>
           ^ontop <o4> ^ontop <o5> ^ontop <o6> ^operator <o10> +)
@@ -144,7 +138,6 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChange*t16-2
-   
     (state <s1> ^name blocks-world ^object <o1> ^object { <o2> <> <o1> }
           ^object { <o3> <> <o1> } ^problem-space <p1> ^desired <d1>
           ^ontop <o4> ^ontop <o5> ^ontop <o6> ^operator <o10> +)
@@ -166,7 +159,6 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*OpNoChang
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*Tie*t16-1
-   
     (state <s1> ^operator <o1> ^evaluation <e1>)
     (<o1> -^default-desired-copy yes ^name evaluate-operator
           ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>

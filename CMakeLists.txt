@@ -163,6 +163,12 @@ set_target_properties(${SOAR_LIB}
   PUBLIC_HEADER "${HEADERS}"
   OUTPUT_NAME "Soar")
 
+# Unity build files (e.g. SoarKernel.cxx) exceed the default COFF section limit
+# in Debug builds. /bigobj raises the limit from 2^16 to 2^32 sections.
+if(MSVC)
+  target_compile_options(${SOAR_LIB} PRIVATE /bigobj)
+endif()
+
 set(CXX_STANDARD_REQUIRED True)
 
 # Set the C++ standard for this and all downstream targets
