@@ -11,6 +11,9 @@ set(CCD_SRC
 # Create a static library named ccd
 add_library(ccd STATIC ${CCD_SRC})
 
+# Needed because ccd is linked into the shared libSoar
+set_target_properties(ccd PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 # Include the current directory as a public include path
 target_include_directories(ccd PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
