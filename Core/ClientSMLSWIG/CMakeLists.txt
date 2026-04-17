@@ -327,11 +327,25 @@ if(SWIG_JAVA)
     endif()
 
     # Compile Java files and create JAR (cross-platform)
+    # Use a cmake -P script to glob .java files at build time, since
+    # VERBATIM prevents shell glob expansion on Unix.
+    set(JAVA_COMPILE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/compile_java.cmake")
+    file(WRITE ${JAVA_COMPILE_SCRIPT} "
+file(GLOB JAVA_SOURCES \"${CMAKE_CURRENT_BINARY_DIR}/java/*.java\")
+execute_process(
+    COMMAND \"${Java_JAVAC_EXECUTABLE}\" -d \"${CMAKE_CURRENT_BINARY_DIR}/java/classes\" \${JAVA_SOURCES}
+    RESULT_VARIABLE JAVAC_RESULT
+    OUTPUT_VARIABLE JAVAC_OUTPUT
+    ERROR_VARIABLE JAVAC_ERROR
+)
+if(NOT JAVAC_RESULT EQUAL 0)
+    message(FATAL_ERROR \"javac failed: \${JAVAC_OUTPUT}\${JAVAC_ERROR}\")
+endif()
+")
     add_custom_command(
         TARGET soar_sml_java POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/java/classes"
-        COMMAND ${Java_JAVAC_EXECUTABLE} -d "${CMAKE_CURRENT_BINARY_DIR}/java/classes"
-                "${CMAKE_CURRENT_BINARY_DIR}/java/*.java"
+        COMMAND ${CMAKE_COMMAND} -P "${JAVA_COMPILE_SCRIPT}"
         COMMAND ${Java_JAR_EXECUTABLE} cf "${CMAKE_CURRENT_BINARY_DIR}/java/sml.jar"
                 -C "${CMAKE_CURRENT_BINARY_DIR}/java/classes" .
         COMMENT "Compiling Java files and creating sml.jar"
