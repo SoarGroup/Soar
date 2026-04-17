@@ -30,10 +30,11 @@ jobs:
             platform: win_x86-64
           - os: ubuntu-latest
             platform: linux_x86-64
-          - os: macos-13
-            platform: mac_x86-64
           - os: macos-latest
             platform: mac_ARM64
+          - os: macos-latest
+            platform: mac_universal
+            universal: true
 
     steps:
       - uses: actions/checkout@v4
@@ -63,9 +64,33 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y swig tcl-dev
 
-      - name: Install SWIG and Tcl (macOS)
-        if: runner.os == 'macOS'
+      - name: Install SWIG and Tcl (macOS native)
+        if: runner.os == 'macOS' && !matrix.universal
         run: brew install swig tcl-tk@8
+
+      - name: Install SWIG (macOS universal)
+        if: matrix.universal
+        run: brew install swig
+
+      - name: Cache Tcl build (macOS universal)
+        if: matrix.universal
+        id: tcl-mac-universal-cache
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/tcl-universal
+          key: tcl-build-macos-universal-8.6.13
+
+      - name: Build Tcl from source (macOS universal)
+        if: matrix.universal && steps.tcl-mac-universal-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -LO https://master.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8.6.13-src.tar.gz
+          tar xzf tcl8.6.13-src.tar.gz
+          cd tcl8.6.13/unix
+          export CFLAGS="-arch x86_64 -arch arm64"
+          export LDFLAGS="-arch x86_64 -arch arm64"
+          ./configure --prefix=/usr/local/tcl-universal --enable-shared --enable-64bit
+          make -j$(sysctl -n hw.logicalcpu)
+          sudo make install
 
       - name: Install SWIG (Windows)
         if: runner.os == 'Windows'
@@ -111,12 +136,20 @@ jobs:
           cmake --preset Release-swig
           -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON
 
-      - name: Configure CMake (macOS)
-        if: runner.os == 'macOS'
+      - name: Configure CMake (macOS native)
+        if: runner.os == 'macOS' && !matrix.universal
         run: >
           cmake --preset Release-swig
           -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON
           -DCMAKE_PREFIX_PATH=$(brew --prefix tcl-tk@8)
+
+      - name: Configure CMake (macOS universal)
+        if: matrix.universal
+        run: >
+          cmake --preset Release-swig
+          -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON
+          -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          -DCMAKE_PREFIX_PATH=/usr/local/tcl-universal
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'

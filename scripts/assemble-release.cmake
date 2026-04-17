@@ -5,7 +5,7 @@
 #   cmake -P scripts/assemble-release.cmake -- <version> <platforms-dir> [repos-dir]
 #
 # <platforms-dir> must contain subdirectories named:
-#   soar-win_x86-64  soar-linux_x86-64  soar-mac_x86-64  soar-mac_ARM64
+#   soar-win_x86-64  soar-linux_x86-64  soar-mac_universal  soar-mac_ARM64
 # Each is a cmake --install prefix tree (bin/ lib/ include/ java/ tcl/ ...).
 #
 # [repos-dir] (optional) contains clones of SoarGroup repos:
@@ -100,7 +100,7 @@ if(EXISTS "${SUITE}")
   file(REMOVE_RECURSE "${SUITE}")
 endif()
 
-set(PLATFORM_IDS win_x86-64 linux_x86-64 mac_x86-64 mac_ARM64)
+set(PLATFORM_IDS win_x86-64 linux_x86-64 mac_universal mac_ARM64)
 
 # ── Per-platform binaries → bin/<platform>/ ──────────────────────────────────
 
