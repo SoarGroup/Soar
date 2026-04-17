@@ -10,6 +10,12 @@ on:
         description: 'Create GitHub release'
         type: boolean
         default: false
+      tag_name:
+        description: 'Git tag for the release (default: releases/<version>)'
+        required: false
+      release_name:
+        description: 'Display name for the release (default: Soar <version>)'
+        required: false
 
 jobs:
   build:
@@ -168,8 +174,8 @@ jobs:
         if: github.event.inputs.create_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: releases/${{ github.event.inputs.version }}
-          name: Soar ${{ github.event.inputs.version }}
+          tag_name: ${{ github.event.inputs.tag_name || format('releases/{0}', github.event.inputs.version) }}
+          name: ${{ github.event.inputs.release_name || format('Soar {0}', github.event.inputs.version) }}
           draft: true
           files: |
             SoarSuite_${{ github.event.inputs.version }}-Multiplatform.zip
