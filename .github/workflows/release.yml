@@ -133,10 +133,6 @@ jobs:
       - name: Install
         run: cmake --install build/Release --prefix ${{ github.workspace }}/install
 
-      - name: List install tree
-        shell: bash
-        run: find ${{ github.workspace }}/install -type f | head -60 || true
-
       # ── Upload ──
 
       - name: Upload install tree
