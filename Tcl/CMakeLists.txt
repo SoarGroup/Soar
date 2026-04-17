@@ -13,7 +13,12 @@ endif()
 
 message(STATUS "Soar: Building TclSoarLib")
 
-find_package(TCL REQUIRED)
+# Find only Tcl (not Tk) — FindTCL's REQUIRED checks for both TCL+TK
+find_package(TCL)
+if(NOT TCL_FOUND)
+    message(FATAL_ERROR "Could not find Tcl development files (TCL_LIBRARY and TCL_INCLUDE_PATH). "
+        "Set CMAKE_PREFIX_PATH or TCL_ROOT to help CMake find your Tcl installation.")
+endif()
 
 add_library(tclsoarlib MODULE
   src/main.cpp

@@ -355,7 +355,12 @@ endif()
 if(SWIG_TCL)
     message(STATUS "Soar SWIG: Building Tcl bindings")
 
-    find_package(TCL REQUIRED)
+    # Find only Tcl (not Tk) — FindTCL's REQUIRED checks for both TCL+TK
+    find_package(TCL)
+    if(NOT TCL_FOUND)
+        message(FATAL_ERROR "Could not find Tcl development files (TCL_LIBRARY and TCL_INCLUDE_PATH). "
+            "Set CMAKE_PREFIX_PATH or TCL_ROOT to help CMake find your Tcl installation.")
+    endif()
 
     # Set Tcl-specific SWIG flags
     set(TCL_SWIG_FLAGS ${CMAKE_SWIG_FLAGS})
