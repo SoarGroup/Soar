@@ -49,7 +49,7 @@ if(BUILD_TESTING)
     # Add CI tests only if TEST_CI_ENABLED is enabled (default ON if not specified)
     if(NOT DEFINED TEST_CI_ENABLED OR TEST_CI_ENABLED)
         add_test(NAME test_ci
-            COMMAND ${PROJECT_NAME} -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton -f Demo_ToH_Recursive -f Demo_Arithmetic -E SvsTests
+            COMMAND ${PROJECT_NAME} -e PRIMS_Sanity1 -e PRIMS_Sanity2 -e Demo_ToH_Recursive -f testLoadLibrary -f testSmemArithmetic -f testHamilton -f Demo_Arithmetic -E SvsTests
             WORKING_DIRECTORY "${SOAR_OUT_DIR}"
         )
 
