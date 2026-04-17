@@ -17,9 +17,9 @@
 
 void ChunkingDemoTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 2810, 29, false); }
 void ChunkingDemoTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 47, 1, false); }
-void ChunkingDemoTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 24, 20, false); }
-void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 61, 24, false); }
-void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 64, 8, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 24, 12, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 61, 12, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 64, 6, false); }
 void ChunkingDemoTests::Demo_Blocks_World_Operator_Subgoaling()           { check_chunk("Demo_Blocks_World_Operator_Subgoaling", 6, 1, false); }
 void ChunkingDemoTests::Demo_Eight_Puzzle()                               { check_chunk("Demo_Eight_Puzzle", 20, 7, false); }
 void ChunkingDemoTests::Demo_Graph_Search()                               { check_chunk("Demo_Graph_Search", 20, 7, false); }

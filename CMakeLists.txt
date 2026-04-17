@@ -46,6 +46,23 @@ endif()
 
 include(GNUInstallDirs)
 
+# Put all build outputs into the repo-root "out/" directory, matching the SCons
+# layout.  This ensures DLLs, EXEs, and MODULE libraries are co-located so that
+# executables can find Soar.dll at runtime without PATH manipulation, and tools
+# that reference SOAR_HOME / out/ keep working regardless of build system.
+set(SOAR_OUT_DIR "${CMAKE_SOURCE_DIR}/out")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${SOAR_OUT_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${SOAR_OUT_DIR}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${SOAR_OUT_DIR}")
+
+# Copy non-binary support files into the out/ tree at configure time.
+file(COPY scripts/settings.soar DESTINATION "${SOAR_OUT_DIR}")
+if(WIN32)
+  file(COPY scripts/SoarJavaDebugger.bat DESTINATION "${SOAR_OUT_DIR}")
+else()
+  file(COPY scripts/SoarJavaDebugger.sh DESTINATION "${SOAR_OUT_DIR}")
+endif()
+
 # Add your source files
 set(SOURCES
   Core/ClientSML/ClientSML.cxx
@@ -84,6 +101,19 @@ file(GLOB_RECURSE HEADERS
   "Core/shared/portability.h"
   "Core/shared/portability_posix.h"
 )
+
+# Public API headers — only these are installed / shipped in releases.
+# Matches the SCons include set: ElementXML/src, ConnectionSML/src,
+# ClientSML/src, and Core/shared.
+file(GLOB PUBLIC_HEADERS
+  "Core/ElementXML/src/*.h"
+  "Core/ConnectionSML/src/*.h"
+  "Core/ClientSML/src/*.h"
+  "Core/shared/*.h"
+  "Core/shared/*.hpp"
+  "${CMAKE_BINARY_DIR}/Core/shared/soarversion.h"
+)
+file(GLOB PUBLIC_HEADERS_MSVC "Core/shared/msvc/*.h")
 
 # Add additional files/dependencies if SVS is enabled
 if(SVS)
@@ -160,7 +190,7 @@ endif()
 
 set_target_properties(${SOAR_LIB}
   PROPERTIES
-  PUBLIC_HEADER "${HEADERS}"
+  PUBLIC_HEADER "${PUBLIC_HEADERS}"
   OUTPUT_NAME "Soar")
 
 # Unity build files (e.g. SoarKernel.cxx) exceed the default COFF section limit
@@ -229,7 +259,8 @@ install(TARGETS ${SOAR_LIB}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${PUBLIC_HEADERS_MSVC} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/msvc)
 
 install(EXPORT SoarTargets
   FILE SoarTargets.cmake

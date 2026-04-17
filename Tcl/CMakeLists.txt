@@ -54,11 +54,14 @@ target_compile_options(tclsoarlib PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/w>
 )
 
-# Install the module next to the core Soar library
-install(TARGETS tclsoarlib
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+# Install the module: on Windows, tclsoarlib.dll goes in bin/ alongside Soar.dll;
+# on Unix, libtclsoarlib.{so,dylib} goes in lib/.
+# tclsoarlib is a MODULE, so CMake uses LIBRARY DESTINATION on all platforms.
+if(WIN32)
+  install(TARGETS tclsoarlib LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR})
+else()
+  install(TARGETS tclsoarlib LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
 
 # Install Tcl support scripts
 install(DIRECTORY tcl/

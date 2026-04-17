@@ -345,12 +345,6 @@ if(SWIG_JAVA)
         ARCHIVE DESTINATION java
     )
 
-    # Install generated Java source files
-    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/java/"
-        DESTINATION java
-        FILES_MATCHING PATTERN "*.java"
-    )
-
     # Install JAR file
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/java/sml.jar"
         DESTINATION java

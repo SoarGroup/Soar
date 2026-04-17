@@ -152,12 +152,11 @@ jobs:
           ./gradlew build
 
       - name: Assemble release
-        run: |
-          chmod +x scripts/assemble-release.sh
-          ./scripts/assemble-release.sh \
-            "${{ github.event.inputs.version }}" \
-            platforms \
-            repos
+        run: >
+          cmake -P scripts/assemble-release.cmake --
+          "${{ github.event.inputs.version }}"
+          platforms
+          repos
 
       - name: Upload multiplatform zip
         uses: actions/upload-artifact@v4
