@@ -67,9 +67,29 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install swig tcl-tk@8
 
-      - name: Install SWIG and Tcl (Windows)
+      - name: Install SWIG (Windows)
         if: runner.os == 'Windows'
-        run: choco install swig magicsplat-tcl-tk -y
+        run: choco install swig -y
+
+      - name: Cache Tcl build (Windows)
+        if: runner.os == 'Windows'
+        id: tcl-msvc-cache
+        uses: actions/cache@v4
+        with:
+          path: C:\Tcl
+          key: tcl-build-windows-8.6.13
+
+      - name: Build Tcl from source (Windows)
+        if: runner.os == 'Windows' && steps.tcl-msvc-cache.outputs.cache-hit != 'true'
+        run: |
+          $url = "https://master.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8613-src.zip"
+          (New-Object System.Net.WebClient).DownloadFile($url, 'tcl8613-src.zip')
+          Expand-Archive tcl8613-src.zip -DestinationPath tcl8613-src
+          cd tcl8613-src\tcl8.6.13\win
+          nmake /D /f makefile.vc INSTALLDIR="C:\Tcl"
+          if ($LASTEXITCODE -ne 0) { throw "nmake build failed" }
+          nmake /D /f makefile.vc INSTALLDIR="C:\Tcl" install
+          if ($LASTEXITCODE -ne 0) { throw "nmake install failed" }
 
       # ── Conan dependencies ──
 
@@ -103,6 +123,7 @@ jobs:
         run: >
           cmake --preset Release-swig
           -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON -DSWIG_TCL=ON
+          -DCMAKE_PREFIX_PATH="C:/Tcl"
 
       # ── Build & Install ──
 
