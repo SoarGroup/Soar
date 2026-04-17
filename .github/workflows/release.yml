@@ -33,7 +33,7 @@ jobs:
           - os: macos-latest
             platform: mac_ARM64
           - os: macos-latest
-            platform: mac_universal
+            platform: mac_x86-64
             universal: true
 
     steps:
