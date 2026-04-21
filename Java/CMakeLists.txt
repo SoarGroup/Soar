@@ -63,6 +63,7 @@ set(DEBUGGER_API_CLASSES "${CMAKE_CURRENT_BINARY_DIR}/debugger-api-classes")
 
 add_custom_target(build_debugger_api
   COMMAND ${CMAKE_COMMAND} -E make_directory "${DEBUGGER_API_CLASSES}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${JAVA_OUTPUT_DIR}"
   COMMAND ${Java_JAVAC_EXECUTABLE}
     --release 11
     -d "${DEBUGGER_API_CLASSES}"
@@ -91,6 +92,7 @@ file(GLOB_RECURSE SMLJAVA_SOURCES "${JAVA_SRC_DIR}/SMLJava/src/main/java/*.java"
 
 add_custom_target(build_smljava
   COMMAND ${CMAKE_COMMAND} -E make_directory "${SMLJAVA_CLASSES}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${JAVA_OUTPUT_DIR}"
   COMMAND ${CMAKE_COMMAND} -E env "JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8"
     ${Java_JAVAC_EXECUTABLE}
     --release 11
@@ -121,6 +123,7 @@ file(GLOB_RECURSE DEBUGGER_SOURCES "${JAVA_SRC_DIR}/Debugger/src/*.java")
 
 add_custom_target(build_debugger
   COMMAND ${CMAKE_COMMAND} -E make_directory "${DEBUGGER_CLASSES}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${JAVA_OUTPUT_DIR}"
   COMMAND ${CMAKE_COMMAND} -E env "JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8"
     ${Java_JAVAC_EXECUTABLE}
     --release 11
