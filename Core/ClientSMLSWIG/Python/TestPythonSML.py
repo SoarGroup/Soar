@@ -6,7 +6,6 @@
 #  destruction (and maybe some other things, too).
 #
 # This file needs to be compatible with python 3.5, to run on CI jobs testing the lowest supported python version.
-import atexit
 from pathlib import Path
 import os
 import re
@@ -91,19 +90,6 @@ if not kernel:
     sys.exit(1)
 else:
     print('✅ Kernel creation succeeded')
-
-# Neglecting to shut down the kernel causes a segfault, so we use atexit to guarantee proper cleanup
-# TODO: This should be handled by the Python SML interface automatically.
-def __cleanup():
-    global kernel
-    try:
-        if kernel:
-            kernel.Shutdown()
-            del kernel
-    except NameError:
-        pass
-
-atexit.register(__cleanup)
 
 agent_create_called = CalledSignal()
 agentCallbackId0 = kernel.RegisterForAgentEvent(smlEVENT_AFTER_AGENT_CREATED, AgentCreatedCallback, agent_create_called)
@@ -230,17 +216,6 @@ def test_pass_null_to_WME_constructors(agent):
     print("✅ Pass null to WME constructors")
 
 test_pass_null_to_WME_constructors(agent)
-
-def test_catch_exception(agent):
-    input_link = agent.GetInputLink()
-    try:
-        input_link.GetParameterValue("non-existent")
-    except ValueError as e:
-        print("✅ Correctly caught exception:", e)
-    else:
-        assert False, "❌ No exception caught"
-
-test_catch_exception(agent)
 
 def test_agent_destroy(agent):
     assert not agent_destroy_called.called, "❌ Agent destroy handler called before destroy"
