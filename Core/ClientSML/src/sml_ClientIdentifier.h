@@ -222,13 +222,7 @@ namespace sml
             char const* GetParameterValue(char const* pAttribute) const
             {
                 WMElement* pWME = FindByAttribute(pAttribute, 0) ;
-                if (pWME == NULL)
-                {
-                    std::cerr << "[Error]: " << this->m_AttributeName
-                              << " has no child attribute \"" << pAttribute << "\"" << std::endl;
-                    return NULL;
-                }
-                return pWME->GetValueAsString();
+                return pWME ? pWME->GetValueAsString() : NULL ;
             }
 
             /*************************************************************
