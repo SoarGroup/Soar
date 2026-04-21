@@ -241,6 +241,20 @@ if(SWIG_PYTHON)
         )
     endif()
 
+    # Prepend a Windows DLL-search-path shim to the generated Python wrapper so
+    # that on Python 3.8+ the loader can find Soar.dll (which lives next to the
+    # .pyd). Python 3.8+ no longer searches PATH/CWD for extension-module
+    # dependencies, so the .pyd fails to import unless we register its own
+    # directory via os.add_dll_directory().
+    set(_PY_WRAPPER "${CMAKE_CURRENT_BINARY_DIR}/python/Python_sml_ClientInterface.py")
+    add_custom_command(TARGET soar_sml_python POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+            -DPY_WRAPPER=${_PY_WRAPPER}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/Python/prepend_dll_shim.cmake
+        COMMENT "Prepending Windows DLL-search shim to Python_sml_ClientInterface.py"
+        VERBATIM
+    )
+
     # Install Python files
     install(TARGETS soar_sml_python
         LIBRARY DESTINATION python
