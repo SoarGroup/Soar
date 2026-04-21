@@ -64,6 +64,7 @@ set(DEBUGGER_API_CLASSES "${CMAKE_CURRENT_BINARY_DIR}/debugger-api-classes")
 add_custom_target(build_debugger_api
   COMMAND ${CMAKE_COMMAND} -E make_directory "${DEBUGGER_API_CLASSES}"
   COMMAND ${Java_JAVAC_EXECUTABLE}
+    --release 11
     -d "${DEBUGGER_API_CLASSES}"
     -encoding UTF-8
     -cp "${SWIG_JAVA_OUTPUT_DIR}/sml.jar"
@@ -92,6 +93,7 @@ add_custom_target(build_smljava
   COMMAND ${CMAKE_COMMAND} -E make_directory "${SMLJAVA_CLASSES}"
   COMMAND ${CMAKE_COMMAND} -E env "JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8"
     ${Java_JAVAC_EXECUTABLE}
+    --release 11
     -d "${SMLJAVA_CLASSES}"
     -encoding UTF-8
     -cp "${SMLJAVA_CP}"
@@ -121,6 +123,7 @@ add_custom_target(build_debugger
   COMMAND ${CMAKE_COMMAND} -E make_directory "${DEBUGGER_CLASSES}"
   COMMAND ${CMAKE_COMMAND} -E env "JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8"
     ${Java_JAVAC_EXECUTABLE}
+    --release 11
     -d "${DEBUGGER_CLASSES}"
     -encoding UTF-8
     -cp "${DEBUGGER_CP}"

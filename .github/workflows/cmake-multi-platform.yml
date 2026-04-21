@@ -109,7 +109,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '11'
 
       - name: Install Conan and Ninja
         run: pip install conan ninja
