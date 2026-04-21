@@ -190,14 +190,38 @@ endif()
 if(SWIG_PYTHON)
     message(STATUS "Soar SWIG: Building Python bindings")
 
-    # Find Python
-    find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+    # Target the Python 3.8 stable ABI (PEP 384 / Py_LIMITED_API) so one .pyd
+    # works across every CPython 3.8+ runtime on the user's machine, regardless
+    # of which minor version we happened to build against in CI. Without this,
+    # the .pyd links to a versioned pythonXY.dll (e.g. python313.dll) and
+    # "DLL load failed" when the user has a different minor version installed.
+    # The stable-ABI .pyd instead links to python3.dll (the forwarding stub).
+    # 9.6.4 did the same thing via SCons' SOAR_PYTHON_ABI3=1.
+    set(SOAR_PYTHON_ABI3_HEX "0x03080000") # 3.8 floor
+
+    # Need CMake 3.26 for Development.SABIModule component and
+    # Python3::SABIModule target, and SWIG 4.2+ for -py3-stable-abi.
+    if(CMAKE_VERSION VERSION_LESS 3.26)
+        message(FATAL_ERROR "Building Python SWIG bindings requires CMake 3.26+ "
+                "(for Development.SABIModule). You have ${CMAKE_VERSION}.")
+    endif()
+    if(SWIG_VERSION VERSION_LESS 4.2)
+        message(FATAL_ERROR "Building Python SWIG bindings requires SWIG 4.2+ "
+                "(for -py3-stable-abi / Py_LIMITED_API support). "
+                "You have SWIG ${SWIG_VERSION}.")
+    endif()
+
+    # Find Python with the SABI module component
+    find_package(Python3 REQUIRED COMPONENTS Interpreter Development.SABIModule)
 
     # Configure SWIG for Python
     set_property(SOURCE Python/Python_sml_ClientInterface.i PROPERTY CPLUSPLUS ON)
+    set_property(SOURCE Python/Python_sml_ClientInterface.i PROPERTY USE_SWIG_DEPENDENCIES TRUE)
 
     # Set Python-specific SWIG flags (language flag added automatically by swig_add_library)
     set(PYTHON_SWIG_FLAGS ${CMAKE_SWIG_FLAGS})
+    # Tell SWIG to emit stable-ABI-compatible wrapper code.
+    list(APPEND PYTHON_SWIG_FLAGS -py3-stable-abi)
 
     # Add include directories to SWIG flags
     foreach(dir ${SWIG_INCLUDE_DIRS})
@@ -221,8 +245,12 @@ if(SWIG_PYTHON)
         OUTPUT_NAME "Python_sml_ClientInterface"
     )
 
-    # Link against soar library and Python
-    target_link_libraries(soar_sml_python soar_lib Python3::Python)
+    # Tell the compiler this is a limited-API build.
+    target_compile_definitions(soar_sml_python PRIVATE Py_LIMITED_API=${SOAR_PYTHON_ABI3_HEX})
+
+    # Link against soar library and the stable-ABI Python (python3.dll on
+    # Windows / libpython3.so on Unix), not the versioned pythonXY.
+    target_link_libraries(soar_sml_python soar_lib Python3::SABIModule)
 
     # Include directories
     target_include_directories(soar_sml_python PRIVATE
@@ -235,10 +263,14 @@ if(SWIG_PYTHON)
         target_compile_options(soar_sml_python PRIVATE -Wno-unused -fno-strict-aliasing)
     endif()
 
-    if(APPLE)
-        set_target_properties(soar_sml_python PROPERTIES
-            SUFFIX ".so"
-        )
+    # Python's importer recognizes the .abi3 infix as a stable-ABI extension
+    # and will load it from any CPython 3.8+.
+    if(WIN32)
+        set_target_properties(soar_sml_python PROPERTIES SUFFIX ".abi3.pyd")
+    elseif(APPLE)
+        set_target_properties(soar_sml_python PROPERTIES SUFFIX ".abi3.so")
+    else()
+        set_target_properties(soar_sml_python PROPERTIES SUFFIX ".abi3.so")
     endif()
 
     # Prepend a Windows DLL-search-path shim to the generated Python wrapper so
