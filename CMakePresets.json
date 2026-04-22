@@ -112,6 +112,7 @@
                 "BUILD_TESTS": "ON",
                 "SVS": "ON",
                 "CLI": "ON",
+                "SWIG_PYTHON": "ON",
                 "SWIG_TCL": "ON",
                 "SWIG_JAVA": "ON",
                 "JAVA_DEBUGGER": "ON",

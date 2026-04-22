@@ -535,6 +535,9 @@ if(SWIG_TCL)
         COMMAND ${CMAKE_COMMAND} -E copy
             "${CMAKE_CURRENT_SOURCE_DIR}/Tcl/pkgIndex_${TCL_PLATFORM}.tcl"
             "${TCL_OUTPUT_DIR}/pkgIndex.tcl"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/Tcl/pkgIndex_${TCL_PLATFORM}.tcl"
+            "${SOAR_OUT_DIR}/pkgIndex.tcl"
         COMMENT "Copying pkgIndex_${TCL_PLATFORM}.tcl"
     )
 
