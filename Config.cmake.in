@@ -3,7 +3,6 @@
 include(CMakeFindDependencyMacro)
 
 find_dependency(SQLite3)
-find_dependency(nlohmann_json)
 
 set(_soar_svs @SVS@)
 if(_soar_svs)
