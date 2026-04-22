@@ -39,6 +39,41 @@ if(SWIG OR SWIG_PYTHON OR SWIG_JAVA OR SWIG_JAVASCRIPT OR SWIG_TCL OR SWIG_CSHAR
         ${CMAKE_CURRENT_SOURCE_DIR}/../shared
         ${CMAKE_CURRENT_SOURCE_DIR}/../SoarKernel/src/shared
     )
+
+    # Helper: bake an RPATH into each SWIG wrapper library so the dynamic
+    # loader can find libSoar (soar_lib) without LD_LIBRARY_PATH /
+    # DYLD_LIBRARY_PATH. Fixes the Mac Java-Debugger "Library not loaded:
+    # @rpath/libSoar.dylib" error and the equivalent Linux ld.so failure.
+    #
+    # We set multiple rpath entries so the same artifact works in both
+    # install layouts:
+    #   - flat layout (SCons release / CPack "bin/" bundle):
+    #       wrapper and libSoar live in the same directory  -> @loader_path
+    #   - GNUInstallDirs layout (CMake "cmake --install" /
+    #     CPack DEB/RPM/WIX/DragNDrop):
+    #       wrapper in <prefix>/<lang>/ , libSoar in <prefix>/lib/
+    #       -> @loader_path/../lib
+    #   - belt-and-suspenders:
+    #       @loader_path/..   covers one-level-up bundles
+    #
+    # Windows DLL search already includes the loader's directory, so no
+    # rpath work is needed there (the Python stable-ABI case is handled by
+    # the prepend_dll_shim.cmake POST_BUILD step).
+    function(soar_swig_set_rpath target)
+        if(APPLE)
+            set_target_properties(${target} PROPERTIES
+                BUILD_WITH_INSTALL_RPATH TRUE
+                INSTALL_RPATH "@loader_path;@loader_path/..;@loader_path/../lib"
+                MACOSX_RPATH TRUE
+            )
+        elseif(UNIX)
+            set_target_properties(${target} PROPERTIES
+                BUILD_WITH_INSTALL_RPATH TRUE
+                INSTALL_RPATH "$ORIGIN;$ORIGIN/..;$ORIGIN/../lib"
+            )
+        endif()
+        # Windows: no-op by design.
+    endfunction()
 endif()
 
 # JavaScript bindings (via SWIG JavaScript + Node backend)
@@ -165,6 +200,8 @@ if(SWIG_JAVASCRIPT)
         LIBRARY_OUTPUT_DIRECTORY "${JAVASCRIPT_OUTPUT_DIR}"
     )
 
+    soar_swig_set_rpath(soar_sml_javascript_node)
+
     if(APPLE)
         target_link_options(soar_sml_javascript_node PRIVATE -undefined dynamic_lookup)
     endif()
@@ -278,6 +315,8 @@ if(SWIG_PYTHON)
         set_target_properties(soar_sml_python PROPERTIES SUFFIX ".abi3.so")
     endif()
 
+    soar_swig_set_rpath(soar_sml_python)
+
     # Prepend a Windows DLL-search-path shim to the generated Python wrapper so
     # that on Python 3.8+ the loader can find Soar.dll (which lives next to the
     # .pyd). Python 3.8+ no longer searches PATH/CWD for extension-module
@@ -360,6 +399,8 @@ if(SWIG_JAVA)
             SUFFIX ".jnilib"
         )
     endif()
+
+    soar_swig_set_rpath(soar_sml_java)
 
     # Link against soar library and JNI
     target_link_libraries(soar_sml_java soar_lib ${JNI_LIBRARIES})
@@ -478,6 +519,8 @@ if(SWIG_TCL)
         set_target_properties(soar_sml_tcl PROPERTIES SUFFIX ".so")
     endif()
 
+    soar_swig_set_rpath(soar_sml_tcl)
+
     # Determine platform for pkgIndex.tcl
     if(WIN32)
         set(TCL_PLATFORM "win")
@@ -573,6 +616,8 @@ if(SWIG_CSHARP)
     if(WIN32)
         set_target_properties(soar_sml_csharp PROPERTIES PREFIX "")
     endif()
+
+    soar_swig_set_rpath(soar_sml_csharp)
 
     # Copy native library to csharp output
     set(CSHARP_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/csharp")
