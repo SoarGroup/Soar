@@ -200,15 +200,20 @@ if(SWIG_PYTHON)
     set(SOAR_PYTHON_ABI3_HEX "0x03080000") # 3.8 floor
 
     # Need CMake 3.26 for Development.SABIModule component and
-    # Python3::SABIModule target, and SWIG 4.2+ for -py3-stable-abi.
+    # Python3::SABIModule target. SWIG 4.2+ is recommended as that's when
+    # its default-generated wrapper code was made stable-ABI compliant
+    # (see SWIG Doc/Python.html "Stable ABI" compatibility note), but SWIG
+    # does not offer a command-line flag for it -- defining Py_LIMITED_API
+    # on the C compiler is sufficient.
     if(CMAKE_VERSION VERSION_LESS 3.26)
         message(FATAL_ERROR "Building Python SWIG bindings requires CMake 3.26+ "
                 "(for Development.SABIModule). You have ${CMAKE_VERSION}.")
     endif()
     if(SWIG_VERSION VERSION_LESS 4.2)
-        message(FATAL_ERROR "Building Python SWIG bindings requires SWIG 4.2+ "
-                "(for -py3-stable-abi / Py_LIMITED_API support). "
-                "You have SWIG ${SWIG_VERSION}.")
+        message(WARNING "Building Python SWIG bindings against the stable ABI is "
+                "best with SWIG 4.2+. You have SWIG ${SWIG_VERSION}; the build "
+                "may work but is not guaranteed ABI-compliant across Python "
+                "versions.")
     endif()
 
     # Find Python with the SABI module component
@@ -220,8 +225,8 @@ if(SWIG_PYTHON)
 
     # Set Python-specific SWIG flags (language flag added automatically by swig_add_library)
     set(PYTHON_SWIG_FLAGS ${CMAKE_SWIG_FLAGS})
-    # Tell SWIG to emit stable-ABI-compatible wrapper code.
-    list(APPEND PYTHON_SWIG_FLAGS -py3-stable-abi)
+    # Note: SWIG has no command-line flag for stable ABI; defining
+    # Py_LIMITED_API on the C compiler (below) is the supported mechanism.
 
     # Add include directories to SWIG flags
     foreach(dir ${SWIG_INCLUDE_DIRS})
