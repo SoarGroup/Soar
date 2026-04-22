@@ -13,6 +13,7 @@ configure_file(Core/shared/soarversion.h.in ${CMAKE_BINARY_DIR}/Core/shared/soar
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(SQLite3 REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 # All options should be turned off by default to avoid building unnecessary
 # components in downstream projects relying on cmake's FetchContent module.
@@ -168,6 +169,7 @@ target_include_directories(${SOAR_LIB} PUBLIC
   $<INSTALL_INTERFACE:include/soar>
 )
 target_link_libraries(${SOAR_LIB} PUBLIC SQLite::SQLite3)
+target_link_libraries(${SOAR_LIB} PUBLIC nlohmann_json::nlohmann_json)
 
 if(SVS)
   target_include_directories(${SOAR_LIB} PUBLIC
