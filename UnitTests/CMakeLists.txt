@@ -37,12 +37,21 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # Copy test agents to the out/ tree so the test exe can find them at runtime.
-# SoarHelper::ResourceDirectory is "./SoarUnitTests/" — matching the SCons layout.
-file(COPY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents
+# SoarHelper::ResourceDirectory is "./SoarUnitTests/" — UnitTests.exe runs with
+# CWD=${SOAR_OUT_DIR} and looks up "./SoarUnitTests/<file>.soar" directly, so
+# the *contents* of SoarTestAgents/ must land in SoarUnitTests/ (mirrors the
+# SCons layout: InstallDir('$OUT_DIR/SoarUnitTests/', 'SoarTestAgents')).
+file(GLOB _soar_test_agent_entries
+     LIST_DIRECTORIES TRUE
+     "${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents/*")
+file(COPY ${_soar_test_agent_entries}
      DESTINATION ${SOAR_OUT_DIR}/SoarUnitTests)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION .)
+# Install contents of SoarTestAgents/ as SoarUnitTests/ in the install tree so
+# the release zip's UnitTests.exe (with CWD next to it) can find them.
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents/
+        DESTINATION SoarUnitTests)
 # TODO: re-enable testLoadLibrary once we implement the CMake build for it
 # TESTS FROM CI:
 if(BUILD_TESTING)

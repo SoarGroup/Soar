@@ -128,6 +128,12 @@ foreach(PLAT IN LISTS PLATFORM_IDS)
   copy_if_exists("${SRC}/bin/UnitTests"     "${DEST}")
   copy_if_exists("${SRC}/bin/UnitTests.exe" "${DEST}")
 
+  # UnitTests test-agent fixtures (looked up via "./SoarUnitTests/" relative
+  # to UnitTests.exe's CWD — see UnitTests/SoarHelpers/SoarHelper.cpp).
+  if(IS_DIRECTORY "${SRC}/SoarUnitTests")
+    file(COPY "${SRC}/SoarUnitTests" DESTINATION "${DEST}")
+  endif()
+
   # Core shared library
   # Windows: Soar.dll (bin/) + Soar.lib (lib/)
   copy_if_exists("${SRC}/bin/Soar.dll" "${DEST}")

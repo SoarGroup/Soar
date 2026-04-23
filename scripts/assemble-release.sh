@@ -43,6 +43,12 @@ for PLAT in "${PLATFORM_IDS[@]}"; do
        -o -name "UnitTests" -o -name "UnitTests.exe" \) \
     -exec cp -v {} "$DEST/" \;
 
+  # UnitTests test-agent fixtures (looked up via "./SoarUnitTests/" relative
+  # to UnitTests.exe's CWD — see UnitTests/SoarHelpers/SoarHelper.cpp).
+  if [ -d "$SRC/SoarUnitTests" ]; then
+    cp -R "$SRC/SoarUnitTests" "$DEST/"
+  fi
+
   # Core shared library
   # Windows: Soar.dll (bin/) + Soar.lib (lib/)
   # Unix:    libSoar.so or libSoar.dylib (lib/)
