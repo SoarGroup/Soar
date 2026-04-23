@@ -305,10 +305,19 @@ if(SWIG_PYTHON)
         target_compile_options(soar_sml_python PRIVATE -Wno-unused -fno-strict-aliasing)
     endif()
 
-    # Python's importer recognizes the .abi3 infix as a stable-ABI extension
-    # and will load it from any CPython 3.8+.
+    # Stable-ABI extension filename convention differs by platform:
+    #   - Unix (Linux, macOS): Python recognizes `.abi3.so` as a stable-ABI
+    #     extension via importlib.machinery.EXTENSION_SUFFIXES.
+    #   - Windows: CPython's EXTENSION_SUFFIXES is only
+    #     ['.cp<ver>-win_amd64.pyd', '.pyd'] — `.abi3.pyd` is NOT recognized.
+    #     A file named `_Foo.abi3.pyd` is INVISIBLE to `import _Foo` on
+    #     Windows, producing `ModuleNotFoundError` (not an ImportError with
+    #     a DLL-load message). So on Windows we emit the plain `.pyd`
+    #     suffix; stable-ABI behavior comes from Py_LIMITED_API at compile
+    #     time and linking python3.dll (the stable-ABI stub) at link time,
+    #     NOT from the filename.
     if(WIN32)
-        set_target_properties(soar_sml_python PROPERTIES SUFFIX ".abi3.pyd")
+        set_target_properties(soar_sml_python PROPERTIES SUFFIX ".pyd")
     elseif(APPLE)
         set_target_properties(soar_sml_python PROPERTIES SUFFIX ".abi3.so")
     else()
@@ -327,7 +336,14 @@ if(SWIG_PYTHON)
         COMMAND ${CMAKE_COMMAND}
             -DPY_WRAPPER=${_PY_WRAPPER}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/Python/prepend_dll_shim.cmake
-        COMMENT "Prepending Windows DLL-search shim to Python_sml_ClientInterface.py"
+        # Mirror the patched .py alongside the .pyd in out/ so the SCons-era
+        # layout (Python_sml_ClientInterface.py + _Python_sml_ClientInterface.*
+        # side-by-side at the root of out/) still works. Must run AFTER the
+        # shim patch so out/ gets the patched copy, not the raw SWIG output.
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${_PY_WRAPPER}"
+            "${SOAR_OUT_DIR}/Python_sml_ClientInterface.py"
+        COMMENT "Prepending Windows DLL-search shim to Python_sml_ClientInterface.py; mirroring to out/"
         VERBATIM
     )
 
