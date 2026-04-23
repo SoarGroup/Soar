@@ -57,10 +57,31 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${SOAR_OUT_DIR}")
 
 # Copy non-binary support files into the out/ tree at configure time.
 file(COPY scripts/settings.soar DESTINATION "${SOAR_OUT_DIR}")
-if(WIN32)
-  file(COPY scripts/SoarJavaDebugger.bat DESTINATION "${SOAR_OUT_DIR}")
+
+# For Release builds, silence GTK/SWT warnings by redirecting the Debugger's
+# stderr to /dev/null (or nul on Windows). Dev/Debug builds keep stderr so
+# real JVM/JNI errors remain visible.
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(_soar_dbg_stderr_sh  " 2>/dev/null")
+  set(_soar_dbg_stderr_bat " 2>nul")
 else()
-  file(COPY scripts/SoarJavaDebugger.sh DESTINATION "${SOAR_OUT_DIR}")
+  set(_soar_dbg_stderr_sh  "")
+  set(_soar_dbg_stderr_bat "")
+endif()
+
+if(WIN32)
+  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/scripts/SoarJavaDebugger.bat" _dbg_bat)
+  string(REPLACE "SoarJavaDebugger.jar %1 %2 %3 %4 %5"
+                 "SoarJavaDebugger.jar %1 %2 %3 %4 %5${_soar_dbg_stderr_bat}"
+                 _dbg_bat "${_dbg_bat}")
+  file(WRITE "${SOAR_OUT_DIR}/SoarJavaDebugger.bat" "${_dbg_bat}")
+else()
+  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/scripts/SoarJavaDebugger.sh" _dbg_sh)
+  string(REPLACE "SoarJavaDebugger.jar\" \"\$@\" &"
+                 "SoarJavaDebugger.jar\" \"\$@\"${_soar_dbg_stderr_sh} &"
+                 _dbg_sh "${_dbg_sh}")
+  file(WRITE "${SOAR_OUT_DIR}/SoarJavaDebugger.sh" "${_dbg_sh}")
+  execute_process(COMMAND chmod +x "${SOAR_OUT_DIR}/SoarJavaDebugger.sh")
 endif()
 
 # Add your source files
@@ -321,12 +342,13 @@ if(BUILD_TESTS)
   add_subdirectory(UnitTests)
 endif()
 
-# Install support files
+# Install support files (Debugger launcher comes from SOAR_OUT_DIR so it reflects
+# the per-build-type stderr-redirect decision above).
 install(FILES scripts/settings.soar DESTINATION .)
 if(WIN32)
-  install(FILES scripts/SoarJavaDebugger.bat DESTINATION .)
+  install(FILES "${SOAR_OUT_DIR}/SoarJavaDebugger.bat" DESTINATION .)
 else()
-  install(PROGRAMS scripts/SoarJavaDebugger.sh DESTINATION .)
+  install(PROGRAMS "${SOAR_OUT_DIR}/SoarJavaDebugger.sh" DESTINATION .)
 endif()
 
 # Set CPack variables
