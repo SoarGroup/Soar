@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.23)
 
 find_package(Java REQUIRED COMPONENTS Development Runtime)
 
-set(JAVA_OUTPUT_DIR "${CMAKE_BINARY_DIR}/java")
+set(JAVA_OUTPUT_DIR "${SOAR_OUT_DIR}/java")
 set(SWIG_JAVA_OUTPUT_DIR "${CMAKE_BINARY_DIR}/Core/ClientSMLSWIG/java")
 set(JAVA_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -143,7 +143,7 @@ add_custom_target(build_debugger
 # ============================================================
 # JAR 4: SoarJavaDebugger.jar (launcher)
 # ============================================================
-set(LAUNCHER_JAR "${CMAKE_BINARY_DIR}/SoarJavaDebugger.jar")
+set(LAUNCHER_JAR "${SOAR_OUT_DIR}/SoarJavaDebugger.jar")
 
 add_custom_target(build_launcher
   COMMAND ${Java_JAR_EXECUTABLE} cfm "${LAUNCHER_JAR}"

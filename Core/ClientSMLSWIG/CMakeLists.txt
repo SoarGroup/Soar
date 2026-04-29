@@ -456,6 +456,10 @@ endif()
         COMMAND ${CMAKE_COMMAND} -P "${JAVA_COMPILE_SCRIPT}"
         COMMAND ${Java_JAR_EXECUTABLE} cf "${CMAKE_CURRENT_BINARY_DIR}/java/sml.jar"
                 -C "${CMAKE_CURRENT_BINARY_DIR}/java/classes" .
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${SOAR_OUT_DIR}/java"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_BINARY_DIR}/java/sml.jar"
+                "${SOAR_OUT_DIR}/java/sml.jar"
         COMMENT "Compiling Java files and creating sml.jar"
         VERBATIM
     )

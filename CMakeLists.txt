@@ -50,10 +50,19 @@ include(GNUInstallDirs)
 # layout.  This ensures DLLs, EXEs, and MODULE libraries are co-located so that
 # executables can find Soar.dll at runtime without PATH manipulation, and tools
 # that reference SOAR_HOME / out/ keep working regardless of build system.
+# Both Debug and Release land in out/ — the most-recent build wins, matching
+# the historical SCons behavior so SOAR_HOME references just work.
 set(SOAR_OUT_DIR "${CMAKE_SOURCE_DIR}/out")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${SOAR_OUT_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${SOAR_OUT_DIR}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${SOAR_OUT_DIR}")
+# For multi-config generators (Visual Studio, Xcode), also override the per-
+# config output dirs so that artifacts land flat in out/ instead of out/Release.
+foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${SOAR_OUT_DIR}")
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${SOAR_OUT_DIR}")
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${SOAR_OUT_DIR}")
+endforeach()
 
 # Copy non-binary support files into the out/ tree at configure time.
 file(COPY scripts/settings.soar DESTINATION "${SOAR_OUT_DIR}")
