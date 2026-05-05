@@ -53,10 +53,8 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         {
             SetError(*err);
         }
-        else
-        {
-            PrintCLIMessage("Knowledge added to semantic memory.");
-        }
+        // On success: stay quiet, mirroring `sp { ... }`. Per-LTI '@' trace
+        // markers are emitted by SMem_Manager::LTM_to_DB when `trace smem` is on.
         delete err;
         return result;
     }
