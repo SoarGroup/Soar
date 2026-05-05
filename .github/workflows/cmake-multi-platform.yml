@@ -176,9 +176,9 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install swig
 
-      - name: Install SWIG and Tcl (Windows)
+      - name: Install SWIG (Windows)
         if: matrix.os == 'windows-latest'
-        run: choco install swig magicsplat-tcl-tk -y
+        run: choco install swig -y
 
       - name: Install Tcl dev headers (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -206,7 +206,11 @@ jobs:
 
       - name: Configure CMake (Windows)
         if: matrix.os == 'windows-latest'
-        run: cmake --preset Release-swig
+        # magicsplat-tcl-tk doesn't ship find_package-friendly TCL_LIBRARY /
+        # TCL_INCLUDE_PATH. Building Tcl from source is handled in release.yml
+        # (which produces the actual shipped zip); for this fast PR-time CI we
+        # exercise the other SWIG bindings and skip Tcl on Windows.
+        run: cmake --preset Release-swig -DSWIG_TCL=OFF -DTCLSOARLIB=OFF
 
       - name: Build
         run: cmake --build --preset Release-swig
