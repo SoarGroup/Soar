@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.23)
+
+# Pin macOS minimum to 13.0 (Ventura) so artifacts run on every macOS still
+# receiving Apple security updates. Must be set before project().
+if(APPLE AND NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0" CACHE STRING "Minimum macOS version")
+endif()
+
 project(soar
   VERSION 9.6.5
   LANGUAGES CXX C)
