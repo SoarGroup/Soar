@@ -62,7 +62,12 @@ jobs:
 
       - name: Install SWIG and Tcl (Ubuntu)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y swig tcl-dev
+        run: |
+          # Ubuntu 22.04 apt only has SWIG 4.0.2, which doesn't generate
+          # stable-ABI compliant Python wrappers (Py_LIMITED_API). Install
+          # SWIG 4.3+ from PyPI instead.
+          pip install swig
+          sudo apt-get update && sudo apt-get install -y tcl-dev
 
       - name: Install SWIG and Tcl (macOS native)
         if: runner.os == 'macOS' && !matrix.universal

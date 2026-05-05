@@ -79,7 +79,7 @@ jobs:
             soar-*.tar.gz
       - name: Upload Debian
         uses: actions/upload-artifact@v4
-        if: ${{ matrix.build_type == 'Release' &&  (matrix.os == 'ubuntu-latest') && (github.event_name == 'release' || github.event_name == 'workflow_dispatch')  }}
+        if: ${{ matrix.build_type == 'Release' &&  (matrix.os == 'ubuntu-22.04') && (github.event_name == 'release' || github.event_name == 'workflow_dispatch')  }}
         with:
           name: ${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.build_shared_libs == 'ON' && 'shared' || 'static' }}.deb
           path: |
@@ -119,7 +119,7 @@ jobs:
 
       - name: Install SWIG (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y swig
+        run: pip install swig
 
       - name: Install SWIG (macOS)
         if: matrix.os == 'macos-latest'
