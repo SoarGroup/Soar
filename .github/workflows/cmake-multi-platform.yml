@@ -85,6 +85,57 @@ jobs:
           path: |
             soar-*.deb
 
+  build-svs:
+    # Runs the Release-svs-test preset, which enables SVS=ON and adds the
+    # test_svs ctest entry on top of the usual test_ci. The build-nix and
+    # build-windows matrices have SVS=OFF in every preset, so without this job
+    # SVS gets no CI coverage.
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+
+      - name: Install Conan
+        run: pip install conan
+
+      - name: Install Ninja (Windows)
+        if: matrix.os == 'windows-latest'
+        run: pip install ninja
+
+      - name: Configure Conan
+        run: conan profile detect
+
+      - name: Install dependencies (Unix)
+        if: matrix.os != 'windows-latest'
+        run: conan install . --build=missing -s build_type=Release
+
+      - name: Install dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: conan install . --build=missing -s build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
+
+      - name: Configure CMake
+        run: cmake --preset Release-svs-test
+
+      - name: Build
+        run: cmake --build --preset Release-svs-test
+
+      - name: Test
+        run: ctest --preset Release-svs-test
+
   build-swig:
     runs-on: ${{ matrix.os }}
 
