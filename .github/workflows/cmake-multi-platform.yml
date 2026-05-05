@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-22.04, macos-latest]
         build_type: [Release, Debug]
         build_shared_libs: [ON, OFF]
 

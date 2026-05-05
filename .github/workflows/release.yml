@@ -28,7 +28,7 @@ jobs:
         include:
           - os: windows-latest
             platform: win_x86-64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platform: linux_x86-64
           - os: macos-latest
             platform: mac_ARM64
