@@ -276,8 +276,11 @@ if(REPOS_DIR AND IS_DIRECTORY "${REPOS_DIR}")
     endforeach()
   endforeach()
 
-  # Eaters_TankSoar.jar (pre-built)
-  copy_if_exists("${REPOS_DIR}/Release-Support/SoarShuffler/jars/Eaters_TankSoar.jar"
+  # Eaters_TankSoar.jar (built by release.yml's "Build Eaters_TankSoar.jar"
+  # step from the Domains-Eaters-TankSoar repo via Ant). Older releases pulled
+  # this from Release-Support's checked-in prebuilt copy; we now build from
+  # source so updates to the Eaters/TankSoar code actually ship.
+  copy_if_exists("${REPOS_DIR}/Domains-Eaters-TankSoar/Eaters_TankSoar.jar"
     "${SUITE}/bin")
 
   # Documentation

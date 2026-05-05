@@ -171,8 +171,8 @@ if [ -n "$REPOS_DIR" ] && [ -d "$REPOS_DIR" ]; then
       -exec cp -v {} "$SUITE/bin/java/" \;  2>/dev/null || true
   done
 
-  # Eaters_TankSoar.jar (pre-built)
-  cp "$REPOS_DIR/Release-Support/SoarShuffler/jars/Eaters_TankSoar.jar" \
+  # Eaters_TankSoar.jar (built from Domains-Eaters-TankSoar via Ant)
+  cp "$REPOS_DIR/Domains-Eaters-TankSoar/Eaters_TankSoar.jar" \
      "$SUITE/bin/" 2>/dev/null || true
 
   # Documentation

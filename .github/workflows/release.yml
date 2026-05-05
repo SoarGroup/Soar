@@ -212,6 +212,12 @@ jobs:
           chmod +x gradlew
           ./gradlew build -x test
 
+      - name: Build Eaters_TankSoar.jar
+        run: |
+          cd repos/Domains-Eaters-TankSoar
+          ant -noinput -buildfile build.xml jar
+          ls -l Eaters_TankSoar.jar
+
       - name: Assemble release
         run: >
           cmake -P scripts/assemble-release.cmake --
