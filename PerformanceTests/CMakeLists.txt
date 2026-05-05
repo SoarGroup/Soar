@@ -19,10 +19,11 @@ if(BUILD_TESTING)
     if(NOT WIN32)
         add_test(NAME test_performance COMMAND do_performance_test.sh)
         # The script is copied into ${CMAKE_BINARY_DIR}/PerformanceTests/ but
-        # the binaries land in ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} (=SOAR_OUT_DIR).
-        # Pass absolute paths so the script doesn't rely on `./` lookup.
+        # the binary lands in ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} (=SOAR_OUT_DIR).
+        # Pass an absolute path so the script doesn't rely on `./` lookup.
+        # (UNIT_BIN is only used with -u; default off, so we don't set it.)
         set_tests_properties(test_performance PROPERTIES
-            ENVIRONMENT "PERF_BIN=$<TARGET_FILE:PerformanceTests>;UNIT_BIN=$<TARGET_FILE:UnitTests>"
+            ENVIRONMENT "PERF_BIN=$<TARGET_FILE:PerformanceTests>"
         )
     endif()
 endif()
