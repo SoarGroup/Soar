@@ -1,5 +1,6 @@
 # Soar
 
+[![CMake Multi-Platform](https://github.com/SoarGroup/Soar/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/SoarGroup/Soar/actions/workflows/cmake-multi-platform.yml)
 [![Build/Test](https://github.com/SoarGroup/Soar/actions/workflows/build.yml/badge.svg)](https://github.com/SoarGroup/Soar/actions/workflows/build.yml)
 
 This is the code base for Soar, a cognitive architecture for developing systems
@@ -29,12 +30,9 @@ For binary builds of Soar you can get them in two places:
 
 ## Soar Performance
 
-Some performance statistics are calculated automatically using the Factorization
-Stress Tests. You can see performance on a commit-by-commit basis either in
-[Performance.md](https://github.com/SoarGroup/Soar/blob/development/Performance.md)
-or [here](http://soar-jenkins.eecs.umich.edu/Performance/). The raw data used to
-generate the graphs for each build can be found
-[here](http://soar-jenkins.eecs.umich.edu/Performance/).
+Some performance statistics are calculated automatically using the
+Factorization Stress Tests. You can see performance on a commit-by-commit basis
+in [Performance.md](https://github.com/SoarGroup/Soar/blob/development/Performance.md).
 
 Disclaimer: These are worst case tests. Average performance is probably much
 higher. In addition, these show that even in worst case, Soar beats its goal of
