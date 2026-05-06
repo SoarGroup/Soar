@@ -39,12 +39,15 @@ higher. In addition, these show that even in worst case, Soar beats its goal of
 
 ## Development
 
-The Soar project builds with `scons`, see [build with scons](#build-with-scons),
-but an alternative build based on `CMake`, see
-[CMake section](#build-with-cmake), is under development.
+Soar supports two build systems: `CMake` (see [build with CMake](#build-with-cmake))
+and `scons` (see [build with scons](#build-with-scons)). Both are kept in sync
+and produce binary-compatible artifacts that land in the same `out/` and
+multi-platform install layout. The release zip is built by the CMake-based
+[`cmake-multi-platform.yml`](.github/workflows/cmake-multi-platform.yml)
+workflow.
 
-The following table provides a comparison of supported build features for Soar
-between both build systems.
+The following table compares supported build features for Soar between the two
+build systems as of 9.6.5.
 
 | Feature                           | Scons | CMake |
 | --------------------------------- | ----- | ----- |
@@ -54,28 +57,30 @@ between both build systems.
 | Unit tests                        | ✅    | ✅    |
 | Performance tests                 | ✅    | ✅    |
 | External lib test                 | ✅    | ✅    |
-| SVS                               | ✅    | ❌    |
+| SVS                               | ✅    | ✅    |
 | SWIG Python                       | ✅    | ✅    |
 | SWIG Java                         | ✅    | ✅    |
 | SWIG JavaScript                   | ❌    | ✅    |
-| SWIG C#                           | ✅    | ❌    |
-| SWIG TCL                          | ✅    | ❌    |
-| Python package soar-sml           | ✅    | ❌    |
-| Generate compile commands         | ✅    | ✅    |
+| SWIG C#                           | ✅    | ✅    |
+| SWIG Tcl                          | ✅    | ✅    |
+| Python package `soar-sml`         | ✅    | ❌    |
+| Generate `compile_commands.json`  | ✅    | ✅    |
 | Release                           | ✅    | ✅    |
 | Debug                             | ✅    | ✅    |
 | Debug with address sanitizer      | ❌    | ✅    |
 | Conan package manager integration | ❌    | ✅    |
-| MacOS                             | ✅    | ✅    |
+| macOS                             | ✅    | ✅    |
 | Linux                             | ✅    | ✅    |
-| Windows                           | ✅    | ❌    |
-| Java builds (Debugger)            | ✅    | ❌    |
+| Windows                           | ✅    | ✅    |
+| Java Debugger build               | ✅    | ✅    |
 
 ### Prerequisites
 
 The instructions below are cursory and may be out of date; the most up-to-date
 instructions for compiling Soar from source will always be the CI build scripts.
-You can find them [here](.github/workflows/build.yml).
+The CMake-based release pipeline is
+[`cmake-multi-platform.yml`](.github/workflows/cmake-multi-platform.yml); the
+legacy SCons CI lives in [`build.yml`](.github/workflows/build.yml).
 
 To compile Soar, you will need the dependencies listed below. Note that the
 installation commands are not complete, e.g. missing instructions for Mac do not
@@ -148,43 +153,60 @@ If you want an optimized build instead:
 
 The following prerequisites must be available:
 
-- CMake
-- Python3, including pip for the [conan](https://conan.io) package manager.
+- CMake (>= 3.21)
+- Python 3, including `pip`, for the [Conan](https://conan.io) package manager
+  (`pip install conan`).
+- A C/C++ toolchain (Visual Studio 2022 / Xcode command-line tools / GCC or Clang).
+- For the Java debugger and SWIG-Java bindings: a JDK 11 or newer (Temurin recommended).
+- For SWIG bindings: SWIG (Windows users can install via `choco install swig`).
 
-Once the dependencies are set up, the project can be built with the
-[`build.sh` script](./build.sh).
-
-The VS Code extension for CMake should also work for triggering `build` and
-`install` commands, adding build problems to the warnings.
-
-The CMake build system for Soar includes a set of build presets setting defaults
-for several build options. See [CMakePrestes.json](./CMakePresets.json) for
-options. Using these presets requires the installation of debug and release
-dependencies by Conan, due to the resolution of dependencies via CMake toolchains:
+Once the dependencies are installed, install Conan dependencies once per build
+type (this fetches `sqlite3`, `asio`, and `eigen` from Conan Center):
 
 ```shell
 conan install . --build=missing
 conan install . --build=missing -s build_type=Debug
 ```
 
-Afterwards, different presets can be built with
+Then pick a preset that matches what you want to build. The most common presets
+for everyday development and CI are:
+
+| Preset             | What it builds                                       |
+| ------------------ | ---------------------------------------------------- |
+| `Release-test`     | Release Soar + unit tests                            |
+| `Release-svs-test` | Release Soar with SVS + unit tests                   |
+| `Release-swig`     | Release Soar + Java debugger + all SWIG bindings     |
+| `Debug-test`       | Debug Soar + unit tests (assertions on)              |
+| `Debug-test-asan`  | Debug Soar + unit tests + AddressSanitizer           |
+| `Debug-swig-full`  | Debug Soar + Java debugger + all SWIG bindings       |
+
+Configure and build a preset:
 
 ```shell
-cmake --preset Debug-test
-cmake --build --preset Debug-test
+cmake --preset Release-test
+cmake --build --preset Release-test
 ```
 
-or predefined workflows can be run with the following command, running
-configure, build and test stages:
+Or run a full configure/build/test workflow in one step:
 
 ```shell
-cmake --workflow --preset Debug-test-workflow
+cmake --workflow --preset Release-test-workflow
 ```
 
-The default options are covered through presets `conan-release` and
-`conan-debug` provided by Conan. Extensions, like VS Code CMake tools,
-integrate well with these presets. A list of all presets is availble via `cmake
---list-presets` or for workflows with `cmake --workflow --list-presets`.
+`compile_commands.json` is generated automatically and picked up by VS Code's
+C/C++ extension, clangd, and other tools without further configuration. The
+VS Code CMake Tools extension integrates with these presets directly.
+
+For the full list of presets:
+
+```shell
+cmake --list-presets
+cmake --workflow --list-presets
+```
+
+See [`CMakePresets.json`](./CMakePresets.json) for the underlying definitions
+and [`build.sh`](./build.sh) / [`build.bat`](./build.bat) for one-shot wrapper
+scripts.
 
 ## License
 
