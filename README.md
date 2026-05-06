@@ -80,7 +80,7 @@ The instructions below are cursory and may be out of date; the most up-to-date
 instructions for compiling Soar from source will always be the CI build scripts.
 The CMake-based release pipeline is
 [`cmake-multi-platform.yml`](.github/workflows/cmake-multi-platform.yml); the
-legacy SCons CI lives in [`build.yml`](.github/workflows/build.yml).
+SCons CI lives in [`build.yml`](.github/workflows/build.yml).
 
 To compile Soar, you will need the dependencies listed below. Note that the
 installation commands are not complete, e.g. missing instructions for Mac do not
