@@ -10,7 +10,7 @@ please visit:
 - [The GitHub project page](https://github.com/SoarGroup/Soar)
 
 Note that the readme included with the Soar distribution for end-users is in the
-[Release-Support](https://github.com/SoarGroup/Release-Support/blob/master/txt/README)
+[Release-Support](https://github.com/SoarGroup/Release-Support/blob/master/txt/README.md)
 repository.
 
 ## Soar Builds
@@ -18,11 +18,14 @@ repository.
 For binary builds of Soar you can get them in two places:
 
 - [Official Releases](http://soar.eecs.umich.edu/articles/downloads/soar-suite)
-- [Latest Successful Development Build](https://github.com/SoarGroup/Soar/actions/workflows/build.yml?query=branch%3Adevelopment): click the latest run and scroll down to "Artifacts".
-  - If the download for your platform isn't there, the build failed. You'll
-      need to download the result of an earlier build.
-  - GitHub cannot build for ARM64 (M-series Macs), so you'll need to build
-      from source or use the release version instead.
+  — multiplatform zip including `bin/win_x86-64`, `bin/linux_x86-64`,
+  `bin/mac_x86-64`, and `bin/mac_ARM64` (Apple Silicon).
+- Latest development builds: the CMake-based release pipeline
+  ([`cmake-multi-platform.yml`](https://github.com/SoarGroup/Soar/actions/workflows/cmake-multi-platform.yml?query=branch%3Adevelopment))
+  produces per-platform artifacts including ARM64 macOS. The SCons CI
+  ([`build.yml`](https://github.com/SoarGroup/Soar/actions/workflows/build.yml?query=branch%3Adevelopment))
+  is also kept current but does not produce an ARM64 macOS artifact — use
+  `cmake-multi-platform.yml` or build from source on Apple Silicon.
 
 ## Soar Performance
 
