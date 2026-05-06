@@ -252,6 +252,10 @@ class Explanation_Based_Chunker
         void            deallocate_failed_chunk();
         void            clean_up(uint64_t pClean_up_id, soar_timer* pTimer = NULL);
         bool            add_chunk_to_rete();
+        
+        /* Contradiction removal hack */
+        void            remove_contradictory_tests_from_chunk();
+        void            remove_contradictory_tests_from_test(test* conjunctive_test);
 
         /* Dependency analysis methods */
         void perform_dependency_analysis();

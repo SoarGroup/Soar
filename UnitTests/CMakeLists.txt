@@ -17,6 +17,7 @@ file(GLOB TEST_HEADERS
 )
 
 add_executable(${PROJECT_NAME} TestHarness/testMain.cpp ${TEST_SOURCES})
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "UnitTests")
 target_link_libraries(${PROJECT_NAME} soar_lib)
 target_compile_features(${PROJECT_NAME} PUBLIC
     cxx_std_17
@@ -35,19 +36,41 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/SoarUnitTests/wma
 )
 
-file(COPY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents DESTINATION ${CMAKE_BINARY_DIR}/UnitTests)
+# Copy test agents to the out/ tree so the test exe can find them at runtime.
+# SoarHelper::ResourceDirectory is "./SoarUnitTests/" — UnitTests.exe runs with
+# CWD=${SOAR_OUT_DIR} and looks up "./SoarUnitTests/<file>.soar" directly, so
+# the *contents* of SoarTestAgents/ must land in SoarUnitTests/ (mirrors the
+# SCons layout: InstallDir('$OUT_DIR/SoarUnitTests/', 'SoarTestAgents')).
+file(GLOB _soar_test_agent_entries
+     LIST_DIRECTORIES TRUE
+     "${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents/*")
+file(COPY ${_soar_test_agent_entries}
+     DESTINATION ${SOAR_OUT_DIR}/SoarUnitTests)
 
-# TODO: re-enable SVS tests once we implement the CMake build for it
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+# Install contents of SoarTestAgents/ as SoarUnitTests/ in the install tree so
+# the release zip's UnitTests.exe (with CWD next to it) can find them.
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/UnitTests/SoarTestAgents/
+        DESTINATION SoarUnitTests)
 # TODO: re-enable testLoadLibrary once we implement the CMake build for it
 # TESTS FROM CI:
 if(BUILD_TESTING)
     # Add CI tests only if TEST_CI_ENABLED is enabled (default ON if not specified)
     if(NOT DEFINED TEST_CI_ENABLED OR TEST_CI_ENABLED)
-        add_test(NAME test_ci COMMAND test_soar -e PRIMS_Sanity1 -e PRIMS_Sanity2 -f testLoadLibrary -f testSmemArithmetic -f testHamilton -E SvsTests)
+        add_test(NAME test_ci
+            COMMAND ${PROJECT_NAME} -e PRIMS_Sanity1 -e PRIMS_Sanity2 -e Demo_ToH_Recursive -f testLoadLibrary -f testSmemArithmetic -f testHamilton -f Demo_Arithmetic -E SvsTests
+            WORKING_DIRECTORY "${SOAR_OUT_DIR}"
+        )
+
+        # With CMAKE_RUNTIME_OUTPUT_DIRECTORY set, Soar.dll is in the same dir
+        # as UnitTests.exe, so no PATH manipulation is needed on Windows.
     endif()
 
     if(SVS)
-        add_test(NAME test_svs COMMAND test_soar -c SvsTests)
+        add_test(NAME test_svs
+            COMMAND ${PROJECT_NAME} -c SvsTests
+            WORKING_DIRECTORY "${SOAR_OUT_DIR}"
+        )
     endif()
 
     # Python SML Interface Test

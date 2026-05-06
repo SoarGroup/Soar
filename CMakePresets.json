@@ -89,50 +89,101 @@
                 "SVS": "OFF",
                 "CLI": "ON"
             }
+        },
+        {
+            "name": "Release-svs-test",
+            "displayName": "Release with SVS Test Configuration",
+            "inherits": "conan-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "ON",
+                "ASAN": "OFF",
+                "SVS": "ON",
+                "CLI": "ON"
+            }
+        },
+        {
+            "name": "Release-swig",
+            "displayName": "Release with all SWIG bindings + Java Debugger",
+            "inherits": "conan-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_SHARED_LIBS": "ON",
+                "BUILD_TESTS": "ON",
+                "SVS": "ON",
+                "CLI": "ON",
+                "SWIG_PYTHON": "ON",
+                "SWIG_TCL": "ON",
+                "SWIG_JAVA": "ON",
+                "JAVA_DEBUGGER": "ON",
+                "TCLSOARLIB": "ON"
+            }
+        },
+        {
+            "name": "Debug-swig-full",
+            "displayName": "Debug with all SWIG bindings + Java Debugger (full kernel debug)",
+            "inherits": "conan-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_SHARED_LIBS": "ON",
+                "BUILD_TESTS": "ON",
+                "SVS": "ON",
+                "CLI": "ON",
+                "SWIG_PYTHON": "ON",
+                "SWIG_TCL": "ON",
+                "SWIG_JAVA": "ON",
+                "JAVA_DEBUGGER": "ON",
+                "TCLSOARLIB": "ON",
+                "TEST_CI_ENABLED": "OFF",
+                "BUILD_PERFORMANCE_TESTS": "OFF"
+            }
         }
     ],
     "buildPresets": [
         {
             "name": "Debug-shared",
             "displayName": "Build Debug Shared",
-            "configurePreset": "Debug-shared",
-            "configuration": "debug",
-            "inherits": "conan-debug"
+            "configurePreset": "Debug-shared"
         },
         {
             "name": "Release-shared",
             "displayName": "Build Release Shared",
-            "configurePreset": "Release-shared",
-            "configuration": "release",
-            "inherits": "conan-release"
+            "configurePreset": "Release-shared"
         },
         {
             "name": "Debug-test",
             "displayName": "Build Debug Test",
-            "configurePreset": "Debug-test",
-            "configuration": "debug",
-            "inherits": "conan-debug"
+            "configurePreset": "Debug-test"
         },
         {
             "name": "Debug-test-asan",
             "displayName": "Build Debug Test with ASAN",
-            "configurePreset": "Debug-test-asan",
-            "configuration": "debug",
-            "inherits": "conan-debug"
+            "configurePreset": "Debug-test-asan"
         },
         {
             "name": "Release-test",
             "displayName": "Build Release Test",
-            "configurePreset": "Release-test",
-            "configuration": "release",
-            "inherits": "conan-release"
+            "configurePreset": "Release-test"
         },
         {
             "name": "Debug-swig",
             "displayName": "Build Debug with SWIG bindings",
-            "configurePreset": "Debug-swig",
-            "configuration": "debug",
-            "inherits": "conan-debug"
+            "configurePreset": "Debug-swig"
+        },
+        {
+            "name": "Release-svs-test",
+            "displayName": "Build Release with SVS Test",
+            "configurePreset": "Release-svs-test"
+        },
+        {
+            "name": "Release-swig",
+            "displayName": "Build Release with SWIG bindings",
+            "configurePreset": "Release-swig"
+        },
+        {
+            "name": "Debug-swig-full",
+            "displayName": "Build Debug with all SWIG bindings + Java Debugger",
+            "configurePreset": "Debug-swig-full"
         }
     ],
     "testPresets": [
@@ -140,7 +191,6 @@
             "name": "Debug-test",
             "displayName": "Test Debug",
             "configurePreset": "Debug-test",
-            "inherits": "conan-debug",
             "output": {
                 "outputOnFailure": true
             }
@@ -149,7 +199,6 @@
             "name": "Debug-test-asan",
             "displayName": "Test Debug ASAN",
             "configurePreset": "Debug-test-asan",
-            "inherits": "conan-debug",
             "output": {
                 "outputOnFailure": true
             }
@@ -158,7 +207,6 @@
             "name": "Debug-shared",
             "displayName": "Test Debug Shared",
             "configurePreset": "Debug-shared",
-            "inherits": "conan-debug",
             "output": {
                 "outputOnFailure": true
             }
@@ -178,6 +226,14 @@
             "output": {
                 "outputOnFailure": true
             }
+        },
+        {
+            "name": "Release-svs-test",
+            "displayName": "Test Release with SVS",
+            "configurePreset": "Release-svs-test",
+            "output": {
+                "outputOnFailure": true
+            }
         }
     ],
     "packagePresets": [
@@ -191,6 +247,13 @@
             "name": "Release-shared",
             "displayName": "Package Release Shared",
             "configurePreset": "Release-shared",
+            "packageDirectory": "${sourceDir}/"
+        },
+        {
+            "name": "Release-svs-test",
+            "displayName": "Package Release with SVS Test",
+            "configurePreset": "Release-svs-test",
+            "generators": ["TGZ"],
             "packageDirectory": "${sourceDir}/"
         }
     ],

@@ -28,7 +28,7 @@ jobs:
         include:
           - os: windows-latest
             platform: win_x86-64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platform: linux_x86-64
           - os: macos-latest
             platform: mac_ARM64
@@ -62,7 +62,12 @@ jobs:
 
       - name: Install SWIG and Tcl (Ubuntu)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y swig tcl-dev
+        run: |
+          # Ubuntu 22.04 apt only has SWIG 4.0.2, which doesn't generate
+          # stable-ABI compliant Python wrappers (Py_LIMITED_API). Install
+          # SWIG 4.3+ from PyPI instead.
+          pip install swig
+          sudo apt-get update && sudo apt-get install -y tcl-dev
 
       - name: Install SWIG and Tcl (macOS native)
         if: runner.os == 'macOS' && !matrix.universal
@@ -176,7 +181,7 @@ jobs:
 
   assemble:
     name: Assemble multiplatform release
-    needs: build
+    needs: [build]
     runs-on: ubuntu-latest
 
     steps:
@@ -206,6 +211,12 @@ jobs:
           cd repos/VisualSoar
           chmod +x gradlew
           ./gradlew build -x test
+
+      - name: Build Eaters_TankSoar.jar
+        run: |
+          cd repos/Domains-Eaters-TankSoar
+          ant -noinput -buildfile build.xml jar
+          ls -l Eaters_TankSoar.jar
 
       - name: Assemble release
         run: >

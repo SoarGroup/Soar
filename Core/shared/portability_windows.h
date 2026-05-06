@@ -3,7 +3,9 @@
 
 /* This file contains code specific to the windows platforms */
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#define _WIN32_WINNT 0x0400		// This is required since our target is NT4+
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0400		// Default target is NT4+; override for SVS/asio
+#endif
 
 // disable min/max macros -- fixes an issue where some RHS functions use a struct that has fields by these names, so the initializer gets interpreted as a macro call
 #define NOMINMAX
@@ -16,6 +18,7 @@
 #include <Windows.h>
 #include <process.h>
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <direct.h>
 #include <Lmcons.h> // for UNLEN constant
 #include <conio.h>
@@ -75,7 +78,7 @@
 
 #define NET_SD_BOTH			SD_BOTH
 
-#define socklen_t int
+/* socklen_t is provided by <ws2tcpip.h> */
 
 #if defined(_MSC_VER)
 

@@ -128,6 +128,12 @@ foreach(PLAT IN LISTS PLATFORM_IDS)
   copy_if_exists("${SRC}/bin/UnitTests"     "${DEST}")
   copy_if_exists("${SRC}/bin/UnitTests.exe" "${DEST}")
 
+  # UnitTests test-agent fixtures (looked up via "./SoarUnitTests/" relative
+  # to UnitTests.exe's CWD — see UnitTests/SoarHelpers/SoarHelper.cpp).
+  if(IS_DIRECTORY "${SRC}/SoarUnitTests")
+    file(COPY "${SRC}/SoarUnitTests" DESTINATION "${DEST}")
+  endif()
+
   # Core shared library
   # Windows: Soar.dll (bin/) + Soar.lib (lib/)
   copy_if_exists("${SRC}/bin/Soar.dll" "${DEST}")
@@ -270,8 +276,11 @@ if(REPOS_DIR AND IS_DIRECTORY "${REPOS_DIR}")
     endforeach()
   endforeach()
 
-  # Eaters_TankSoar.jar (pre-built)
-  copy_if_exists("${REPOS_DIR}/Release-Support/SoarShuffler/jars/Eaters_TankSoar.jar"
+  # Eaters_TankSoar.jar (built by release.yml's "Build Eaters_TankSoar.jar"
+  # step from the Domains-Eaters-TankSoar repo via Ant). Older releases pulled
+  # this from Release-Support's checked-in prebuilt copy; we now build from
+  # source so updates to the Eaters/TankSoar code actually ship.
+  copy_if_exists("${REPOS_DIR}/Domains-Eaters-TankSoar/Eaters_TankSoar.jar"
     "${SUITE}/bin")
 
   # Documentation

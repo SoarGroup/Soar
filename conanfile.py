@@ -10,7 +10,7 @@ from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
 
 class soarRecipe(ConanFile):
     name = "soar"
-    version = "9.6.3"
+    version = "9.6.5"
     package_type = "application"
 
     # Binary configuration
@@ -21,6 +21,8 @@ class soarRecipe(ConanFile):
     
     def requirements(self):
         self.requires("sqlite3/3.40.0")
+        self.requires("asio/1.36.0")
+        self.requires("eigen/3.4.0")
 
     def generate(self):
         deps = CMakeDeps(self)

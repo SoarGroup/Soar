@@ -534,3 +534,11 @@ Testing/*
 ConanPresets.json
 _CPack*/*
 soar-*
+
+# CMake build artifacts at repo root
+CMakeCache.txt
+CMakeFiles/
+
+# VS Code workspace file (personal IDE config)
+*.code-workspace
+
