@@ -198,7 +198,6 @@ jobs:
           git clone --depth 1 https://github.com/SoarGroup/Agents.git repos/Agents
           git clone --depth 1 https://github.com/SoarGroup/Release-Support.git repos/Release-Support
           git clone --depth 1 https://github.com/SoarGroup/VisualSoar.git repos/VisualSoar
-          git clone --depth 1 https://github.com/SoarGroup/Domains-Eaters-TankSoar.git repos/Domains-Eaters-TankSoar
 
       - uses: actions/setup-java@v4
         with:
@@ -211,12 +210,6 @@ jobs:
           cd repos/VisualSoar
           chmod +x gradlew
           ./gradlew build -x test
-
-      - name: Build Eaters_TankSoar.jar
-        run: |
-          cd repos/Domains-Eaters-TankSoar
-          ant -noinput -buildfile build.xml jar
-          ls -l Eaters_TankSoar.jar
 
       - name: Assemble release
         run: >

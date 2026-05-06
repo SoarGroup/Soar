@@ -234,28 +234,8 @@ if(REPOS_DIR AND IS_DIRECTORY "${REPOS_DIR}")
     endif()
   endif()
 
-  # Eaters & TankSoar agents + configs
-  if(IS_DIRECTORY "${REPOS_DIR}/Domains-Eaters-TankSoar")
-    if(IS_DIRECTORY "${REPOS_DIR}/Domains-Eaters-TankSoar/agents/eaters")
-      file(COPY "${REPOS_DIR}/Domains-Eaters-TankSoar/agents/eaters"
-        DESTINATION "${SUITE}/Agents")
-    endif()
-    if(IS_DIRECTORY "${REPOS_DIR}/Domains-Eaters-TankSoar/agents/tanksoar")
-      file(COPY "${REPOS_DIR}/Domains-Eaters-TankSoar/agents/tanksoar"
-        DESTINATION "${SUITE}/Agents")
-    endif()
-    file(MAKE_DIRECTORY "${SUITE}/bin/games/maps")
-    copy_glob("${REPOS_DIR}/Domains-Eaters-TankSoar/config/*.cnf"
-      "${SUITE}/bin/games")
-    if(IS_DIRECTORY "${REPOS_DIR}/Domains-Eaters-TankSoar/config/maps/eaters")
-      file(COPY "${REPOS_DIR}/Domains-Eaters-TankSoar/config/maps/eaters"
-        DESTINATION "${SUITE}/bin/games/maps")
-    endif()
-    if(IS_DIRECTORY "${REPOS_DIR}/Domains-Eaters-TankSoar/config/maps/tanksoar")
-      file(COPY "${REPOS_DIR}/Domains-Eaters-TankSoar/config/maps/tanksoar"
-        DESTINATION "${SUITE}/bin/games/maps")
-    endif()
-  endif()
+  # Eaters & TankSoar are not shipped: the Domains-Eaters-TankSoar repo is
+  # not actively maintained. Reintroduce when it gets a proper release path.
 
   # VisualSoar
   file(GLOB_RECURSE _vs_jar "${REPOS_DIR}/VisualSoar/build/libs/VisualSoar*.jar")
@@ -276,13 +256,6 @@ if(REPOS_DIR AND IS_DIRECTORY "${REPOS_DIR}")
     endforeach()
   endforeach()
 
-  # Eaters_TankSoar.jar (built by release.yml's "Build Eaters_TankSoar.jar"
-  # step from the Domains-Eaters-TankSoar repo via Ant). Older releases pulled
-  # this from Release-Support's checked-in prebuilt copy; we now build from
-  # source so updates to the Eaters/TankSoar code actually ship.
-  copy_if_exists("${REPOS_DIR}/Domains-Eaters-TankSoar/Eaters_TankSoar.jar"
-    "${SUITE}/bin")
-
   # Documentation
   file(MAKE_DIRECTORY "${SUITE}/Documentation/SoarTutorial")
   copy_if_exists("${REPOS_DIR}/Release-Support/pdf/SoarManual.pdf"
@@ -298,9 +271,9 @@ if(REPOS_DIR AND IS_DIRECTORY "${REPOS_DIR}")
     file(COPY "${_t}" DESTINATION "${SUITE}/Documentation/SoarTutorial")
   endforeach()
 
-  # Launcher scripts
+  # Launcher scripts (Eaters/TankSoar omitted with the Domains-Eaters-TankSoar drop)
   foreach(_ext bat sh command)
-    foreach(_script SoarCLI SoarJavaDebugger VisualSoar Eaters TankSoar setup)
+    foreach(_script SoarCLI SoarJavaDebugger VisualSoar setup)
       copy_if_exists(
         "${REPOS_DIR}/Release-Support/scripts/${_script}.${_ext}"
         "${SUITE}")
