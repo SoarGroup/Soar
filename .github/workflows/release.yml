@@ -208,8 +208,13 @@ jobs:
           # silently produced arm64e in both passes because Tcl's configure
           # macros override single -arch flags. Drop --enable-64bit for the
           # same reason: it forces a single host arch.
+          # Do NOT set CPPFLAGS with -arch: configure runs a preprocessor
+          # sanity check via /lib/cpp which doesn't understand -arch and
+          # bails ("C preprocessor fails sanity check"). Pin CC/CPP to
+          # clang so configure derives a working "clang -E" preprocessor.
+          export CC=clang
+          export CPP="clang -E"
           export CFLAGS="-arch x86_64 -arch arm64"
-          export CPPFLAGS="-arch x86_64 -arch arm64"
           export LDFLAGS="-arch x86_64 -arch arm64"
           ./configure --prefix=/usr/local/tcl-fat --enable-shared --disable-corefoundation
           make -j$(sysctl -n hw.logicalcpu)
