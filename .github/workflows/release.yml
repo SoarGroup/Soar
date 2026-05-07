@@ -260,7 +260,16 @@ jobs:
               -DCMAKE_OSX_ARCHITECTURES=${ARCH} \
               -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" \
               -DCMAKE_PREFIX_PATH=/usr/local/tcl-fat \
-              -DSWIG_PYTHON=ON -DSWIG_CSHARP=ON
+              -DBUILD_SHARED_LIBS=ON \
+              -DBUILD_TESTS=ON \
+              -DSVS=ON \
+              -DCLI=ON \
+              -DSWIG_PYTHON=ON \
+              -DSWIG_TCL=ON \
+              -DSWIG_JAVA=ON \
+              -DSWIG_CSHARP=ON \
+              -DJAVA_DEBUGGER=ON \
+              -DTCLSOARLIB=ON
             cmake --build ${BDIR}/build/Release -j
             cmake --install ${BDIR}/build/Release --prefix install-${ARCH}
           done
@@ -284,8 +293,10 @@ jobs:
           set -e
           echo "=== Checking every Mach-O in install/ is fat (arm64 + x86_64) ==="
           FAIL=0
+          COUNT=0
           while IFS= read -r F; do
             if file "${F}" 2>/dev/null | grep -q 'Mach-O'; then
+              COUNT=$((COUNT + 1))
               INFO=$(lipo -info "${F}" 2>/dev/null || true)
               echo "${INFO}"
               if ! echo "${INFO}" | grep -q 'arm64' || ! echo "${INFO}" | grep -q 'x86_64'; then
@@ -294,11 +305,24 @@ jobs:
               fi
             fi
           done < <(find install -type f)
+          echo "=== Found ${COUNT} Mach-O binaries in install/ ==="
+          # Sanity floor: a real Soar install ships libSoar, soar CLI,
+          # UnitTests, JNI lib, Tcl SWIG module, tclsoarlib, Python SWIG,
+          # CSharp SWIG, plus SVS bits — easily 8+ Mach-O files. If we see
+          # fewer, the build silently skipped most targets (e.g. preset
+          # variables not wired up).
+          MIN_EXPECTED=8
+          if [ "${COUNT}" -lt "${MIN_EXPECTED}" ]; then
+            echo "ERROR: only ${COUNT} Mach-O binaries in install/, expected at least ${MIN_EXPECTED}."
+            echo "Listing install/ tree for diagnosis:"
+            find install -type f | sort
+            exit 1
+          fi
           if [ "${FAIL}" -ne 0 ]; then
             echo "One or more shipped binaries are not fat."
             exit 1
           fi
-          echo "All Mach-O binaries in install/ are fat."
+          echo "All ${COUNT} Mach-O binaries in install/ are fat."
 
       - name: Upload install tree
         uses: actions/upload-artifact@v4
