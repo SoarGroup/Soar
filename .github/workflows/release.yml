@@ -194,7 +194,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /usr/local/tcl-fat
-          key: tcl-fat-macos-8.6.13-v1
+          key: tcl-fat-macos-8.6.13-v2
 
       - name: Build fat Tcl from source
         if: steps.tcl-fat-cache.outputs.cache-hit != 'true'
@@ -202,47 +202,28 @@ jobs:
           set -ex
           curl -LO https://master.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8.6.13-src.tar.gz
           tar xzf tcl8.6.13-src.tar.gz
-          for ARCH in arm64 x86_64; do
-            rm -rf tcl-build-${ARCH}
-            cp -R tcl8.6.13 tcl-build-${ARCH}
-            (
-              cd tcl-build-${ARCH}/unix
-              # Force arch via *FLAGS — Tcl's configure ignores CC arch flags
-              # but the generated Makefile honors CFLAGS/CPPFLAGS/LDFLAGS.
-              # Without this, both passes silently produce arm64e binaries.
-              export CC=clang
-              export CFLAGS="-arch ${ARCH}"
-              export CPPFLAGS="-arch ${ARCH}"
-              export LDFLAGS="-arch ${ARCH}"
-              CONFIGURE_ARGS="--prefix=/tmp/tcl-${ARCH} --enable-shared --enable-64bit"
-              if [ "${ARCH}" = "x86_64" ]; then
-                # Cross pass: tell autoconf this is a cross-build so it skips
-                # arch-detection probes that would otherwise re-bake host arch.
-                CONFIGURE_ARGS="${CONFIGURE_ARGS} --build=$(uname -m)-apple-darwin --host=x86_64-apple-darwin"
-              fi
-              ./configure ${CONFIGURE_ARGS}
-              make -j$(sysctl -n hw.logicalcpu)
-              make install
-            )
-            echo "=== /tmp/tcl-${ARCH} arch sanity ==="
-            lipo -info /tmp/tcl-${ARCH}/bin/tclsh8.6
-            lipo -info /tmp/tcl-${ARCH}/lib/libtcl8.6.dylib
-          done
-          # Lipo-merge into /usr/local/tcl-fat (start from arm64 tree, replace
-          # every Mach-O with a fat copy).
-          sudo rm -rf /usr/local/tcl-fat
-          sudo mkdir -p /usr/local/tcl-fat
-          sudo cp -R /tmp/tcl-arm64/. /usr/local/tcl-fat/
-          ( cd /tmp/tcl-arm64 && find . -type f ) | while read F; do
-            ARM_FILE="/tmp/tcl-arm64/${F}"
-            X86_FILE="/tmp/tcl-x86_64/${F}"
-            OUT_FILE="/usr/local/tcl-fat/${F}"
-            if [ -f "${X86_FILE}" ] && file "${ARM_FILE}" 2>/dev/null | grep -q 'Mach-O'; then
-              sudo lipo -create "${ARM_FILE}" "${X86_FILE}" -output "${OUT_FILE}"
+          cd tcl8.6.13/unix
+          # Single-pass fat build. Tcl's macOS configure handles multi-arch
+          # CFLAGS natively. The per-arch dual-pass approach we tried before
+          # silently produced arm64e in both passes because Tcl's configure
+          # macros override single -arch flags. Drop --enable-64bit for the
+          # same reason: it forces a single host arch.
+          export CFLAGS="-arch x86_64 -arch arm64"
+          export CPPFLAGS="-arch x86_64 -arch arm64"
+          export LDFLAGS="-arch x86_64 -arch arm64"
+          ./configure --prefix=/usr/local/tcl-fat --enable-shared --disable-corefoundation
+          make -j$(sysctl -n hw.logicalcpu)
+          sudo make install
+          echo "=== Fat Tcl libs (expect 2 architectures: x86_64 arm64) ==="
+          lipo -info /usr/local/tcl-fat/bin/tclsh8.6
+          lipo -info /usr/local/tcl-fat/lib/libtcl8.6.dylib
+          # Hard fail if the fat build didn't actually produce both arches.
+          for F in /usr/local/tcl-fat/bin/tclsh8.6 /usr/local/tcl-fat/lib/libtcl8.6.dylib; do
+            INFO=$(lipo -info "${F}")
+            if ! echo "${INFO}" | grep -q 'arm64' || ! echo "${INFO}" | grep -q 'x86_64'; then
+              echo "ERROR: ${F} is not fat: ${INFO}"; exit 1
             fi
           done
-          echo "=== Fat Tcl libs ==="
-          find /usr/local/tcl-fat -name "*.dylib" -exec lipo -info {} \;
 
       - name: Build Soar per-arch
         run: |
