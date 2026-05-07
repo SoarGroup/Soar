@@ -203,21 +203,30 @@ jobs:
           curl -LO https://master.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8.6.13-src.tar.gz
           tar xzf tcl8.6.13-src.tar.gz
           for ARCH in arm64 x86_64; do
-            HOSTTRIPLE="${ARCH}-apple-darwin"
             rm -rf tcl-build-${ARCH}
             cp -R tcl8.6.13 tcl-build-${ARCH}
             (
               cd tcl-build-${ARCH}/unix
-              export CC="clang -arch ${ARCH}"
-              ./configure \
-                --prefix=/tmp/tcl-${ARCH} \
-                --enable-shared \
-                --enable-64bit \
-                --build=$(uname -m)-apple-darwin \
-                --host=${HOSTTRIPLE}
+              # Force arch via *FLAGS — Tcl's configure ignores CC arch flags
+              # but the generated Makefile honors CFLAGS/CPPFLAGS/LDFLAGS.
+              # Without this, both passes silently produce arm64e binaries.
+              export CC=clang
+              export CFLAGS="-arch ${ARCH}"
+              export CPPFLAGS="-arch ${ARCH}"
+              export LDFLAGS="-arch ${ARCH}"
+              CONFIGURE_ARGS="--prefix=/tmp/tcl-${ARCH} --enable-shared --enable-64bit"
+              if [ "${ARCH}" = "x86_64" ]; then
+                # Cross pass: tell autoconf this is a cross-build so it skips
+                # arch-detection probes that would otherwise re-bake host arch.
+                CONFIGURE_ARGS="${CONFIGURE_ARGS} --build=$(uname -m)-apple-darwin --host=x86_64-apple-darwin"
+              fi
+              ./configure ${CONFIGURE_ARGS}
               make -j$(sysctl -n hw.logicalcpu)
               make install
             )
+            echo "=== /tmp/tcl-${ARCH} arch sanity ==="
+            lipo -info /tmp/tcl-${ARCH}/bin/tclsh8.6
+            lipo -info /tmp/tcl-${ARCH}/lib/libtcl8.6.dylib
           done
           # Lipo-merge into /usr/local/tcl-fat (start from arm64 tree, replace
           # every Mach-O with a fat copy).
