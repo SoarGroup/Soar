@@ -375,6 +375,19 @@ jobs:
           name: SoarSuite_${{ github.event.inputs.version }}-Multiplatform
           path: SoarSuite_${{ github.event.inputs.version }}-Multiplatform/
 
+      # The directory upload above re-zips internally and loses Unix exec
+      # bits when retrieved via `gh run download`. Also upload the real zip
+      # produced by file(ARCHIVE_CREATE) in assemble-release.cmake — that
+      # zip stores Unix permissions in the libarchive external-attributes
+      # field, so `unzip` on macOS/Linux preserves +x on soar, UnitTests,
+      # and *.sh. This is the artifact to attach when doing an asset swap.
+      - name: Upload multiplatform zip (preserves exec bits)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoarSuite_${{ github.event.inputs.version }}-Multiplatform-zip
+          path: SoarSuite_${{ github.event.inputs.version }}-Multiplatform.zip
+          if-no-files-found: error
+
       - name: Create GitHub Release
         if: github.event.inputs.create_release == 'true'
         uses: softprops/action-gh-release@v2
