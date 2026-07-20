@@ -263,9 +263,22 @@ if(SWIG_PYTHON)
         set(Python3_ROOT_DIR "${Python3_SETUP_ROOT}")
         set(Python3_EXECUTABLE "${Python3_SETUP_ROOT}/python.exe")
         set(Python3_INCLUDE_DIR "${Python3_SETUP_ROOT}/include")
+        execute_process(
+            COMMAND "${Python3_EXECUTABLE}" -c "import sys; print(f'{sys.version_info.major}{sys.version_info.minor}', end='')"
+            OUTPUT_VARIABLE SOAR_PYTHON_VERSION_SUFFIX
+            RESULT_VARIABLE SOAR_PYTHON_VERSION_RESULT
+        )
+        if(NOT SOAR_PYTHON_VERSION_RESULT EQUAL 0)
+            message(FATAL_ERROR "Could not determine Python version from ${Python3_EXECUTABLE}")
+        endif()
+        set(Python3_LIBRARY "${Python3_SETUP_ROOT}/libs/python${SOAR_PYTHON_VERSION_SUFFIX}.lib")
         set(Python3_SABI_LIBRARY "${Python3_SETUP_ROOT}/libs/python3.lib")
         message(STATUS "Soar SWIG: Using setup-python root ${Python3_SETUP_ROOT}")
+        message(STATUS "Soar SWIG: Using Python import library ${Python3_LIBRARY}")
         message(STATUS "Soar SWIG: Using Python SABI import library ${Python3_SABI_LIBRARY}")
+        if(NOT EXISTS "${Python3_LIBRARY}")
+            message(FATAL_ERROR "Python import library was not found: ${Python3_LIBRARY}")
+        endif()
         if(NOT EXISTS "${Python3_SABI_LIBRARY}")
             message(FATAL_ERROR "Python stable ABI import library was not found: ${Python3_SABI_LIBRARY}")
         endif()
