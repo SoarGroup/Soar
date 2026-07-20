@@ -210,7 +210,7 @@ jobs:
         # TCL_INCLUDE_PATH. Building Tcl from source is handled in release.yml
         # (which produces the actual shipped zip); for this fast PR-time CI we
         # exercise the other SWIG bindings and skip Tcl on Windows.
-        run: cmake --preset Release-swig -DSWIG_TCL=OFF -DTCLSOARLIB=OFF
+        run: cmake --preset Release-swig -DSWIG_TCL=OFF -DTCLSOARLIB=OFF -DPython3_ROOT_DIR="$env:pythonLocation"
 
       - name: Build
         run: cmake --build --preset Release-swig
