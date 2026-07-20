@@ -255,13 +255,22 @@ if(SWIG_PYTHON)
 
     if(WIN32 AND DEFINED ENV{SOAR_PYTHON_ROOT})
         file(TO_CMAKE_PATH "$ENV{SOAR_PYTHON_ROOT}" Python3_SETUP_ROOT)
+    elseif(WIN32 AND DEFINED ENV{pythonLocation})
+        file(TO_CMAKE_PATH "$ENV{pythonLocation}" Python3_SETUP_ROOT)
+    endif()
+
+    if(WIN32 AND Python3_SETUP_ROOT)
         set(Python3_ROOT_DIR "${Python3_SETUP_ROOT}")
         set(Python3_EXECUTABLE "${Python3_SETUP_ROOT}/python.exe")
         set(Python3_INCLUDE_DIR "${Python3_SETUP_ROOT}/include")
         set(Python3_SABI_LIBRARY "${Python3_SETUP_ROOT}/libs/python3.lib")
+        message(STATUS "Soar SWIG: Using setup-python root ${Python3_SETUP_ROOT}")
+        message(STATUS "Soar SWIG: Using Python SABI import library ${Python3_SABI_LIBRARY}")
         if(NOT EXISTS "${Python3_SABI_LIBRARY}")
             message(FATAL_ERROR "Python stable ABI import library was not found: ${Python3_SABI_LIBRARY}")
         endif()
+    elseif(WIN32 AND DEFINED ENV{GITHUB_ACTIONS})
+        message(FATAL_ERROR "Neither SOAR_PYTHON_ROOT nor pythonLocation was set; the Windows SWIG workflow did not expose the setup-python root.")
     endif()
 
     # Find Python with the SABI module component
