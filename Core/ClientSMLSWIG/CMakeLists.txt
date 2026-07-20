@@ -253,6 +253,14 @@ if(SWIG_PYTHON)
                 "versions.")
     endif()
 
+    if(WIN32 AND DEFINED ENV{pythonLocation})
+        file(TO_CMAKE_PATH "$ENV{pythonLocation}" Python3_SETUP_ROOT)
+        set(Python3_ROOT_DIR "${Python3_SETUP_ROOT}")
+        set(Python3_EXECUTABLE "${Python3_SETUP_ROOT}/python.exe")
+        set(Python3_INCLUDE_DIR "${Python3_SETUP_ROOT}/include")
+        set(Python3_SABI_LIBRARY "${Python3_SETUP_ROOT}/libs/python3.lib")
+    endif()
+
     # Find Python with the SABI module component
     find_package(Python3 REQUIRED COMPONENTS Interpreter Development.SABIModule)
 
