@@ -196,6 +196,32 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: conan install . --build=missing -s build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
 
+      - name: Create Python stable ABI import library (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          $pythonLib = Join-Path $env:pythonLocation "libs\python3.lib"
+          if (!(Test-Path $pythonLib)) {
+            $pythonDll = @(
+              (Join-Path $env:pythonLocation "python3.dll"),
+              (Join-Path $env:pythonLocation "DLLs\python3.dll")
+            ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (!$pythonDll) {
+              throw "Could not find python3.dll under $env:pythonLocation"
+            }
+
+            $defFile = Join-Path $env:RUNNER_TEMP "python3.def"
+            $exports = dumpbin /nologo /exports $pythonDll |
+              ForEach-Object {
+                if ($_ -match '^\s+\d+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+(\S+)$') {
+                  "    $($matches[1])"
+                }
+              }
+            @("LIBRARY python3.dll", "EXPORTS") + $exports | Set-Content $defFile
+            New-Item -ItemType Directory -Force (Split-Path $pythonLib) | Out-Null
+            # This job runs on windows-latest, which is x64.
+            lib /nologo /def:$defFile /machine:x64 /out:$pythonLib
+          }
+
       - name: Configure CMake (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: cmake --preset Release-swig
