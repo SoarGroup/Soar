@@ -566,9 +566,11 @@ void do_one_top_level_phase(agent* thisAgent)
                 do_preference_phase(thisAgent);
                 do_working_memory_phase(thisAgent);
 
+                // allow smem stores in propose phase
+                // FIXME should turn this into a command line option
                 if (thisAgent->SMem->enabled())
                 {
-                    thisAgent->SMem->go(true);
+                    // thisAgent->SMem->go(true);
                 }
 
                 // allow epmem searches in propose phase
@@ -758,9 +760,11 @@ void do_one_top_level_phase(agent* thisAgent)
                 do_preference_phase(thisAgent);
                 do_working_memory_phase(thisAgent);
 
+                // allow smem stores in apply phase
+                // FIXME turn into command line option
                 if (thisAgent->SMem->enabled())
                 {
-                    thisAgent->SMem->go(true);
+                    //thisAgent->SMem->go(true);
                 }
 
                 /* Update accounting.  Moved here by KJC 04/05/05 */
@@ -837,6 +841,7 @@ void do_one_top_level_phase(agent* thisAgent)
 
             if (thisAgent->SMem->enabled())
             {
+                thisAgent->SMem->go(true);
                 thisAgent->SMem->go(false);
             }
 
