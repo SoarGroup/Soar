@@ -39,7 +39,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Setup Java
@@ -147,7 +147,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Setup Java
@@ -307,7 +307,7 @@ jobs:
         run: git describe --long --dirty --always --tags
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -415,7 +415,7 @@ jobs:
           merge-multiple: true
 
       - name: Setup Base Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: 3.${{ matrix.python-minor }}
         env:
@@ -471,7 +471,7 @@ jobs:
 
     steps:
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -505,7 +505,7 @@ jobs:
 
     steps:
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
