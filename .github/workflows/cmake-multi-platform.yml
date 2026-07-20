@@ -105,6 +105,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Set up Python
+        id: setup-python
         uses: actions/setup-python@v6
         with:
           python-version: 3.13
@@ -199,14 +200,18 @@ jobs:
       - name: Create Python stable ABI import library (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          $pythonLib = Join-Path $env:pythonLocation "libs\python3.lib"
+          $pythonRoot = $env:pythonLocation
+          if (!$pythonRoot) {
+            throw "setup-python did not set pythonLocation"
+          }
+          $pythonLib = Join-Path $pythonRoot "libs\python3.lib"
           if (!(Test-Path $pythonLib)) {
             $pythonDll = @(
-              (Join-Path $env:pythonLocation "python3.dll"),
-              (Join-Path $env:pythonLocation "DLLs\python3.dll")
+              (Join-Path $pythonRoot "python3.dll"),
+              (Join-Path $pythonRoot "DLLs\python3.dll")
             ) | Where-Object { Test-Path $_ } | Select-Object -First 1
             if (!$pythonDll) {
-              throw "Could not find python3.dll under $env:pythonLocation"
+              throw "Could not find python3.dll under $pythonRoot"
             }
 
             $defFile = Join-Path $env:RUNNER_TEMP "python3.def"
@@ -221,6 +226,7 @@ jobs:
             # This job runs on windows-latest, which is x64.
             lib /nologo /def:$defFile /machine:x64 /out:$pythonLib
           }
+          "SOAR_PYTHON_ROOT=$pythonRoot" >> $env:GITHUB_ENV
 
       - name: Configure CMake (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
