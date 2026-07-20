@@ -273,21 +273,44 @@ if(SWIG_PYTHON)
         endif()
         set(Python3_LIBRARY "${Python3_SETUP_ROOT}/libs/python${SOAR_PYTHON_VERSION_SUFFIX}.lib")
         set(Python3_SABI_LIBRARY "${Python3_SETUP_ROOT}/libs/python3.lib")
+        if(EXISTS "${Python3_SETUP_ROOT}/python3.dll")
+            set(Python3_RUNTIME_SABI_LIBRARY "${Python3_SETUP_ROOT}/python3.dll")
+        elseif(EXISTS "${Python3_SETUP_ROOT}/DLLs/python3.dll")
+            set(Python3_RUNTIME_SABI_LIBRARY "${Python3_SETUP_ROOT}/DLLs/python3.dll")
+        endif()
         message(STATUS "Soar SWIG: Using setup-python root ${Python3_SETUP_ROOT}")
         message(STATUS "Soar SWIG: Using Python import library ${Python3_LIBRARY}")
         message(STATUS "Soar SWIG: Using Python SABI import library ${Python3_SABI_LIBRARY}")
+        message(STATUS "Soar SWIG: Using Python SABI runtime library ${Python3_RUNTIME_SABI_LIBRARY}")
         if(NOT EXISTS "${Python3_LIBRARY}")
             message(FATAL_ERROR "Python import library was not found: ${Python3_LIBRARY}")
         endif()
         if(NOT EXISTS "${Python3_SABI_LIBRARY}")
             message(FATAL_ERROR "Python stable ABI import library was not found: ${Python3_SABI_LIBRARY}")
         endif()
+        if(NOT EXISTS "${Python3_RUNTIME_SABI_LIBRARY}")
+            message(FATAL_ERROR "Python stable ABI runtime library was not found under ${Python3_SETUP_ROOT}")
+        endif()
     elseif(WIN32 AND DEFINED ENV{GITHUB_ACTIONS})
         message(FATAL_ERROR "Neither SOAR_PYTHON_ROOT nor pythonLocation was set; the Windows SWIG workflow did not expose the setup-python root.")
     endif()
 
     # Find Python with the SABI module component
-    find_package(Python3 REQUIRED COMPONENTS Interpreter Development.SABIModule)
+    if(WIN32 AND Python3_SETUP_ROOT)
+        find_package(Python3 REQUIRED COMPONENTS Interpreter)
+        set(Python3_INCLUDE_DIRS "${Python3_INCLUDE_DIR}")
+        if(NOT TARGET Python3::SABIModule)
+            add_library(Python3::SABIModule SHARED IMPORTED)
+            set_target_properties(Python3::SABIModule PROPERTIES
+                IMPORTED_IMPLIB "${Python3_SABI_LIBRARY}"
+                IMPORTED_LOCATION "${Python3_RUNTIME_SABI_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIR}"
+                INTERFACE_COMPILE_DEFINITIONS "Py_NO_LINK_LIB"
+            )
+        endif()
+    else()
+        find_package(Python3 REQUIRED COMPONENTS Interpreter Development.SABIModule)
+    endif()
 
     # Configure SWIG for Python
     set_property(SOURCE Python/Python_sml_ClientInterface.i PROPERTY CPLUSPLUS ON)
