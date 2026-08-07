@@ -152,14 +152,16 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
 void Repair_Manager::add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number cond_tc)
 {
     wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->instantiated_sym);
-    for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
-    {
-        wme* lWME = (*it);
-        if ((lWME->tc == cond_tc) && (lWME->value != pTargetSym->instantiated_sym))
+    if (l_WMEPath) {
+        for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
         {
-            continue;
+            wme* lWME = (*it);
+            if ((lWME->tc == cond_tc) && (lWME->value != pTargetSym->instantiated_sym))
+            {
+                continue;
+            }
+            m_repair_WMEs.insert(lWME);
         }
-        m_repair_WMEs.insert(lWME);
     }
 }
 
