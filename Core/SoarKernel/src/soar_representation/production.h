@@ -49,6 +49,8 @@ typedef struct production_struct
     double rl_efr;                // expected future reward (discounted next state)
     double rl_gql;                // second value for implementation of GQ(\lambda)
 
+    double rl_ema_delta_q;        // exponential moving average of |delta_Q| for convergence gating
+
     condition* rl_template_conds;
 
     int      duplicate_chunks_this_cycle;

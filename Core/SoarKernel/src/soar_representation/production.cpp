@@ -436,6 +436,7 @@ production* make_production(agent*          thisAgent,
     p->rl_ecr = 0.0;
     p->rl_efr = 0.0;
     p->rl_gql = 0.0;
+    p->rl_ema_delta_q = 1.0;     // start unconverged
     if ((type != JUSTIFICATION_PRODUCTION_TYPE) && (type != TEMPLATE_PRODUCTION_TYPE))
     {
         p->rl_rule = rl_valid_rule(p);

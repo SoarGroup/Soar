@@ -90,6 +90,9 @@ public:
 	void testCommandToFile();
 	void testConvertIdentifier();
 	void testOutputLinkRemovalOrdering();
+	void testRLConvergenceGate();
+	void testRLConvergenceGateOff();
+	void testRLConvergenceGateParams();
 
 	void before() { setUp(); }
 	void after(bool caught) { tearDown(caught); }
@@ -235,6 +238,15 @@ public:
 
 	TEST(testOutputLinkRemovalOrdering, -1);
 	void testOutputLinkRemovalOrdering() { this->FullTests_Parent::testOutputLinkRemovalOrdering(); }
+
+	TEST(testRLConvergenceGate, -1);
+	void testRLConvergenceGate() { this->FullTests_Parent::testRLConvergenceGate(); }
+
+	TEST(testRLConvergenceGateOff, -1);
+	void testRLConvergenceGateOff() { this->FullTests_Parent::testRLConvergenceGateOff(); }
+
+	TEST(testRLConvergenceGateParams, -1);
+	void testRLConvergenceGateParams() { this->FullTests_Parent::testRLConvergenceGateParams(); }
 
 	void before() { setUp(); }
 	void after(bool caught) { tearDown(caught); }
