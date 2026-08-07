@@ -1,0 +1,21 @@
+# BW-Op-Subgoal agent WITHOUT the hardcoded initialization.
+# The eval harness sources a generated task initialization separately.
+#
+# Path is relative to the repo root. Run from the repo root or set
+# the working directory before sourcing this file.
+
+pushd "UnitTests/SoarTestAgents/Chunking/tests/BW-Op-Subgoal/BW-Op-Subgoal"
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source _readme.soar
+# NOTE: initialize-blocks-world.soar is NOT sourced — task generator provides it
+source move-block.soar
+pushd move-block
+source move-block_source.soar
+popd
+popd
