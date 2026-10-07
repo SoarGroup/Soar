@@ -1020,6 +1020,14 @@ bool print_sym(agent* thisAgent, void* item, void*)
     return false;
 }
 
+/* Collect identifiers for deferred freeing (cannot free during hash-table iteration:
+ * free_with_pool overwrites the item's first word, which is its hash-chain next). */
+static bool collect_identifier_cb(agent* /*thisAgent*/, void* item, void* vec)
+{
+    static_cast<std::vector<Symbol*>*>(vec)->push_back(reinterpret_cast<Symbol*>(item));
+    return false;
+}
+
 void Symbol_Manager::clear_variable_gensym_numbers()
 {
     do_for_all_items_in_hash_table(thisAgent, variable_hash_table, clear_gensym_number, 0);
@@ -1070,8 +1078,22 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
                 do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
                 #endif
             }
+            /* Multi-agent safety: MP_identifier is a process-global singleton pool
+             * (Memory_Manager::Get_MPM) shared by every agent, so free_memory_pool here
+             * would destroy OTHER agents' identifiers. Return only THIS agent's leftover
+             * identifiers to the shared pool individually instead. */
+            {
+                std::vector<Symbol*> leftovers;
+                do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, collect_identifier_cb, &leftovers);
+                for (size_t li = 0; li < leftovers.size(); ++li)
+                {
+                    Symbol* s = leftovers[li];
+                    if (s->id->cached_print_str) free_memory_block_for_string(thisAgent, s->id->cached_print_str);
+                    if (s->id->cached_lti_str)   free_memory_block_for_string(thisAgent, s->id->cached_lti_str);
+                    thisAgent->memoryManager->free_with_pool(MP_identifier, s);
+                }
+            }
             free_hash_table(thisAgent, identifier_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_identifier);
             identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
         }
     }
