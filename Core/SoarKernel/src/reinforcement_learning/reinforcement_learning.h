@@ -142,6 +142,9 @@ class rl_param_container: public soar_module::param_container
         soar_module::boolean_param* temporal_discount;
 
         soar_module::boolean_param* chunk_stop;
+        soar_module::boolean_param* chunk_gate;              // gate chunking on RL convergence
+        soar_module::decimal_param* chunk_gate_threshold;    // EMA threshold for convergence
+        soar_module::decimal_param* chunk_gate_ema_decay;    // EMA decay rate (0,1)
         soar_module::boolean_param* meta; // Whether doc strings are used for storing metadata.
         soar_module::string_param* update_log_path; // If non-null and size > 0, log all RL updates to this file.
 
@@ -309,6 +312,10 @@ extern void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Sym
 
 // clears eligibility traces in accordance with watkins
 extern void rl_watkins_clear(agent* thisAgent, Symbol* goal);
+
+// check whether all RL rules contributing to a slot's decision have converged
+// (EMA of |delta_Q| below threshold for every contributing rule)
+extern bool rl_slot_converged(agent* thisAgent, struct slot_struct* s);
 
 class RL_Manager
 {
