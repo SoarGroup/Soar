@@ -66,6 +66,9 @@ public:
 	TEST(testProductionPrinting, -1)
     void testProductionPrinting();
 
+    TEST(testGDSCloneSupport, -1)
+    void testGDSCloneSupport();
+
     TEST(testLocationPredictionRhs, -1)
     void testLocationPredictionRhs();
 

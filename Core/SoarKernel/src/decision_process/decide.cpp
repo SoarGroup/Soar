@@ -3777,28 +3777,34 @@ void elaborate_gds(agent* thisAgent)
                                 {
                                     /* REW BUG: may have to go over all insts regardless of this visited_already flag... */
 
-                                    if (pref->inst->GDS_evaluated_already == false)
+                                    /* Backtrace through support at this level, not the
+                                     * deeper result instantiation that supplied its clone. */
+                                    instantiation* support_inst = NIL;
+                                    if (pref->level <= inst->match_goal_level)
                                     {
-                                        /* If the preference comes from a lower level inst, then  ignore it.
-                                         *   - Preferences from lower levels must come from result  instantiations
-                                         *   - We just want to use the justification/chunk instantiations at the  match goal level */
-
-                                        if (pref->level <= inst->match_goal_level)
+                                        support_inst = pref->inst;
+                                        /* Promoted clones can also point back to local support. */
+                                        if (pref->level < inst->match_goal_level)
                                         {
-                                            uniquely_add_to_head_of_dll(thisAgent, pref->inst);
-                                        }
-                                        else
-                                        {
-                                            /* This was added to follow up on above comment. This looks for the pref at the current level.
-                                             * If EBC fails to learn a chunk or justification, it's possible that it cannot find a pref
-                                             * for this level.*/
-                                            preference* clone_for_this_pref = find_clone_for_level(pref, inst->match_goal_level);
-                                            if (clone_for_this_pref)
+                                            preference* local_clone = find_clone_for_level(pref, inst->match_goal_level);
+                                            if (local_clone)
                                             {
-                                                uniquely_add_to_head_of_dll(thisAgent, pref->inst);
+                                                support_inst = local_clone->inst;
                                             }
                                         }
-                                        pref->inst->GDS_evaluated_already = true;
+                                    }
+                                    else
+                                    {
+                                        preference* clone_for_this_pref = find_clone_for_level(pref, inst->match_goal_level);
+                                        if (clone_for_this_pref)
+                                        {
+                                            support_inst = clone_for_this_pref->inst;
+                                        }
+                                    }
+                                    if (support_inst && !support_inst->GDS_evaluated_already)
+                                    {
+                                        uniquely_add_to_head_of_dll(thisAgent, support_inst);
+                                        support_inst->GDS_evaluated_already = true;
                                     }
                                 }
                             }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/

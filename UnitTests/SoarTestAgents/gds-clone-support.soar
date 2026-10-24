@@ -1,0 +1,330 @@
+# Reduced from Rosie fd686b15cda823594ce1edb8761b3241f792179a retrieval rules
+# and local test scaffolding. No Rosie installation or Python is required.
+# BSD 3-Clause License
+#
+# Copyright (c) 2013-2020, The Regents of the University of Michigan,
+# University of Michigan Soar Lab,
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+alias ms production matches
+alias msw production matches --wmes
+
+srand 1
+
+soar max-elaborations 500
+#soar max-nil-output-cycles 100
+
+#stats --track
+
+decide indifferent-selection -g
+decide indifferent-selection -e 0
+decide indifferent-selection -x
+
+#decide set-random-seed
+decide set-random-seed 12
+#production optimize-attribute object 20
+#production optimize-attribute predicate 40
+#production optimize-attribute property 9
+#production optimize-attribute relation 8
+#production optimize-attribute name 1
+
+###### CHUNKING #####
+chunk only
+chunk add-osk off
+
+soar max-goal-depth 100
+chunk max-chunks 1000
+#explain all on
+#explain justifications on
+
+chunk singleton state problem-space identifier
+chunk singleton state task-operator identifier
+chunk singleton state world identifier
+chunk singleton identifier objects identifier
+chunk singleton identifier predicates identifier
+
+
+###### SEMANTIC MEMORY ######
+smem --set learning on
+smem --set initial-variable-id 999000
+#smem --set activation-mode maximal-constraint
+
+
+###### EPISODIC MEMORY ######
+
+# Switch comments to turn on/off
+epmem --set learning on
+
+epmem --set trigger dc
+epmem --set phase output
+epmem --set graph-match on
+
+
+
+sp {phase2*propose*recognize
+ (state <s> ^superstate nil ^io.input-link.concept-query <q>)
+ --> (<s> ^operator <o> + >) (<o> ^name phase2-recognize ^query <q>)
+}
+
+
+sp {phase2*recognize*request
+ (state <s> ^name phase2-recognize ^superstate.operator.query <q>)
+ --> (<s> ^detect-predicate <q>)
+}
+
+
+sp {chunk-predicate-impasse*reject*retrieve-predicate-structure
+ (state <s> ^name chunk-predicate-impasse ^name evaluate-predicate
+            -^superstate.flag detect-learned-predicates ^operator <o> +)
+ (<o> ^name retrieve-predicate-structure)
+ --> (<s> ^operator <o> -)
+}
+
+sp {fixture*root (state <s> ^superstate nil) --> (<s> ^top-state <s> ^world <w>) (<w> ^objects <objects>) (<objects> ^object <obj>) (<obj> ^handle object ^predicates <p>) (<p> ^category thing)}
+
+
+sp {fixture*top (state <s> ^superstate.top-state <top>) --> (<s> ^top-state <top>)}
+
+
+sp {fixture*name (state <s> ^superstate.operator.name <name>) --> (<s> ^name <name>)}
+
+
+sp {fixture*list (state <s> ^superstate.list <l>) --> (<s> ^list <l>)}
+
+
+sp {chunk-predicate-structure*impasse
+#:interrupt
+   (state <s> ^superstate <ss>
+              ^choices none
+             -^world
+              ^attribute state
+              ^impasse no-change)
+   (<ss> ^gtype <t> ^<t> <a>)
+-->
+   (force-learn <s>) #JAMES UNCHUNKED VERSION
+}
+#TODO fix, known chunks causing duplicates
+
+
+sp {chunk-predicate-structure*impasse454
+   (state <s> ^superstate <ss>
+              ^choices none
+              ^attribute state
+             -^world
+              ^impasse no-change)
+   (<ss> ^gtype <t> ^<t> <a>)
+-->
+   (<s> ^name chunk-predicate-impasse
+        ^linkstate <ss>
+        #^condition <co>
+        ^<t> <a>
+        ^gtype <t>)
+}
+
+
+
+
+sp {chunk-predicate-impasse*propose*retrieve-predicate-structure
+   (state <s> ^name chunk-predicate-impasse)
+   (<s> ^gtype <gtype>
+       -^handle
+        -^unknown
+       -^predicate.link <co>
+         ^<gtype>.condition <co>)
+   (<co> ^type concept ^attribute predicate ^name <name>)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name retrieve-predicate-structure
+        ^condition <co>
+        ^handle <name>)
+}
+
+
+
+sp {chunk-predicate-impasse*propose*complete
+   (state <s> ^name chunk-predicate-impasse)
+-->
+    (<s> ^operator <o> + <)
+    (<o> ^name complete)
+}
+
+
+
+sp {chunk-predicate-impasse*apply*complete
+   (state <s> ^name chunk-predicate-impasse
+              ^operator.name complete
+              -^handle
+              ^superstate <ss>
+              ^predicate <p>
+              ^gtype <gtype>
+              ^<gtype>.condition <co>)
+   (<co> ^type concept ^attribute predicate)
+   (<p> ^link <co>)
+-->
+    (<ss> ^predicate <p> ^gtype predicate)
+}
+
+
+
+sp {detect-learned-predicates*elaborate*problem-space*default*copy-type
+   (state <s> ^detect-predicate <pred>
+              ^top-state.world <world2>)
+   (<pred> -^copy-type)
+-->
+   (<s> ^flag detect-learned-predicates ^simulated true ^problem-space <ps> ^list <l>)
+   (<l> ^game <g>)
+   (<pred> ^results <r>)
+   (<ps> ^world <world> ^name action)
+   (<world> ^source <world2>
+            ^copy-type shallow)
+}
+
+
+
+sp {elaborate*detect-learned-predicates*unary
+   (state <s> ^flag detect-learned-predicates
+              ^detect-predicate <pred>)
+   (<pred> ^name <name> ^type unary)
+-->
+   (<s> ^gtype predicate ^predicate <g2>)
+    (<g2> ^condition <c1> ^back-link <pred>)
+    (<c1> ^name <name> ^type concept ^negative false ^attribute predicate ^args <a1> ^rtype single ^result.set <res3>)
+    (<a1> ^num 1 ^1 <c2>)
+    (<c2> ^name object ^args <a3> ^negative false ^result.set <res> ^rtype single ^parameter.num 0 ^type attribute ^attribute primitive)
+}
+
+
+
+sp {detect-learned-predicates*elaborate*sub-conditions
+   (state <s> ^flag detect-learned-predicates
+              ^gtype <type>
+              ^<type> <t>)
+   (<t> ^condition <co>)
+   (<co> ^args.{<arg> << 1 2 3 4 5 6 7 8 9 10 >>} <cond>)
+   (<cond> ^name <name>)
+-->
+   (<t> ^condition <cond>)
+}
+
+
+
+sp {evaluate-predicate*eval-condition*impasse
+   (state <s> ^superstate <ss>
+              ^choices none
+              ^attribute state
+              ^impasse no-change)
+   (<ss> ^list <l>)
+   (<l> ^game <g>)
+-->
+#(write (cmd print <ss>))
+   (force-learn <s>) #COMMENT JAMES UNCHUNKED VERSION
+   (<s> ^name evaluate-predicate
+        ^linkstate <ss>
+        ^result <r>)
+}
+
+
+sp {evaluate-predicate*propose*resolve-conditions
+   (state <s> ^name evaluate-predicate
+             -^result.set <set>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name resolve-conditions)
+}
+
+
+
+sp {retrieve-predicate-structure*elaborate*predicate-handle
+   (state <s> ^name retrieve-predicate-structure
+              ^superstate.operator <o>)
+   (<o> ^handle <handle>)
+-->
+   (<s> ^handle <handle>)
+}
+
+
+
+sp {retrieve-predicate-structure*elaborate*condition
+   (state <s> ^name retrieve-predicate-structure
+              ^superstate.operator <o>)
+   (<o> ^condition <co>)
+-->
+   (<s> ^condition <co>)
+}
+
+
+
+sp {retrieve-predicate-structure*elaborate*smem-query
+   (state <s> ^name retrieve-predicate-structure
+              ^smem.command <c>
+              #^superstate.superstate.game <game> #TODO READD
+              ^handle <handle>)
+-->
+   (<c> ^query <cue>
+        ^link-to-ltm no  #only for latest 9.6 dev
+        ^depth 25)
+   (<cue> ^handle <handle> ^item-type predicate)# ^from <game>) #TODO READD
+}
+
+
+
+sp {retrieve-predicate-structure*propose*complete
+   (state <s> ^name retrieve-predicate-structure
+              ^smem.result.retrieved <pred>)
+-->
+   (<s> ^operator <o> + <)
+   (<o> ^name complete)
+}
+
+
+
+sp {retrieve-predicate-structure*apply*complete*smem-query*result
+   (state <s> ^name retrieve-predicate-structure
+              ^operator.name complete
+              ^condition <co>
+              ^smem.result.retrieved <pred>
+              ^copy-structure.destination <dest>
+              ^superstate <ss>)
+   (<dest> ^predicate-structure <p2> ^argnum <an> ^primary-rtype <rtype> ^handle <name> -^secondary-rtype)
+-->
+   (<ss> ^predicate <p> ^gtype predicate)
+   (<p> ^handle <name> ^aname <name> ^nlp-set <p2> ^primary-rtype <rtype> ^formated predicate ^parameter-set <P124> ^potential-args <P125> ^link <co>)
+  (<P124> ^argnum <an>)
+  (<p2> ^aname <name>)
+}
+
+
+
+sp {retrieve-predicate-structure*copy*stucture
+   (state <s> ^name retrieve-predicate-structure
+              ^smem.result.retrieved <pred>)
+-->
+   (<s> ^copy-structure <copy>)
+   (<copy> ^source <pred>
+           ^destination <pred>)
+}

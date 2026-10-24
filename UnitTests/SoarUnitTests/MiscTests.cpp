@@ -550,3 +550,30 @@ void MiscTests::testPerceptReplayEscape()
 	
 	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
+
+void MiscTests::testGDSCloneSupport()
+{
+    for (const char* mode : {"never", "always"})
+    {
+        tearDown(false);
+        setUp();
+        agent->ExecuteCommandLine("excise --all");
+        source("gds-clone-support.soar");
+        agent->ExecuteCommandLine((std::string("chunk ") + mode).c_str());
+        agent->ExecuteCommandLine("smem --add { (<c> ^handle sample ^item-type predicate ^argnum 1 ^primary-rtype single ^predicate-structure <p>) (<p> ^feature value) }");
+        sml::Identifier* query = agent->GetInputLink()->CreateIdWME("concept-query");
+        query->CreateStringWME("name", "sample");
+        query->CreateStringWME("type", "unary");
+        agent->Commit();
+        agent->RunSelf(40);
+        std::string wm;
+        for (const std::string& goal : SoarHelper::getGoalStack(agent))
+        {
+            wm += agent->ExecuteCommandLine(("print " + goal + " -d 20").c_str());
+        }
+        for (const char* token : {"^formated predicate", "^handle sample", "^feature value", "^gtype predicate"})
+        {
+            assertTrue_msg(std::string(mode) + ": retrieval missing " + token, wm.find(token) != std::string::npos);
+        }
+    }
+}
