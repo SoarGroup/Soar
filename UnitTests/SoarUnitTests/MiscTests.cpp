@@ -577,3 +577,62 @@ void MiscTests::testGDSCloneSupport()
         }
     }
 }
+
+void MiscTests::testGDSIndependentDependencies()
+{
+    for (const char* mode : {"never", "always"})
+    {
+        // 18 order/withdrawal controls and 4 shared-result controls.
+        for (int order = 0; order < 4; ++order)
+        {
+            for (int change = 0; change < (order == 3 ? 2 : 3); ++change)
+            {
+                tearDown(false);
+                setUp();
+                agent->ExecuteCommandLine("excise --all");
+                agent->ExecuteCommandLine((std::string("chunk ") + mode).c_str());
+                source(order == 3 ? "gds-shared-support.soar" : "gds-independent-dependencies.soar");
+                sml::Identifier* il = agent->GetInputLink();
+                sml::StringElement* a = il->CreateStringWME("a", order == 2 ? "no" : "yes");
+                sml::StringElement* b = il->CreateStringWME("b", order == 1 ? "no" : "yes");
+                il->CreateStringWME("local-gate", "yes");
+                agent->Commit();
+                agent->RunSelf(3);
+                if (order == 1 || order == 2)
+                {
+                    (order == 1 ? b : a)->Update("yes");
+                    agent->Commit();
+                    agent->RunSelf(4);
+                }
+                std::string wm = agent->ExecuteCommandLine("print S2 -d 1");
+                if (order == 3)
+                {
+                    assertTrue(wm.find("^shared yes") != std::string::npos);
+                }
+                else
+                {
+                    for (const char* attr : {"^branch-a yes", "^chain-a yes", "^branch-b yes", "^chain-b yes"})
+                    {
+                        assertTrue_msg(attr, wm.find(attr) != std::string::npos);
+                    }
+                }
+                std::string gds = agent->ExecuteCommandLine("print --gds");
+                assertTrue(gds.find("^a yes") != std::string::npos);
+                assertTrue(gds.find("^b yes") != std::string::npos);
+                if (change < 2)
+                {
+                    (change == 0 ? a : b)->Update("no");
+                }
+                else
+                {
+                    il->CreateStringWME("unrelated", "new");
+                }
+                agent->Commit();
+                agent->RunSelf(1);
+                std::string stack = agent->ExecuteCommandLine("print --stack");
+                assertTrue_msg(std::string(mode) + ": wrong retraction for order " + std::to_string(order) + ", change " + std::to_string(change),
+                    (stack.find("==>S: S2 ") == std::string::npos) == (change < 2));
+            }
+        }
+    }
+}

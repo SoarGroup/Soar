@@ -2230,7 +2230,6 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
             for (pref = w->preference; pref != NIL; pref = pref->next)
             {
                 if ((w->preference->o_supported == true) && (w->preference->level != 1) &&
-                    (w->preference->inst->match_goal->id->gds == NIL) &&
                     (w->preference->inst->match_goal_level < current_highest_level))
                 {
                     current_highest_level = w->preference->inst->match_goal_level;
@@ -2238,7 +2237,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 }
             }
             /* Create a GDS for that level */
-            if (current_highest_goal)
+            if (current_highest_goal && (current_highest_goal->id->gds == NIL))
             {
                 create_gds_for_goal(thisAgent, w->preference->inst->match_goal);
             }

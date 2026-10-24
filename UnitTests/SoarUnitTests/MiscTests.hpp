@@ -69,6 +69,9 @@ public:
     TEST(testGDSCloneSupport, -1)
     void testGDSCloneSupport();
 
+    TEST(testGDSIndependentDependencies, -1)
+    void testGDSIndependentDependencies();
+
     TEST(testLocationPredictionRhs, -1)
     void testLocationPredictionRhs();
 
