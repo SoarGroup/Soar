@@ -3611,7 +3611,16 @@ void elaborate_gds(agent* thisAgent)
             {
                 clone_for_this_level = find_clone_for_level(pref_for_this_wme, inst->match_goal_level);
                 if (clone_for_this_level)
+                {
                     pref_for_this_wme = clone_for_this_level;
+                    /* A persistent effect supported at this level stays local
+                     * when its identifier is promoted to a supergoal.  Keep
+                     * i-supported supergoal entailments as context grounds. */
+                    if (clone_for_this_level->o_supported)
+                    {
+                        wme_goal_level = clone_for_this_level->level;
+                    }
+                }
             }
             /* WME is in a supergoal or is architecturally created
              *

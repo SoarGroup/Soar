@@ -358,7 +358,14 @@ void MiscTests::testPreferenceDeallocation()
 
 	sml::ClientAnalyzedXML response;
 	agent->ExecuteCommandLineXML("stats", &response);
-	assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 6);
+    // Local promoted o-support is no longer an external GDS ground. Removing
+    // F1 ^bar therefore preserves S2 instead of forcing two rebuild decisions.
+    assertEquals(4, response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1));
+    std::string top = agent->ExecuteCommandLine("print S1 -d 3");
+    assertTrue(top.find("^count 2") != std::string::npos);
+    assertTrue(top.find("^bar bar") == std::string::npos);
+    std::string substate = agent->ExecuteCommandLine("print S2 -d 1");
+    assertTrue(substate.find("^hello world") != std::string::npos);
 	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
@@ -634,5 +641,49 @@ void MiscTests::testGDSIndependentDependencies()
                     (stack.find("==>S: S2 ") == std::string::npos) == (change < 2));
             }
         }
+    }
+}
+
+void MiscTests::testGDSPromotedSupport()
+{
+    for (const char* mode : {"never", "always"})
+    {
+        tearDown(false);
+        setUp();
+        agent->ExecuteCommandLine("excise --all");
+        agent->ExecuteCommandLine((std::string("chunk ") + mode).c_str());
+        source("gds-promoted-o-support.soar");
+        sml::StringElement* external = agent->GetInputLink()->CreateStringWME("external", "yes");
+        agent->Commit();
+        bool cleaned = false;
+        for (int i = 0; i < 18 && !cleaned; ++i)
+        {
+            agent->RunSelf(1);
+            std::string wm = agent->ExecuteCommandLine("print S2 -d 2");
+            cleaned = wm.find("^cleaned yes") != std::string::npos;
+        }
+        assertTrue_msg(std::string(mode) + ": local effect cleanup removed S2", cleaned);
+        external->Update("no");
+        agent->Commit();
+        agent->RunSelf(1);
+        std::string stack = agent->ExecuteCommandLine("print --stack");
+        assertTrue(stack.find("==>S: S2 ") == std::string::npos);
+
+        tearDown(false);
+        setUp();
+        agent->ExecuteCommandLine("excise --all");
+        agent->ExecuteCommandLine((std::string("chunk ") + mode).c_str());
+        source("gds-promoted-i-support.soar");
+        sml::StringElement* premise = agent->GetInputLink()->CreateStringWME("a", "yes");
+        agent->GetInputLink()->CreateStringWME("b", "yes");
+        agent->Commit();
+        agent->RunSelf(4);
+        std::string wm = agent->ExecuteCommandLine("print S2 -d 3");
+        assertTrue(wm.find("^answer yes") != std::string::npos);
+        premise->Update("no");
+        agent->Commit();
+        agent->RunSelf(1);
+        stack = agent->ExecuteCommandLine("print --stack");
+        assertTrue(stack.find("==>S: S2 ") == std::string::npos);
     }
 }

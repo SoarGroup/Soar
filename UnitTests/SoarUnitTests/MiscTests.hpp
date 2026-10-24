@@ -72,6 +72,9 @@ public:
     TEST(testGDSIndependentDependencies, -1)
     void testGDSIndependentDependencies();
 
+    TEST(testGDSPromotedSupport, -1)
+    void testGDSPromotedSupport();
+
     TEST(testLocationPredictionRhs, -1)
     void testLocationPredictionRhs();
 

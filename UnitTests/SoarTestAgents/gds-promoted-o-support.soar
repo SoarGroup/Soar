@@ -1,0 +1,29 @@
+sp {propose-wait
+ (state <s> ^superstate <top>) (<top> ^superstate nil)
+ -(<s> ^ready yes)
+ --> (<s> ^operator <o> +) (<o> ^name wait)
+}
+sp {propose-produce
+ (state <s> ^superstate <parent>) (<parent> ^superstate <top> ^operator.name wait)
+ (<top> ^superstate nil)
+ --> (<s> ^operator <o> +) (<o> ^name produce)
+}
+sp {apply-produce-promoted-effect
+ (state <s> ^superstate <parent> ^operator.name produce)
+ (<parent> ^superstate <top>) (<top> ^superstate nil)
+ --> (<top> ^next yes) (<parent> ^ready yes)
+}
+sp {propose-finish
+ (state <s> ^superstate <top> ^ready yes) (<top> ^superstate nil)
+ --> (<s> ^operator <o> +) (<o> ^name finish)
+}
+sp {apply-finish-work
+ (state <s> ^superstate <top> ^operator.name finish ^ready yes)
+ (<top> ^superstate nil ^next yes ^io.input-link <il>) (<il> ^external yes)
+ --> (<s> ^done yes)
+}
+sp {apply-finish-cleanup
+ (state <s> ^superstate <top> ^operator.name finish ^done yes)
+ (<top> ^superstate nil ^next yes)
+ --> (<top> ^next yes -) (<s> ^cleaned yes)
+}

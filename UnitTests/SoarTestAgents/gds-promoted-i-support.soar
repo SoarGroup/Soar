@@ -1,0 +1,14 @@
+sp {propose-build
+ (state <s> ^superstate <top>) (<top> ^superstate nil)
+ --> (<s> ^operator <o> +) (<o> ^name build)
+}
+sp {derive-promoted-i-supported-result
+ (state <s> ^superstate <top>) (<top> ^superstate nil ^io.input-link <il>)
+ (<il> ^a yes)
+ --> (<top> ^i-flag yes)
+}
+sp {apply-build-from-current-entailment
+ (state <s> ^superstate <top> ^operator.name build)
+ (<top> ^superstate nil ^i-flag yes ^io.input-link <il>) (<il> ^b yes)
+ --> (<s> ^answer yes)
+}
