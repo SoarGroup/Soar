@@ -1,0 +1,46 @@
+sp {propose-build
+ (state <s> ^superstate <top>)
+ (<top> ^superstate nil)
+ -->
+ (<s> ^operator <o> +)
+ (<o> ^name build)
+}
+sp {apply-a1
+ (state <s> ^superstate <top> ^operator <o>)
+ (<o> ^name build)
+ (<top> ^io.input-link <il>)
+ (<il> ^a yes)
+ -->
+ (<s> ^branch-a yes)
+}
+sp {apply-a2
+ (state <s> ^operator <o> ^branch-a yes)
+ (<o> ^name build)
+ -->
+ (<s> ^chain-a yes)
+}
+sp {apply-b1
+ (state <s> ^superstate <top> ^operator <o>)
+ (<o> ^name build)
+ (<top> ^io.input-link <il>)
+ (<il> ^b yes)
+ -->
+ (<s> ^branch-b yes)
+}
+sp {apply-b2
+ (state <s> ^operator <o> ^branch-b yes)
+ (<o> ^name build)
+ -->
+ (<s> ^chain-b yes)
+}
+sp {export-independent-result
+ (state <s> ^superstate <top> ^chain-b yes)
+ (<top> ^superstate nil)
+ -->
+ (<top> ^export-b yes)
+}
+
+sp {local-current-view
+ (state <s> ^superstate <top>) (<top> ^superstate nil ^io.input-link <il>)
+ (<il> ^local-gate yes) --> (<s> ^local-view yes)
+}

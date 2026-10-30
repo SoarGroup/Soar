@@ -2230,7 +2230,6 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
             for (pref = w->preference; pref != NIL; pref = pref->next)
             {
                 if ((w->preference->o_supported == true) && (w->preference->level != 1) &&
-                    (w->preference->inst->match_goal->id->gds == NIL) &&
                     (w->preference->inst->match_goal_level < current_highest_level))
                 {
                     current_highest_level = w->preference->inst->match_goal_level;
@@ -2238,7 +2237,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 }
             }
             /* Create a GDS for that level */
-            if (current_highest_goal)
+            if (current_highest_goal && (current_highest_goal->id->gds == NIL))
             {
                 create_gds_for_goal(thisAgent, w->preference->inst->match_goal);
             }
@@ -3612,7 +3611,16 @@ void elaborate_gds(agent* thisAgent)
             {
                 clone_for_this_level = find_clone_for_level(pref_for_this_wme, inst->match_goal_level);
                 if (clone_for_this_level)
+                {
                     pref_for_this_wme = clone_for_this_level;
+                    /* A persistent effect supported at this level stays local
+                     * when its identifier is promoted to a supergoal.  Keep
+                     * i-supported supergoal entailments as context grounds. */
+                    if (clone_for_this_level->o_supported)
+                    {
+                        wme_goal_level = clone_for_this_level->level;
+                    }
+                }
             }
             /* WME is in a supergoal or is architecturally created
              *
@@ -3777,28 +3785,34 @@ void elaborate_gds(agent* thisAgent)
                                 {
                                     /* REW BUG: may have to go over all insts regardless of this visited_already flag... */
 
-                                    if (pref->inst->GDS_evaluated_already == false)
+                                    /* Backtrace through support at this level, not the
+                                     * deeper result instantiation that supplied its clone. */
+                                    instantiation* support_inst = NIL;
+                                    if (pref->level <= inst->match_goal_level)
                                     {
-                                        /* If the preference comes from a lower level inst, then  ignore it.
-                                         *   - Preferences from lower levels must come from result  instantiations
-                                         *   - We just want to use the justification/chunk instantiations at the  match goal level */
-
-                                        if (pref->level <= inst->match_goal_level)
+                                        support_inst = pref->inst;
+                                        /* Promoted clones can also point back to local support. */
+                                        if (pref->level < inst->match_goal_level)
                                         {
-                                            uniquely_add_to_head_of_dll(thisAgent, pref->inst);
-                                        }
-                                        else
-                                        {
-                                            /* This was added to follow up on above comment. This looks for the pref at the current level.
-                                             * If EBC fails to learn a chunk or justification, it's possible that it cannot find a pref
-                                             * for this level.*/
-                                            preference* clone_for_this_pref = find_clone_for_level(pref, inst->match_goal_level);
-                                            if (clone_for_this_pref)
+                                            preference* local_clone = find_clone_for_level(pref, inst->match_goal_level);
+                                            if (local_clone)
                                             {
-                                                uniquely_add_to_head_of_dll(thisAgent, pref->inst);
+                                                support_inst = local_clone->inst;
                                             }
                                         }
-                                        pref->inst->GDS_evaluated_already = true;
+                                    }
+                                    else
+                                    {
+                                        preference* clone_for_this_pref = find_clone_for_level(pref, inst->match_goal_level);
+                                        if (clone_for_this_pref)
+                                        {
+                                            support_inst = clone_for_this_pref->inst;
+                                        }
+                                    }
+                                    if (support_inst && !support_inst->GDS_evaluated_already)
+                                    {
+                                        uniquely_add_to_head_of_dll(thisAgent, support_inst);
+                                        support_inst->GDS_evaluated_already = true;
                                     }
                                 }
                             }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/

@@ -1,0 +1,14 @@
+sp {propose-build
+ (state <s> ^superstate <top>) (<top> ^superstate nil)
+ --> (<s> ^operator <o> +) (<o> ^name build)
+}
+sp {apply-shared-a
+ (state <s> ^superstate <top> ^operator.name build)
+ (<top> ^io.input-link <il>) (<il> ^a yes)
+ --> (<s> ^shared yes)
+}
+sp {apply-shared-b
+ (state <s> ^superstate <top> ^operator.name build)
+ (<top> ^io.input-link <il>) (<il> ^b yes)
+ --> (<s> ^shared yes)
+}

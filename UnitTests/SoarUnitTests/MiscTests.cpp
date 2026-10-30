@@ -358,7 +358,14 @@ void MiscTests::testPreferenceDeallocation()
 
 	sml::ClientAnalyzedXML response;
 	agent->ExecuteCommandLineXML("stats", &response);
-	assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 6);
+    // Local promoted o-support is no longer an external GDS ground. Removing
+    // F1 ^bar therefore preserves S2 instead of forcing two rebuild decisions.
+    assertEquals(4, response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1));
+    std::string top = agent->ExecuteCommandLine("print S1 -d 3");
+    assertTrue(top.find("^count 2") != std::string::npos);
+    assertTrue(top.find("^bar bar") == std::string::npos);
+    std::string substate = agent->ExecuteCommandLine("print S2 -d 1");
+    assertTrue(substate.find("^hello world") != std::string::npos);
 	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
@@ -549,4 +556,134 @@ void MiscTests::testPerceptReplayEscape()
 	}
 	
 	SoarHelper::init_check_to_find_refcount_leaks(agent);
+}
+
+void MiscTests::testGDSCloneSupport()
+{
+    for (const char* mode : {"never", "always"})
+    {
+        tearDown(false);
+        setUp();
+        agent->ExecuteCommandLine("excise --all");
+        source("gds-clone-support.soar");
+        agent->ExecuteCommandLine((std::string("chunk ") + mode).c_str());
+        agent->ExecuteCommandLine("smem --add { (<c> ^handle sample ^item-type predicate ^argnum 1 ^primary-rtype single ^predicate-structure <p>) (<p> ^feature value) }");
+        sml::Identifier* query = agent->GetInputLink()->CreateIdWME("concept-query");
+        query->CreateStringWME("name", "sample");
+        query->CreateStringWME("type", "unary");
+        agent->Commit();
+        agent->RunSelf(40);
+        std::string wm;
+        for (const std::string& goal : SoarHelper::getGoalStack(agent))
+        {
+            wm += agent->ExecuteCommandLine(("print " + goal + " -d 20").c_str());
+        }
+        for (const char* token : {"^formated predicate", "^handle sample", "^feature value", "^gtype predicate"})
+        {
+            assertTrue_msg(std::string(mode) + ": retrieval missing " + token, wm.find(token) != std::string::npos);
+        }
+    }
+}
+
+void MiscTests::testGDSIndependentDependencies()
+{
+    for (const char* mode : {"never", "always"})
+    {
+        // 18 order/withdrawal controls and 4 shared-result controls.
+        for (int order = 0; order < 4; ++order)
+        {
+            for (int change = 0; change < (order == 3 ? 2 : 3); ++change)
+            {
+                tearDown(false);
+                setUp();
+                agent->ExecuteCommandLine("excise --all");
+                agent->ExecuteCommandLine((std::string("chunk ") + mode).c_str());
+                source(order == 3 ? "gds-shared-support.soar" : "gds-independent-dependencies.soar");
+                sml::Identifier* il = agent->GetInputLink();
+                sml::StringElement* a = il->CreateStringWME("a", order == 2 ? "no" : "yes");
+                sml::StringElement* b = il->CreateStringWME("b", order == 1 ? "no" : "yes");
+                il->CreateStringWME("local-gate", "yes");
+                agent->Commit();
+                agent->RunSelf(3);
+                if (order == 1 || order == 2)
+                {
+                    (order == 1 ? b : a)->Update("yes");
+                    agent->Commit();
+                    agent->RunSelf(4);
+                }
+                std::string wm = agent->ExecuteCommandLine("print S2 -d 1");
+                if (order == 3)
+                {
+                    assertTrue(wm.find("^shared yes") != std::string::npos);
+                }
+                else
+                {
+                    for (const char* attr : {"^branch-a yes", "^chain-a yes", "^branch-b yes", "^chain-b yes"})
+                    {
+                        assertTrue_msg(attr, wm.find(attr) != std::string::npos);
+                    }
+                }
+                std::string gds = agent->ExecuteCommandLine("print --gds");
+                assertTrue(gds.find("^a yes") != std::string::npos);
+                assertTrue(gds.find("^b yes") != std::string::npos);
+                if (change < 2)
+                {
+                    (change == 0 ? a : b)->Update("no");
+                }
+                else
+                {
+                    il->CreateStringWME("unrelated", "new");
+                }
+                agent->Commit();
+                agent->RunSelf(1);
+                std::string stack = agent->ExecuteCommandLine("print --stack");
+                assertTrue_msg(std::string(mode) + ": wrong retraction for order " + std::to_string(order) + ", change " + std::to_string(change),
+                    (stack.find("==>S: S2 ") == std::string::npos) == (change < 2));
+            }
+        }
+    }
+}
+
+void MiscTests::testGDSPromotedSupport()
+{
+    for (const char* mode : {"never", "always"})
+    {
+        tearDown(false);
+        setUp();
+        agent->ExecuteCommandLine("excise --all");
+        agent->ExecuteCommandLine((std::string("chunk ") + mode).c_str());
+        source("gds-promoted-o-support.soar");
+        sml::StringElement* external = agent->GetInputLink()->CreateStringWME("external", "yes");
+        agent->Commit();
+        bool cleaned = false;
+        for (int i = 0; i < 18 && !cleaned; ++i)
+        {
+            agent->RunSelf(1);
+            std::string wm = agent->ExecuteCommandLine("print S2 -d 2");
+            cleaned = wm.find("^cleaned yes") != std::string::npos;
+        }
+        assertTrue_msg(std::string(mode) + ": local effect cleanup removed S2", cleaned);
+        external->Update("no");
+        agent->Commit();
+        agent->RunSelf(1);
+        std::string stack = agent->ExecuteCommandLine("print --stack");
+        assertTrue(stack.find("==>S: S2 ") == std::string::npos);
+
+        tearDown(false);
+        setUp();
+        agent->ExecuteCommandLine("excise --all");
+        agent->ExecuteCommandLine((std::string("chunk ") + mode).c_str());
+        source("gds-promoted-i-support.soar");
+        sml::StringElement* premise = agent->GetInputLink()->CreateStringWME("a", "yes");
+        agent->GetInputLink()->CreateStringWME("b", "yes");
+        agent->Commit();
+        agent->RunSelf(4);
+        std::string wm = agent->ExecuteCommandLine("print S2 -d 3");
+        assertTrue(wm.find("^answer yes") != std::string::npos);
+        premise->Update("no");
+        agent->Commit();
+        agent->RunSelf(1);
+        stack = agent->ExecuteCommandLine("print --stack");
+        assertTrue(stack.find("==>S: S2 ") == std::string::npos);
+    }
 }
