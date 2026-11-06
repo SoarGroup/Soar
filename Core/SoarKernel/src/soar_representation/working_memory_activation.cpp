@@ -442,6 +442,10 @@ inline wma_reference wma_calculate_initial_boost(agent* thisAgent, wme* w)
                             combined_time_sum += wma_get_wme_activation(thisAgent, cond_wme, false);
                         }
                     }
+                    else if (cond_wme->removed_from_wm)
+                    {
+                        // WME has left working memory; contributes nothing
+                    }
                     else if (cond_wme->preference)
                     {
                         if (cond_wme->preference->wma_o_set)
@@ -478,6 +482,11 @@ inline wma_reference wma_calculate_initial_boost(agent* thisAgent, wme* w)
 
 void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wme_set* o_set, bool o_only)
 {
+    if (w->removed_from_wm)
+    {
+        return;
+    }
+
     // o-supported, non-architectural WME
     if (wma_should_have_decay_element(w))
     {
@@ -594,7 +603,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
         thisAgent->SMem->timers->spreading_wma_1->start();
         if (thisAgent->SMem->edge_updating_on() && w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {
-            if (w->value->id && w->value->id->LTI_ID)
+            if (w->value->is_lti())
             {
                 //thisAgent->SMem->invalidate_from_lti(w->id->id->LTI_ID);//This is a HUGE time sink.
                 thisAgent->SMem->add_to_invalidate_from_lti_table(w->id->id->LTI_ID);

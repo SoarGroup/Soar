@@ -421,6 +421,9 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
     uint64_t king_id = NIL;
     for (std::list<Symbol*>::iterator query_it = query.begin(); query_it != query.end(); ++query_it)
     {
+        weighted_cue.clear();
+        good_cue = true;
+
         std::list<uint64_t> temp_list;
         if (query_level == qry_full)
         {
@@ -780,6 +783,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
                 }
                 delete(*next_element);
             }
+            weighted_cue.clear();
         }
     }
 

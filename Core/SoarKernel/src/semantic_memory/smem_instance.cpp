@@ -43,6 +43,7 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
                 // to the state and thus we will manually remove it
                 // (via preference removal) when the time comes
                 state->id->smem_info->smem_wmes->push_back(pref);
+                preference_add_ref(pref);
             }
         }
         else

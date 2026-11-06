@@ -416,16 +416,44 @@ Symbol* sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
         thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to sum function\n",arg1);
         return NIL;
     }
-	int sum = 0;
+	int64_t isum = 0;
+    double fsum = 0.0;
+    bool float_found = false;
 
 	for (s = arg1->id->slots; s != NULL; s = s->next)
     {
         for (w = s->wmes; w != NULL; w = w->next)
         {
-            sum+= static_cast<int>(w->value->ic->value);
+            Symbol* v = w->value;
+            if (v->is_int())
+            {
+                if (float_found)
+                {
+                    fsum += static_cast<double>(v->ic->value);
+                }
+                else
+                {
+                    isum += v->ic->value;
+                }
+            }
+            else if (v->is_float())
+            {
+                if (!float_found)
+                {
+                    float_found = true;
+                    fsum = static_cast<double>(isum);
+                }
+                fsum += v->fc->value;
+            }
+            else
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to sum function\n", v);
+                return NIL;
+            }
         }
     }
-	return thisAgent->symbolManager->make_int_constant(sum);
+	return float_found ? thisAgent->symbolManager->make_float_constant(fsum)
+                       : thisAgent->symbolManager->make_int_constant(isum);
 }
 Symbol* product_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
@@ -440,16 +468,44 @@ Symbol* product_rhs_function_code(agent* thisAgent, cons* args, void* /*user_dat
         thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to product function\n",arg1);
         return NIL;
     }
-	int product = 1;
+	int64_t iprod = 1;
+    double fprod = 1.0;
+    bool float_found = false;
 
 	for (s = arg1->id->slots; s != NULL; s = s->next)
     {
         for (w = s->wmes; w != NULL; w = w->next)
         {
-            product = product * static_cast<int>(w->value->ic->value);
+            Symbol* v = w->value;
+            if (v->is_int())
+            {
+                if (float_found)
+                {
+                    fprod *= static_cast<double>(v->ic->value);
+                }
+                else
+                {
+                    iprod *= v->ic->value;
+                }
+            }
+            else if (v->is_float())
+            {
+                if (!float_found)
+                {
+                    float_found = true;
+                    fprod = static_cast<double>(iprod);
+                }
+                fprod *= v->fc->value;
+            }
+            else
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to product function\n", v);
+                return NIL;
+            }
         }
     }
-	return thisAgent->symbolManager->make_int_constant(product);
+	return float_found ? thisAgent->symbolManager->make_float_constant(fprod)
+                       : thisAgent->symbolManager->make_int_constant(iprod);
 }
 
 /* --------------------------------------------------------------------
@@ -2042,8 +2098,8 @@ double angle_difference(double angle1, double angle2)
 }
 
 double calculate_distance(Point p1, Point p2) {
-    int dx = p2.x - p1.x;
-    int dy = p2.y - p1.y;
+    double dx = static_cast<double>(p2.x - p1.x);
+    double dy = static_cast<double>(p2.y - p1.y);
     return sqrt(dx*dx + dy*dy);
 }
 
@@ -2056,7 +2112,7 @@ double calculate_distance(Point p1, Point p2) {
 char * select_point_closest_to_vector(Point starting, int heading, const std::vector<Point>& points)
 {
     double min_angle_diff = DBL_MAX;
-    char nonvalid[] = "no_valid_point";
+    static char nonvalid[] = "no_valid_point";
     Point nearest_point = {1000, 1000, nonvalid};  // Initialize with invalid point
 
     for (const auto& point : points)
@@ -2242,44 +2298,52 @@ Symbol* select_point_closest_to_vector_rhs_function_code(agent* thisAgent, cons*
       return NIL;
     }
 
-    count = 0;
-    slot* pointslot = points_arg->id->slots; //slots for points
-
-    //count number of points
-    for (wme* curwmeA = pointslot->wmes; curwmeA != 0; curwmeA = curwmeA->next) {
-        count = count + 1;
-    }
-    std::vector<Point> points(count);
-    count = 0;
+    std::vector<Point> points;
     //point attributes
-    Symbol * x_symbol = thisAgent->symbolManager->make_str_constant("x");
-    Symbol * y_symbol = thisAgent->symbolManager->make_str_constant("y");
-    Symbol * id_symbol = thisAgent->symbolManager->make_str_constant("id");
+    Symbol * x_symbol = thisAgent->symbolManager->find_str_constant("x");
+    Symbol * y_symbol = thisAgent->symbolManager->find_str_constant("y");
+    Symbol * id_symbol = thisAgent->symbolManager->find_str_constant("id");
 
     //for all points in set
-    for (wme* curwmeA = pointslot->wmes; curwmeA != 0; curwmeA = curwmeA->next) {
-        Symbol* next_point = curwmeA->value;
-        if (next_point->symbol_type != IDENTIFIER_SYMBOL_TYPE) {
-            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to select-point-closest-to-vector function for a point\n",next_point);
-            return NIL;
+    if (x_symbol && y_symbol && id_symbol)
+    {
+        for (slot* pointslot = points_arg->id->slots; pointslot != NIL; pointslot = pointslot->next)
+        {
+            for (wme* curwmeA = pointslot->wmes; curwmeA != 0; curwmeA = curwmeA->next)
+            {
+                Symbol* next_point = curwmeA->value;
+                if (next_point->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+                {
+                    thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to select-point-closest-to-vector function for a point\n", next_point);
+                    continue;
+                }
+                wme* wme_x = get_wmes_for_named_slot(next_point, x_symbol);
+                wme* wme_y = get_wmes_for_named_slot(next_point, y_symbol);
+                wme* wme_id = get_wmes_for_named_slot(next_point, id_symbol);
+                if (!wme_x || !wme_y || !wme_id)
+                {
+                    continue;
+                }
+                Symbol * x_value = wme_x->value;
+                Symbol * y_value = wme_y->value;
+                Symbol * id_value = wme_id->value;
+                if ((!x_value->is_int() && !x_value->is_float()) ||
+                    (!y_value->is_int() && !y_value->is_float()))
+                {
+                    continue;
+                }
+
+                // get values
+                int64_t point_x = (x_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? x_value->ic->value : static_cast<int64_t>(x_value->fc->value);
+                int64_t point_y = (y_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? y_value->ic->value : static_cast<int64_t>(y_value->fc->value);
+                //converting to positive y=south coordinates
+                point_y = -1 * point_y;
+                char * id = id_value->to_string(false, false, NIL, 0);
+
+                // add to point array
+                points.push_back({point_x, point_y, id});
+            }
         }
-        wme* wme_x = get_wmes_for_named_slot(next_point, x_symbol);
-        wme* wme_y = get_wmes_for_named_slot(next_point, y_symbol);
-        wme* wme_id = get_wmes_for_named_slot(next_point, id_symbol);
-        Symbol * x_value = wme_x->value;
-        Symbol * y_value = wme_y->value;
-        Symbol * id_value = wme_id->value;
-
-        // get values
-        int64_t point_x = (x_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? x_value->ic->value : static_cast<int64_t>(x_value->fc->value);
-        int64_t point_y = (y_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? y_value->ic->value : static_cast<int64_t>(y_value->fc->value);
-        //converting to positive y=south coordinates
-        point_y = -1 * point_y;
-        char * id = id_value->to_string(false, false, NIL, 0);
-
-        // add to point array
-        points[count] = {point_x,point_y,id};
-        count = count + 1;
     }
 
     char starting_name[] = "starting";
@@ -2304,7 +2368,7 @@ Symbol* select_point_closest_to_vector_rhs_function_code(agent* thisAgent, cons*
             Symbol* param_attr_name_sym = static_cast<symbol_struct*>(c->first);
 
             if(param_attr_name_sym == NIL) {
-                return thisAgent->symbolManager->make_str_constant("|ERROR: Missing set attribute parameter.|");
+                return thisAgent->symbolManager->make_str_constant("ERROR: Missing set attribute parameter.");
             }
 
             Symbol* param_level_2       = NIL;
@@ -2340,7 +2404,7 @@ Symbol* select_point_closest_to_vector_rhs_function_code(agent* thisAgent, cons*
                 }
             }
         }
-    } else { return thisAgent->symbolManager->make_str_constant("|ERROR: First parameter needs to be an identifier.|"); }
+    } else { return thisAgent->symbolManager->make_str_constant("ERROR: First parameter needs to be an identifier."); }
 
     return NIL;
 }

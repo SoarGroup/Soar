@@ -1307,6 +1307,7 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wm
                 // to the state and thus we will manually remove it
                 // (via preference removal) when the time comes
                 epmem_wmes->push_back(pref);
+                preference_add_ref(pref);
             }
         }
         else
@@ -1871,6 +1872,7 @@ void epmem_clear_result(agent* thisAgent, Symbol* state)
         {
             remove_preference_from_tm(thisAgent, pref);
         }
+        preference_remove_ref(thisAgent, pref);
     }
 }
 
@@ -1899,6 +1901,10 @@ void epmem_reset(agent* thisAgent, Symbol* state)
 
         // this will be called after prefs from goal are already removed,
         // so just clear out result stack
+        for (preference_list::iterator p_it = data->epmem_wmes->begin(); p_it != data->epmem_wmes->end(); ++p_it)
+        {
+            preference_remove_ref(thisAgent, *p_it);
+        }
         data->epmem_wmes->clear();
 
         state = state->id->lower_goal;

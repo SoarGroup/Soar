@@ -113,6 +113,7 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->chunker_bt_last_ground_cond = NULL;
     w->is_singleton = false;
     w->singleton_status_checked = false;
+    w->removed_from_wm = false;
     w->local_singleton_id_identity_set = NULL_IDENTITY_SET;
     w->local_singleton_value_identity_set = NULL_IDENTITY_SET;
     w->next = NIL;
@@ -153,6 +154,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 {
 
     push(thisAgent, w, thisAgent->wmes_to_remove);
+    w->removed_from_wm = true;
 
     if (w->value->is_sti())
     {
@@ -332,6 +334,7 @@ void do_buffered_wm_changes(agent* thisAgent)
             filtered_print_wme_remove(thisAgent, w);
         }
 
+        w->preference = NIL;
         wme_remove_ref(thisAgent, w);
         free_cons(thisAgent, c);
         thisAgent->wme_removal_count++;
