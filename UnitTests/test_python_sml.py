@@ -20,6 +20,8 @@ import time
 
 # Add the python build directory to the path
 SCRIPT_DIR = Path(__file__).parent.absolute()
+REPO_ROOT = SCRIPT_DIR.parent
+OUT_DIR = REPO_ROOT / "out"
 
 # Try to detect build directory from environment or common locations
 BUILD_DIR = None
@@ -28,36 +30,41 @@ if "SOAR_BUILD_DIR" in os.environ:
 else:
     # Try common build directory patterns
     for build_type in ["Release", "Debug"]:
-        candidate = SCRIPT_DIR.parent / "build" / build_type
+        candidate = REPO_ROOT / "build" / build_type
         if candidate.exists():
             BUILD_DIR = candidate
             break
     if BUILD_DIR is None:
-        BUILD_DIR = SCRIPT_DIR.parent / "build" / "Debug"  # fallback
+        BUILD_DIR = REPO_ROOT / "build" / "Debug"  # fallback
 
 PYTHON_BUILD_DIR = BUILD_DIR / "Core" / "ClientSMLSWIG" / "python"
 PYTHON_LIBRARY_DIR = BUILD_DIR / "Core" / "ClientSMLSWIG"
 
-# Add Python SML module to path
-sys.path.insert(0, str(PYTHON_BUILD_DIR))
-sys.path.insert(0, str(PYTHON_LIBRARY_DIR))
+# Add out/ (where _Python_sml_ClientInterface.pyd/.abi3.so and Python_sml_ClientInterface.py live)
+# as well as the CMake build subdirectories to sys.path
+for p in (OUT_DIR, PYTHON_BUILD_DIR, PYTHON_LIBRARY_DIR):
+    if p.exists() and str(p) not in sys.path:
+        sys.path.insert(0, str(p))
 
 try:
     import Python_sml_ClientInterface
     from Python_sml_ClientInterface import *
-    print(f"[OK] Successfully imported Python_sml_ClientInterface from {PYTHON_BUILD_DIR}")
+    print(f"[OK] Successfully imported Python_sml_ClientInterface")
     print(f"Script directory: {SCRIPT_DIR}")
     print(f"Build directory: {BUILD_DIR}")
-    print(f"Agent directory: {BUILD_DIR / 'UnitTests' / 'SoarTestAgents'}")
-    print(f"Python build directory: {PYTHON_BUILD_DIR}")
+    print(f"Out directory: {OUT_DIR}")
 except ImportError as e:
     print(f"[ERROR] Failed to import Python_sml_ClientInterface: {e}")
     print(f"Python path: {sys.path}")
     sys.exit(1)
 
-# Test data directories
-UNIT_TESTS_DIR = BUILD_DIR / "UnitTests"
-AGENT_DIR = UNIT_TESTS_DIR / "SoarTestAgents"
+# Test data directories: prefer out/SoarUnitTests or source UnitTests/SoarTestAgents
+if (OUT_DIR / "SoarUnitTests").exists():
+    AGENT_DIR = OUT_DIR / "SoarUnitTests"
+elif (SCRIPT_DIR / "SoarTestAgents").exists():
+    AGENT_DIR = SCRIPT_DIR / "SoarTestAgents"
+else:
+    AGENT_DIR = BUILD_DIR / "UnitTests" / "SoarTestAgents"
 
 class CalledSignal:
     """Helper class to track if callbacks were called."""

@@ -523,6 +523,8 @@ def get_host_target(env, msvc_version, all_host_targets=False):
 # If you update this, update SupportedVSList in Tool/MSCommon/vs.py, and the
 # MSVC_VERSION documentation in Tool/msvc.xml.
 _VCVER = [
+    "14.5",
+    "14.4",
     "14.3",
     "14.2",
     "14.1", "14.1Exp",
@@ -538,6 +540,14 @@ _VCVER = [
 
 # if using vswhere, configure command line arguments to probe for installed VC editions
 _VCVER_TO_VSWHERE_VER = {
+    '14.5': [
+        ["-version", "[18.0, 19.0)"],  # default: Enterprise, Professional, Community
+        ["-version", "[18.0, 19.0)", "-products", "Microsoft.VisualStudio.Product.BuildTools"],  # BuildTools
+    ],
+    '14.4': [
+        ["-version", "[17.10, 19.0)"],  # default: Enterprise, Professional, Community
+        ["-version", "[17.10, 19.0)", "-products", "Microsoft.VisualStudio.Product.BuildTools"],  # BuildTools
+    ],
     '14.3': [
         ["-version", "[17.0, 18.0)"],  # default: Enterprise, Professional, Community  (order unpredictable?)
         ["-version", "[17.0, 18.0)", "-products", "Microsoft.VisualStudio.Product.BuildTools"],  # BuildTools
@@ -556,6 +566,10 @@ _VCVER_TO_VSWHERE_VER = {
 }
 
 _VCVER_TO_PRODUCT_DIR = {
+    '14.5': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'')],  # not set by this version
+    '14.4': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'')],  # not set by this version
     '14.3': [
         (SCons.Util.HKEY_LOCAL_MACHINE, r'')],  # not set by this version
     '14.2': [

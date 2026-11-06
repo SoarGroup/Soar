@@ -115,6 +115,7 @@
                 "SWIG_PYTHON": "ON",
                 "SWIG_TCL": "ON",
                 "SWIG_JAVA": "ON",
+                "SWIG_CSHARP": "ON",
                 "JAVA_DEBUGGER": "ON",
                 "TCLSOARLIB": "ON"
             }
@@ -132,6 +133,7 @@
                 "SWIG_PYTHON": "ON",
                 "SWIG_TCL": "ON",
                 "SWIG_JAVA": "ON",
+                "SWIG_CSHARP": "ON",
                 "JAVA_DEBUGGER": "ON",
                 "TCLSOARLIB": "ON",
                 "TEST_CI_ENABLED": "OFF",
@@ -234,6 +236,14 @@
             "output": {
                 "outputOnFailure": true
             }
+        },
+        {
+            "name": "Release-swig",
+            "displayName": "Test Release with SWIG",
+            "configurePreset": "Release-swig",
+            "output": {
+                "outputOnFailure": true
+            }
         }
     ],
     "packagePresets": [
@@ -309,6 +319,24 @@
                 {
                     "type": "test",
                     "name": "Release-test"
+                }
+            ]
+        },
+        {
+            "name": "Release-svs-test-workflow",
+            "displayName": "Release SVS Test Workflow",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "Release-svs-test"
+                },
+                {
+                    "type": "build",
+                    "name": "Release-svs-test"
+                },
+                {
+                    "type": "test",
+                    "name": "Release-svs-test"
                 }
             ]
         }

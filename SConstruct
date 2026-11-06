@@ -149,12 +149,23 @@ AddOption('--verbose', action='store_true', dest='verbose', default=False, help=
 AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Build Soar without SVS functionality')
 
 if enscons_active:
-    tools = ['default', 'packaging', enscons.generate]
+    if sys.platform == 'win32':
+        tools = ['msvc', 'mslink', 'mslib', 'swig', 'javac', 'jar', 'packaging', enscons.generate]
+    else:
+        tools = ['default', 'packaging', enscons.generate]
 else:
     tools = None
 
+msvc_use_script = UNDEFINED if 'UNDEFINED' in dir() else True
+if sys.platform == 'win32' and ('VCToolsInstallDir' in os.environ or 'VCINSTALLDIR' in os.environ):
+    # If already running inside an initialized Visual Studio Developer Command Prompt
+    # (or ilammy/msvc-dev-cmd in GitHub Actions), use the active MSVC environment
+    # directly so SCons never fails if a newer VS version isn't in its vswhere table.
+    msvc_use_script = False
+
 env = Environment(
     tools=tools,
+    MSVC_USE_SCRIPT=msvc_use_script,
     ENSCONS_ACTIVE=enscons_active,
     ENV=os.environ.copy(),
     SCU=GetOption('scu'),
@@ -172,7 +183,7 @@ env = Environment(
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
 	JAVAVERSION='11.0',
-    PY_ABI3_VERSION = (3, 5),
+    PY_ABI3_VERSION = (3, 8),
     SML_CSHARP_ALIAS = SML_CSHARP_ALIAS,
     SML_JAVA_ALIAS = SML_JAVA_ALIAS,
     SML_PYTHON_ALIAS = SML_PYTHON_ALIAS,

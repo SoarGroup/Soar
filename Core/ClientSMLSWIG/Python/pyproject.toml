@@ -77,7 +77,7 @@ requires = [
     # required to use wheel.bdist_wheel.get_platform (used in dependencies)
     "wheel==0.43.0",
     "versioningit",
-    "scons==4.4.0"
+    "scons>=4.4.0"
 ]
 build-backend = "enscons.api"
 

@@ -182,6 +182,7 @@ endif()
 add_library(${SOAR_LIB} ${SOURCES})
 set_target_properties(${SOAR_LIB} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(${SOAR_LIB} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/Core/shared>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/CLI/src>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/ClientSML/src>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/ConnectionSML/src>
@@ -200,7 +201,6 @@ target_include_directories(${SOAR_LIB} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SoarKernel/src/shared>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SoarKernel/src/soar_representation>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/SoarKernel/src/visualizer>
-  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/Core/shared>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core/shared>
   $<INSTALL_INTERFACE:include/soar>
 )

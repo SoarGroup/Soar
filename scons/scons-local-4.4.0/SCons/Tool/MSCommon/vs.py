@@ -198,6 +198,28 @@ class VisualStudio:
 # Tool/MSCommon/vc.py, and the MSVC_VERSION documentation in Tool/msvc.xml.
 
 SupportedVSList = [
+    # Visual Studio 2026
+    VisualStudio('14.5',
+                 vc_version='14.5',
+                 sdk_version='10.0A',
+                 hkeys=[],
+                 common_tools_var='VS180COMNTOOLS',
+                 executable_path=r'Common7\IDE\devenv.com',
+                 batch_file_path=r'Common7\Tools\VsDevCmd.bat',
+                 supported_arch=['x86', 'amd64', "arm"],
+                 ),
+
+    # Visual Studio 2022 (17.10+ / v144)
+    VisualStudio('14.4',
+                 vc_version='14.4',
+                 sdk_version='10.0A',
+                 hkeys=[],
+                 common_tools_var='VS170COMNTOOLS',
+                 executable_path=r'Common7\IDE\devenv.com',
+                 batch_file_path=r'Common7\Tools\VsDevCmd.bat',
+                 supported_arch=['x86', 'amd64', "arm"],
+                 ),
+
     # Visual Studio 2022
     VisualStudio('14.3',
                  vc_version='14.3',

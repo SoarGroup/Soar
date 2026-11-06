@@ -361,7 +361,7 @@ if(SWIG_PYTHON)
 
     soar_swig_set_rpath(soar_sml_python)
 
-    # Prepend a Windows DLL-search-path shim to the generated Python wrapper so
+    #Prepend a Windows DLL-search-path shim to the generated Python wrapper so
     # that on Python 3.8+ the loader can find Soar.dll (which lives next to the
     # .pyd). Python 3.8+ no longer searches PATH/CWD for extension-module
     # dependencies, so the .pyd fails to import unless we register its own
@@ -378,6 +378,9 @@ if(SWIG_PYTHON)
         COMMAND ${CMAKE_COMMAND} -E copy
             "${_PY_WRAPPER}"
             "${SOAR_OUT_DIR}/Python_sml_ClientInterface.py"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/Python/TestPythonSML.py"
+            "${SOAR_OUT_DIR}/TestPythonSML.py"
         COMMENT "Prepending Windows DLL-search shim to Python_sml_ClientInterface.py; mirroring to out/"
         VERBATIM
     )
@@ -585,7 +588,7 @@ if(SWIG_TCL)
         set(TCL_PLATFORM "linux")
     endif()
 
-    # Copy platform-specific pkgIndex.tcl
+    # Copy platform-specific pkgIndex.tcl and TestTclSML.tcl
     add_custom_command(TARGET soar_sml_tcl POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
             "${CMAKE_CURRENT_SOURCE_DIR}/Tcl/pkgIndex_${TCL_PLATFORM}.tcl"
@@ -593,7 +596,10 @@ if(SWIG_TCL)
         COMMAND ${CMAKE_COMMAND} -E copy
             "${CMAKE_CURRENT_SOURCE_DIR}/Tcl/pkgIndex_${TCL_PLATFORM}.tcl"
             "${SOAR_OUT_DIR}/pkgIndex.tcl"
-        COMMENT "Copying pkgIndex_${TCL_PLATFORM}.tcl"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/Tcl/TestTclSML.tcl"
+            "${SOAR_OUT_DIR}/TestTclSML.tcl"
+        COMMENT "Copying pkgIndex_${TCL_PLATFORM}.tcl and TestTclSML.tcl"
     )
 
     # Copy the shared library to the tcl output directory
@@ -706,6 +712,9 @@ if(SWIG_CSHARP)
         add_custom_command(TARGET soar_sml_csharp POST_BUILD
             COMMAND ${DOTNET_EXECUTABLE} build "${CSHARP_CSPROJ}"
                     -o "${CSHARP_LIB_OUTPUT_DIR}" -c Release --nologo -v quiet
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${CSHARP_LIB_OUTPUT_DIR}/sml_csharp.dll"
+                    "${SOAR_OUT_DIR}/sml_csharp.dll"
             COMMENT "Building C# managed assembly (sml_csharp.dll)"
             VERBATIM
         )

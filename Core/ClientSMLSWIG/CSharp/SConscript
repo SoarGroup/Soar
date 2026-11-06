@@ -5,6 +5,7 @@
 import os
 import sys
 import itertools
+import subprocess
 
 Import("env")
 
@@ -12,12 +13,19 @@ def get_headers(d):
     chain = itertools.chain.from_iterable
     return list(chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d)))
 
-# TODO: this could still fail if no actual SDKs are installed. We should check with dotnet --list-sdks.
 dotnet_path = env.WhereIs("dotnet")
-if not dotnet_path:
-    print(f'dotnet command not found; not building C# SML wrappers.')
+has_dotnet_sdk = False
+if dotnet_path:
+    try:
+        out = subprocess.check_output([dotnet_path, "--list-sdks"], stderr=subprocess.STDOUT).decode().strip()
+        has_dotnet_sdk = len(out) > 0
+    except Exception:
+        has_dotnet_sdk = False
+
+if not dotnet_path or not has_dotnet_sdk:
+    print(f'dotnet SDK not found; not building C# SML wrappers.')
     Return()
-print(f'Found dotnet command: {dotnet_path}')
+print(f'Found dotnet SDK via: {dotnet_path}')
 
 clone = env.Clone()
 
@@ -84,4 +92,5 @@ shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .l
 env.Alias(sml_csharp_target, clone.Install(clone['OUT_DIR'], shlib))
 
 env.Depends(shlib, clone.LateCSharpBuilder(fake_target, None))
+env.Depends(fake_target, wrapper)
 clone.Clean(wrapper, [srcdir, assembly])

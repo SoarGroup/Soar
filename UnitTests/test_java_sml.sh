@@ -26,8 +26,15 @@ else
     fi
 fi
 
+OUT_DIR="${SCRIPT_DIR}/../out"
 JAVA_BUILD_DIR="${BUILD_DIR}/Core/ClientSMLSWIG/java"
 JAVA_LIBRARY_DIR="${BUILD_DIR}/Core/ClientSMLSWIG"
+if [ -f "${OUT_DIR}/java/sml.jar" ]; then
+    JAVA_BUILD_DIR="${OUT_DIR}/java"
+fi
+if [ -f "${OUT_DIR}/libJava_sml_ClientInterface.so" ] || [ -f "${OUT_DIR}/libJava_sml_ClientInterface.jnilib" ] || [ -f "${OUT_DIR}/Java_sml_ClientInterface.dll" ]; then
+    JAVA_LIBRARY_DIR="${OUT_DIR}"
+fi
 
 echo "Testing Java SWIG bindings..."
 echo "Build directory: ${BUILD_DIR}"

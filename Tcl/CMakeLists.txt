@@ -68,6 +68,13 @@ else()
   install(TARGETS tclsoarlib LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
+# Copy Tcl support scripts to out/tcl so runtime embedded Tcl works from out/
+file(GLOB _tcl_support_files
+     "${CMAKE_CURRENT_SOURCE_DIR}/tcl/*.tcl"
+     "${CMAKE_CURRENT_SOURCE_DIR}/tcl/*.soar"
+     "${CMAKE_CURRENT_SOURCE_DIR}/tcl/tclIndex")
+file(COPY ${_tcl_support_files} DESTINATION "${SOAR_OUT_DIR}/tcl")
+
 # Install Tcl support scripts
 install(DIRECTORY tcl/
   DESTINATION tcl

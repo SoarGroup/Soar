@@ -139,6 +139,8 @@ MSVC_BUILDTOOLS_EXTERNAL = {}
 VC_VERSION_MAP = {}
 
 for vc_buildtools, vc_version, cl_version, vc_runtime, vc_istoolset in [
+    ('v145', '14.5', '19.5', '140', True),
+    ('v144', '14.4', '19.4', '140', True),
     ('v143', '14.3', '19.3', '140', True),
     ('v142', '14.2', '19.2', '140', True),
     ('v141', '14.1', '19.1', '140', True),
@@ -212,6 +214,8 @@ VS_PRODUCT_ALIAS = {
 #            MSVS 2010 and earlier cl_version -> vs_def is a 1:1 mapping
 # SDK attached to product or buildtools?
 for vs_product, vs_version, vs_envvar, vs_express, vs_lookup, vc_sdk, vc_ucrt, vc_uwp, vc_buildtools_all in [
+    ('2026', '18.0', True,  False, 'vswhere' , ['10.0', '8.1'], ['10'],   'uwp', ['v145', 'v144', 'v143', 'v142', 'v141', 'v140']),
+    ('2024', '17.10', True, False, 'vswhere' , ['10.0', '8.1'], ['10'],   'uwp', ['v144', 'v143', 'v142', 'v141', 'v140']),
     ('2022', '17.0', True,  False, 'vswhere' , ['10.0', '8.1'], ['10'],   'uwp', ['v143', 'v142', 'v141', 'v140']),
     ('2019', '16.0', True,  False, 'vswhere' , ['10.0', '8.1'], ['10'],   'uwp', ['v142', 'v141', 'v140']),
     ('2017', '15.0', True,  True,  'vswhere' , ['10.0', '8.1'], ['10'],   'uwp', ['v141', 'v140']),

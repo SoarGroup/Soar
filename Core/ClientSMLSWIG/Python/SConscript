@@ -54,12 +54,36 @@ name = 'Python_sml_ClientInterface'
 interface = env.File(name + '.i')
 source = env.File(name + '.py')
 
+def prepend_dll_shim_action(target, source, env):
+    marker = "# __soar_dll_search_shim__"
+    shim = (
+        f"{marker}\n"
+        "import os as _os\n"
+        "import sys as _sys\n"
+        "if _sys.platform == \"win32\" and hasattr(_os, \"add_dll_directory\"):\n"
+        "    try:\n"
+        "        _os.add_dll_directory(_os.path.dirname(_os.path.abspath(__file__)))\n"
+        "    except (OSError, FileNotFoundError):\n"
+        "        pass\n"
+        "del _os, _sys\n"
+    )
+    for tgt in target:
+        p = str(tgt)
+        if p.endswith('.py') and os.path.exists(p):
+            with open(p, 'r', encoding='utf-8') as f:
+                contents = f.read()
+            if marker not in contents:
+                with open(p, 'w', encoding='utf-8') as f:
+                    f.write(shim + contents)
+
 if os.name == 'nt':
     # the [:1] at the end throws away the .exp and .lib files that are generated
     shlib = clone.SharedLibrary(name, interface, SHLIBPREFIX = '_', SHLIBSUFFIX = '.pyd')[:1]
 else:
     shlib = clone.SharedLibrary(name, interface, SHLIBPREFIX = '_')
+env.AddPostAction(source, prepend_dll_shim_action)
 install_source = env.Install(lib_install_dir, source)
+env.AddPostAction(install_source, prepend_dll_shim_action)
 install_lib = env.Install(lib_install_dir, shlib)
 install_test = env.Install(lib_install_dir, env.File('TestPythonSML.py'))
 
