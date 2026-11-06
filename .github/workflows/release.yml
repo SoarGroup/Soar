@@ -106,6 +106,36 @@ jobs:
           conan install . --build=missing -s build_type=Release
           -c tools.cmake.cmaketoolchain:generator=Ninja
 
+      - name: Create Python stable ABI import library (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $pythonRoot = $env:pythonLocation
+          if (!$pythonRoot) {
+            throw "setup-python did not set pythonLocation"
+          }
+          $pythonLib = Join-Path $pythonRoot "libs\python3.lib"
+          if (!(Test-Path $pythonLib)) {
+            $pythonDll = @(
+              (Join-Path $pythonRoot "python3.dll"),
+              (Join-Path $pythonRoot "DLLs\python3.dll")
+            ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (!$pythonDll) {
+              throw "Could not find python3.dll under $pythonRoot"
+            }
+
+            $defFile = Join-Path $env:RUNNER_TEMP "python3.def"
+            $exports = dumpbin /nologo /exports $pythonDll |
+              ForEach-Object {
+                if ($_ -match '^\s+\d+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+(\S+)$') {
+                  "    $($matches[1])"
+                }
+              }
+            @("LIBRARY python3.dll", "EXPORTS") + $exports | Set-Content $defFile
+            New-Item -ItemType Directory -Force (Split-Path $pythonLib) | Out-Null
+            lib /nologo /def:$defFile /machine:x64 /out:$pythonLib
+          }
+          "SOAR_PYTHON_ROOT=$pythonRoot" >> $env:GITHUB_ENV
+
       # ── Configure ──
 
       - name: Configure CMake (Linux)
