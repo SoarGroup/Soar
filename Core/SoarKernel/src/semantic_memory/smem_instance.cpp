@@ -164,6 +164,84 @@ Symbol* SMem_Manager::get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_leve
 }
 
 
+void SMem_Manager::context_count(uint64_t lti_id, int64_t delta)
+{
+#ifdef SPREADING_ACTIVATION_ENABLED
+    if (!lti_id || delta == 0)
+    {
+        return;
+    }
+    std::map<uint64_t, uint64_t>::iterator it = smem_in_wmem->find(lti_id);
+    if (delta > 0)
+    {
+        if (it == smem_in_wmem->end())
+        {
+            (*smem_in_wmem)[lti_id] = static_cast<uint64_t>(delta);
+            smem_context_additions->insert(lti_id);
+            if (smem_context_removals->find(lti_id) != smem_context_removals->end())
+            {
+                smem_context_removals->erase(lti_id);
+            }
+        }
+        else
+        {
+            it->second += static_cast<uint64_t>(delta);
+        }
+    }
+    else if (it != smem_in_wmem->end())
+    {
+        uint64_t sub = static_cast<uint64_t>(-delta);
+        if (it->second <= sub)
+        {
+            smem_in_wmem->erase(it);
+            if (smem_context_additions->find(lti_id) != smem_context_additions->end())
+            {
+                smem_context_additions->erase(lti_id);
+            }
+            else
+            {
+                smem_context_removals->insert(lti_id);
+            }
+        }
+        else
+        {
+            it->second -= sub;
+        }
+    }
+#endif
+}
+
+void SMem_Manager::set_lti_link(Symbol* pISTI, uint64_t pLTI_ID)
+{
+    uint64_t old_lti = pISTI->id->LTI_ID;
+    if (old_lti != pLTI_ID)
+    {
+        int64_t n = 0;
+        for (wme* w = pISTI->id->input_wmes; w != NIL; w = w->next)
+        {
+            if (!w->removed_from_wm) n++;
+        }
+        for (wme* w = pISTI->id->impasse_wmes; w != NIL; w = w->next)
+        {
+            if (!w->removed_from_wm) n++;
+        }
+        for (slot* s = pISTI->id->slots; s != NIL; s = s->next)
+        {
+            for (wme* w = s->wmes; w != NIL; w = w->next)
+            {
+                if (!w->removed_from_wm) n++;
+            }
+            for (wme* w = s->acceptable_preference_wmes; w != NIL; w = w->next)
+            {
+                if (!w->removed_from_wm) n++;
+            }
+        }
+        context_count(old_lti, -n);
+        pISTI->id->LTI_ID = pLTI_ID;
+        context_count(pLTI_ID, n);
+    }
+}
+
 uint64_t SMem_Manager::get_current_LTI_for_iSTI(Symbol* pISTI, bool useLookupTable, bool pOverwriteOldLinkToLTM)
 {
     uint64_t returnVal = 0;
@@ -193,7 +271,7 @@ uint64_t SMem_Manager::get_current_LTI_for_iSTI(Symbol* pISTI, bool useLookupTab
     }
     if (pOverwriteOldLinkToLTM || !pISTI->id->LTI_ID)
     {
-        pISTI->id->LTI_ID = returnVal;
+        set_lti_link(pISTI, returnVal);
         pISTI->update_cached_lti_print_str();
         pISTI->id->smem_valid = smem_validation;
     }

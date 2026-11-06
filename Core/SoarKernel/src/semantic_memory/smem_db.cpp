@@ -136,7 +136,9 @@ void smem_statement_container::drop_tables(agent* new_agent)
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_likelihoods");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_current_spread");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_trajectory_num");
-    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_current_context");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_constants_store");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_to_delete");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_invalid_parents");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_committed_spread");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_uncommitted_spread");
     new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_current_spread_activations");

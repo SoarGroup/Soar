@@ -37,8 +37,8 @@ bool SMem_Manager::CLI_add(const char* ltms_str, std::string** err_msg)
     str_to_ltm_map ltms;
     str_to_ltm_map::iterator c_old;
 
-    ltm_set newbies;
-    ltm_set::iterator c_new;
+    ltm_list newbies;
+    ltm_list::iterator c_new;
 
     // consume next token
     lexer.get_lexeme();
@@ -849,8 +849,16 @@ Symbol* SMem_Manager::parse_constant_attr(soar::Lexeme* lexeme)
     return return_val;
 }
 
-bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_LTMs, ltm_set* newbies)
+bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_LTMs, ltm_list* newbies)
 {
+    auto add_newbie = [newbies](ltm_object* o)
+    {
+        if (std::find(newbies->begin(), newbies->end(), o) == newbies->end())
+        {
+            newbies->push_back(o);
+        }
+    };
+
     bool return_val = false;
 
     ltm_object* l_ltm = new ltm_object;
@@ -966,7 +974,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                             (*str_to_LTMs)[ temp_key ] = l_ltm_temp;
 
                             // definitely a new ltm
-                            newbies->insert(l_ltm_temp);
+                            add_newbie(l_ltm_temp);
 
                             // the new ltm is our parent for this set of values (or further dots)
                             l_ltm_intermediate_parent = l_ltm_temp;
@@ -1086,7 +1094,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                                 //lexer->get_lexeme();
 
                                                 // possibly a newbie (could be a self-loop)
-                                                newbies->insert(l_ltm_temp);
+                                                add_newbie(l_ltm_temp);
                                             }
                                         }
 
@@ -1190,7 +1198,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
         if (!(*p))
         {
             (*p) = l_ltm;
-            newbies->insert(l_ltm);
+            add_newbie(l_ltm);
         }
         else
         {
@@ -1234,7 +1242,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
             }
 
             // contents are new
-            newbies->insert((*p));
+            add_newbie((*p));
 
             // deallocate
             deallocate_ltm(l_ltm);

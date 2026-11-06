@@ -238,21 +238,8 @@ void do_buffered_wm_changes(agent* thisAgent)
         w = (wme_struct*)(c->first);
         #ifdef SPREADING_ACTIVATION_ENABLED
         if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
-        {//We attempt to keep track of ltis currently in wmem.
-            if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) == thisAgent->SMem->smem_in_wmem->end())
-            {
-                (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] = (uint64_t)1;
-                //This must have been newly added.
-                thisAgent->SMem->smem_context_additions->insert(w->id->id->LTI_ID);
-                if (thisAgent->SMem->smem_context_removals->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_context_removals->end())
-                {
-                    thisAgent->SMem->smem_context_removals->erase(w->id->id->LTI_ID);
-                }
-            }
-            else
-            {
-                (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] = (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] + 1;
-            }
+        {
+            thisAgent->SMem->context_count(w->id->id->LTI_ID, 1);
         }
         #endif
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_AUTOMATICALLY_CREATE_SINGLETONS] && (w->attr->is_string() && !w->attr->sc->singleton.possible))
@@ -267,25 +254,7 @@ void do_buffered_wm_changes(agent* thisAgent)
         #ifdef SPREADING_ACTIVATION_ENABLED
         if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {
-            if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_in_wmem->end())
-            {
-                if ((*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] == 1)
-                {//We are removing the last instance = actual removal.
-                    thisAgent->SMem->smem_in_wmem->erase(w->id->id->LTI_ID);
-                    if (thisAgent->SMem->smem_context_additions->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_context_additions->end())
-                    {
-                        thisAgent->SMem->smem_context_additions->erase(w->id->id->LTI_ID);
-                    }
-                    else
-                    {
-                        thisAgent->SMem->smem_context_removals->insert(w->id->id->LTI_ID);
-                    }
-                }
-                else
-                {//just reducing the number of instances.
-                    (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] = (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] - 1;
-                }
-            }
+            thisAgent->SMem->context_count(w->id->id->LTI_ID, -1);
         }
         #endif
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));

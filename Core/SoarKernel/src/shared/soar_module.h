@@ -471,62 +471,49 @@ namespace soar_module
                 return return_val;
             }
 
+            bool parse_list(const char* new_value, std::set< T >& out_set)
+            {
+                if (!new_value) return false;
+                std::string str(new_value);
+                std::replace(str.begin(), str.end(), ',', ' ');
+                std::istringstream in(str);
+                T val;
+                while (in >> val)
+                {
+                    if ((*prot_pred)(val)) return false;
+                    out_set.insert(val);
+                }
+                return in.eof() && !out_set.empty();
+            }
+
             virtual bool validate_string(const char* new_value)
             {
-                T test_val;
-
-                return from_string(test_val, new_value);
+                std::set< T > temp_set;
+                return parse_list(new_value, temp_set);
             }
 
             virtual bool set_string(const char* new_string)
             {
-                T new_val;
-                from_string(new_val, new_string);
-
-                if ((*prot_pred)(new_val))
+                std::set< T > temp_set;
+                if (!parse_list(new_string, temp_set))
                 {
                     return false;
                 }
-                else
-                {
-                    typename std::set< T >::iterator it = my_set->find(new_val);
-                    std::string temp_str;
 
+                *my_set = temp_set;
+                value->clear();
+                std::string temp_str;
+                for (typename std::set< T >::iterator it = my_set->begin(); it != my_set->end();)
+                {
+                    to_string(*it, temp_str);
+                    value->append(temp_str);
+                    ++it;
                     if (it != my_set->end())
                     {
-                        my_set->erase(it);
-
-                        // regenerate value from scratch
-                        value->clear();
-                        for (it = my_set->begin(); it != my_set->end();)
-                        {
-                            to_string(*it, temp_str);
-                            value->append(temp_str);
-
-                            it++;
-
-                            if (it != my_set->end())
-                            {
-                                value->append(", ");
-                            }
-                        }
+                        value->append(", ");
                     }
-                    else
-                    {
-                        my_set->insert(new_val);
-
-                        if (!value->empty())
-                        {
-                            value->append(", ");
-                        }
-
-                        to_string(new_val, temp_str);
-                        value->append(temp_str);
-                    }
-
-
-                    return true;
                 }
+                return true;
             }
 
             virtual bool in_set(T test_val)

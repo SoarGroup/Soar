@@ -76,6 +76,8 @@ class SMem_Manager
         uint64_t    spread_size();
 
         void        set_id_counter(uint64_t counter_value);
+        void        context_count(uint64_t lti_id, int64_t delta);
+        void        set_lti_link(Symbol* pISTI, uint64_t pLTI_ID);
 
 
         /* Methods for creating an instance of a LTM using STIs */
@@ -178,7 +180,7 @@ class SMem_Manager
         inline void     count_child_connection(std::map<uint64_t, uint64_t>* children, uint64_t child_lti_id);
         void            disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>* old_children);
         ltm_slot*       make_ltm_slot(ltm_slot_map* slots, Symbol* attr);
-        bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
+        bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_list* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
         void            store_new(Symbol* pSTI, smem_storage_type store_type, bool pOverwriteOldLinkToLTM, tc_number tc = NIL);
         void            update(Symbol* pSTI, smem_storage_type store_type, tc_number tc = NIL);

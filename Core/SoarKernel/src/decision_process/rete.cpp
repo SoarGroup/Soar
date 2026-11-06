@@ -1493,13 +1493,11 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        bool lti = (w->value->id->LTI_ID != NIL);
-
         if ((w->epmem_id != EPMEM_NODEID_BAD) && (w->epmem_valid == thisAgent->EpMem->epmem_validation))
         {
             was_encoded = true;
 
-            (*thisAgent->EpMem->epmem_edge_removals)[ std::make_pair(w->epmem_id,static_cast<int64_t>((lti ? w->value->id->LTI_ID : 0))) ] = true;
+            (*thisAgent->EpMem->epmem_edge_removals)[ w->epmem_id ] = true;
 
 #ifdef DEBUG_EPMEM_WME_ADD
             fprintf(stderr, "   wme destroyed: %d %d %d\n",

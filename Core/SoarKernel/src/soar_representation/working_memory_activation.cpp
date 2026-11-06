@@ -373,9 +373,20 @@ inline double wma_sum_history(agent* thisAgent, wma_history* history, wma_d_cycl
 
             // decay_rate is negated (for nice printing)
             double d_inv = (1 + thisAgent->WM->wma_params->decay_rate->get_value());
-
-            return_val += (((history->total_references - history->history_references) * (pow(static_cast<double>(current_cycle - history->first_reference), d_inv) - pow(static_cast<double>(cycle_diff), d_inv))) /
-                           (d_inv * ((current_cycle - history->first_reference) - cycle_diff)));
+            double extra = static_cast<double>(history->total_references - history->history_references);
+            double tn = static_cast<double>(current_cycle - history->first_reference);
+            double tk = static_cast<double>(cycle_diff);
+            if (tn > tk)
+            {
+                if (std::fabs(d_inv) < 1.0e-12)
+                {
+                    return_val += (tk > 0.0) ? (extra * (log(tn) - log(tk)) / (tn - tk)) : 0.0;
+                }
+                else
+                {
+                    return_val += (extra * (pow(tn, d_inv) - pow(tk, d_inv)) / (d_inv * (tn - tk)));
+                }
+            }
         }
     }
 
@@ -474,7 +485,19 @@ inline wma_reference wma_calculate_initial_boost(agent* thisAgent, wme* w)
 
     if (num_cond_wmes)
     {
-        return_val = static_cast<wma_reference>(floor(combined_time_sum / num_cond_wmes));
+        double avg = floor(combined_time_sum / num_cond_wmes);
+        if (std::isnan(avg) || avg <= 0.0)
+        {
+            return_val = 0;
+        }
+        else if (avg >= static_cast<double>(UINT64_MAX))
+        {
+            return_val = UINT64_MAX;
+        }
+        else
+        {
+            return_val = static_cast<wma_reference>(avg);
+        }
     }
 
     return return_val;
@@ -895,7 +918,7 @@ inline wma_d_cycle wma_forgetting_estimate_cycle(agent* thisAgent, wma_decay_ele
 
             if (act >= my_thresh)
             {
-                while (act >= my_thresh)
+                while ((act >= my_thresh) && (to_add < (static_cast<wma_d_cycle>(1) << 62)))
                 {
                     to_add *= 2;
                     act = wma_calculate_decay_activation(thisAgent, decay_el, (return_val + to_add), false);

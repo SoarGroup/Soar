@@ -41,11 +41,14 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
 
     double small_n = 0;
     {
-        while (SQL->history_get->column_int(available_history) != 0)
+        while ((available_history < SMEM_ACT_HISTORY_ENTRIES) &&
+               (SQL->history_get->column_int(available_history) != 0))
         {
             available_history++;
         }
-        t_k = static_cast<uint64_t>(time_now - SQL->history_get->column_int(available_history - 1));
+        t_k = (available_history > 0)
+            ? static_cast<uint64_t>(time_now - SQL->history_get->column_int(available_history - 1))
+            : t_n;
 
         for (int i = 0; i < available_history; i++)
         {
@@ -1415,7 +1418,7 @@ void SMem_Manager::add_to_invalidate_from_lti_table(uint64_t invalid_parent)
 
 void SMem_Manager::batch_invalidate_from_lti()
 {
-    if (SQL->trajectory_invalidation_check_for_rows->execute() == soar_module::row)
+    if (SQL->trajectory_invalidation_check_for_rows->execute(soar_module::op_reinit) == soar_module::row)
     {
         SQL->trajectory_invalidate_from_lti_table->execute(soar_module::op_reinit);
         SQL->trajectory_invalidate_from_lti_clear->execute(soar_module::op_reinit);

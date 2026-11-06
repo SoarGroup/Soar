@@ -2129,6 +2129,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
 
             thisAgent->EpMem->epmem_edge_mins->clear();
             thisAgent->EpMem->epmem_edge_maxes->clear();
+            thisAgent->EpMem->epmem_edge_ltis->clear();
             thisAgent->EpMem->epmem_edge_removals->clear();
 
             (*thisAgent->EpMem->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool;
@@ -2314,6 +2315,10 @@ void epmem_init_db(agent* thisAgent, bool readonly)
 
                         minmax_max[i]->resize(num_ids, true);
                         minmax_min[i]->resize(num_ids, time_max);
+                        if (i == EPMEM_RIT_STATE_EDGE)
+                        {
+                            thisAgent->EpMem->epmem_edge_ltis->resize(num_ids, 0);
+                        }
                     }
 
                     delete temp_q;
@@ -2800,6 +2805,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 epmem_edge.emplace((*w_p)->epmem_id,static_cast<int64_t>((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));
                 thisAgent->EpMem->epmem_edge_mins->push_back(time_counter);
                 thisAgent->EpMem->epmem_edge_maxes->push_back(false);
+                thisAgent->EpMem->epmem_edge_ltis->push_back(0);
             }
             else
             {
@@ -2807,7 +2813,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 fprintf(stderr, "   No success but already has id, so don't remove.\n");
 #endif
                 // definitely don't remove
-                (*thisAgent->EpMem->epmem_edge_removals)[std::make_pair((*w_p)->epmem_id, static_cast<int64_t>((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0)) ] = false;
+                (*thisAgent->EpMem->epmem_edge_removals)[(*w_p)->epmem_id] = false;
 
                 // we add ONLY if the last thing we did was remove
                 if ((*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)])
@@ -3039,6 +3045,7 @@ void epmem_new_episode(agent* thisAgent)
 
                 // update min
                 (*thisAgent->EpMem->epmem_edge_mins)[static_cast<size_t>((*temp_node) - 1)] = time_counter;
+                (*thisAgent->EpMem->epmem_edge_ltis)[static_cast<size_t>((*temp_node) - 1)] = (*lti_id);
 
                 thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(1, LLONG_MAX);
                 thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(2, *temp_node);
@@ -3099,33 +3106,35 @@ void epmem_new_episode(agent* thisAgent)
             {
                 if (r->second)
                 {
+                    int64_t edge_lti = (*thisAgent->EpMem->epmem_edge_ltis)[static_cast<size_t>(r->first - 1)];
+
                     // remove NOW entry
                     // id = ?
-                    thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_identifier_now->bind_int(1, r->first.first);
+                    thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_identifier_now->bind_int(1, r->first);
                     thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_identifier_now->execute(soar_module::op_reinit);
 
-                    range_start = (*thisAgent->EpMem->epmem_edge_mins)[static_cast<size_t>(r->first.first - 1)];
+                    range_start = (*thisAgent->EpMem->epmem_edge_mins)[static_cast<size_t>(r->first - 1)];
                     range_end = (time_counter - 1);
 
                     thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(1, range_end);
-                    thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(2, r->first.first);
+                    thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(2, r->first);
                     thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->execute(soar_module::op_reinit);
                     // point (id, start_episode_id)
                     if (range_start == range_end)
                     {
-                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(1, r->first.first);
+                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(1, r->first);
                         thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(2, range_start);
-                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(3, r->first.second);
+                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(3, edge_lti);
                         thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->execute(soar_module::op_reinit);
                     }
                     // node
                     else
                     {
-                        epmem_rit_insert_interval(thisAgent, range_start, range_end, r->first.first, &(thisAgent->EpMem->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ]), r->first.second);
+                        epmem_rit_insert_interval(thisAgent, range_start, range_end, r->first, &(thisAgent->EpMem->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ]), edge_lti);
                     }
 
                     // update max
-                    (*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>(r->first.first - 1)] = true;
+                    (*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>(r->first - 1)] = true;
                 }
 
                 r++;
@@ -3472,10 +3481,11 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                 parent_n_id = my_q->column_int(1);
 
                 // get a reference to the parent
-                parent = ids[ parent_n_id ];
+                std::map< epmem_node_id, std::pair< Symbol*, bool > >::iterator parent_p = ids.find(parent_n_id);
 
-                if (dont_abide_by_ids_second || parent.second)
+                if (parent_p != ids.end() && (dont_abide_by_ids_second || parent_p->second.second))
                 {
+                    parent = parent_p->second;
                     // make a symbol to represent the attribute
                     attr = epmem_reverse_hash(thisAgent, my_q->column_int(2));
 
@@ -3824,6 +3834,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
     Symbol* value = cue_wme->value;
     epmem_literal* literal;
     thisAgent->memoryManager->allocate_with_pool(MP_epmem_literal, &literal);
+    literal->order = thisAgent->EpMem->epmem_literal_order++;
     new(&(literal->parents)) epmem_literal_set();
     new(&(literal->children)) epmem_literal_set();
 
@@ -4336,6 +4347,8 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
             std::cout << literal << " " << parent_n_id << " " << child_n_id << std::endl;
         }
         // temporarily modify the bindings and bound nodes
+        const bool had_entry = (binder != bound_nodes[literal->value_is_id].end());
+        Symbol* prev_sym = had_entry ? (*binder).second : NIL;
         bindings[literal] = std::make_pair(parent_n_id, child_n_id);
         bound_nodes[literal->value_is_id][child_n_id] = literal->value_sym;
         // recurse on the rest of the list
@@ -4349,7 +4362,14 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
         else
         {
             bindings.erase(literal);
-            bound_nodes[literal->value_is_id].erase(child_n_id);
+            if (had_entry)
+            {
+                bound_nodes[literal->value_is_id][child_n_id] = prev_sym;
+            }
+            else
+            {
+                bound_nodes[literal->value_is_id].erase(child_n_id);
+            }
         }
     }
     // this means we've tried everything and this whole exercise was a waste of time
@@ -4871,7 +4891,8 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                         {
                             if (gm_order == epmem_param_container::gm_order_undefined)
                             {
-                                std::sort(gm_ordering.begin(), gm_ordering.end());
+                                std::sort(gm_ordering.begin(), gm_ordering.end(),
+                                          [](const epmem_literal* a, const epmem_literal* b) { return a->order < b->order; });
                             }
                             else if (gm_order == epmem_param_container::gm_order_mcv)
                             {
@@ -5984,13 +6005,14 @@ EpMem_Manager::EpMem_Manager(agent* myAgent)
 
      epmem_edge_mins = new std::vector<epmem_time_id>();
      epmem_edge_maxes = new std::vector<bool>();
+     epmem_edge_ltis = new std::vector<int64_t>();
      epmem_id_repository = new epmem_parent_id_pool();
      epmem_id_replacement = new epmem_return_id_pool();
      epmem_id_ref_counts = new epmem_id_ref_counter();
 
  #ifdef USE_MEM_POOL_ALLOCATORS
-     epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< std::pair<epmem_node_id const,int64_t> const, bool > >(thisAgent));
-     epmem_edge_removals = new epmem_edge_removal_map(std::less< std::pair<epmem_node_id const,int64_t> >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id const, bool > >(thisAgent));
+     epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id const, bool > >(thisAgent));
+     epmem_edge_removals = new epmem_edge_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id const, bool > >(thisAgent));
      epmem_wme_adds = new epmem_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
      epmem_id_removes = new epmem_symbol_stack(soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
  #else
@@ -6021,6 +6043,7 @@ void EpMem_Manager::clean_up_for_agent_deletion()
     delete epmem_edge_removals;
     delete epmem_edge_mins;
     delete epmem_edge_maxes;
+    delete epmem_edge_ltis;
     delete epmem_id_repository;
     delete epmem_id_replacement;
     delete epmem_id_ref_counts;

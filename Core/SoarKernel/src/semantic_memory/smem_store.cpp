@@ -601,8 +601,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
 
 void SMem_Manager::store_new(Symbol* pSTI, smem_storage_type store_type, bool pOverwriteOldLinkToLTM, tc_number tc)
 {
-    /* We only need to use lookup (3rd arg), if we're storing new and can't overwrite the old lti_value */
-    STM_to_LTM(pSTI, store_type, !pOverwriteOldLinkToLTM, pOverwriteOldLinkToLTM, tc);
+    /* store-new always creates new LTIs; pOverwriteOldLinkToLTM only decides relinking */
+    STM_to_LTM(pSTI, store_type, true, pOverwriteOldLinkToLTM, tc);
 }
 
 void SMem_Manager::update(Symbol* pSTI, smem_storage_type store_type, tc_number tc)

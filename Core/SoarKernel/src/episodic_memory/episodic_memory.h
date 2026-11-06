@@ -416,7 +416,7 @@ typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >
 
 // types/structures to facilitate incremental storage
 typedef std::map< epmem_node_id, bool, std::less< epmem_node_id >, soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id const, bool > > > epmem_id_removal_map;
-typedef std::map< std::pair<epmem_node_id const,int64_t>, bool, std::less< std::pair<epmem_node_id const,int64_t> >, soar_module::soar_memory_pool_allocator< std::pair< std::pair<epmem_node_id const,int64_t>  const, bool > > > epmem_edge_removal_map;
+typedef std::map< epmem_node_id, bool, std::less< epmem_node_id >, soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id const, bool > > > epmem_edge_removal_map;
 typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_set;
 
 #else
@@ -425,7 +425,7 @@ typedef std::list< Symbol* > epmem_symbol_stack;
 
 // types/structures to facilitate incremental storage
 typedef std::map<epmem_node_id, bool> epmem_id_removal_map;
-typedef std::map< std::pair<epmem_node_id const,int64_t>, bool> epmem_edge_removal_map;
+typedef std::map<epmem_node_id, bool> epmem_edge_removal_map;
 typedef std::set< Symbol* > epmem_symbol_set;
 #endif
 typedef std::map<epmem_node_id, epmem_wme_set*> epmem_id_ref_counter;
@@ -556,6 +556,7 @@ struct epmem_literal_struct
     epmem_node_id attribute_s_id;
     epmem_node_id child_n_id;
     double weight;
+    uint64_t order;
     epmem_literal_set parents;
     epmem_literal_set children;
     epmem_node_pair_set matches;
@@ -651,6 +652,7 @@ class EpMem_Manager
         epmem_edge_removal_map* epmem_edge_removals;
         std::vector<epmem_time_id>* epmem_edge_mins;
         std::vector<bool>* epmem_edge_maxes;
+        std::vector<int64_t>* epmem_edge_ltis;
 
         epmem_parent_id_pool* epmem_id_repository;
         epmem_return_id_pool* epmem_id_replacement;
@@ -662,6 +664,7 @@ class EpMem_Manager
         epmem_rit_state epmem_rit_state_graph[2];
 
         uint64_t epmem_validation;
+        uint64_t epmem_literal_order = 0;
 
     private:
 

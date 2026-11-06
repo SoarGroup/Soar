@@ -379,7 +379,8 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
         // get lti info
         {
             std::unordered_map<uint64_t, int64_t>* spreaded_to = smem_spreaded_to;
-            if (settings->spreading->get_value() == on && spreaded_to->find(pLTI_ID) != spreaded_to->end() && (*spreaded_to)[pLTI_ID] != 0)
+            std::unordered_map<uint64_t, int64_t>::iterator sp = spreaded_to->find(c.first);
+            if (settings->spreading->get_value() == on && sp != spreaded_to->end() && sp->second != 0)
             {
                 act_q = thisAgent->SMem->SQL->vis_lti_spread_act;
             }
