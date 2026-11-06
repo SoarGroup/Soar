@@ -1,53 +1,71 @@
-sp {answer*selection*evaluation*expected-values*t28-2
+sp {answer*selection*evaluation*expected-values*t34-2
     (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
-          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o5> ^operator <o7> +)
+          ^desired <d1> ^ontop <o5> ^ontop <o6> ^ontop <o7> ^operator <o8> +)
     (<o1> ^name table)
     (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o3> ^ontop <o4>)
     (<o2> ^bottom-block <o1> ^top-block <t1>)
     (<t1> ^name C)
-    (<d1> ^ontop <o3> ^ontop <o6>)
-    (<o3> ^top-block <t1> ^bottom-block <o1>)
-    (<o4> ^top-block <t2> ^bottom-block <b1>)
-    (<t2> ^name A)
-    (<o5> ^top-block <t3> ^bottom-block <b2>)
-    (<t3> ^name B)
-    (<o6> ^top-block <t3> ^bottom-block <b3>)
-    (<o7> ^moving-block <t2> ^destination <d2>)
-    (<d2> ^name <n1>)
+    (<o3> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^bottom-block <t2> ^top-block <t3>)
+    (<t3> ^name A)
+    (<o5> ^top-block <t3> ^bottom-block { <b1> <> <t2> })
+    (<o6> ^top-block <t2> ^bottom-block <t1>)
+    (<o7> ^top-block <t1> ^bottom-block <o1>)
+    (<o8> ^destination <t2> ^moving-block <t3>)
     -->
-    (<s1> ^operator <o7> = 0.229179)
+    (<s1> ^operator <o8> = 1.000000)
 }
 
+sp {answer*selection*evaluation*expected-values*t28-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o3> ^ontop <o5> ^ontop <o6> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o4>)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^top-block <t2> ^bottom-block <b1>)
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block { <b2> <> <b1> })
+    (<o6> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name A)
+    (<o7> ^moving-block <t3> ^destination { <d2> <> <b3> })
+    (<d2> ^name <n1>)
+    -->
+    (<s1> ^operator <o7> = 0.300000)
+}
 
 sp {answer*selection*evaluation*expected-values*t24-2
     (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
-          ^desired <d1> ^ontop <o2> ^ontop <o5> ^ontop <o6> ^operator <o8> +)
+          ^desired <d1> ^ontop <o4> ^ontop <o5> ^ontop <o7> ^operator <o8> +)
     (<o1> ^name table)
     (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o3> ^ontop <o6>)
     (<o2> ^bottom-block <o1> ^top-block <t1>)
     (<t1> ^name C)
-    (<d1> ^ontop <o3> ^ontop <o4> ^ontop <o7>)
-    (<o3> ^top-block <t1> ^bottom-block <o1>)
-    (<o4> ^bottom-block <t1> ^top-block <t2>)
+    (<o3> ^bottom-block <t1> ^top-block <t2>)
     (<t2> ^name B)
-    (<o5> ^top-block <t2> ^bottom-block <b1>)
+    (<o4> ^top-block <t1> ^bottom-block <o1>)
+    (<o5> ^top-block <t2> ^bottom-block { <b1> <> <t1> })
     (<o6> ^top-block <t3> ^bottom-block <b2>)
     (<t3> ^name A)
-    (<o7> ^top-block <t3> ^bottom-block <b3>)
+    (<o7> ^top-block <t3> ^bottom-block { <b3> <> <b2> })
     (<o8> ^destination <t1> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o8> = 0.128626)
+    (<s1> ^operator <o8> = 0.690000)
 }
-
 
 sp {answer*selection*evaluation*expected-values*t20-2
     (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
-          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o6> ^operator <o7> +)
+          ^desired <d1> ^ontop <o3> ^ontop <o5> ^ontop <o6> ^operator <o7> +)
     (<o1> ^name table)
     (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o4>)
     (<o2> ^bottom-block <o1> ^top-block <t1>)
     (<t1> ^name C)
-    (<d1> ^ontop <o3> ^ontop <o5>)
     (<o3> ^top-block <t1> ^bottom-block <o1>)
     (<o4> ^top-block <t2> ^bottom-block <b1>)
     (<t2> ^name B)
@@ -55,20 +73,19 @@ sp {answer*selection*evaluation*expected-values*t20-2
     (<o6> ^top-block <t3> ^bottom-block <b3>)
     (<t3> ^name A)
     (<b3> ^name <n1>)
-    (<o7> ^moving-block <t2> ^destination <d2>)
+    (<o7> ^moving-block <t2> ^destination { <d2> <> <b1> <> <b2> })
     -->
-    (<s1> ^operator <o7> = 0.280753)
+    (<s1> ^operator <o7> = 0.300000)
 }
-
 
 sp {answer*selection*evaluation*expected-values*t14-2
     (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
-          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o5> ^operator <o6> +)
+          ^desired <d1> ^ontop <o3> ^ontop <o4> ^ontop <o5> ^operator <o6> +)
     (<o1> ^name table)
     (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2>)
     (<o2> ^top-block <t1> ^bottom-block <b1>)
     (<t1> ^name C)
-    (<d1> ^ontop <o3>)
     (<o3> ^top-block <t1> ^bottom-block <b2>)
     (<o4> ^top-block <t2> ^bottom-block <b3>)
     (<t2> ^name B)
@@ -76,55 +93,116 @@ sp {answer*selection*evaluation*expected-values*t14-2
     (<o5> ^top-block <t3> ^bottom-block <b4>)
     (<t3> ^name A)
     (<b4> ^name <n2>)
-    (<o6> ^moving-block <t1> ^destination <d2>)
+    (<o6> ^moving-block <t1> ^destination { <d2> <> <b1> <> <b2> })
     (<d2> ^name <n3>)
     -->
-    (<s1> ^operator <o6> = 0.182286)
+    (<s1> ^operator <o6> = 0.000000)
 }
-
 
 sp {answer*selection*evaluation*expected-values*t10-2
     (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
-          ^desired <d1> ^ontop <o3> ^ontop <o4> ^ontop <o5> ^operator <o7> +)
+          ^desired <d1> ^ontop <o3> ^ontop <o5> ^ontop <o6> ^operator <o7> +)
     (<o1> ^name table)
     (<p1> ^name move-blocks)
-    (<d1> ^ontop <o2> ^ontop <o6>)
+    (<d1> ^ontop <o2> ^ontop <o4>)
     (<o2> ^bottom-block <o1> ^top-block <t1>)
     (<t1> ^name C)
-    (<o3> ^top-block <t1> ^bottom-block <b1>)
+    (<o3> ^top-block <t1> ^bottom-block { <b1> <> <o1> })
     (<o4> ^top-block <t2> ^bottom-block <b2>)
-    (<t2> ^name A)
-    (<b2> ^name <n1>)
-    (<o5> ^top-block <t3> ^bottom-block <b3>)
-    (<t3> ^name B)
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block { <b3> <> <b2> })
     (<o6> ^top-block <t3> ^bottom-block <b4>)
+    (<t3> ^name A)
+    (<b4> ^name <n1>)
     (<o7> ^destination <o1> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o7> = 0.373206)
+    (<s1> ^operator <o7> = 0.372000)
 }
-
 
 sp {answer*selection*evaluation*expected-values*t6-2
     (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
-          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+          ^desired <d1> ^ontop <o3> ^ontop <o4> ^ontop <o5> ^operator <o6> +)
     (<o1> ^name table)
     (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2>)
     (<o2> ^top-block <t1> ^bottom-block <b1>)
-    (<t1> ^name B)
-    (<o3> ^top-block <t2> ^bottom-block <b2>)
-    (<t2> ^name A)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block { <b2> <> <b1> })
     (<b2> ^name <n1>)
-    (<o4> ^top-block <t3> ^bottom-block <b3>)
-    (<t3> ^name C)
-    (<b3> ^name <n2>)
-    (<d1> ^ontop <o5>)
+    (<o4> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name B)
     (<o5> ^top-block <t3> ^bottom-block <b4>)
-    (<o6> ^moving-block <t1> ^destination <d2>)
+    (<t3> ^name A)
+    (<b4> ^name <n2>)
+    (<o6> ^moving-block <t2> ^destination { <d2> <> <b3> })
     (<d2> ^name <n3>)
     -->
-    (<s1> ^operator <o6> = -0.019247)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
+sp {answer*selection*evaluation*expected-values*t34-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o5> ^ontop <o6> ^ontop <o7> ^operator <o8> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o3> ^ontop <o4>)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^bottom-block <t2> ^top-block <t3>)
+    (<t3> ^name A)
+    (<o5> ^top-block <t3> ^bottom-block { <b1> <> <t2> })
+    (<o6> ^top-block <t2> ^bottom-block <t1>)
+    (<o7> ^top-block <t1> ^bottom-block <o1>)
+    (<o8> ^destination <t2> ^moving-block <t3>)
+    -->
+    (<s1> ^operator <o8> = 1.000000)
+}
+
+sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t34-1
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superstate <s3> ^superoperator <s4>
+          ^evaluation <e1>)
+    (<s2> ^name move-blocks)
+    (<s3> ^name blocks-world ^object <o2> ^ontop <o3> ^ontop <o4> ^ontop <o5>)
+    (<o2> ^name table)
+    (<s4> ^destination <d1> ^moving-block <m1>)
+    (<d1> ^name B)
+    (<m1> ^name A)
+    (<o3> ^top-block <m1> ^bottom-block { <b1> <> <d1> })
+    (<o4> ^top-block <d1> ^bottom-block <b2>)
+    (<b2> ^name C)
+    (<o5> ^top-block <b2> ^bottom-block <o2>)
+    (<e1> ^desired <d2>)
+    (<d2> ^ontop <o6> ^ontop <o7> ^ontop <o8>)
+    (<o6> ^top-block <m1> ^bottom-block <d1>)
+    (<o7> ^top-block <d1> ^bottom-block <b2>)
+    (<o8> ^top-block <b2> ^bottom-block <o2>)
+    -->
+    (<e1> ^expected-value 1.000000)
+}
+
+sp {answer*selection*evaluation*expected-values*t28-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o3> ^ontop <o5> ^ontop <o6> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o4>)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^top-block <t2> ^bottom-block <b1>)
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block { <b2> <> <b1> })
+    (<o6> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name A)
+    (<o7> ^moving-block <t3> ^destination { <d2> <> <b3> })
+    (<d2> ^name <n1>)
+    -->
+    (<s1> ^operator <o7> = 0.300000)
+}
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t28-1
     (state <s1> ^operator <o1> ^evaluation <e1>)
@@ -150,6 +228,25 @@ sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t28-
     (<e1> ^expected-value 0.300000)
 }
 
+sp {answer*selection*evaluation*expected-values*t24-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o4> ^ontop <o5> ^ontop <o7> ^operator <o8> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o3> ^ontop <o6>)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^top-block <t1> ^bottom-block <o1>)
+    (<o5> ^top-block <t2> ^bottom-block { <b1> <> <t1> })
+    (<o6> ^top-block <t3> ^bottom-block <b2>)
+    (<t3> ^name A)
+    (<o7> ^top-block <t3> ^bottom-block { <b3> <> <b2> })
+    (<o8> ^destination <t1> ^moving-block <t2>)
+    -->
+    (<s1> ^operator <o8> = 0.690000)
+}
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t24-1
     (state <s1> ^operator <o1> ^evaluation <e1>)
@@ -175,6 +272,25 @@ sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t24-
     (<e1> ^expected-value 0.600000)
 }
 
+sp {answer*selection*evaluation*expected-values*t20-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o3> ^ontop <o5> ^ontop <o6> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o4>)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^top-block <t2> ^bottom-block <b1>)
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block <b2>)
+    (<o6> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name A)
+    (<b3> ^name <n1>)
+    (<o7> ^moving-block <t2> ^destination { <d2> <> <b1> <> <b2> })
+    -->
+    (<s1> ^operator <o7> = 0.300000)
+}
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t20-1
     (state <s1> ^operator <o1> ^evaluation <e1>)
@@ -200,6 +316,26 @@ sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t20-
     (<e1> ^expected-value 0.300000)
 }
 
+sp {answer*selection*evaluation*expected-values*t14-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o3> ^ontop <o4> ^ontop <o5> ^operator <o6> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2>)
+    (<o2> ^top-block <t1> ^bottom-block <b1>)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block <b2>)
+    (<o4> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name B)
+    (<b3> ^name <n1>)
+    (<o5> ^top-block <t3> ^bottom-block <b4>)
+    (<t3> ^name A)
+    (<b4> ^name <n2>)
+    (<o6> ^moving-block <t1> ^destination { <d2> <> <b1> <> <b2> })
+    (<d2> ^name <n3>)
+    -->
+    (<s1> ^operator <o6> = 0.000000)
+}
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t14-1
     (state <s1> ^operator <o1> ^evaluation <e1>)
@@ -226,6 +362,25 @@ sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t14-
     (<e1> ^expected-value 0.000000)
 }
 
+sp {answer*selection*evaluation*expected-values*t10-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o3> ^ontop <o5> ^ontop <o6> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o4>)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block { <b1> <> <o1> })
+    (<o4> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block { <b3> <> <b2> })
+    (<o6> ^top-block <t3> ^bottom-block <b4>)
+    (<t3> ^name A)
+    (<b4> ^name <n1>)
+    (<o7> ^destination <o1> ^moving-block <t1>)
+    -->
+    (<s1> ^operator <o7> = 0.372000)
+}
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t10-1
     (state <s1> ^operator <o1> ^evaluation <e1>)
@@ -251,6 +406,26 @@ sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t10-
     (<e1> ^expected-value 0.300000)
 }
 
+sp {answer*selection*evaluation*expected-values*t6-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o3> ^ontop <o4> ^ontop <o5> ^operator <o6> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2>)
+    (<o2> ^top-block <t1> ^bottom-block <b1>)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block { <b2> <> <b1> })
+    (<b2> ^name <n1>)
+    (<o4> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name B)
+    (<o5> ^top-block <t3> ^bottom-block <b4>)
+    (<t3> ^name A)
+    (<b4> ^name <n2>)
+    (<o6> ^moving-block <t2> ^destination { <d2> <> <b3> })
+    (<d2> ^name <n3>)
+    -->
+    (<s1> ^operator <o6> = 0.000000)
+}
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*Tie*t6-1
     (state <s1> ^operator <o1> ^evaluation <e1>)

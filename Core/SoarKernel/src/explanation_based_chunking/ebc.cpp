@@ -198,7 +198,7 @@ Symbol* Explanation_Based_Chunker::generate_name_for_new_rule()
     }
 
     /* Step 3: Add impasse type */
-    switch (m_inst->match_goal->id->higher_goal->id->impasse_type)
+    switch (m_inst->match_goal->id->impasse_type)
     {
         case CONSTRAINT_FAILURE_IMPASSE_TYPE:
             new_rule_name += "*Failure";

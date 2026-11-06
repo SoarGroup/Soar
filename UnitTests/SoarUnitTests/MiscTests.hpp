@@ -87,6 +87,21 @@ public:
     TEST(testPerceptReplayEscape, -1)
     void testPerceptReplayEscape();
 
+    TEST(testReteAndSupportDefects, -1)
+    void testReteAndSupportDefects();
+
+    TEST(testRHSMathAndSymbolDefects, -1)
+    void testRHSMathAndSymbolDefects();
+
+    TEST(testIdentifierAttrAndEBCDefects, -1)
+    void testIdentifierAttrAndEBCDefects();
+
+    TEST(testRLUpdateAndTemplateDefects, -1)
+    void testRLUpdateAndTemplateDefects();
+
+    TEST(testSMemEpMemWmaDefects, -1)
+    void testSMemEpMemWmaDefects();
+
 	// If you would like to test the Soar Debugger Spawning, uncomment below.
 	// It may or may not work but should unless you're running without a GUI.
 //	TEST(testSoarDebugger, -1)

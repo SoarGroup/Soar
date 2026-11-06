@@ -859,7 +859,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     /* Apply EBC correctness and (<s> ^quiescence t) filters that prevents rule learning */
     if ((m_tested_local_negation && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS]) ||
         (m_tested_ltm_recall && !ebc_settings[SETTING_EBC_ALLOW_OPAQUE])
-        || m_tested_quiescence || m_result_links_goal)
+        || m_tested_quiescence)
     {
         m_correctness_issue_possible = true;
     }

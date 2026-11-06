@@ -1067,6 +1067,31 @@ static uint64_t id_binding_age(condition* cond, cons* new_vars)
     return UINT64_MAX;
 }
 
+static bool has_multiple_same_attr_conds(condition* cond, condition* remaining_conds)
+{
+    if (cond->type != POSITIVE_CONDITION || !cond->data.tests.id_test || !cond->data.tests.attr_test)
+    {
+        return false;
+    }
+    Symbol* id = cond->data.tests.id_test->eq_test->data.referent;
+    Symbol* attr = cond->data.tests.attr_test->eq_test->data.referent;
+    if (!attr->is_string())
+    {
+        return false;
+    }
+    int count = 0;
+    for (condition* c = remaining_conds; c != NIL; c = c->next)
+    {
+        if (c->type == POSITIVE_CONDITION &&
+            c->data.tests.id_test->eq_test->data.referent == id &&
+            c->data.tests.attr_test->eq_test->data.referent == attr)
+        {
+            if (++count > 1) return true;
+        }
+    }
+    return false;
+}
+
 void reorder_simplified_conditions(agent* thisAgent,
                                    condition** top_of_conds,
                                    cons* roots,
@@ -1162,8 +1187,10 @@ void reorder_simplified_conditions(agent* thisAgent,
                     if (cost == min_cost && cond->type == POSITIVE_CONDITION &&
                         min_cost_conds->type == POSITIVE_CONDITION)
                     {
-                        uint64_t a_new = id_binding_age(cond, new_vars);
-                        uint64_t a_old = id_binding_age(min_cost_conds, new_vars);
+                        bool use_age = has_multiple_same_attr_conds(cond, remaining_conds) ||
+                                       has_multiple_same_attr_conds(min_cost_conds, remaining_conds);
+                        uint64_t a_new = use_age ? id_binding_age(cond, new_vars) : 0;
+                        uint64_t a_old = use_age ? id_binding_age(min_cost_conds, new_vars) : 0;
                         if ((a_new < a_old) ||
                             ((a_new == a_old) && canonical_cond_greater(min_cost_conds, cond)))
                         {

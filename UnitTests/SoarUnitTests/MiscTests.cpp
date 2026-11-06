@@ -687,3 +687,210 @@ void MiscTests::testGDSPromotedSupport()
         assertTrue(stack.find("==>S: S2 ") == std::string::npos);
     }
 }
+
+void MiscTests::testReteAndSupportDefects()
+{
+    // #6: Cross-type relational comparisons fail antisymmetrically; 64-bit integer comparisons do not overflow
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("sp {init (state <s> ^superstate nil) --> (<s> ^str foo ^num 5 ^big 9223372036854775807 ^neg -2)}");
+    agent->ExecuteCommandLine("sp {bad-lt1 (state <s> ^str { < 5 }) --> (<s> ^cross-lt1 yes)}");
+    agent->ExecuteCommandLine("sp {bad-lt2 (state <s> ^num { < foo }) --> (<s> ^cross-lt2 yes)}");
+    agent->ExecuteCommandLine("sp {bad-gt (state <s> ^str <x> ^num { > <x> }) --> (<s> ^cross-gt yes)}");
+    agent->ExecuteCommandLine("sp {no-overflow (state <s> ^big <b1> ^neg { < <b1> }) --> (<s> ^overflow-fixed yes)}");
+    agent->ExecuteCommandLine("sp {overflow-bad (state <s> ^big { < -2 }) --> (<s> ^overflow-bug yes)}");
+    agent->RunSelf(1);
+    std::string wm = agent->ExecuteCommandLine("print S1 -d 1");
+    assertTrue_msg("#6 cross-lt1 matched", wm.find("^cross-lt1") == std::string::npos);
+    assertTrue_msg("#6 cross-lt2 matched", wm.find("^cross-lt2") == std::string::npos);
+    assertTrue_msg("#6 cross-gt matched", wm.find("^cross-gt") == std::string::npos);
+    assertTrue_msg("#6 overflow-fixed missing", wm.find("^overflow-fixed yes") != std::string::npos);
+    assertTrue_msg("#6 overflow-bug matched", wm.find("^overflow-bug") == std::string::npos);
+
+    // #10: Mixed operator elaboration + application gets i-support even when warnings are disabled;
+    //      operator elaboration in a substate stays i-supported when matched across nested states
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("output warnings --disable");
+    agent->ExecuteCommandLine("sp {propose-go (state <s> ^superstate nil) --> (<s> ^operator <o> +) (<o> ^name go)}");
+    agent->ExecuteCommandLine("sp {mixed-rule (state <s> ^operator <o>) (<o> ^name go) --> (<o> ^elab 1) (<s> ^mixed-flag yes)}");
+    agent->RunSelf(2);
+    std::string prefs = agent->ExecuteCommandLine("preferences S1 mixed-flag --names");
+    assertTrue_msg("#10 mixed rule got o-support with warnings off: " + prefs, prefs.find(":I") != std::string::npos);
+
+    // #11: User RL rules differing only in numeric preference value are not rejected as duplicates;
+    //      rules differing after a leading funcall or in funcall arg count are not rejected
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("sp {rl-a (state <s> ^superstate nil ^operator <o> +) --> (<s> ^operator <o> = 1.0)}");
+    std::string res_rl = agent->ExecuteCommandLine("sp {rl-b (state <s> ^superstate nil ^operator <o> +) --> (<s> ^operator <o> = 2.0)}");
+    assertTrue_msg("#11 second RL rule rejected as duplicate", res_rl.find("Ignoring") == std::string::npos);
+    agent->ExecuteCommandLine("sp {fn-a (state <s> ^superstate nil) --> (write |hi|) (<s> ^a 1)}");
+    std::string res_fn = agent->ExecuteCommandLine("sp {fn-b (state <s> ^superstate nil) --> (write |hi|) (<s> ^b 2)}");
+    assertTrue_msg("#11 rule after funcall rejected as duplicate", res_fn.find("Ignoring") == std::string::npos);
+    agent->ExecuteCommandLine("sp {plus-2 (state <s> ^superstate nil) --> (<s> ^val (+ 1 2))}");
+    std::string res_plus = agent->ExecuteCommandLine("sp {plus-3 (state <s> ^superstate nil) --> (<s> ^val (+ 1 2 3))}");
+    assertTrue_msg("#11 funcall with extra arg rejected as duplicate", res_plus.find("Ignoring") == std::string::npos);
+}
+
+void MiscTests::testRHSMathAndSymbolDefects()
+{
+    // #12, #13, #21: sum/product with floats, set_reduce error string without bars,
+    // select-point-closest-to-vector across multiple slots/incomplete points, and canonical +0.0
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("sp {init (state <s> ^superstate nil) --> "
+                              "(<s> ^nums <n> ^pts <p> ^neg-zero (* -1.0 0.0)) "
+                              "(<n> ^a 0.5 ^b 2 ^c 1.5) "
+                              "(<p> ^pt1 <p1> ^pt2 <p2> ^incomplete <p3>) "
+                              "(<p1> ^x 10 ^y 0 ^id east) "
+                              "(<p2> ^x 0 ^y 10 ^id north) "
+                              "(<p3> ^x 1)}");
+    agent->ExecuteCommandLine("sp {compute (state <s> ^superstate nil ^nums <n> ^pts <p>) --> "
+                              "(<s> ^total (sum <n>) ^prod (product <n>) "
+                              "^bad-set (set-count 123) "
+                              "^closest (select-point-closest-to-vector 0 0 90 <p>))}");
+    agent->RunSelf(1);
+    std::string wm = agent->ExecuteCommandLine("print S1 -d 1");
+    assertTrue_msg("#12 sum float failed: " + wm, wm.find("^total 4.") != std::string::npos);
+    assertTrue_msg("#12 product float failed: " + wm, wm.find("^prod 1.5") != std::string::npos);
+    assertTrue_msg("#13 set-count error has escaped bars: " + wm, wm.find("^bad-set |ERROR: First parameter needs to be an identifier.|") != std::string::npos);
+    assertTrue_msg("#13 select-point failed: " + wm, wm.find("^closest east") != std::string::npos);
+    assertTrue_msg("#21 negative zero not folded: " + wm, wm.find("-0.0") == std::string::npos);
+}
+
+void MiscTests::testIdentifierAttrAndEBCDefects()
+{
+    // #30: Identifier used only as an attribute is kept while linked and GC'd when unlinked
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("sp {propose-make (state <s> ^superstate nil -^step) --> (<s> ^operator <o> +) (<o> ^name make)}");
+    agent->ExecuteCommandLine("sp {apply-make (state <s> ^operator.name make) --> (<s> ^<x> yes ^step 1) (<x> ^tag alive)}");
+    agent->ExecuteCommandLine("sp {read-attr-id (state <s> ^<x> yes) (<x> ^tag alive) --> (<s> ^saw-attr-id yes)}");
+    agent->RunSelf(2);
+    std::string wm = agent->ExecuteCommandLine("print S1 -d 2");
+    assertTrue_msg("#30 identifier attribute not reachable: " + wm, wm.find("^saw-attr-id yes") != std::string::npos);
+
+    // #5 & #8: State no-change substate returning a deep-copied structure promotes it and names the chunk *snc* (rule-based naming)
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("chunk always");
+    agent->ExecuteCommandLine("chunk naming-style rule");
+    agent->ExecuteCommandLine("sp {init (state <s> ^superstate nil) --> (<s> ^src <x>) (<x> ^v 42)}");
+    agent->ExecuteCommandLine("sp {sub-propose (state <s> ^superstate <ss> ^impasse no-change ^attribute state) (<ss> ^superstate nil ^src <x>) --> (<s> ^operator <o> +) (<o> ^name copy-it ^src <x>)}");
+    agent->ExecuteCommandLine("sp {sub-apply (state <s> ^superstate <ss> ^operator <o> ^impasse no-change ^attribute state) (<o> ^name copy-it ^src <x>) --> (<ss> ^copied (deep-copy <x>))}");
+    agent->RunSelf(3);
+    std::string chunks = agent->ExecuteCommandLine("print -cf");
+    assertTrue_msg("#5 StateNoChange naming missing: " + chunks, chunks.find("*StateNoChange*") != std::string::npos);
+    assertTrue_msg("#8 deep-copy child not in chunk: " + chunks, chunks.find("^v 42") != std::string::npos);
+
+    // #20: Top-level OSK preference on a substate returned as a result learns a justification, not a literal-ID chunk
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("chunk always");
+    agent->ExecuteCommandLine("sp {return-sub (state <s> ^superstate <ss>) (<ss> ^superstate nil -^sub) --> (<ss> ^sub <s>)}");
+    agent->ExecuteCommandLine("sp {sub-propose (state <s> ^superstate <ss>) (<ss> ^superstate nil) --> (<s> ^operator <o1> + <o2> +) (<o1> ^name a) (<o2> ^name b)}");
+    agent->ExecuteCommandLine("sp {top-prefer (state <s> ^superstate nil ^sub <sub-s>) (<sub-s> ^operator <o1> + ^operator <o2> +) (<o1> ^name a) (<o2> ^name b) --> (<sub-s> ^operator <o1> > <o2>)}");
+    agent->ExecuteCommandLine("sp {sub-apply (state <s> ^superstate <ss> ^operator.name a) --> (<ss> ^done yes)}");
+    agent->RunSelf(4);
+    std::string learned = agent->ExecuteCommandLine("print -c");
+    assertTrue_msg("#20 learned chunk from top-level OSK: " + learned, learned.find("chunk*sub-apply") == std::string::npos);
+}
+
+void MiscTests::testRLUpdateAndTemplateDefects()
+{
+    // #14 & #15: Multiple RL rules supporting an operator each retain their own distinct live preference values;
+    //            GQ(lambda) updates the rule's RHS action referent so print --rl reflects the correction
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("rl --set learning on");
+    agent->ExecuteCommandLine("rl --set learning-rate 0.5");
+    agent->ExecuteCommandLine("rl --set discount-rate 0.9");
+    agent->ExecuteCommandLine("sp {propose-op (state <s> ^superstate nil) --> (<s> ^operator <o> +) (<o> ^name act)}");
+    agent->ExecuteCommandLine("sp {rl-1 (state <s> ^superstate nil ^operator <o> +) (<o> ^name act) --> (<s> ^operator <o> = 2.0)}");
+    agent->ExecuteCommandLine("sp {rl-2 (state <s> ^superstate nil ^operator <o> + -^never) (<o> ^name act) --> (<s> ^operator <o> = 10.0)}");
+    agent->ExecuteCommandLine("sp {apply-op (state <s> ^operator.name act ^reward-link <r>) --> (<s> ^done yes) (<r> ^reward.value 0.0)}");
+    agent->ExecuteCommandLine("sp {propose-op2 (state <s> ^superstate nil ^done yes) --> (<s> ^operator <o> + >) (<o> ^name next)}");
+    agent->ExecuteCommandLine("sp {rl-next (state <s> ^superstate nil ^operator <o> +) (<o> ^name next) --> (<s> ^operator <o> = 0.0)}");
+    agent->RunSelf(2);
+    std::string prefs = agent->ExecuteCommandLine("preferences S1 operator --names");
+    assertTrue_msg("#14 rl-1 and rl-2 live preferences were clobbered to identical values: " + prefs,
+                   prefs.find("-1.000000") != std::string::npos && prefs.find("7.000000") != std::string::npos);
+
+    // #28: RL template rules clear m_sym_to_var_map between instantiations so variables do not collide
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("rl --set learning on");
+    agent->ExecuteCommandLine("sp {tpl :template (state <s> ^operator <o> +) (<o> ^tag <t>) --> (<s> ^operator <o> = 0.0)}");
+    agent->ExecuteCommandLine("sp {top-propose (state <s> ^superstate nil) --> (<s> ^operator <o> +) (<o> ^name top-op ^tag t1)}");
+    agent->ExecuteCommandLine("sp {sub-propose (state <s> ^superstate <ss>) (<ss> ^operator.name top-op) --> (<s> ^operator <o> +) (<o> ^name sub-op ^tag t2)}");
+    agent->RunSelf(3);
+    std::string rules = agent->ExecuteCommandLine("print --rl");
+    assertTrue_msg("#28 second template rule not generated: " + rules, rules.find("rl*tpl*2") != std::string::npos);
+    std::string tpl2 = agent->ExecuteCommandLine("print rl*tpl*2");
+    assertTrue_msg("#28 template rule merged operator variables: " + tpl2, tpl2.find("^tag t1") == std::string::npos);
+}
+
+void MiscTests::testSMemEpMemWmaDefects()
+{
+    // #2 & #3: Two states querying SMem in one output phase and rejecting a status WME do not crash or UAF
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("smem --enable");
+    agent->ExecuteCommandLine("smem --add { (<a1> ^type item ^name alpha) (<a2> ^type item ^name beta) }");
+    agent->ExecuteCommandLine("sp {top-propose (state <s> ^superstate nil) --> (<s> ^operator <o> +) (<o> ^name wait)}");
+    agent->ExecuteCommandLine("sp {both-query (state <s> ^smem.command <c>) --> (<c> ^query <q>) (<q> ^type item)}");
+    agent->ExecuteCommandLine("sp {reject-status (state <s> ^smem.result <r>) (<r> ^success <q>) --> (<r> ^success <q> -)}");
+    agent->RunSelf(3);
+    std::string s1 = agent->ExecuteCommandLine("print S1 -d 3");
+    assertTrue_msg("#2/#3 SMem dual-state query failed", s1.find("^retrieved") != std::string::npos);
+
+    // #7 & #17 & S1: Deterministic smem --add LTI numbering, comma-separated base-incremental-threshes,
+    //                and store-new with link-to-new-ltm yes allocating a fresh LTI
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("smem --enable");
+    agent->ExecuteCommandLine("smem --set base-incremental-threshes 1,3,7");
+    std::string threshes = agent->ExecuteCommandLine("smem --get base-incremental-threshes");
+    assertTrue_msg("#17 base-incremental-threshes list parse failed: " + threshes,
+                   threshes.find("1") != std::string::npos && threshes.find("3") != std::string::npos && threshes.find("7") != std::string::npos && threshes.find("10") == std::string::npos);
+    agent->ExecuteCommandLine("sp {init-store (state <s> ^superstate nil ^smem.command <c>) -{(<s> ^stored)} --> (<s> ^item <x> ^stored 1) (<x> ^val 1) (<c> ^store <x>)}");
+    agent->ExecuteCommandLine("sp {store-new-relink (state <s> ^superstate nil ^stored 1 -^stored2 ^item <x> ^smem.command <c> ^smem.result.success) --> "
+                              "(<s> ^stored2 1) (<x> ^val 1 - ^val 2) (<c> ^store <x> - ^store-new <x> ^link-to-new-ltm yes)}");
+    agent->RunSelf(3);
+    std::string ltm = agent->ExecuteCommandLine("print @");
+    assertTrue_msg("S1 store-new with link-to-new-ltm yes overwrote @1 instead of creating @2: " + ltm,
+                   ltm.find("@1") != std::string::npos && ltm.find("@2") != std::string::npos && ltm.find("^val 1") != std::string::npos && ltm.find("^val 2") != std::string::npos);
+
+    // #23: WMA with petrov-approx on and decay-rate 1 does not produce NaN / immediate forgetting
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("wma --set activation on");
+    agent->ExecuteCommandLine("wma --set petrov-approx on");
+    agent->ExecuteCommandLine("wma --set decay-rate 1");
+    agent->ExecuteCommandLine("sp {propose-init (state <s> ^superstate nil -^item) --> (<s> ^operator <o> +) (<o> ^name init-item)}");
+    agent->ExecuteCommandLine("sp {apply-init (state <s> ^operator.name init-item) --> (<s> ^item <x>) (<x> ^v 1)}");
+    agent->ExecuteCommandLine("sp {touch-item (state <s> ^item <x>) (<x> ^v 1) --> (<s> ^operator <o> + =) (<o> ^name step)}");
+    agent->RunSelf(15);
+    std::string wm_wma = agent->ExecuteCommandLine("print S1 -d 2");
+    assertTrue_msg("#23 WMA decay-rate 1 lost item: " + wm_wma, wm_wma.find("^v 1") != std::string::npos);
+
+    // #18 & #31: EpMem preserves STI status on earlier episodes after later SMem store,
+    //            and graph-match backtracking restores shared bound_nodes
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("smem --enable");
+    agent->ExecuteCommandLine("epmem --set learning on");
+    agent->ExecuteCommandLine("epmem --set trigger dc");
+    agent->ExecuteCommandLine("sp {s1-create (state <s> ^superstate nil -^step) --> (<s> ^step 1 ^holder <h>) (<h> ^tag pre-lti)}");
+    agent->ExecuteCommandLine("sp {s2-store (state <s> ^step 1 ^holder <h> ^smem.command <sc>) --> (<s> ^step 1 - ^step 2) (<sc> ^store <h>)}");
+    agent->ExecuteCommandLine("sp {s3-remove (state <s> ^step 2 ^holder <h> ^smem.command <sc>) --> (<s> ^step 2 - ^step 3 ^holder <h> -) (<sc> ^store <h> -)}");
+    agent->ExecuteCommandLine("sp {s4-retrieve (state <s> ^step 3 ^epmem.command <ec>) --> (<s> ^step 3 - ^step 4) (<ec> ^retrieve 2)}");
+    agent->RunSelf(5);
+    std::string ep_ret = agent->ExecuteCommandLine("print S1 -d 4");
+    assertTrue_msg("#18 EpMem rewrote episode 2 STI into @1: " + ep_ret, ep_ret.find("(@1)") == std::string::npos);
+}
+
