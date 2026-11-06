@@ -143,7 +143,7 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
         for (c = fl1->rest, c2 = fl2->rest; c != NIL && c2 != NIL; c = c->rest, c2 = c2->rest)
             if (!rhs_values_equal(static_cast<char*>(c->first), static_cast<char*>(c2->first)))
                 return false;
-        return true;
+        return (c == NIL) && (c2 == NIL);
     }
     else
         return (rv1 == rv2);

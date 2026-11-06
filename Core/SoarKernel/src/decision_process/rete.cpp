@@ -3547,11 +3547,13 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
     {
         if (a1->type == FUNCALL_ACTION)
         {
-            if (a2->type == FUNCALL_ACTION)
+            if ((a2->type != FUNCALL_ACTION) || !rhs_values_equal(a1->value, a2->value))
             {
-                return rhs_values_equal(a1->value, a2->value);
+                return false;
             }
-            return false;
+            a1 = a1->next;
+            a2 = a2->next;
+            continue;
         }
         if (a1->preference_type != a2->preference_type)
         {
@@ -3782,7 +3784,9 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             continue;
         }
-        if (!ignore_rhs && !same_rhs(p_node->b.p.prod->action_list, p->action_list, thisAgent->RL->rl_params->chunk_stop->get_value() == on))
+        bool lRLChunkStop = (thisAgent->RL->rl_params->chunk_stop->get_value() == on) &&
+                            (p->type == CHUNK_PRODUCTION_TYPE);
+        if (!ignore_rhs && !same_rhs(p_node->b.p.prod->action_list, p->action_list, lRLChunkStop))
         {
             continue;
         }
@@ -4418,9 +4422,11 @@ inline bool match_left_and_right(agent* thisAgent, rete_test* _rete_test,
 #define numcmp(x,y) (((x) < (y)) ? -1 : (((x) > (y)) ? 1 : 0))
 
 /* return -1, 0, or 1 if s1 is less than, equal to, or greater than s2,
- * respectively
+ * respectively, or SYM_INCOMPARABLE (2) if the symbol types cannot be ordered
  */
-inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
+#define SYM_INCOMPARABLE 2
+
+inline int compare_symbols(Symbol* s1, Symbol* s2)
 {
     switch (s1->symbol_type)
     {
@@ -4428,11 +4434,11 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
             switch (s2->symbol_type)
             {
                 case INT_CONSTANT_SYMBOL_TYPE:
-                    return s1->ic->value - s2->ic->value;
+                    return numcmp(s1->ic->value, s2->ic->value);
                 case FLOAT_CONSTANT_SYMBOL_TYPE:
                     return numcmp(s1->ic->value, s2->fc->value);
                 default:
-                    return -1;
+                    return SYM_INCOMPARABLE;
             }
         case FLOAT_CONSTANT_SYMBOL_TYPE:
             switch (s2->symbol_type)
@@ -4442,15 +4448,18 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
                 case FLOAT_CONSTANT_SYMBOL_TYPE:
                     return numcmp(s1->fc->value, s2->fc->value);
                 default:
-                    return -1;
+                    return SYM_INCOMPARABLE;
             }
         case STR_CONSTANT_SYMBOL_TYPE:
             switch (s2->symbol_type)
             {
                 case STR_CONSTANT_SYMBOL_TYPE:
-                    return strcmp(s1->sc->name, s2->sc->name);
+                {
+                    int c = strcmp(s1->sc->name, s2->sc->name);
+                    return (c > 0) - (c < 0);
+                }
                 default:
-                    return -1;
+                    return SYM_INCOMPARABLE;
             }
         case IDENTIFIER_SYMBOL_TYPE:
             switch (s2->symbol_type)
@@ -4458,17 +4467,17 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
                 case IDENTIFIER_SYMBOL_TYPE:
                     if (s1->id->name_letter == s2->id->name_letter)
                     {
-                        return static_cast<int64_t>(s1->id->name_number - s2->id->name_number);
+                        return numcmp(s1->id->name_number, s2->id->name_number);
                     }
                     else
                     {
                         return numcmp(s1->id->name_letter, s2->id->name_letter);
                     }
                 default:
-                    return -1;
+                    return SYM_INCOMPARABLE;
             }
         default:
-            return -1;
+            return SYM_INCOMPARABLE;
     }
 }
 
@@ -4557,7 +4566,7 @@ bool constant_greater_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, tok
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
-    return static_cast<bool>(compare_symbols(s1, s2) > 0);
+    return static_cast<bool>(compare_symbols(s2, s1) < 0);
 }
 
 bool constant_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
@@ -4577,7 +4586,7 @@ bool constant_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
-    return static_cast<bool>(compare_symbols(s1, s2) >= 0);
+    return static_cast<bool>(compare_symbols(s2, s1) <= 0);
 }
 
 bool constant_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
@@ -4706,7 +4715,7 @@ bool variable_greater_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, tok
     }
     s2 = field_from_wme(w, rt->data.variable_referent.field_num);
 
-    return static_cast<bool>(compare_symbols(s1, s2) > 0);
+    return static_cast<bool>(compare_symbols(s2, s1) < 0);
 }
 
 bool variable_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
@@ -4752,7 +4761,7 @@ bool variable_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test
     }
     s2 = field_from_wme(w, rt->data.variable_referent.field_num);
 
-    return static_cast<bool>(compare_symbols(s1, s2) >= 0);
+    return static_cast<bool>(compare_symbols(s2, s1) <= 0);
 }
 
 bool variable_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
@@ -6040,9 +6049,10 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             examine all the different matches for this productions
             */
 
-            for (OPERAND_curr_tok = node->a.np.tokens;
+            /* Only the WMEs of this new match decide its support. */
+            for (OPERAND_curr_tok = New;
                     OPERAND_curr_tok != NIL;
-                    OPERAND_curr_tok = OPERAND_curr_tok->next_of_node)
+                    OPERAND_curr_tok = NIL)
             {
 
                 /* i'll need to make two passes over each set of wmes that
@@ -6160,10 +6170,9 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
                                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                                 free_growable_string(thisAgent, gs);
-
-                                prod_type = IE_PRODS;
-                                break;
                             }
+                            prod_type = IE_PRODS;
+                            break;
                         }
                     }
                 }  /* end for pass =  */

@@ -932,14 +932,17 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
         if (lNewDC_WME->id->id->level == NO_WME_LEVEL)
         {
             lNewDC_WME->id->id->level = glbDeepCopyWMELevel;
+            lNewDC_WME->id->id->promotion_level = glbDeepCopyWMELevel;
         }
         if (lNewDC_WME->attr->is_sti() && lNewDC_WME->attr->id->level == NO_WME_LEVEL)
         {
             lNewDC_WME->attr->id->level = glbDeepCopyWMELevel;
+            lNewDC_WME->attr->id->promotion_level = glbDeepCopyWMELevel;
         }
         if (lNewDC_WME->value->is_sti() && lNewDC_WME->value->id->level == NO_WME_LEVEL)
         {
             lNewDC_WME->value->id->level = glbDeepCopyWMELevel;
+            lNewDC_WME->value->id->promotion_level = glbDeepCopyWMELevel;
         }
 
         /* Add a condition that tests the WME that the deep copied preference is based on */
@@ -1141,6 +1144,11 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         }
         if (pref)
         {
+            if (pref->value->is_sti() && pref->value->id->level == NO_WME_LEVEL)
+            {
+                pref->value->id->level = pref->id->id->level;
+                pref->value->id->promotion_level = pref->id->id->level;
+            }
             add_pref_to_inst(thisAgent, pref, inst);
             if (!thisAgent->WM->glbDeepCopyWMEs.empty())
             {

@@ -408,6 +408,10 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
     {
         post_link_addition(thisAgent, pref->id, pref->value);
     }
+    if (pref->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        post_link_addition(thisAgent, pref->id, pref->attr);
+    }
     if (preference_is_binary(pref->type))
     {
         if (pref->referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -463,6 +467,10 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
     if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         post_link_removal(thisAgent, pref->id, pref->value);
+    }
+    if (pref->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        post_link_removal(thisAgent, pref->id, pref->attr);
     }
     if (preference_is_binary(pref->type))
         if (pref->referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)

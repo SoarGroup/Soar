@@ -20,6 +20,7 @@ typedef struct saved_test_struct
     struct saved_test_struct*   next;
     Symbol*                     var;
     uint64_t                    inst_identity;
+    uint64_t                    chunk_inst_identity;
     Identity*                   identity;
     test                        the_test;
 } saved_test;

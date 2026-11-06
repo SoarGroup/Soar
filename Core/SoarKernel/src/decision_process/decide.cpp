@@ -413,12 +413,14 @@ void promote_id_and_tc(agent* thisAgent, Symbol* id, goal_stack_level new_level)
     /* --- scan through all preferences and wmes for all slots for this id -- */
     for (w = id->id->input_wmes; w != NIL; w = w->next)
     {
+        promote_if_needed(thisAgent, w->attr);
         promote_if_needed(thisAgent, w->value);
     }
     for (s = id->id->slots; s != NIL; s = s->next)
     {
         for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
         {
+            promote_if_needed(thisAgent, pref->attr);
             promote_if_needed(thisAgent, pref->value);
             if (preference_is_binary(pref->type))
             {
@@ -427,6 +429,7 @@ void promote_id_and_tc(agent* thisAgent, Symbol* id, goal_stack_level new_level)
         }
         for (w = s->wmes; w != NIL; w = w->next)
         {
+            promote_if_needed(thisAgent, w->attr);
             promote_if_needed(thisAgent, w->value);
         }
     } /* end of for slots loop */
@@ -666,6 +669,10 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         /* -- scan through all preferences and wmes for all slots for this id -- */
         for (w = id->id->input_wmes; w != NIL; w = w->next)
         {
+            if (w->attr->is_sti())
+            {
+                ids_to_walk.push_back(w->attr);
+            }
             if (w->value->is_sti())
             {
                 ids_to_walk.push_back(w->value);
@@ -676,6 +683,10 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         {
             for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
             {
+                if (pref->attr->is_sti())
+                {
+                    ids_to_walk.push_back(pref->attr);
+                }
                 if (pref->value->is_sti())
                 {
                     ids_to_walk.push_back(pref->value);
@@ -700,6 +711,10 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
             for (w = s->wmes; w != NIL; w = w->next)
             {
+                if (w->attr->is_sti())
+                {
+                    ids_to_walk.push_back(w->attr);
+                }
                 if (w->value->is_sti())
                 {
                     ids_to_walk.push_back(w->value);
@@ -763,6 +778,10 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
         /* -- scan through all preferences and wmes for all slots for this id -- */
         for (w = id->id->input_wmes; w != NIL; w = w->next)
         {
+            if (level_update_needed(thisAgent, w->attr))
+            {
+                ids_to_walk.push_back(w->attr);
+            }
             if (level_update_needed(thisAgent, w->value))
             {
                 ids_to_walk.push_back(w->value);
@@ -773,6 +792,10 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
         {
             for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
             {
+                if (level_update_needed(thisAgent, pref->attr))
+                {
+                    ids_to_walk.push_back(pref->attr);
+                }
                 if (level_update_needed(thisAgent, pref->value))
                 {
                     ids_to_walk.push_back(pref->value);
@@ -797,6 +820,10 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
 
             for (w = s->wmes; w != NIL; w = w->next)
             {
+                if (level_update_needed(thisAgent, w->attr))
+                {
+                    ids_to_walk.push_back(w->attr);
+                }
                 if (level_update_needed(thisAgent, w->value))
                 {
                     ids_to_walk.push_back(w->value);
@@ -2892,7 +2919,8 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
     if (!thisAgent->Decider->settings[DECIDER_WAIT_SNC]|| !(impasse_type == NO_CHANGE_IMPASSE_TYPE) || !(attribute_of_impasse == thisAgent->symbolManager->soarSymbols.state_symbol))
     {
-        create_new_context(thisAgent, attribute_of_impasse, impasse_type, true);
+        create_new_context(thisAgent, attribute_of_impasse, impasse_type,
+                           attribute_of_impasse == thisAgent->symbolManager->soarSymbols.operator_symbol);
         update_impasse_items(thisAgent, goal->id->lower_goal, candidates);
     }
 

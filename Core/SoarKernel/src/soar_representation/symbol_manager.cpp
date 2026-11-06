@@ -554,6 +554,11 @@ Symbol* Symbol_Manager::make_float_constant(double value)
 {
     floatSymbol* sym;
 
+    if (value == 0.0)
+    {
+        value = 0.0;
+    }
+
     sym = static_cast<floatSymbol*>(find_float_constant(value));
     if (sym)
     {

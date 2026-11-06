@@ -148,6 +148,10 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
             w->value->id->isa_operator++;
         }
     }
+    if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        post_link_addition(thisAgent, w->id, w->attr);
+    }
 }
 
 void remove_wme_from_wm(agent* thisAgent, wme* w)
@@ -163,6 +167,10 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
         {
             w->value->id->isa_operator--;
         }
+    }
+    if (w->attr->is_sti())
+    {
+        post_link_removal(thisAgent, w->id, w->attr);
     }
     /* When we remove a WME, we always have to determine if it's on a GDS, and, if
     so, after removing the WME, if there are no longer any WMEs on the GDS,

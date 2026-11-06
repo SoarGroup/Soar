@@ -183,11 +183,13 @@ void Explanation_Based_Chunker::add_results_if_needed(Symbol* pSym, preference* 
     {
         if (((pSym)->id->level >= m_results_match_goal_level) && ((pSym)->tc_num != m_results_tc))
         {
+            if (pSym->id->isa_goal || pSym->id->isa_impasse) m_result_links_goal = true;
             pSym->tc_num = m_results_tc;
 
             /* --- scan through all preferences and wmes for all slots for this id --- */
             for (w = pSym->id->input_wmes; w != NIL; w = w->next)
             {
+                add_results_if_needed(w->attr, w->preference, w->preference ? ATTR_ELEMENT : NO_ELEMENT);
                 add_results_if_needed(w->value, w->preference, w->preference ? VALUE_ELEMENT : NO_ELEMENT);
             }
             for (s = pSym->id->slots; s != NIL; s = s->next)
@@ -198,6 +200,7 @@ void Explanation_Based_Chunker::add_results_if_needed(Symbol* pSym, preference* 
                 }
                 for (w = s->wmes; w != NIL; w = w->next)
                 {
+                    add_results_if_needed(w->attr, w->preference, w->preference ? ATTR_ELEMENT : NO_ELEMENT);
                     add_results_if_needed(w->value, w->preference, w->preference ? VALUE_ELEMENT : NO_ELEMENT);
                 }
             } /* end of for slots loop */
@@ -777,6 +780,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     local_timer.start();
     #endif
 
+    m_result_links_goal = false;
     get_results_for_instantiation();
     if (!m_results) {
         m_extra_results = NULL;
@@ -855,7 +859,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     /* Apply EBC correctness and (<s> ^quiescence t) filters that prevents rule learning */
     if ((m_tested_local_negation && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS]) ||
         (m_tested_ltm_recall && !ebc_settings[SETTING_EBC_ALLOW_OPAQUE])
-        || m_tested_quiescence)
+        || m_tested_quiescence || m_result_links_goal)
     {
         m_correctness_issue_possible = true;
     }

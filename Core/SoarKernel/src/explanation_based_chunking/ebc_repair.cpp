@@ -235,7 +235,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym && lMatchedSym->is_sti())
             {
-                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->inst_identity, lCond->data.tests.id_test->eq_test->chunk_inst_identity);
+                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->inst_identity, lCond->data.tests.value_test->eq_test->chunk_inst_identity);
             }
         }
     }

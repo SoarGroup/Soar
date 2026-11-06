@@ -147,6 +147,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
     thisAgent->explanationMemory->add_bt_instantiation(inst, bt_type);
     thisAgent->explanationMemory->increment_stat_instantations_backtraced();
 
+    /* Top-level instantiations carry no identities; reached only through OSK. */
+    if (inst->match_goal_level == TOP_GOAL_LEVEL) m_correctness_issue_possible = true;
     if (inst->tested_quiescence) m_tested_quiescence = true;
     if (inst->tested_local_negation) m_tested_local_negation = true;
     if (inst->tested_LTM) m_tested_ltm_recall = true;

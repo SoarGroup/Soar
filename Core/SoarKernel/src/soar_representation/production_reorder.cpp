@@ -354,6 +354,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     saved->var = sym;
                     thisAgent->symbolManager->symbol_add_ref(sym);
                     saved->inst_identity = sym_identity;
+                    saved->chunk_inst_identity = sym_identity_set_test->chunk_inst_identity;
                     if (sym_identity_set_test->identity)
                         saved->identity = sym_identity_set_test->identity;
                     else
@@ -402,6 +403,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             old_sts = saved;
             saved->var = var;
             saved->inst_identity = LITERAL_VALUE;
+            saved->chunk_inst_identity = LITERAL_VALUE;
             saved->identity = NULL;
             saved->the_test = *t;
             *t = New;
@@ -518,6 +520,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
                         st->the_test->inst_identity = st->inst_identity;
+                        st->the_test->chunk_inst_identity = st->chunk_inst_identity;
                         st->the_test->identity = st->identity;
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
@@ -1052,6 +1055,18 @@ void reorder_condition_list(agent* thisAgent,
                             tc_number tc,
                             bool reorder_nccs);
 
+/* 0 = identifier variable bound most recently (new_vars is pushed at head). */
+static uint64_t id_binding_age(condition* cond, cons* new_vars)
+{
+    Symbol* id = cond->data.tests.id_test->eq_test->data.referent;
+    uint64_t age = 0;
+    for (cons* c = new_vars; c != NIL; c = c->rest, ++age)
+    {
+        if (static_cast<Symbol*>(c->first) == id) return age;
+    }
+    return UINT64_MAX;
+}
+
 void reorder_simplified_conditions(agent* thisAgent,
                                    condition** top_of_conds,
                                    cons* roots,
@@ -1144,9 +1159,13 @@ void reorder_simplified_conditions(agent* thisAgent,
                      same set of conditions are ordered the same. Except if the variables
                      are assigned differently.
                     *********************************************************************/
-                    if (cost == min_cost && cond->type == POSITIVE_CONDITION)
+                    if (cost == min_cost && cond->type == POSITIVE_CONDITION &&
+                        min_cost_conds->type == POSITIVE_CONDITION)
                     {
-                        if (canonical_cond_greater(min_cost_conds, cond))
+                        uint64_t a_new = id_binding_age(cond, new_vars);
+                        uint64_t a_old = id_binding_age(min_cost_conds, new_vars);
+                        if ((a_new < a_old) ||
+                            ((a_new == a_old) && canonical_cond_greater(min_cost_conds, cond)))
                         {
                             min_cost = cost;
                             min_cost_conds = cond;
