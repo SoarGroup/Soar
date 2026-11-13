@@ -145,6 +145,8 @@ before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
 # For windows we need a slightly different test command
 test-command = """\
+set PYTHONUTF8=1
+set PYTHONIOENCODING=utf-8
 set SOAR_UNIT_TEST_BASE_DIR={project}/out/
 python {project}/Core/ClientSMLSWIG/Python/TestPythonSML.py
 """

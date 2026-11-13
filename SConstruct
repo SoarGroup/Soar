@@ -150,7 +150,7 @@ AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Bu
 
 if enscons_active:
     if sys.platform == 'win32':
-        tools = ['msvc', 'mslink', 'mslib', 'swig', 'javac', 'jar', 'packaging', enscons.generate]
+        tools = ['msvc', 'mslink', 'mslib', 'swig', 'javac', 'jar', 'zip', 'packaging', enscons.generate]
     else:
         tools = ['default', 'packaging', enscons.generate]
 else:
