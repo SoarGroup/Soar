@@ -586,7 +586,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "WMA activation: ";
         temp2 = thisAgent->WM->wma_params->activation->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n\n";
@@ -619,7 +619,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "decay-rate: ";
         temp2 = thisAgent->WM->wma_params->decay_rate->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -632,7 +632,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "petrov-approx: ";
         temp2 = thisAgent->WM->wma_params->petrov_approx->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -674,7 +674,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "decay-thresh: ";
         temp2 = thisAgent->WM->wma_params->decay_thresh->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -687,7 +687,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "forgetting: ";
         temp2 = thisAgent->WM->wma_params->forgetting->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -700,7 +700,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "forget-wme: ";
         temp2 = thisAgent->WM->wma_params->forget_wme->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -713,7 +713,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "fake-forgetting: ";
         temp2 = thisAgent->WM->wma_params->fake_forgetting->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -754,7 +754,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "timers: ";
         temp2 = thisAgent->WM->wma_params->timers->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -767,7 +767,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
         temp = "max-pow-cache: ";
         temp2 = thisAgent->WM->wma_params->max_pow_cache->get_cstring();
         temp += temp2;
-        delete temp2;
+        delete[] temp2;
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -800,7 +800,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
 
         char* temp2 = my_param->get_cstring();
         std::string output(temp2);
-        delete temp2;
+        delete[] temp2;
 
         if (m_RawOutput)
         {
@@ -883,7 +883,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             output = "Forgotten WMEs: ";
             temp2 = thisAgent->WM->wma_stats->forgotten_wmes->get_cstring();
             output += temp2;
-            delete temp2;
+            delete[] temp2;
 
             if (m_RawOutput)
             {
@@ -904,7 +904,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
 
             char* temp2 = my_stat->get_cstring();
             std::string output(temp2);
-            delete temp2;
+            delete[] temp2;
 
             if (m_RawOutput)
             {
@@ -945,7 +945,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
 
                         char* temp = t->get_cstring();
                         output += temp;
-                        delete temp;
+                        delete[] temp;
 
                         if (raw)
                         {
@@ -971,7 +971,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
 
             char* temp2 = my_timer->get_cstring();
             std::string output(temp2);
-            delete temp2;
+            delete[] temp2;
 
             if (m_RawOutput)
             {

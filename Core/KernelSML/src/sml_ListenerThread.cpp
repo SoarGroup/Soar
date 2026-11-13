@@ -73,13 +73,13 @@ void ListenerThread::Run()
     {
         //sml::PrintDebug("Check for incoming connection") ;
 
-        // Check for an incoming client connection
-        // This doesn't block.
-        Socket* pSocket = m_ListenerSocket.CheckForClientConnection() ;
+        // Wait up to 50ms in select() on the primary listener socket so new client
+        // connections are accepted immediately without a 50ms sleep penalty.
+        Socket* pSocket = m_ListenerSocket.CheckForClientConnection(0, 50) ;
 
         Socket* pLocalSocket = 0;
 #ifdef ENABLE_LOCAL_SOCKETS
-        pLocalSocket = m_LocalListenerSocket.CheckForClientConnection();
+        pLocalSocket = m_LocalListenerSocket.CheckForClientConnection(0, 0);
 #endif
 
 #ifdef ENABLE_NAMED_PIPES
@@ -107,11 +107,6 @@ void ListenerThread::Run()
             }
         }
 #endif
-
-        // Sleep for a little before checking for a new connection
-        // New connections will come in very infrequently so this doesn't
-        // have to be very rapid.
-        sml::Sleep(0, 50) ;
     }
 
     // Shut down our listener socket

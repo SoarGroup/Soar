@@ -18,6 +18,7 @@
 #include "sock_SocketLib.h"
 #include "sml_Connection.h"
 
+#include <atomic>
 #include <list>
 
 namespace sml
@@ -54,6 +55,16 @@ namespace sml
             // (and perhaps embedded connections too?)
             bool    m_bTraceCommunications ;
             
+            // Loopback UDP socket used to wake ReceiverThread from select() when
+            // an in-process EmbeddedConnectionAsynch message arrives or on shutdown.
+            SOCKET                      m_WakeupSocket ;
+            sockaddr_in                 m_WakeupAddr ;
+            std::atomic<bool>           m_WakeupPending ;
+            
+            void InitWakeupSocket() ;
+            void CloseWakeupSocket() ;
+            void DrainWakeupSocket() ;
+            
         public:
             ConnectionManager(int port, KernelSML* pKernel) ;
             ~ConnectionManager() ;
@@ -89,6 +100,13 @@ namespace sml
             // Returning false indicates we should stop checking
             // for more messages (and presumably shutdown completely).
             bool ReceiveAllMessages() ;
+            
+            // Block in select() across all remote sockets and the internal wakeup socket
+            // until incoming data arrives or the timeout expires.
+            bool WaitForIncomingData(int secondsWait, int millisecondsWait) ;
+            
+            // Wake up ReceiverThread if it is currently blocked in WaitForIncomingData().
+            void SignalIncomingData() ;
             
             // Cause the receiver thread to quit.
             void StopReceiverThread() ;

@@ -94,9 +94,9 @@ if not GetOption('nosvs'):
 if GetOption('static'):
 	soarlib = kernel_env.Library('Soar', [s[scu] for s in srcs] + svs_objs)
 else:
-	soarlib = kernel_env.SharedLibrary('Soar', [s[scu] for s in srcs] + svs_objs)[:2]
 	if compiler == 'msvc':
 		kernel_env.Append(CPPFLAGS = ['/D', '_USRDLL'])
+	soarlib = kernel_env.SharedLibrary('Soar', [s[scu] for s in srcs] + svs_objs)[:2]
 
 Export('soarlib');
 

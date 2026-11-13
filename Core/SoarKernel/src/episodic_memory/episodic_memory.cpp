@@ -2084,7 +2084,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
                 std::string cache_sql("PRAGMA cache_size = ");
                 char* str = thisAgent->EpMem->epmem_params->cache_size->get_cstring();
                 cache_sql.append(str);
-                free(str);
+                delete[] str;
                 str = NULL;
 
                 thisAgent->EpMem->epmem_db->sql_execute(cache_sql.c_str());

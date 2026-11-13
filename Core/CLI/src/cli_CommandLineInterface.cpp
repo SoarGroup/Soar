@@ -49,6 +49,7 @@ using namespace soarxml;
 EXPORT CommandLineInterface::CommandLineInterface()
 {
     m_pLogFile        = 0;
+    m_pLogAgentSML    = 0;
     m_TrapPrintEvents = false;
     m_pAgentSML       = 0 ;
     m_VarPrint        = false;
@@ -174,29 +175,16 @@ void CommandLineInterface::PushCall(CallData callData)
     {
         m_pAgentSML = callData.pAgent;
     }
-    /* Some commands that don't have a pAgent are causing issues
-     * because some of the new CLI commands need the agent to
-     * access code that the simpler commands may not have needed.
-     * This has been observed with load-library.  A better
-     * solution would be to find a way to get those commands to
-     * include the agent, but I'm not sure how to do that.
-     *
-     * I'm making this change because it fixes a crash and it
-     * seems that a stale value should adversely affect anything.
-     * I couldn't find anything that checks if it's null and
-     * does something different.  So, if a future command
-     * doesn't need the pAgentSML, it will ignore any stale values.
-     * If a future command does need it, then it will be updated with
-     * a new calldata before the command executes. */
-//    else
-//    {
-//        m_pAgentSML = 0;
-//    }
 
     m_RawOutput = callData.rawOutput;
 
-    // For kernel callback class we inherit
-    SetAgentSML(m_pAgentSML) ;
+    // Only update m_pCallbackAgentSML if we are not currently registered for a callback
+    // on another agent (e.g., an open log file on m_pLogAgentSML); SetTrapPrintCallbacks
+    // manages switching registration cleanly.
+    if (!IsRegisteredWithKernel(smlEVENT_PRINT))
+    {
+        SetAgentSML(m_pAgentSML) ;
+    }
 }
 
 void CommandLineInterface::PopCall()
@@ -211,7 +199,10 @@ void CommandLineInterface::PopCall()
         m_RawOutput = callData.rawOutput;
 
         // reset these for the next command
-        SetAgentSML(pAgent) ;
+        if (!IsRegisteredWithKernel(smlEVENT_PRINT))
+        {
+            SetAgentSML(pAgent) ;
+        }
         m_pAgentSML = pAgent;
     }
 }
@@ -234,9 +225,14 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
         // Trap print callbacks
         m_pAgentSML->DisablePrintCallback();
         m_TrapPrintEvents = true;
-        if (!m_pLogFile)
-            // If we're logging, we're already registered for this.
+        if (IsRegisteredWithKernel(smlEVENT_PRINT) && m_pCallbackAgentSML != m_pAgentSML)
         {
+            UnregisterWithKernel(smlEVENT_PRINT);
+            SetAgentSML(m_pAgentSML);
+        }
+        if (!IsRegisteredWithKernel(smlEVENT_PRINT))
+        {
+            SetAgentSML(m_pAgentSML);
             RegisterWithKernel(smlEVENT_PRINT);
         }
 
@@ -271,10 +267,15 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
         }
 
         // Re-enable print callbacks
-        if (!m_pLogFile)
+        if (IsRegisteredWithKernel(smlEVENT_PRINT) && (!m_pLogFile || m_pCallbackAgentSML != m_pLogAgentSML))
         {
-            // If we're logging, we want to stay registered for this
             UnregisterWithKernel(smlEVENT_PRINT);
+        }
+        if (m_pLogFile && m_pLogAgentSML && !IsRegisteredWithKernel(smlEVENT_PRINT))
+        {
+            SetAgentSML(m_pLogAgentSML);
+            RegisterWithKernel(smlEVENT_PRINT);
+            SetAgentSML(m_pAgentSML);
         }
         m_TrapPrintEvents = false;
         m_pAgentSML->EnablePrintCallback();
@@ -655,7 +656,7 @@ void CommandLineInterface::PrintCLIMessage_Item(const char* prefixString, soar_m
     std::ostringstream tempString;
     char* temp = printObject->get_cstring();
     PrintCLIMessage_Justify(prefixString, temp, column_width);
-    delete temp;
+    delete[] temp;
 
 }
 

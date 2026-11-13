@@ -894,3 +894,54 @@ void MiscTests::testSMemEpMemWmaDefects()
     assertTrue_msg("#18 EpMem rewrote episode 2 STI into @1: " + ep_ret, ep_ret.find("(@1)") == std::string::npos);
 }
 
+void MiscTests::testSanitizerAndPushArchitecture()
+{
+    // Finding #3: CLI settings/stats/timers get_cstring() allocator consistency
+    std::string wma_out = agent->ExecuteCommandLine("wm activation");
+    assertTrue_msg("wm activation summary failed", wma_out.find("Activation") != std::string::npos);
+    std::string wma_stats = agent->ExecuteCommandLine("wm activation --stats");
+    assertTrue_msg("wm activation --stats failed", wma_stats.find("Forgotten WMEs") != std::string::npos);
+    std::string wma_timers = agent->ExecuteCommandLine("wm activation --timers");
+    assertTrue_msg("wm activation --timers failed", !wma_timers.empty());
+    std::string rl_out = agent->ExecuteCommandLine("rl");
+    assertTrue_msg("rl summary failed", rl_out.find("Soar-RL learning") != std::string::npos);
+    std::string smem_out = agent->ExecuteCommandLine("smem ?");
+    assertTrue_msg("smem ? failed", smem_out.find("Semantic Memory") != std::string::npos);
+
+    // Issue #582: Multi-agent output log does not deny XML/command output on second agent
+    sml::Agent* agent2 = kernel->CreateAgent("second-agent");
+    assertTrue_msg("Failed to create second-agent", agent2 != nullptr);
+    agent->ExecuteCommandLine("output log test_agent1_log.txt");
+    std::string s1_agent1 = agent->ExecuteCommandLine("print S1 -d 1");
+    std::string s1_agent2 = agent2->ExecuteCommandLine("print S1 -d 1");
+    agent->ExecuteCommandLine("output log --close");
+    std::remove("test_agent1_log.txt");
+    assertTrue_msg("#582 agent1 print S1 was empty when output log active", s1_agent1.find("S1") != std::string::npos);
+    assertTrue_msg("#582 agent2 print S1 was denied when agent1 had output log open: " + s1_agent2,
+                   s1_agent2.find("S1") != std::string::npos);
+    kernel->DestroyAgent(agent2);
+
+    // Part II: CreateKernelInNewThread + CreateRemoteConnection push/wait wakeup
+    sml::Kernel* asyncKernel = sml::Kernel::CreateKernelInNewThread(12345);
+    assertTrue_msg("Failed to create asyncKernel on port 12345", asyncKernel != nullptr);
+    assertFalse_msg("asyncKernel had creation error", asyncKernel->HadError());
+    sml::Agent* asyncAgent = asyncKernel->CreateAgent("async-agent");
+    assertTrue_msg("Failed to create async-agent", asyncAgent != nullptr);
+    std::string echoEmbedded = asyncAgent->ExecuteCommandLine("echo hello-embedded");
+    assertTrue_msg("Async embedded command failed: " + echoEmbedded, echoEmbedded.find("hello-embedded") != std::string::npos);
+
+    sml::Kernel* remoteClient = sml::Kernel::CreateRemoteConnection(true, "127.0.0.1", 12345);
+    assertTrue_msg("Failed to connect remoteClient to port 12345", remoteClient != nullptr);
+    assertFalse_msg("remoteClient had connection error: " + std::string(remoteClient->GetLastErrorDescription()),
+                    remoteClient->HadError());
+    sml::Agent* remoteAgent = remoteClient->GetAgent("async-agent");
+    assertTrue_msg("remoteClient could not find async-agent", remoteAgent != nullptr);
+    std::string echoRemote = remoteAgent->ExecuteCommandLine("print S1 -d 1");
+    assertTrue_msg("Remote debugger-style print S1 failed: " + echoRemote, echoRemote.find("S1") != std::string::npos);
+
+    remoteClient->Shutdown();
+    delete remoteClient;
+    asyncKernel->Shutdown();
+    delete asyncKernel;
+}
+

@@ -46,6 +46,9 @@ namespace sml
             /** An event object which we use to have one thread sleep while waiting for another thread to drop off a response to a message */
             soar_thread::Event  m_WaitEvent ;
             
+            /** Separate event for EventThread so it never steals response wakeups from GetResponseForID */
+            soar_thread::Event  m_EventThreadWaitEvent ;
+            
             /** Adds the message to the queue, taking ownership of it at the same time */
             void AddResponseToList(soarxml::ElementXML* pResponse) ;
             soarxml::ElementXML* IsResponseInList(char const* pID) ;
@@ -60,12 +63,40 @@ namespace sml
             // a command to the queue that the kernel would then execute.
             void AddToIncomingMessageQueue(ElementXML_Handle hMsg)
             {
-                // Make sure only one thread modifies the message queue at a time.
-                soar_thread::Lock lock(&m_IncomingMutex) ;
-                m_IncomingMessageQueue.push(hMsg) ;
+                {
+                    // Make sure only one thread modifies the message queue at a time.
+                    soar_thread::Lock lock(&m_IncomingMutex) ;
+                    m_IncomingMessageQueue.push(hMsg) ;
+                }
                 
-                // Wake up anybody who's waiting for a response
+                // Wake up anybody who's waiting for a response or event
                 m_WaitEvent.TriggerEvent() ;
+                m_EventThreadWaitEvent.TriggerEvent() ;
+                if (m_pWakeCallback)
+                {
+                    m_pWakeCallback(m_pWakeData) ;
+                }
+            }
+            
+            virtual bool HasPendingIncomingMessages()
+            {
+                soar_thread::Lock lock(&m_IncomingMutex) ;
+                return !m_IncomingMessageQueue.empty() ;
+            }
+            
+            virtual bool WaitForIncomingMessages(int secondsWait, int millisecondsWait)
+            {
+                if (HasPendingIncomingMessages() || IsClosed())
+                {
+                    return true ;
+                }
+                return m_EventThreadWaitEvent.WaitForEvent(secondsWait, millisecondsWait) ;
+            }
+            
+            virtual void WakeUpWaiters()
+            {
+                m_WaitEvent.TriggerEvent() ;
+                m_EventThreadWaitEvent.TriggerEvent() ;
             }
             
             virtual bool IsAsynchronous()

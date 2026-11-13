@@ -1046,7 +1046,7 @@ void SMem_Manager::init_db()
                 std::string cache_sql("PRAGMA cache_size = ");
                 char* str = settings->cache_size->get_cstring();
                 cache_sql.append(str);
-                free(str);
+                delete[] str;
                 str = NULL;
                 DB->sql_execute(cache_sql.c_str());
             }

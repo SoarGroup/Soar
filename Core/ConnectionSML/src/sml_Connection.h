@@ -264,6 +264,40 @@ namespace sml
             virtual bool IsAsynchronous() = 0 ;
             
             /*************************************************************
+            * @brief Returns true if messages are already queued in memory
+            *        waiting to be processed by ReceiveMessages().
+            *************************************************************/
+            virtual bool HasPendingIncomingMessages()
+            {
+                return false ;
+            }
+            
+            /*************************************************************
+            * @brief Returns the underlying socket handle if this is a
+            *        socket-backed RemoteConnection, or 0 otherwise.
+            *************************************************************/
+            virtual SOCKET GetSocketHandle()
+            {
+                return 0 ;
+            }
+            
+            /*************************************************************
+            * @brief Block until incoming messages/events arrive on this
+            *        connection or the timeout (secondsWait + millisecondsWait) expires.
+            *************************************************************/
+            virtual bool WaitForIncomingMessages(int /*secondsWait*/, int /*millisecondsWait*/)
+            {
+                return false ;
+            }
+            
+            /*************************************************************
+            * @brief Wake up any thread blocked in WaitForIncomingMessages().
+            *************************************************************/
+            virtual void WakeUpWaiters()
+            {
+            }
+            
+            /*************************************************************
             * @brief Returns true if direct access to gSKI is available.
             *        This allows us to optimize I/O calls by calling directly
             *        to gSKI (and hence the kernel) without using the messaging system at all.
@@ -310,6 +344,23 @@ namespace sml
             *               once it if finished using it.
             *************************************************************/
             virtual void SendMsg(soarxml::ElementXML* pMsg) = 0 ;
+            
+            /*************************************************************
+            * @brief Optional callback invoked when an asynchronous embedded
+            *        message is queued, used to wake KernelSML's ReceiverThread.
+            *************************************************************/
+            typedef void (*WakeCallbackFunc)(void* pWakeData) ;
+            void SetWakeCallback(WakeCallbackFunc pFunc, void* pWakeData)
+            {
+                m_pWakeCallback = pFunc ;
+                m_pWakeData = pWakeData ;
+            }
+            
+        protected:
+            WakeCallbackFunc m_pWakeCallback ;
+            void*            m_pWakeData ;
+            
+        public:
             
             /*************************************************************
             * @brief Retrieve any commands, notifications, responses etc. that are waiting.

@@ -429,3 +429,32 @@ bool RemoteConnection::IsClosed()
     return !m_DataSender->IsAlive() ;
 }
 
+SOCKET RemoteConnection::GetSocketHandle()
+{
+    if (!m_DataSender || !m_DataSender->IsAlive())
+    {
+        return NO_CONNECTION ;
+    }
+    return m_DataSender->GetSocketHandle() ;
+}
+
+bool RemoteConnection::WaitForIncomingMessages(int secondsWait, int millisecondsWait)
+{
+    if (!m_DataSender || !m_DataSender->IsAlive())
+    {
+        return true ;
+    }
+    // Only wait on the socket if the main client thread is not currently inside
+    // SendMessageGetResponse (holding m_ClientMutex). If m_ClientMutex is held,
+    // yield briefly so we never race with GetResponseForID on the socket.
+    {
+        soar_thread::ConditionalLock lock ;
+        if (!lock.TryToLock(&m_ClientMutex))
+        {
+            sml::Sleep(0, 5) ;
+            return false ;
+        }
+    }
+    return m_DataSender->IsReadDataAvailable(secondsWait, millisecondsWait) ;
+}
+

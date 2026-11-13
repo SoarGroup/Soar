@@ -18,7 +18,7 @@
 #  endif
 #endif
 
-#if defined(STATIC_LINKED)
+#if defined(SOAR_STATIC_LINKED) || defined(STATIC_LINKED)
 #  define EXPORT
 #else
 #  if defined(_MSC_VER)

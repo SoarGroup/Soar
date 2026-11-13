@@ -327,7 +327,10 @@ namespace soar_module
             {
                 std::string temp_str;
                 to_string(value, temp_str);
-                return strdup(temp_str.c_str());
+                char* return_val = new char[ temp_str.length() + 1 ];
+                strcpy(return_val, temp_str.c_str());
+                return_val[ temp_str.length() ] = '\0';
+                return return_val;
             }
 
             virtual bool set_string(const char* new_string)
@@ -876,7 +879,10 @@ namespace soar_module
 
                 std::string temp_str;
                 to_string(my_val, temp_str);
-                return strdup(temp_str.c_str());
+                char* return_val = new char[ temp_str.length() + 1 ];
+                strcpy(return_val, temp_str.c_str());
+                return_val[ temp_str.length() ] = '\0';
+                return return_val;
             }
 
             void reset()
@@ -968,7 +974,10 @@ namespace soar_module
 
                 std::string temp_str;
                 to_string(my_value, temp_str);
-                return strdup(temp_str.c_str());
+                char* return_val = new char[ temp_str.length() + 1 ];
+                strcpy(return_val, temp_str.c_str());
+                return_val[ temp_str.length() ] = '\0';
+                return return_val;
             }
 
             //

@@ -80,6 +80,8 @@ namespace sml
             {
                 return true ;
             }
+            virtual SOCKET GetSocketHandle() ;
+            virtual bool WaitForIncomingMessages(int secondsWait, int millisecondsWait) ;
             virtual void SetTraceCommunications(bool state) ;
             
     };

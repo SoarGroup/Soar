@@ -251,7 +251,7 @@ if(WIN32)
   if(BUILD_SHARED_LIBS)
     target_compile_definitions(${SOAR_LIB} PRIVATE _USRDLL)
   else()
-    target_compile_definitions(${SOAR_LIB} PUBLIC STATIC_LINKED)
+    target_compile_definitions(${SOAR_LIB} PUBLIC SOAR_STATIC_LINKED)
   endif()
 endif()
 

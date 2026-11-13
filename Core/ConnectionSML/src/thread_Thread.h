@@ -14,6 +14,8 @@
 #ifndef THREAD_THREAD_H
 #define THREAD_THREAD_H
 
+#include <atomic>
+#include <thread>
 #include "thread_Event.h"
 #include "Export.h"
 
@@ -23,14 +25,15 @@ namespace soar_thread
     class EXPORT Thread
     {
         protected:
-            volatile bool   m_QuitNow ;
-            bool    m_Started ;
-            bool    m_Stopped ;
+            std::atomic<bool>   m_QuitNow ;
+            std::atomic<bool>   m_Started ;
+            std::atomic<bool>   m_Stopped ;
+            std::thread         m_Thread ;
             Event   m_Pause ;   // We use this to support suspend/resume
             
             bool QuitNow()
             {
-                return m_QuitNow ;
+                return m_QuitNow.load() ;
             }
             
         protected:
@@ -45,19 +48,19 @@ namespace soar_thread
             void Start() ;
             
             // Call to ask this thread to stop running (from another thread)
-            void Stop(bool waitTillStopped) ;
+            virtual void Stop(bool waitTillStopped) ;
             
             // This returns true once the thread has actually stopped running
             // which may be a little after the request to stop.
             bool IsStopped()
             {
-                return m_Stopped ;
+                return m_Stopped.load() ;
             }
             
             // True if this thread has been started
             bool IsStarted()
             {
-                return m_Started ;
+                return m_Started.load() ;
             }
             
             // Cause this thread to sleep until "Resume" is called
@@ -82,7 +85,7 @@ namespace soar_thread
             // If you wish to stop the thread, call "Stop" instead (which asks it to stop).
             void SetStopped(bool state)
             {
-                m_Stopped = state ;
+                m_Stopped.store(state) ;
             }
     } ;
     

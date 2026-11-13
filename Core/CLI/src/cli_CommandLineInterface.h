@@ -319,6 +319,7 @@ namespace cli
             StringStack             m_DirectoryStack;             // Directory stack for pushd/popd
             std::string             m_LogFilename;                // Used for logging to a file.
             std::ofstream*          m_pLogFile;                   // The log file stream
+            sml::AgentSML*          m_pLogAgentSML;               // Agent that opened m_pLogFile
             SourceBitset*           m_pSourceOptions;
             std::stack<std::string> m_SourceFileStack;            // Stack of source calls, if zero then command line
             int                     m_NumProductionsSourced;

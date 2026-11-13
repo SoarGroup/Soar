@@ -43,7 +43,7 @@ wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
     wme_list* return_val = new wme_list;
 
     // augs only exist for identifiers
-    if (id->is_sti())
+    if (id && id->is_sti())
     {
         if (tc != NIL)
         {
@@ -161,6 +161,12 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
         // make sure this state has had some sort of change to the cmd
         // NOTE: we only care one-level deep!
+        if (!state->id->smem_info || !state->id->smem_info->cmd_wme || !state->id->smem_info->cmd_wme->value)
+        {
+            thisAgent->SMem->timers->api->stop();
+            state = state->id->lower_goal;
+            continue;
+        }
         new_cue = false;
         wme_count = 0;
         cmds = NIL;

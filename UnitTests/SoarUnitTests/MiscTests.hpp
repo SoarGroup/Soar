@@ -102,6 +102,9 @@ public:
     TEST(testSMemEpMemWmaDefects, -1)
     void testSMemEpMemWmaDefects();
 
+    TEST(testSanitizerAndPushArchitecture, -1)
+    void testSanitizerAndPushArchitecture();
+
 	// If you would like to test the Soar Debugger Spawning, uncomment below.
 	// It may or may not work but should unless you're running without a GUI.
 //	TEST(testSoarDebugger, -1)

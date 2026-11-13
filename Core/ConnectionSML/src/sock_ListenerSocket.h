@@ -28,8 +28,8 @@ namespace sock
             bool CreateListener(int port, bool local = false);
             
             // Check for an incoming client connection
-            // This call does not block.  If there is no pending connection it returns NULL immediately.
-            Socket* CheckForClientConnection() ;
+            // If secondsWait / millisecondsWait are non-zero, blocks in select() up to that timeout.
+            Socket* CheckForClientConnection(int secondsWait = 0, int millisecondsWait = 0) ;
             
             int GetPort()
             {

@@ -64,6 +64,8 @@ Connection::Connection()
     m_bIsDirectConnection = false ;
     m_bTraceCommunications = false ;
     m_bIsKernelSide = false ;
+    m_pWakeCallback = NULL ;
+    m_pWakeData = NULL ;
     
     m_Timer.reset();
     m_IncomingTime.reset();
@@ -408,8 +410,6 @@ ElementXML* Connection::InvokeCallbacks(ElementXML* pIncomingMsg)
 {
     ClearError() ;
     
-    MessageSML* pIncomingSML = (MessageSML*)pIncomingMsg ; // MessageSML is a soarxml::ElementXML, not sml::ElementXML
-    
     // Check that we were passed a valid message.
     if (pIncomingMsg == NULL)
     {
@@ -418,7 +418,7 @@ ElementXML* Connection::InvokeCallbacks(ElementXML* pIncomingMsg)
     }
     
     // Retrieve the type of this message
-    char const* pType = pIncomingSML->GetDocType() ;
+    char const* pType = pIncomingMsg->GetAttribute(sml_Names::kDocType) ;
     
     // Check that this message has a valid doc type (all valid SML do)
     if (pType == NULL)
@@ -428,7 +428,7 @@ ElementXML* Connection::InvokeCallbacks(ElementXML* pIncomingMsg)
     }
     
     // Decide if this message is a "call" which requires a "response"
-    bool isIncomingCall = pIncomingSML->IsCall() ;
+    bool isIncomingCall = (strcmp(pType, sml_Names::kDocType_Call) == 0) ;
     
     // See if we have a list of callbacks for this type
     CallbackList* pList = GetCallbackList(pType) ;

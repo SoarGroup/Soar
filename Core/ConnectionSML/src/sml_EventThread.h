@@ -35,6 +35,7 @@ namespace sml
         public:
             EventThread(Connection* pConnection) ;
             void Run() ;
+            virtual void Stop(bool waitTillStopped) ;
     } ;
     
 }

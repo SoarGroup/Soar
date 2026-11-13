@@ -318,10 +318,13 @@ action* make_action(agent* thisAgent)
     action* new_action;
     thisAgent->memoryManager->allocate_with_pool(MP_action,  &new_action);
     new_action->next = NIL;
+    new_action->type = MAKE_ACTION;
     new_action->id = NIL;
     new_action->attr = NIL;
     new_action->value = NIL;
     new_action->referent = NIL;
+    new_action->preference_type = ACCEPTABLE_PREFERENCE_TYPE;
+    new_action->support = UNKNOWN_SUPPORT;
 
     return new_action;
 }

@@ -33,57 +33,56 @@ void ThreadStartFunction(void* pThreadObject)
 
 Thread::Thread()
 {
-    m_QuitNow = false ;
-    m_Stopped = true ;
-    m_Started = false ;
+    m_QuitNow.store(false) ;
+    m_Stopped.store(true) ;
+    m_Started.store(false) ;
 }
 
 Thread::~Thread()
 {
+    m_QuitNow.store(true) ;
+    if (m_Thread.joinable())
+    {
+        if (m_Thread.get_id() != std::this_thread::get_id())
+        {
+            m_Thread.join() ;
+        }
+        else
+        {
+            m_Thread.detach() ;
+        }
+    }
 }
 
 void Thread::Start()
 {
     // If we've already been started ignore subsequent attempts
     // to start this thread.
-    if (m_Started)
+    if (m_Started.exchange(true))
     {
         return ;
     }
     
-    m_Stopped = false;
-    m_Started = true ;
-    // This creates a new thread and calls our static start function which in
-    // turn calls back to the "Run" method of this class, so the user of the thread
-    // has a nice object wrapped in a class to work with for their thread.
-    BeginThread(ThreadStartFunction, this) ;
+    m_Stopped.store(false) ;
+    m_Thread = std::thread(ThreadStartFunction, this) ;
 }
 
 void Thread::Stop(bool waitTillStopped)
 {
-    // We also just signal the thread and ask it to stop.
-    // We don't currently offer a "force thread to stop" method as that's
-    // generally not a very safe thing to do.  If you feel you need it, add a "ForceStop" method.
-    m_QuitNow = true ;
+    // Signal the thread and ask it to stop.
+    m_QuitNow.store(true) ;
     
-    // If the thread was never started or is already stopped we're done.
-    if (!m_Started || IsStopped())
+    if (!m_Started.load())
     {
         return ;
     }
     
-    int maxTries = 1000 ;
-    
-    // If we've been asked to wait for the thread to quit then pause for a moment while it terminates.
-    while (waitTillStopped && !IsStopped() && maxTries > 0)
+    if (waitTillStopped && m_Thread.joinable())
     {
-        sml::Sleep(0, 10) ;
-        maxTries-- ;
-    }
-    
-    if (maxTries <= 0)
-    {
-        sml::PrintDebug("Timed out waiting for thread to stop") ;
+        if (m_Thread.get_id() != std::this_thread::get_id())
+        {
+            m_Thread.join() ;
+        }
     }
 }
 

@@ -197,14 +197,14 @@ bool ListenerSocket::CreateListener(int port, bool local)
 //                  NULL is returned if there is no new connection.
 //
 /////////////////////////////////////////////////////////////////////
-Socket* ListenerSocket::CheckForClientConnection()
+Socket* ListenerSocket::CheckForClientConnection(int secondsWait, int millisecondsWait)
 {
     CTDEBUG_ENTER_METHOD("ListenerSocket::CheckForClientConnection");
 
     // If this is a blocking socket make sure
     // a connection is available before attempting to accept.
 #ifndef NON_BLOCKING
-    if (!IsReadDataAvailable())
+    if (!IsReadDataAvailable(secondsWait, millisecondsWait))
     {
         return NULL ;
     }

@@ -29,7 +29,7 @@ using namespace sml;
 inline std::string CLI_DoRL_generate_output(const std::string& name, char* const& param)
 {
     const std::string output = name + param;
-    delete param;
+    delete[] param;
     return output;
 }
 

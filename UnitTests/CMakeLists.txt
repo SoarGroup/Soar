@@ -31,6 +31,7 @@ target_compile_features(TestExternalLibraryLib PUBLIC
 if(WIN32)
     set_target_properties(TestExternalLibraryLib PROPERTIES PREFIX "")
 endif()
+add_dependencies(${PROJECT_NAME} TestExternalLibraryLib)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/SoarHelpers

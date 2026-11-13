@@ -24,8 +24,21 @@
 using namespace sml ;
 using namespace sock ;
 
+static void WakeConnectionManagerCallback(void* pWakeData)
+{
+    if (pWakeData)
+    {
+        static_cast<ConnectionManager*>(pWakeData)->SignalIncomingData() ;
+    }
+}
+
 ConnectionManager::ConnectionManager(int port, KernelSML* pKernel)
 {
+    m_WakeupSocket = NO_CONNECTION ;
+    m_WakeupPending.store(false) ;
+    memset(&m_WakeupAddr, 0, sizeof(m_WakeupAddr)) ;
+    InitWakeupSocket() ;
+    
     // Start the thread that wraps the listener socket running.
     // (Unless passed port 0 -- which suppresses this)
     m_ListenerThread = NULL ;
@@ -53,6 +66,85 @@ ConnectionManager::~ConnectionManager()
     {
         Shutdown() ;
     }
+    CloseWakeupSocket() ;
+}
+
+void ConnectionManager::InitWakeupSocket()
+{
+    SOCKET s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) ;
+    if (s == INVALID_SOCKET)
+    {
+        return ;
+    }
+    sockaddr_in addr ;
+    memset(&addr, 0, sizeof(addr)) ;
+    addr.sin_family = AF_INET ;
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK) ;
+    addr.sin_port = 0 ;
+    if (bind(s, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
+    {
+        NET_CLOSESOCKET(s) ;
+        return ;
+    }
+    socklen_t len = sizeof(m_WakeupAddr) ;
+    if (getsockname(s, reinterpret_cast<sockaddr*>(&m_WakeupAddr), &len) != 0)
+    {
+        NET_CLOSESOCKET(s) ;
+        return ;
+    }
+    // Work around Windows firewall/stack quirk where getsockname can return 0.0.0.0
+    if (m_WakeupAddr.sin_addr.s_addr == htonl(INADDR_ANY))
+    {
+        m_WakeupAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK) ;
+    }
+#ifdef _WIN32
+    unsigned long nonBlocking = 1 ;
+    ioctlsocket(s, FIONBIO, &nonBlocking) ;
+#else
+    int flags = fcntl(s, F_GETFL, 0) ;
+    if (flags >= 0)
+    {
+        fcntl(s, F_SETFL, flags | O_NONBLOCK) ;
+    }
+#endif
+    m_WakeupSocket = s ;
+}
+
+void ConnectionManager::CloseWakeupSocket()
+{
+    if (m_WakeupSocket != NO_CONNECTION)
+    {
+        NET_CLOSESOCKET(m_WakeupSocket) ;
+        m_WakeupSocket = NO_CONNECTION ;
+    }
+}
+
+void ConnectionManager::DrainWakeupSocket()
+{
+    if (m_WakeupSocket == NO_CONNECTION)
+    {
+        return ;
+    }
+    char buf[64] ;
+    // Clear m_WakeupPending BEFORE draining non-blocking socket so any concurrent
+    // SignalIncomingData() during/after drain is guaranteed not to be lost.
+    m_WakeupPending.store(false) ;
+    while (recvfrom(m_WakeupSocket, buf, sizeof(buf), 0, NULL, NULL) > 0)
+    {
+    }
+}
+
+void ConnectionManager::SignalIncomingData()
+{
+    if (m_WakeupSocket == NO_CONNECTION)
+    {
+        return ;
+    }
+    if (!m_WakeupPending.exchange(true))
+    {
+        char byte = 1 ;
+        sendto(m_WakeupSocket, &byte, 1, 0, reinterpret_cast<sockaddr*>(&m_WakeupAddr), sizeof(m_WakeupAddr)) ;
+    }
 }
 
 // Cause the receiver thread to quit.
@@ -61,6 +153,8 @@ void ConnectionManager::StopReceiverThread()
     // Stop the receiver thread (and wait until is has stopped)
     if (m_ReceiverThread)
     {
+        m_ReceiverThread->Stop(false) ;
+        SignalIncomingData() ;
         m_ReceiverThread->Stop(true) ;
     }
 }
@@ -105,6 +199,8 @@ void ConnectionManager::Shutdown()
     // Stop the receiver thread (and wait until is has stopped)
     if (m_ReceiverThread)
     {
+        m_ReceiverThread->Stop(false) ;
+        SignalIncomingData() ;
         m_ReceiverThread->Stop(true) ;
         
         //  sml::PrintDebug("Receiver stopped") ;
@@ -159,8 +255,10 @@ void ConnectionManager::AddConnection(Connection* pConnection)
     pConnection->SetID(bufferCString) ;
     pConnection->SetName("unknown") ;
     pConnection->SetStatus(sml_Names::kStatusCreated) ;
+    pConnection->SetWakeCallback(&WakeConnectionManagerCallback, this) ;
     
     m_Connections.push_back(pConnection) ;
+    SignalIncomingData() ;
 }
 
 Connection* ConnectionManager::GetConnectionByIndex(int i)
@@ -265,6 +363,88 @@ bool ConnectionManager::ReceiveAllMessages()
     // So far we don't have some sort of shutdown message the remote connections
     // can send, but if we decide to implement it this allows us to return it.
     return receivedOneMessage ;
+}
+
+bool ConnectionManager::WaitForIncomingData(int secondsWait, int millisecondsWait)
+{
+    assert(millisecondsWait < 1000 && "specified milliseconds must be less than 1000") ;
+    
+    fd_set readSet ;
+    FD_ZERO(&readSet) ;
+    SOCKET maxSock = NO_CONNECTION ;
+    int socketCount = 0 ;
+    
+    if (m_WakeupSocket != NO_CONNECTION)
+    {
+#ifdef _MSC_VER
+#pragma warning(push, 3)
+#endif
+        FD_SET(m_WakeupSocket, &readSet) ;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+        maxSock = m_WakeupSocket ;
+        socketCount++ ;
+    }
+    
+    {
+        soar_thread::Lock lock(&m_ConnectionsMutex) ;
+        for (ConnectionsIter iter = m_Connections.begin() ; iter != m_Connections.end() ; ++iter)
+        {
+            Connection* pConnection = *iter ;
+            if (!pConnection || pConnection->IsClosed())
+            {
+                continue ;
+            }
+            if (pConnection->HasPendingIncomingMessages())
+            {
+                return true ;
+            }
+            SOCKET hSock = pConnection->GetSocketHandle() ;
+            if (hSock != NO_CONNECTION)
+            {
+#ifndef _WIN32
+                if (hSock >= FD_SETSIZE)
+                {
+                    continue ;
+                }
+#endif
+#ifdef _MSC_VER
+#pragma warning(push, 3)
+#endif
+                FD_SET(hSock, &readSet) ;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+                if (maxSock == NO_CONNECTION || hSock > maxSock)
+                {
+                    maxSock = hSock ;
+                }
+                socketCount++ ;
+            }
+        }
+    }
+    
+    if (socketCount == 0)
+    {
+        sml::Sleep(secondsWait, millisecondsWait) ;
+        return false ;
+    }
+    
+    TIMEVAL waitTime ;
+    waitTime.tv_sec = secondsWait ;
+    waitTime.tv_usec = millisecondsWait * 1000 ;
+    
+    int res = select(static_cast<int>(maxSock) + 1, &readSet, NULL, NULL, &waitTime) ;
+    if (res > 0)
+    {
+        if (m_WakeupSocket != NO_CONNECTION && FD_ISSET(m_WakeupSocket, &readSet))
+        {
+            DrainWakeupSocket() ;
+        }
+        return true ;
+    }
+    return false ;
 }
 
 int ConnectionManager::GetListenerPort()

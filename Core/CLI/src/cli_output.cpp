@@ -407,7 +407,17 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
 
             if (m_pLogFile)
             {
-                return SetError("Log already open: " + m_LogFilename);
+                if (m_pLogAgentSML && m_pLogAgentSML != m_pAgentSML)
+                {
+                    delete m_pLogFile;
+                    m_pLogFile = 0;
+                    m_LogFilename.clear();
+                    m_pLogAgentSML = 0;
+                }
+                else
+                {
+                    return SetError("Log already open: " + m_LogFilename);
+                }
             }
 
             {
@@ -420,6 +430,7 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
                 }
 
                 m_LogFilename = filename;
+                m_pLogAgentSML = m_pAgentSML;
             }
             SaveOutputSettings();
             break;
@@ -440,6 +451,7 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
 
             delete m_pLogFile;
             m_pLogFile = 0;
+            m_pLogAgentSML = 0;
             m_LogFilename.clear();
             RestoreOutputSettings();
             break;

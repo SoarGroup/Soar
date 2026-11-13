@@ -24,10 +24,15 @@
 #define DATA_SENDER_H
 
 #include <string>
+#include "portability.h"
 #include "thread_Lock.h"
 
 namespace sock
 {
+
+#ifndef NO_CONNECTION
+#define NO_CONNECTION 0
+#endif
 
     class DataSender
     {
@@ -59,6 +64,12 @@ namespace sock
             // Returns true if data sender is closed--but then receiveMsg will know it's closed.
             // The timeout for waiting for data is secondsWait + millisecondsWait, where millisecondsWait < 1000
             virtual bool        IsReadDataAvailable(int secondsWait = 0, int millisecondsWait = 0) = 0;
+            
+            // Returns the underlying socket handle if this DataSender is socket-backed, or NO_CONNECTION otherwise.
+            virtual SOCKET      GetSocketHandle()
+            {
+                return NO_CONNECTION;
+            }
             
             // Close down our side of the data sender, locks and calls CloseInternal
             void        Close();

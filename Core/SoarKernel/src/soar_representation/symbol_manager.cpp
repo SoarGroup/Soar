@@ -120,7 +120,12 @@ uint32_t hash_int_constant_raw_info(int64_t value, short num_bits)
 
 uint32_t hash_float_constant_raw_info(double value, short num_bits)
 {
-    return compress(static_cast<uint32_t>(value), num_bits);
+    uint64_t bits = 0;
+    if (value != 0.0)
+    {
+        memcpy(&bits, &value, sizeof(bits));
+    }
+    return compress(static_cast<uint32_t>(bits ^ (bits >> 32)), num_bits);
 }
 
 /* ---------------------------------------------------
@@ -159,7 +164,7 @@ uint32_t hash_float_constant(void* item, short num_bits)
 {
     floatSymbol* fc;
     fc = static_cast<floatSymbol*>(item);
-    return compress(static_cast<uint32_t>(fc->value), num_bits);
+    return hash_float_constant_raw_info(fc->value, num_bits);
 }
 
 /* -----------------------------------------------------------------
