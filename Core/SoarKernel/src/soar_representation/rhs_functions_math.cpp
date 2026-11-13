@@ -2070,11 +2070,11 @@ struct wme_val_stats {
 
 
 
-typedef struct {
+struct Point {
     int64_t x;
     int64_t y;
-    char * id;
-} Point;
+    std::string id;
+};
 
 double calculate_angle(Point start, Point end)
 {
@@ -2109,11 +2109,10 @@ double calculate_distance(Point p1, Point p2) {
  Takes 3 args: point{x,y,id}, heading(int compass degrees),array of points
  and returns string id of nearest intercept
 -------------------------------------------------------------------- */
-char * select_point_closest_to_vector(Point starting, int heading, const std::vector<Point>& points)
+std::string select_point_closest_to_vector(Point starting, int heading, const std::vector<Point>& points)
 {
     double min_angle_diff = DBL_MAX;
-    static char nonvalid[] = "no_valid_point";
-    Point nearest_point = {1000, 1000, nonvalid};  // Initialize with invalid point
+    Point nearest_point = {1000, 1000, "no_valid_point"};  // Initialize with invalid point
 
     for (const auto& point : points)
     {
@@ -2305,50 +2304,48 @@ Symbol* select_point_closest_to_vector_rhs_function_code(agent* thisAgent, cons*
     Symbol * id_symbol = thisAgent->symbolManager->find_str_constant("id");
 
     //for all points in set
-    if (x_symbol && y_symbol && id_symbol)
+    for (slot* pointslot = points_arg->id->slots; pointslot != NIL; pointslot = pointslot->next)
     {
-        for (slot* pointslot = points_arg->id->slots; pointslot != NIL; pointslot = pointslot->next)
+        for (wme* curwmeA = pointslot->wmes; curwmeA != 0; curwmeA = curwmeA->next)
         {
-            for (wme* curwmeA = pointslot->wmes; curwmeA != 0; curwmeA = curwmeA->next)
+            Symbol* next_point = curwmeA->value;
+            if (next_point->symbol_type != IDENTIFIER_SYMBOL_TYPE)
             {
-                Symbol* next_point = curwmeA->value;
-                if (next_point->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-                {
-                    thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to select-point-closest-to-vector function for a point\n", next_point);
-                    continue;
-                }
-                wme* wme_x = get_wmes_for_named_slot(next_point, x_symbol);
-                wme* wme_y = get_wmes_for_named_slot(next_point, y_symbol);
-                wme* wme_id = get_wmes_for_named_slot(next_point, id_symbol);
-                if (!wme_x || !wme_y || !wme_id)
-                {
-                    continue;
-                }
-                Symbol * x_value = wme_x->value;
-                Symbol * y_value = wme_y->value;
-                Symbol * id_value = wme_id->value;
-                if ((!x_value->is_int() && !x_value->is_float()) ||
-                    (!y_value->is_int() && !y_value->is_float()))
-                {
-                    continue;
-                }
-
-                // get values
-                int64_t point_x = (x_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? x_value->ic->value : static_cast<int64_t>(x_value->fc->value);
-                int64_t point_y = (y_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? y_value->ic->value : static_cast<int64_t>(y_value->fc->value);
-                //converting to positive y=south coordinates
-                point_y = -1 * point_y;
-                char * id = id_value->to_string(false, false, NIL, 0);
-
-                // add to point array
-                points.push_back({point_x, point_y, id});
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to select-point-closest-to-vector function for a point\n", next_point);
+                return NIL;
             }
+            wme* wme_x = x_symbol ? get_wmes_for_named_slot(next_point, x_symbol) : NIL;
+            wme* wme_y = y_symbol ? get_wmes_for_named_slot(next_point, y_symbol) : NIL;
+            wme* wme_id = id_symbol ? get_wmes_for_named_slot(next_point, id_symbol) : NIL;
+            if (!wme_x || !wme_y || !wme_id)
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: point (%y) missing x, y, or id attribute in select-point-closest-to-vector function\n", next_point);
+                return NIL;
+            }
+            Symbol * x_value = wme_x->value;
+            Symbol * y_value = wme_y->value;
+            Symbol * id_value = wme_id->value;
+            if ((!x_value->is_int() && !x_value->is_float()) ||
+                (!y_value->is_int() && !y_value->is_float()))
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number coordinate on point (%y) passed to select-point-closest-to-vector function\n", next_point);
+                return NIL;
+            }
+
+            // get values
+            int64_t point_x = (x_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? x_value->ic->value : static_cast<int64_t>(x_value->fc->value);
+            int64_t point_y = (y_value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? y_value->ic->value : static_cast<int64_t>(y_value->fc->value);
+            //converting to positive y=south coordinates
+            point_y = -1 * point_y;
+            std::string id(id_value->to_string(false, false, NIL, 0));
+
+            // add to point array
+            points.push_back({point_x, point_y, id});
         }
     }
 
-    char starting_name[] = "starting";
-    Point starting = {current_x, current_y, starting_name};
-    return thisAgent->symbolManager->make_str_constant(select_point_closest_to_vector(starting, heading, points));
+    Point starting = {current_x, current_y, "starting"};
+    return thisAgent->symbolManager->make_str_constant(select_point_closest_to_vector(starting, heading, points).c_str());
 }
 
 /*

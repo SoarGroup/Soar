@@ -572,7 +572,6 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
     if (!pOp)
     {
         std::string temp;
-        char* temp2;
 
         if (m_RawOutput)
         {
@@ -583,10 +582,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, "");
         }
 
-        temp = "WMA activation: ";
-        temp2 = thisAgent->WM->wma_params->activation->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "WMA activation: " + thisAgent->WM->wma_params->activation->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n\n";
@@ -616,10 +612,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str());
         }
 
-        temp = "decay-rate: ";
-        temp2 = thisAgent->WM->wma_params->decay_rate->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "decay-rate: " + thisAgent->WM->wma_params->decay_rate->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -629,10 +622,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str());
         }
 
-        temp = "petrov-approx: ";
-        temp2 = thisAgent->WM->wma_params->petrov_approx->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "petrov-approx: " + thisAgent->WM->wma_params->petrov_approx->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -671,10 +661,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str());
         }
 
-        temp = "decay-thresh: ";
-        temp2 = thisAgent->WM->wma_params->decay_thresh->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "decay-thresh: " + thisAgent->WM->wma_params->decay_thresh->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -684,10 +671,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str());
         }
 
-        temp = "forgetting: ";
-        temp2 = thisAgent->WM->wma_params->forgetting->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "forgetting: " + thisAgent->WM->wma_params->forgetting->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -697,10 +681,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str());
         }
 
-        temp = "forget-wme: ";
-        temp2 = thisAgent->WM->wma_params->forget_wme->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "forget-wme: " + thisAgent->WM->wma_params->forget_wme->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -710,10 +691,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str());
         }
 
-        temp = "fake-forgetting: ";
-        temp2 = thisAgent->WM->wma_params->fake_forgetting->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "fake-forgetting: " + thisAgent->WM->wma_params->fake_forgetting->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -751,10 +729,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str());
         }
 
-        temp = "timers: ";
-        temp2 = thisAgent->WM->wma_params->timers->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "timers: " + thisAgent->WM->wma_params->timers->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -764,10 +739,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str());
         }
 
-        temp = "max-pow-cache: ";
-        temp2 = thisAgent->WM->wma_params->max_pow_cache->get_cstring();
-        temp += temp2;
-        delete[] temp2;
+        temp = "max-pow-cache: " + thisAgent->WM->wma_params->max_pow_cache->get_string();
         if (m_RawOutput)
         {
             m_Result << temp << "\n";
@@ -798,9 +770,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
             return SetError("Invalid activation setting.");
         }
 
-        char* temp2 = my_param->get_cstring();
-        std::string output(temp2);
-        delete[] temp2;
+        const std::string output = my_param->get_string();
 
         if (m_RawOutput)
         {
@@ -877,13 +847,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
     {
         if (!pAttr)
         {
-            std::string output;
-            char* temp2;
-
-            output = "Forgotten WMEs: ";
-            temp2 = thisAgent->WM->wma_stats->forgotten_wmes->get_cstring();
-            output += temp2;
-            delete[] temp2;
+            std::string output = "Forgotten WMEs: " + thisAgent->WM->wma_stats->forgotten_wmes->get_string();
 
             if (m_RawOutput)
             {
@@ -902,9 +866,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
                 return SetError("Invalid statistic.");
             }
 
-            char* temp2 = my_stat->get_cstring();
-            std::string output(temp2);
-            delete[] temp2;
+            const std::string output = my_stat->get_string();
 
             if (m_RawOutput)
             {
@@ -942,10 +904,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
                     {
                         std::string output(t->get_name());
                         output += ": ";
-
-                        char* temp = t->get_cstring();
-                        output += temp;
-                        delete[] temp;
+                        output += t->get_string();
 
                         if (raw)
                         {
@@ -969,9 +928,7 @@ bool CommandLineInterface::DoWMA(const char pOp, const std::string* pAttr, const
                 return SetError("Invalid timer.");
             }
 
-            char* temp2 = my_timer->get_cstring();
-            std::string output(temp2);
-            delete[] temp2;
+            const std::string output = my_timer->get_string();
 
             if (m_RawOutput)
             {

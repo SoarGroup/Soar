@@ -41,6 +41,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->value = value;
     p->referent = referent;
     p->slot = NIL;
+    p->inst = NIL;
     p->total_preferences_for_candidate = 0;
     p->numeric_value = 0;
     p->rl_contribution = false;

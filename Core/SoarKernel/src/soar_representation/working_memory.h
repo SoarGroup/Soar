@@ -102,6 +102,7 @@ typedef struct wme_struct
     struct condition_struct*    chunker_bt_last_ground_cond;
     bool                        is_singleton;
     bool                        singleton_status_checked;
+    bool                        is_module_wme;
     bool                        removed_from_wm;
     Identity*                   local_singleton_id_identity_set;
     Identity*                   local_singleton_value_identity_set;

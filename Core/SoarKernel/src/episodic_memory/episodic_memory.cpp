@@ -2081,11 +2081,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
 
             // cache_size
             {
-                std::string cache_sql("PRAGMA cache_size = ");
-                char* str = thisAgent->EpMem->epmem_params->cache_size->get_cstring();
-                cache_sql.append(str);
-                delete[] str;
-                str = NULL;
+                std::string cache_sql = "PRAGMA cache_size = " + thisAgent->EpMem->epmem_params->cache_size->get_string();
 
                 thisAgent->EpMem->epmem_db->sql_execute(cache_sql.c_str());
             }
@@ -4475,6 +4471,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             root_literal->attribute_s_id = EPMEM_NODEID_BAD;
             root_literal->child_n_id = EPMEM_NODEID_ROOT;
             root_literal->weight = 0.0;
+            root_literal->order = thisAgent->EpMem->epmem_literal_order++;
             new(&(root_literal->parents)) epmem_literal_set();
             new(&(root_literal->children)) epmem_literal_set();
 #ifdef USE_MEM_POOL_ALLOCATORS
@@ -5745,6 +5742,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
             Symbol* parent_sym;
 
             // initialize BFS at command
+            assert(state->id->epmem_info && state->id->epmem_info->cmd_wme && state->id->epmem_info->cmd_wme->value);
             syms.push(state->id->epmem_info->cmd_wme->value);
 
             while (!syms.empty())

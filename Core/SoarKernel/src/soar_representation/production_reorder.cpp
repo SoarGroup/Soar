@@ -317,17 +317,19 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
              *           all the non-equality tests based on that symbol.  Couldn't this have
              *           occurred before with { <var> <var2> } where they match different
              *           symbols? --- */
-            sym = ct->eq_test->data.referent;
-            sym_identity = ct->eq_test->inst_identity;
-            sym_identity_set_test = ct->eq_test;
             /* --- if no equality test was found, generate a dummy variable for it --- */
-            if (!sym)
+            if (!ct->eq_test || !ct->eq_test->data.referent)
             {
                 add_gensymmed_equality_test(thisAgent, &New, 'd');
+                allocate_cons(thisAgent, &c);
                 c->first = New;
                 c->rest = ct->data.conjunct_list;
                 ct->data.conjunct_list = c;
+                ct->eq_test = New;
             }
+            sym = ct->eq_test->data.referent;
+            sym_identity = ct->eq_test->inst_identity;
+            sym_identity_set_test = ct->eq_test;
             /* -- moves all tests except equality in this conjunction list to the saved test
              *    list passed in.
              *    - Use sym determined above to index the test

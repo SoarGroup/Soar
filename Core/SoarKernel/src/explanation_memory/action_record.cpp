@@ -410,13 +410,14 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
     {
         action_record* lAction;
         condition* top = NULL, *bottom = NULL;
-        action* rhs;
+        action* rhs = NULL;
+        action* ownedRhs = NULL;
         int lActionCount = 0;
         thisAgent->outputManager->set_print_indents("");
         thisAgent->outputManager->set_print_test_format(true, false);
         if (thisAgent->explanationMemory->print_explanation_trace)
         {
-            /* We use pRhs to deallocate actions at end, and rhs to iterate through actions */
+            /* We use ownedRhs to deallocate locally generated actions at end, and rhs to iterate */
             if (pRhs)
             {
                 rhs = pRhs;
@@ -435,7 +436,7 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
                     }
                 } else {
                     p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
-                    pRhs = rhs;
+                    ownedRhs = rhs;
                 }
             }
         }
@@ -476,8 +477,8 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
         thisAgent->visualizationManager->graphviz_output += "\n";
         if (thisAgent->explanationMemory->print_explanation_trace)
         {
-            /* If top exists, we generated conditions here and must deallocate. */
-            if (pRhs) deallocate_action_list(thisAgent, pRhs);
+            /* If top/ownedRhs exist, we generated them here and must deallocate. */
+            if (ownedRhs) deallocate_action_list(thisAgent, ownedRhs);
             if (top) deallocate_condition_list(thisAgent, top);
         }
         thisAgent->outputManager->clear_print_test_format();

@@ -2156,6 +2156,32 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
     wme* w, *next_w;
     preference* candidates, *cand, *pref;
 
+    for (w = s->wmes; w != NIL; w = w->next)
+    {
+        if (w->is_module_wme)
+        {
+            if (s->all_preferences != NIL)
+            {
+                std::string warn_msg;
+                if (s->all_preferences->inst && s->all_preferences->inst->prod_name)
+                {
+                    thisAgent->outputManager->sprinta_sf(thisAgent, warn_msg,
+                        "Warning: Production %y attempted to modify architectural module slot (%y ^%y); module WME (%y ^%y %y) is protected.\n",
+                        s->all_preferences->inst->prod_name, s->id, s->attr, w->id, w->attr, w->value);
+                }
+                else
+                {
+                    thisAgent->outputManager->sprinta_sf(thisAgent, warn_msg,
+                        "Warning: Attempted to modify architectural module slot (%y ^%y); module WME (%y ^%y %y) is protected.\n",
+                        s->id, s->attr, w->id, w->attr, w->value);
+                }
+                thisAgent->outputManager->printa(thisAgent, warn_msg.c_str());
+                xml_generate_warning(thisAgent, warn_msg.c_str());
+            }
+            return;
+        }
+    }
+
     candidates = run_non_context_preference_semantics(thisAgent, s);
 
     /* Attribute impasses were previously removed here if type wasn't none.  */
@@ -2251,45 +2277,49 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 WMEs should be added to the goal's GDS (the goal here being the
                 goal to which the added memory is attached). */
 
-            /* Find the highest level preference that is not the top level */
-            goal_stack_level    current_highest_level = LOWEST_POSSIBLE_GOAL_LEVEL;
-            Symbol*             current_highest_goal = NULL;
-            for (pref = w->preference; pref != NIL; pref = pref->next)
+            if (w->id->id->level > TOP_GOAL_LEVEL)
             {
-                if ((w->preference->o_supported == true) && (w->preference->level != 1) &&
-                    (w->preference->inst->match_goal_level < current_highest_level))
+                /* Find the highest level preference that is not the top level */
+                goal_stack_level    current_highest_level = LOWEST_POSSIBLE_GOAL_LEVEL;
+                Symbol*             current_highest_goal = NULL;
+                for (pref = w->preference; pref != NIL; pref = pref->next)
                 {
-                    current_highest_level = w->preference->inst->match_goal_level;
-                    current_highest_goal = w->preference->inst->match_goal;
+                    if ((pref->o_supported == true) && (pref->level != TOP_GOAL_LEVEL) &&
+                        (pref->inst->match_goal_level != TOP_GOAL_LEVEL) &&
+                        (pref->inst->match_goal_level < current_highest_level))
+                    {
+                        current_highest_level = pref->inst->match_goal_level;
+                        current_highest_goal = pref->inst->match_goal;
+                    }
                 }
-            }
-            /* Create a GDS for that level */
-            if (current_highest_goal && (current_highest_goal->id->gds == NIL))
-            {
-                create_gds_for_goal(thisAgent, w->preference->inst->match_goal);
-            }
-            /* Loop over all the preferences for this WME:
-             *   If the instantiation that lead to the preference has not been already explored
-             *         OR
-             *   If the instantiation is not an subgoal instantiation
-             *          for a chunk instantiation we are already exploring
-             *   Then
-             *      Add the instantiation to a list of instantiations that
-             *          will be explored in elaborate_gds().
-             */
-
-            for (pref = w->preference; pref != NIL; pref = pref->next)
-            {
-                if ((pref->inst->GDS_evaluated_already == false) && (pref->inst->match_goal_level == current_highest_level))
+                /* Create a GDS for that level */
+                if (current_highest_goal && (current_highest_goal->id->gds == NIL))
                 {
-                    uniquely_add_to_head_of_dll(thisAgent, pref->inst);
-                    pref->inst->GDS_evaluated_already = true;
+                    create_gds_for_goal(thisAgent, current_highest_goal);
                 }
-            }
+                /* Loop over all the preferences for this WME:
+                 *   If the instantiation that lead to the preference has not been already explored
+                 *         OR
+                 *   If the instantiation is not an subgoal instantiation
+                 *          for a chunk instantiation we are already exploring
+                 *   Then
+                 *      Add the instantiation to a list of instantiations that
+                 *          will be explored in elaborate_gds().
+                 */
 
-            if (thisAgent->parent_list_head)
-            {
-                elaborate_gds(thisAgent);
+                for (pref = w->preference; pref != NIL; pref = pref->next)
+                {
+                    if ((pref->inst->GDS_evaluated_already == false) && (pref->inst->match_goal_level == current_highest_level))
+                    {
+                        uniquely_add_to_head_of_dll(thisAgent, pref->inst);
+                        pref->inst->GDS_evaluated_already = true;
+                    }
+                }
+
+                if (thisAgent->parent_list_head)
+                {
+                    elaborate_gds(thisAgent);
+                }
             }
 
             #ifndef NO_TIMING_STUFF
@@ -3983,13 +4013,12 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
 
 void free_parent_list(agent* thisAgent)
 {
-    parent_inst* curr_pi;
-
-    for (curr_pi = thisAgent->parent_list_head;
-            curr_pi;
-            curr_pi = curr_pi->next)
+    parent_inst* curr_pi = thisAgent->parent_list_head;
+    while (curr_pi)
     {
+        parent_inst* next_pi = curr_pi->next;
         free(curr_pi);
+        curr_pi = next_pi;
     }
 
     thisAgent->parent_list_head = NIL;

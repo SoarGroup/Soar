@@ -21,7 +21,7 @@
 	#include <list>
 	#include <algorithm>
 	#include <iostream>
-    #include <string>
+	#include <cstdint>
 
 	namespace sml {
 	class Agent;
@@ -439,84 +439,84 @@
 
 %extend sml::Agent {
 
-	long RegisterForRunEvent(sml::smlRunEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
+	long long RegisterForRunEvent(sml::smlRunEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
 		PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForRunEvent(id, PythonRunEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
 	}
 
-    long RegisterForProductionEvent(sml::smlProductionEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long RegisterForProductionEvent(sml::smlProductionEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
 		PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForProductionEvent(id, PythonProductionEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long RegisterForPrintEvent(sml::smlPrintEventId id, PyObject* func, PyObject* userData, bool ignoreOwnEchos = true, bool addToBack = true) {
+    long long RegisterForPrintEvent(sml::smlPrintEventId id, PyObject* func, PyObject* userData, bool ignoreOwnEchos = true, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForPrintEvent(id, PythonPrintEventCallback, (void*)pud, ignoreOwnEchos, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long RegisterForXMLEvent(sml::smlXMLEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long RegisterForXMLEvent(sml::smlXMLEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForXMLEvent(id, PythonXMLEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long AddOutputHandler(char* attributeName, PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long AddOutputHandler(char* attributeName, PyObject* func, PyObject* userData, bool addToBack = true) {
 		PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->AddOutputHandler(attributeName, PythonOutputEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long RegisterForOutputNotification(PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long RegisterForOutputNotification(PyObject* func, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForOutputNotification(PythonOutputNotificationEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    bool UnregisterForRunEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForRunEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForRunEvent(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool UnregisterForProductionEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForProductionEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForProductionEvent(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool UnregisterForPrintEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForPrintEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForPrintEvent(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool UnregisterForXMLEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForXMLEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForXMLEvent(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool UnregisterForOutputNotification(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForOutputNotification(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForOutputNotification(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool RemoveOutputHandler(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool RemoveOutputHandler(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->RemoveOutputHandler(pud->callbackid);
 		ReleaseCallbackData(pud);
@@ -527,85 +527,85 @@
 
 %extend sml::Kernel {
 
-    long RegisterForSystemEvent(sml::smlSystemEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long RegisterForSystemEvent(sml::smlSystemEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
         std::cerr << "RegisterForSystemEvent: " << id << std::endl;
         PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForSystemEvent(id, PythonSystemEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long RegisterForUpdateEvent(sml::smlUpdateEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long RegisterForUpdateEvent(sml::smlUpdateEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForUpdateEvent(id, PythonUpdateEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long RegisterForStringEvent(sml::smlStringEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long RegisterForStringEvent(sml::smlStringEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForStringEvent(id, PythonStringEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long RegisterForAgentEvent(sml::smlAgentEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long RegisterForAgentEvent(sml::smlAgentEventId id, PyObject* func, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(func, userData);
 	    pud->callbackid = self->RegisterForAgentEvent(id, PythonAgentEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long AddRhsFunction(char const* pRhsFunctionName, PyObject* func, PyObject* userData, bool addToBack = true) {
+    long long AddRhsFunction(char const* pRhsFunctionName, PyObject* func, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(func, userData);
         pud->callbackid = self->AddRhsFunction(pRhsFunctionName, &PythonRhsEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    long RegisterForClientMessageEvent(char const* pClientName, PyObject* pMessageHandler, PyObject* userData, bool addToBack = true) {
+    long long RegisterForClientMessageEvent(char const* pClientName, PyObject* pMessageHandler, PyObject* userData, bool addToBack = true) {
 	    PythonUserData* pud = CreatePythonUserData(pMessageHandler, userData);
 	    pud->callbackid = self->RegisterForClientMessageEvent(pClientName, &PythonRhsEventCallback, (void*)pud, addToBack);
-	    return (long)pud;
+	    return static_cast<long long>(reinterpret_cast<intptr_t>(pud));
     }
 
-    bool UnregisterForSystemEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForSystemEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForSystemEvent(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool UnregisterForUpdateEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForUpdateEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForUpdateEvent(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool UnregisterForStringEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForStringEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForStringEvent(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool UnregisterForAgentEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForAgentEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForAgentEvent(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool RemoveRhsFunction(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool RemoveRhsFunction(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->RemoveRhsFunction(pud->callbackid);
 		ReleaseCallbackData(pud);
 		return true;
     }
 
-    bool UnregisterForClientMessageEvent(long id) {
-		PythonUserData* pud = (PythonUserData *)id;
+    bool UnregisterForClientMessageEvent(long long id) {
+		PythonUserData* pud = reinterpret_cast<PythonUserData*>(static_cast<intptr_t>(id));
 		if(!IsValidCallbackData(pud)) return false;
 		self->UnregisterForClientMessageEvent(pud->callbackid);
 		ReleaseCallbackData(pud);

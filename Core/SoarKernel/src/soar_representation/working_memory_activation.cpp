@@ -486,7 +486,8 @@ inline wma_reference wma_calculate_initial_boost(agent* thisAgent, wme* w)
     if (num_cond_wmes)
     {
         double avg = floor(combined_time_sum / num_cond_wmes);
-        if (std::isnan(avg) || avg <= 0.0)
+        assert(!std::isnan(avg));
+        if (avg <= 0.0)
         {
             return_val = 0;
         }

@@ -653,11 +653,8 @@ void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, con
 
 void CommandLineInterface::PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf)
 {
-    std::ostringstream tempString;
-    char* temp = printObject->get_cstring();
-    PrintCLIMessage_Justify(prefixString, temp, column_width);
-    delete[] temp;
-
+    const std::string temp = printObject->get_string();
+    PrintCLIMessage_Justify(prefixString, temp.c_str(), column_width);
 }
 
 void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf)

@@ -980,9 +980,7 @@ ElementXML* Connection::CreateSMLResponse(ElementXML const* pIncomingMsg)
         return NULL ;
     }
     
-    MessageSML* pIncomingSML = (MessageSML*)pIncomingMsg ; // MessageSML is a soarxml::ElementXML, not sml::ElementXML
-    
-    if (!pIncomingSML->GetID())
+    if (!pIncomingMsg->GetAttribute(sml_Names::kID))
     {
         SetError(Error::kArgumentIsNotSML) ;
         return NULL ;
@@ -993,7 +991,7 @@ ElementXML* Connection::CreateSMLResponse(ElementXML const* pIncomingMsg)
     MessageSML* pMsg = new MessageSML(MessageSML::kResponse, GenerateID()) ;
     
     // Messages must have an ID and we use that as the response
-    char const* pAck = ((MessageSML*)pIncomingMsg)->GetID() ; // MessageSML is a soarxml::ElementXML, not sml::ElementXML
+    char const* pAck = pIncomingMsg->GetAttribute(sml_Names::kID) ;
     
     // Add an "ack=<id>" field to the response so the caller knows which
     // message we are responding to.

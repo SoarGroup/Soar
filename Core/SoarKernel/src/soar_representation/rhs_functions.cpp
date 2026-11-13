@@ -1094,7 +1094,7 @@ Symbol* xmltowme_from_xml_internal(agent* thisAgent, ElementXML_Handle element, 
             Symbol* value = xmltowme_get_value(thisAgent, child, linkMap, links);
 
             // add wme
-            soar_module::add_module_wme(thisAgent, targetId, attribute, value, false);
+            soar_module::add_module_wme(thisAgent, targetId, attribute, value, false, false);
             const char* link = soarxml_GetAttribute(child, "link-id");
             if (link != NULL)
             {
@@ -1126,7 +1126,7 @@ Symbol* xmltowme_from_xml(agent* thisAgent, ElementXML_Handle element, Symbol* t
         auto targetIt = linkMap.find(std::string(link.linkTo));
         if (targetIt != linkMap.end())
         {
-            soar_module::add_module_wme(thisAgent, link.from, link.attribute, targetIt->second, false);
+            soar_module::add_module_wme(thisAgent, link.from, link.attribute, targetIt->second, false, false);
         }
         else
         {

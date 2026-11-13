@@ -58,14 +58,11 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
         }
         if (stripLTILinks)
         {
-            pref->id->id->LTI_ID = 0;
-            pref->id->update_cached_lti_print_str();
+            set_lti_link(pref->id, 0);
             if (pref->value->is_sti())
             {
-                pref->value->id->LTI_ID = 0;
-                pref->value->update_cached_lti_print_str();
+                set_lti_link(pref->value, 0);
             }
-
         }
         pref = pref->inst_next;
     }
@@ -240,6 +237,7 @@ void SMem_Manager::set_lti_link(Symbol* pISTI, uint64_t pLTI_ID)
         pISTI->id->LTI_ID = pLTI_ID;
         context_count(pLTI_ID, n);
     }
+    pISTI->update_cached_lti_print_str();
 }
 
 uint64_t SMem_Manager::get_current_LTI_for_iSTI(Symbol* pISTI, bool useLookupTable, bool pOverwriteOldLinkToLTM)
@@ -272,7 +270,6 @@ uint64_t SMem_Manager::get_current_LTI_for_iSTI(Symbol* pISTI, bool useLookupTab
     if (pOverwriteOldLinkToLTM || !pISTI->id->LTI_ID)
     {
         set_lti_link(pISTI, returnVal);
-        pISTI->update_cached_lti_print_str();
         pISTI->id->smem_valid = smem_validation;
     }
     return returnVal;

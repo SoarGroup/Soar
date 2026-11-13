@@ -38,7 +38,7 @@ namespace soar_module
     /////////////////////////////////////////////////////////////
 
     void print_ambiguous_commands(agent* thisAgent, const std::string badCommand, const std::list<std::string> matched_name_list);
-    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool isSingleton = false);
+    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool isSingleton = false, bool isArchModule = true);
     void remove_module_wme(agent* thisAgent, wme* w);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,13 @@ namespace soar_module
             //
 
             virtual const std::string get_string() = 0;
-            virtual char* get_cstring() = 0;
+            virtual char* get_cstring()
+            {
+                const std::string temp_str = get_string();
+                char* return_val = new char[ temp_str.length() + 1 ];
+                strcpy(return_val, temp_str.c_str());
+                return return_val;
+            }
     };
 
 
@@ -323,16 +329,6 @@ namespace soar_module
                 return temp_str;
             }
 
-            virtual char* get_cstring()
-            {
-                std::string temp_str;
-                to_string(value, temp_str);
-                char* return_val = new char[ temp_str.length() + 1 ];
-                strcpy(return_val, temp_str.c_str());
-                return_val[ temp_str.length() ] = '\0';
-                return return_val;
-            }
-
             virtual bool set_string(const char* new_string)
             {
                 T new_val;
@@ -401,15 +397,6 @@ namespace soar_module
                 return (*value);
             }
 
-            virtual char* get_cstring()
-            {
-                char* return_val = new char[ value->length() + 1 ];
-                strcpy(return_val, value->c_str());
-                return_val[ value->length() ] = '\0';
-
-                return return_val;
-            }
-
             virtual bool set_string(const char* new_string)
             {
                 if (!(*val_pred)(new_string) || (*prot_pred)(new_string))
@@ -463,15 +450,6 @@ namespace soar_module
             virtual const std::string get_string()
             {
                 return (*value);
-            }
-
-            virtual char* get_cstring()
-            {
-                char* return_val = new char[ value->length() + 1 ];
-                strcpy(return_val, value->c_str());
-                return_val[ value->length() ] = '\0';
-
-                return return_val;
             }
 
             bool parse_list(const char* new_value, std::set< T >& out_set)
@@ -568,15 +546,6 @@ namespace soar_module
             virtual const std::string get_string()
             {
                 return (*value);
-            }
-
-            virtual char* get_cstring()
-            {
-                char* return_val = new char[ value->length() + 1 ];
-                strcpy(return_val, value->c_str());
-                return_val[ value->length() ] = '\0';
-
-                return return_val;
             }
 
             virtual bool set_string(const char* new_string)
@@ -712,28 +681,6 @@ namespace soar_module
                     returnString += p->second;
                 }
                 return returnString;
-            }
-
-
-            virtual char* get_cstring()
-            {
-                typename std::map<T, const char*>::iterator p;
-                p = value_to_string->find(value);
-
-                if (p == value_to_string->end())
-                {
-                    return NULL;
-                }
-                else
-                {
-                    size_t len = strlen(p->second);
-                    char* return_val = new char[ len + 1 ];
-
-                    strcpy(return_val, p->second);
-                    return_val[ len ] = '\0';
-
-                    return return_val;
-                }
             }
 
             virtual bool set_string(const char* new_string)
@@ -873,18 +820,6 @@ namespace soar_module
                 return temp_str;
             }
 
-            virtual char* get_cstring()
-            {
-                T my_val = get_value();
-
-                std::string temp_str;
-                to_string(my_val, temp_str);
-                char* return_val = new char[ temp_str.length() + 1 ];
-                strcpy(return_val, temp_str.c_str());
-                return_val[ temp_str.length() ] = '\0';
-                return return_val;
-            }
-
             void reset()
             {
                 if (!(*prot_pred)(value))
@@ -966,18 +901,6 @@ namespace soar_module
                 std::string temp_str;
                 to_string(my_val, temp_str);
                 return temp_str;
-            }
-
-            virtual char* get_cstring()
-            {
-                double my_value = value();
-
-                std::string temp_str;
-                to_string(my_value, temp_str);
-                char* return_val = new char[ temp_str.length() + 1 ];
-                strcpy(return_val, temp_str.c_str());
-                return_val[ temp_str.length() ] = '\0';
-                return return_val;
             }
 
             //

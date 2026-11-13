@@ -461,6 +461,24 @@ void Explanation_Memory::save_excised_production(production* pProd)
     if (lProductionRecord->was_generated())
     {
         cached_production->insert(lProductionRecord);
+        for (auto it = instantiations->begin(); it != instantiations->end(); ++it)
+        {
+            if (it->second->original_productionID == pProd->p_id)
+            {
+                it->second->excised_production = lProductionRecord;
+            }
+        }
+        for (auto it = chunks_by_ID->begin(); it != chunks_by_ID->end(); ++it)
+        {
+            if (it->second->original_productionID == pProd->p_id)
+            {
+                it->second->excised_production = lProductionRecord;
+                if (it->second->chunkInstantiation)
+                {
+                    it->second->chunkInstantiation->excised_production = lProductionRecord;
+                }
+            }
+        }
     } else {
         thisAgent->memoryManager->free_with_pool(MP_production_record, lProductionRecord);
     }

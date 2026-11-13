@@ -323,6 +323,11 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
                             value = thisAgent->symbolManager->make_new_identifier((char) lexer.current_lexeme.string()[0], 1);
                             cue_ids[lexer.current_lexeme.string()] = value; //Keep track of created symbols for deletion later.
                         }
+                        else
+                        {
+                            value = value_iterator->second;
+                            thisAgent->symbolManager->symbol_add_ref(value);
+                        }
                         lexer.get_lexeme();
                     }
                     else
@@ -444,11 +449,13 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         for (s = root_cue_id->id->slots; s != NIL; s = s->next)
         {
             //Remove all wme's from the slot.
-            wme* delete_wme;
-            for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
+            wme* delete_wme = s->wmes;
+            while (delete_wme != NIL)
             {
+                wme* next_wme = delete_wme->next;
                 thisAgent->symbolManager->symbol_remove_ref(&delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
+                delete_wme = next_wme;
             }
 
             s->wmes = NIL;
@@ -460,11 +467,13 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         for (s = negative_cues->id->slots; s != NIL; s = s->next)
         {
             //Remove all wme's from the slot.
-            wme* delete_wme;
-            for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
+            wme* delete_wme = s->wmes;
+            while (delete_wme != NIL)
             {
+                wme* next_wme = delete_wme->next;
                 thisAgent->symbolManager->symbol_remove_ref(&delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
+                delete_wme = next_wme;
             }
 
             s->wmes = NIL;

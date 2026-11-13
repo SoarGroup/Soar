@@ -113,6 +113,7 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->chunker_bt_last_ground_cond = NULL;
     w->is_singleton = false;
     w->singleton_status_checked = false;
+    w->is_module_wme = false;
     w->removed_from_wm = false;
     w->local_singleton_id_identity_set = NULL_IDENTITY_SET;
     w->local_singleton_value_identity_set = NULL_IDENTITY_SET;

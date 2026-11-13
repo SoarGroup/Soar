@@ -143,7 +143,7 @@ result = agent.LoadProductions(str(towers_of_hanoi_file))
 result = agent.LoadProductions(str(toh_test_file))
 
 kernel.SendClientMessage(agent, "TestMessage", "This is a \"quoted\"\" message")
-kernel.UnregisterForClientMessageEvent(messageCallbackId)
+assert kernel.UnregisterForClientMessageEvent(messageCallbackId), "❌ UnregisterForClientMessageEvent failed"
 
 agent.RunSelf(2, sml_ELABORATION)
 
@@ -183,10 +183,10 @@ def test_agent_reinit(agent):
     assert agent_reinit_called.called, "❌ Agent reinit handler not called"
     print("✅ Agent reinit")
 
-# test unregistering callbacks (not required, just to test)
-agent.UnregisterForProductionEvent(prod_removed_callback_id)
-agent.UnregisterForProductionEvent(prod_fired_callback_id)
-agent.UnregisterForRunEvent(runCallbackId)
+# test unregistering callbacks
+assert agent.UnregisterForProductionEvent(prod_removed_callback_id), "❌ UnregisterForProductionEvent(removed) failed"
+assert agent.UnregisterForProductionEvent(prod_fired_callback_id), "❌ UnregisterForProductionEvent(fired) failed"
+assert agent.UnregisterForRunEvent(runCallbackId), "❌ UnregisterForRunEvent failed"
 
 test_agent_reinit(agent)
 

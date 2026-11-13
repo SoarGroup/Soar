@@ -183,7 +183,6 @@ void Explanation_Based_Chunker::add_results_if_needed(Symbol* pSym, preference* 
     {
         if (((pSym)->id->level >= m_results_match_goal_level) && ((pSym)->tc_num != m_results_tc))
         {
-            if (pSym->id->isa_goal || pSym->id->isa_impasse) m_result_links_goal = true;
             pSym->tc_num = m_results_tc;
 
             /* --- scan through all preferences and wmes for all slots for this id --- */
@@ -780,7 +779,6 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     local_timer.start();
     #endif
 
-    m_result_links_goal = false;
     get_results_for_instantiation();
     if (!m_results) {
         m_extra_results = NULL;

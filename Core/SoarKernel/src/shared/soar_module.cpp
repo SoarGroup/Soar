@@ -42,10 +42,11 @@ namespace soar_module
     // Utility functions
     /////////////////////////////////////////////////////////////
 
-    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool isSingleton)
+    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool isSingleton, bool isArchModule)
     {
         slot* my_slot = make_slot(thisAgent, id, attr);
         wme* w = make_wme(thisAgent, id, attr, value, false);
+        w->is_module_wme = isArchModule;
 
         insert_at_head_of_dll(my_slot->wmes, w, next, prev);
         add_wme_to_wm(thisAgent, w);

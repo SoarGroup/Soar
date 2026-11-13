@@ -737,25 +737,31 @@ void MiscTests::testReteAndSupportDefects()
 void MiscTests::testRHSMathAndSymbolDefects()
 {
     // #12, #13, #21: sum/product with floats, set_reduce error string without bars,
-    // select-point-closest-to-vector across multiple slots/incomplete points, and canonical +0.0
+    // select-point-closest-to-vector across multiple slots/empty set + loud failure on malformed point, and canonical +0.0
     agent->ExecuteCommandLine("excise --all");
     agent->ExecuteCommandLine("sp {init (state <s> ^superstate nil) --> "
-                              "(<s> ^nums <n> ^pts <p> ^neg-zero (* -1.0 0.0)) "
+                              "(<s> ^nums <n> ^pts <p> ^empty-pts <ep> ^bad-pts <bp> ^neg-zero (* -1.0 0.0)) "
                               "(<n> ^a 0.5 ^b 2 ^c 1.5) "
-                              "(<p> ^pt1 <p1> ^pt2 <p2> ^incomplete <p3>) "
+                              "(<p> ^pt1 <p1> ^pt2 <p2>) "
                               "(<p1> ^x 10 ^y 0 ^id east) "
                               "(<p2> ^x 0 ^y 10 ^id north) "
+                              "(<bp> ^incomplete <p3>) "
                               "(<p3> ^x 1)}");
-    agent->ExecuteCommandLine("sp {compute (state <s> ^superstate nil ^nums <n> ^pts <p>) --> "
+    agent->ExecuteCommandLine("sp {compute (state <s> ^superstate nil ^nums <n> ^pts <p> ^empty-pts <ep>) --> "
                               "(<s> ^total (sum <n>) ^prod (product <n>) "
                               "^bad-set (set-count 123) "
+                              "^empty-closest (select-point-closest-to-vector 0 0 90 <ep>) "
                               "^closest (select-point-closest-to-vector 0 0 90 <p>))}");
+    agent->ExecuteCommandLine("sp {compute-malformed (state <s> ^superstate nil ^bad-pts <bp>) --> "
+                              "(<s> ^malformed-closest (select-point-closest-to-vector 0 0 90 <bp>))}");
     agent->RunSelf(1);
     std::string wm = agent->ExecuteCommandLine("print S1 -d 1");
     assertTrue_msg("#12 sum float failed: " + wm, wm.find("^total 4.") != std::string::npos);
     assertTrue_msg("#12 product float failed: " + wm, wm.find("^prod 1.5") != std::string::npos);
     assertTrue_msg("#13 set-count error has escaped bars: " + wm, wm.find("^bad-set |ERROR: First parameter needs to be an identifier.|") != std::string::npos);
     assertTrue_msg("#13 select-point failed: " + wm, wm.find("^closest east") != std::string::npos);
+    assertTrue_msg("#24 empty select-point failed: " + wm, wm.find("^empty-closest no_valid_point") != std::string::npos);
+    assertTrue_msg("#24 malformed select-point did not fail loudly: " + wm, wm.find("^malformed-closest") == std::string::npos);
     assertTrue_msg("#21 negative zero not folded: " + wm, wm.find("-0.0") == std::string::npos);
 }
 
@@ -920,6 +926,78 @@ void MiscTests::testSanitizerAndPushArchitecture()
     assertTrue_msg("#582 agent2 print S1 was denied when agent1 had output log open: " + s1_agent2,
                    s1_agent2.find("S1") != std::string::npos);
     kernel->DestroyAgent(agent2);
+
+    // Issue #585 architectural root cause: rules attempting to overwrite or reject architectural module WMEs
+    // (such as ^smem.command or ^epmem.command in an impasse) emit a warning and cannot evict cmd_wme
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("smem --enable");
+    agent->ExecuteCommandLine("epmem --set learning on");
+    agent->ExecuteCommandLine("sp {bad-smem-cmd (state <s> ^superstate <ss> ^smem <sm>) --> (<sm> ^command <c>) (<c> ^query <q>)}");
+    agent->ExecuteCommandLine("sp {bad-epmem-cmd (state <s> ^superstate <ss> ^epmem <ep>) (<ep> ^command <cmd>) --> (<ep> ^command <cmd> -)}");
+    std::string capturedPrint585;
+    int printCbId = agent->RegisterForPrintEvent(
+        sml::smlEVENT_PRINT,
+        [](sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMessage)
+        {
+            if (pMessage) static_cast<std::string*>(pUserData)->append(pMessage);
+        },
+        &capturedPrint585);
+    agent->RunSelf(2);
+    agent->UnregisterForPrintEvent(printCbId);
+    assertTrue_msg("#585 architectural module slot warning missing: " + capturedPrint585,
+                   capturedPrint585.find("Warning: Production bad-smem-cmd attempted to modify architectural module slot") != std::string::npos &&
+                   capturedPrint585.find("Warning: Production bad-epmem-cmd attempted to modify architectural module slot") != std::string::npos);
+    std::string s2_smem = agent->ExecuteCommandLine("print S2 -d 3");
+    assertTrue_msg("#585 architectural ^command WME was lost on S2: " + s2_smem, s2_smem.find("^command C") != std::string::npos);
+
+    // Common-cause siblings:
+    // 1. smem --query repeated variable in cue (<q> ^left <same> ^right <same>) retains second cue slot
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("smem --enable");
+    agent->ExecuteCommandLine("smem --add { (<x> ^left 1 ^right 2) (<y> ^left 1) }");
+    std::string q_repeat = agent->ExecuteCommandLine("smem --query { (<q> ^left <same> ^right <same>) }");
+    assertTrue_msg("smem --query dropped repeated variable cue attribute: " + q_repeat,
+                   q_repeat.find("@1") != std::string::npos && q_repeat.find("@2") == std::string::npos);
+
+    // 2. Explainer excised contributor rule does not free borrowed excised_production->get_rhs()
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("chunk always");
+    agent->ExecuteCommandLine("explain all on");
+    agent->ExecuteCommandLine("sp {sub-contribute (state <s> ^superstate <ss>) (<ss> ^superstate nil) --> (<ss> ^learned-flag yes)}");
+    agent->RunSelf(2);
+    agent->ExecuteCommandLine("excise sub-contribute");
+    std::string chunks_exp = agent->ExecuteCommandLine("explain list-chunks");
+    assertTrue_msg("Explainer did not record chunk: " + chunks_exp, chunks_exp.find("chunk") != std::string::npos);
+    std::string chunk_trace = agent->ExecuteCommandLine("explain chunk 1");
+    assertTrue_msg("Explainer failed to select chunk 1: " + chunk_trace, chunk_trace.find("Now explaining") != std::string::npos);
+    std::string exp_first = agent->ExecuteCommandLine("explain instantiation 1");
+    std::string exp_second = agent->ExecuteCommandLine("explain instantiation 1");
+    assertTrue_msg("Explainer excised rule trace failed on repeated print: " + exp_second,
+                   exp_first.find("sub-contribute") != std::string::npos && exp_first == exp_second);
+
+    // 3. Reorderer conjunctive test with no equality subtest ({ > 3 < 10 }) + select-point-closest-to-vector
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("sp {init-pts (state <s> ^superstate nil) --> (<s> ^val 5 ^pts <pts> ^badpts <bad>) "
+                              "(<pts> ^p <p1> ^p <p2>) (<p1> ^x 0 ^y 10 ^id 101) (<p2> ^x 10 ^y 0 ^id 202) "
+                              "(<bad> ^p <bp>) (<bp> ^x 5 ^id 999)}");
+    agent->ExecuteCommandLine("sp {conj-no-eq (state <s> ^val { > 3 < 10 } ^pts <pts>) --> "
+                              "(<s> ^east-id (select-point-closest-to-vector 0 0 90 <pts>) "
+                              "^south-id (select-point-closest-to-vector 0 0 180 <pts>))}");
+    agent->ExecuteCommandLine("sp {bad-pt-fails-loudly (state <s> ^badpts <bad>) --> "
+                              "(<s> ^bad-id (select-point-closest-to-vector 0 0 90 <bad>))}");
+    agent->RunSelf(2);
+    std::string s1_pts = agent->ExecuteCommandLine("print S1 -d 1");
+    assertTrue_msg("Conjunctive test without eq or numeric point id failed: " + s1_pts,
+                   s1_pts.find("^east-id |202|") != std::string::npos &&
+                   s1_pts.find("^south-id |101|") != std::string::npos &&
+                   s1_pts.find("^bad-id") == std::string::npos);
 
     // Part II: CreateKernelInNewThread + CreateRemoteConnection push/wait wakeup
     sml::Kernel* asyncKernel = sml::Kernel::CreateKernelInNewThread(12345);

@@ -229,10 +229,6 @@ void Explanation_Memory::print_instantiation_actions(action_record_list* pAction
                 }
             }
         }
-        if (print_explanation_trace)
-        {
-            deallocate_action_list(thisAgent, pRhs);
-        }
         thisAgent->outputManager->clear_print_test_format();
     }
 }

@@ -372,7 +372,7 @@ if 'MSVSSolution' in env['BUILDERS']:
 
 Export('g_msvs_variant')
 
-for d in os.listdir('.'):
+for d in sorted(os.listdir('.')):
     if not d.startswith('.'):
         script = join(d, 'SConscript')
         if os.path.exists(script):

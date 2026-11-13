@@ -221,6 +221,23 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
                 thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->inst_identity, lCond->data.tests.id_test->eq_test->chunk_inst_identity);
             }
 
+            /* Check if the attr element is an identifier or state */
+            lSym = lCond->data.tests.attr_test->eq_test->data.referent;
+            lMatchedSym = lSym->is_variable() ? lSym->var->instantiated_sym : NULL;
+
+            if (lSym->is_sti() && lSym->id->isa_goal)
+            {
+                lSym->tc_num = tc;
+            }
+            else if (lMatchedSym && lMatchedSym->is_sti() && lMatchedSym->id->isa_goal)
+            {
+                lMatchedSym->tc_num = tc;
+            }
+            if (lMatchedSym && lMatchedSym->is_sti())
+            {
+                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.attr_test->eq_test->inst_identity, lCond->data.tests.attr_test->eq_test->chunk_inst_identity);
+            }
+
             /* Check if the value element is a state */
             lSym = lCond->data.tests.value_test->eq_test->data.referent;
             lMatchedSym = lSym->is_variable() ? lSym->var->instantiated_sym : NULL;

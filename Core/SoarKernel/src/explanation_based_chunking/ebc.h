@@ -176,7 +176,6 @@ class Explanation_Based_Chunker
         bool                m_tested_local_negation;
         bool                m_tested_deep_copy;
         bool                m_tested_ltm_recall;
-        bool                m_result_links_goal;
 
         /* Variables used by result building methods */
         goal_stack_level    m_results_match_goal_level;

@@ -223,7 +223,7 @@ void instantiation_record::print_for_wme_trace(bool isChunk, bool printFooter)
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        action* rhs;
+        action* rhs = NULL;
         test id_test_without_goal_test = NULL;
 
         outputManager->set_column_indent(0, 7);
@@ -443,8 +443,9 @@ void instantiation_record::print_for_explanation_trace(bool isChunk, bool printF
 //            thisAgent->explanationMemory->print_footer();
 //        }
 
-        if (original_productionID && originalProduction->p_node)
+        if (original_productionID && originalProduction && originalProduction->p_node)
         {
+            deallocate_action_list(thisAgent, rhs);
             deallocate_condition_list(thisAgent, top);
         }
     }
@@ -554,7 +555,7 @@ void instantiation_record::viz_wm_instantiation(visObjectType objectType)
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        action* rhs;
+        action* rhs = NULL;
 
         thisAgent->outputManager->set_print_test_format(false, true);
         thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, objectType);
@@ -702,6 +703,7 @@ void instantiation_record::viz_et_instantiation(visObjectType objectType)
 
         if (originalProduction && originalProduction->p_node)
         {
+            deallocate_action_list(thisAgent, rhs);
             deallocate_condition_list(thisAgent, top);
         }
         visualizer->viz_object_end(objectType);
