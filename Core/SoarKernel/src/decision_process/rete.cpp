@@ -3899,7 +3899,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     if (refracted_inst)
     {
         insert_at_head_of_dll(p->instantiations, refracted_inst, next, prev);
-        refracted_inst->in_prod_instantiations = true;
         refracted_inst->rete_p_token = NIL;
         refracted_inst->rete_token = NIL;
         refracted_inst->rete_wme = NIL;
@@ -3945,7 +3944,10 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     else
     {
         remove_from_dll(p->instantiations, refracted_inst, next, prev);
-        refracted_inst->in_prod_instantiations = false;
+        if (refracted_inst->rete_p_token)
+        {
+            refracted_inst->rete_p_token->a.p.inst = NIL;
+        }
         if (p_node->b.p.tentative_retractions)
         {
             production_addition_result = REFRACTED_INST_DID_NOT_MATCH;
@@ -6333,24 +6335,13 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* p_tok)
         return;
     }
 
-    /* --- check the instantiation directly linked to this p-node token --- */
+    /* --- check the instantiation in prod->instantiations linked to this p-node token --- */
     inst = p_tok->a.p.inst;
     if (inst != NIL)
     {
+        assert((inst->rete_token == p_tok->parent) && (inst->rete_wme == p_tok->w));
         p_tok->a.p.inst = NIL;
         inst->rete_p_token = NIL;
-        if (!inst->in_prod_instantiations)
-        {
-            inst = NIL;
-        }
-        else
-        {
-            assert((inst->rete_token == p_tok->parent) && (inst->rete_wme == p_tok->w));
-        }
-    }
-
-    if (inst)
-    {
         /* --- add that instantiation to tentative_retractions --- */
         inst->rete_token = NIL;
         inst->rete_wme = NIL;

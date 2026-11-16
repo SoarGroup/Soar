@@ -979,10 +979,6 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->next = inst->prev = NULL;
     inst->prod = prod;
     inst->rete_p_token = p_tok;
-    if (p_tok)
-    {
-        p_tok->a.p.inst = inst;
-    }
     inst->rete_token = tok;
     inst->rete_wme = w;
 
@@ -996,7 +992,6 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->tested_LTM = false;
 
     inst->in_ms = false;
-    inst->in_prod_instantiations = false;
     inst->in_newly_created = false;
     inst->in_newly_deleted = false;
     inst->GDS_evaluated_already = false;
@@ -1362,13 +1357,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         instantiation* lDelInst = *riter;
         lProdName = lDelInst->prod_name ? lDelInst->prod_name->sc->name : NULL;
 
-        if (lDelInst->rete_p_token)
-        {
-            lDelInst->rete_p_token->a.p.inst = NIL;
-            lDelInst->rete_p_token = NIL;
-        }
-        lDelInst->in_prod_instantiations = false;
-
         deallocate_condition_list(thisAgent, lDelInst->top_of_instantiated_conditions);
 
         /* Clean up operator selection knowledge */
@@ -1481,7 +1469,6 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     {
         /* remove inst from list of instantiations of this production */
         remove_from_dll(inst->prod->instantiations, inst, next, prev);
-        inst->in_prod_instantiations = false;
         if (inst->rete_p_token)
         {
             inst->rete_p_token->a.p.inst = NIL;

@@ -461,7 +461,6 @@ void deallocate_production(agent* thisAgent, production* prod)
          * the remaining instantiations instead. */
         for (instantiation* lInst = prod->instantiations; lInst != NULL; lInst = lInst->next)
         {
-            lInst->in_prod_instantiations = false;
             lInst->prod = NULL;
         }
     }

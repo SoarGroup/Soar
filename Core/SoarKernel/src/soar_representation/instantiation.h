@@ -47,7 +47,6 @@ typedef struct instantiation_struct
     bool                            creates_deep_copy;
 
     bool                            in_ms;                  /* true iff this inst. is still in the match set */
-    bool                            in_prod_instantiations; /* true iff this inst. is in prod->instantiations */
     bool                            in_newly_created;       /* true iff this inst. is in the newly_created_instantiation list*/
     bool                            in_newly_deleted;       /* true iff this inst. is in the newly_deleted_instantiation list*/
 

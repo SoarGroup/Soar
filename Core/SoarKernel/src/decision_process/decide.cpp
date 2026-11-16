@@ -3150,22 +3150,15 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
                 {
                     inst->in_newly_created = false;
                     insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
-                    inst->in_prod_instantiations = true;
+                    if (inst->rete_p_token)
+                    {
+                        inst->rete_p_token->a.p.inst = inst;
+                    }
                 }
                 else
                 {
                     inst->in_ms = false;
-                    if (inst->rete_p_token)
-                    {
-                        inst->rete_p_token->a.p.inst = NIL;
-                        inst->rete_p_token = NIL;
-                    }
                 }
-            }
-            else if (inst->rete_p_token)
-            {
-                inst->rete_p_token->a.p.inst = NIL;
-                inst->rete_p_token = NIL;
             }
 
             if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])

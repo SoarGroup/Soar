@@ -89,8 +89,8 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     {
         s->preferences[i] = NIL;
         s->preferences_tail[i] = NIL;
+        s->preferences_cursor[i] = NIL;
     }
-    s->preference_level_heads = NIL;
 
     s->impasse_type = NONE_IMPASSE_TYPE;
     s->impasse_id = NIL;
@@ -198,11 +198,6 @@ void remove_garbage_slots(agent* thisAgent)
         remove_from_dll(s->id->id->slots, s, next, prev);
         thisAgent->symbolManager->symbol_remove_ref(&s->id);
         thisAgent->symbolManager->symbol_remove_ref(&s->attr);
-        if (s->preference_level_heads != NIL)
-        {
-            delete[] s->preference_level_heads;
-            s->preference_level_heads = NIL;
-        }
         if (s->wma_val_references != NIL)
         {
             s->wma_val_references->~wma_sym_reference_map();
