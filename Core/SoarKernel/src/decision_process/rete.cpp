@@ -952,7 +952,7 @@ bool any_i_assertions_or_retractions_ready(agent* thisAgent)
  * restore_postponed_assertions: replaces the postponed assertions back on
  * the assertion lists.
  */
-bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct** tok, wme** w)
+bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct** tok, wme** w, struct token_struct** p_tok)
 {
     ms_change* msc = NIL;
 
@@ -970,6 +970,7 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
             }
 
             msc = thisAgent->active_goal->id->ms_o_assertions;
+            assert(msc->which_assert_list == O_LIST);
             remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
             remove_from_dll(thisAgent->active_goal->id->ms_o_assertions,
                             msc, next_in_level, prev_in_level);
@@ -984,6 +985,7 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
             }
 
             msc = thisAgent->active_goal->id->ms_i_assertions;
+            assert(msc->which_assert_list == I_LIST);
             remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
             remove_from_dll(thisAgent->active_goal->id->ms_i_assertions,
                             msc, next_in_level, prev_in_level);
@@ -1023,6 +1025,10 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
     *prod = msc->p_node->b.p.prod;
     *tok = msc->tok;
     *w = msc->w;
+    if (p_tok)
+    {
+        *p_tok = msc->p_node_tok;
+    }
 
     // save the assertion on the postponed list
     insert_at_head_of_dll(thisAgent->postponed_assertions, msc, next, prev);
@@ -1038,6 +1044,12 @@ void consume_last_postponed_assertion(agent* thisAgent)
 
     // get the most recently postponed assertion
     remove_from_dll(thisAgent->postponed_assertions, msc, next, prev);
+
+    if (msc->p_node_tok)
+    {
+        msc->p_node_tok->a.p.msc = NIL;
+        msc->p_node_tok = NIL;
+    }
 
     // kill it
     thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
@@ -1061,8 +1073,9 @@ void restore_postponed_assertions(agent* thisAgent)
 
         assert(thisAgent->active_goal);
 
-        if (thisAgent->FIRING_TYPE == PE_PRODS)
+        if (msc->which_assert_list == O_LIST)
         {
+            assert(thisAgent->FIRING_TYPE == PE_PRODS);
             insert_at_head_of_dll(thisAgent->active_goal->id->ms_o_assertions,
                                   msc, next_in_level, prev_in_level);
             insert_at_head_of_dll(thisAgent->ms_o_assertions, msc, next, prev);
@@ -1070,6 +1083,8 @@ void restore_postponed_assertions(agent* thisAgent)
         else
         {
             // IE
+            assert(msc->which_assert_list == I_LIST);
+            assert(thisAgent->FIRING_TYPE != PE_PRODS);
             insert_at_head_of_dll(thisAgent->active_goal->id->ms_i_assertions,
                                   msc, next_in_level, prev_in_level);
             insert_at_head_of_dll(thisAgent->ms_i_assertions, msc, next, prev);
@@ -3884,9 +3899,13 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     if (refracted_inst)
     {
         insert_at_head_of_dll(p->instantiations, refracted_inst, next, prev);
+        refracted_inst->in_prod_instantiations = true;
+        refracted_inst->rete_p_token = NIL;
         refracted_inst->rete_token = NIL;
         refracted_inst->rete_wme = NIL;
         thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
+        msc->p_node_tok = NIL;
+        msc->which_assert_list = NO_ASSERT_LIST;
         msc->inst = refracted_inst;
         msc->p_node = p_node;
         /* Because the RETE 'artificially' refracts this instantiation (ie, it is
@@ -3926,6 +3945,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     else
     {
         remove_from_dll(p->instantiations, refracted_inst, next, prev);
+        refracted_inst->in_prod_instantiations = false;
         if (p_node->b.p.tentative_retractions)
         {
             production_addition_result = REFRACTED_INST_DID_NOT_MATCH;
@@ -5886,6 +5906,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     token_added(node);
     thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
+    New->a.p.msc = NIL;
+    New->a.p.inst = NIL;
 
     /* --- check for match in tentative_retractions --- */
     match_found = false;
@@ -5937,6 +5959,12 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         msc->inst->rete_token = tok;
         msc->inst->rete_wme = w;
+        if (msc->inst->rete_p_token)
+        {
+            msc->inst->rete_p_token->a.p.inst = NIL;
+        }
+        msc->inst->rete_p_token = New;
+        New->a.p.inst = msc->inst;
         remove_from_dll(node->b.p.tentative_retractions, msc, next_of_node, prev_of_node);
         remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
         if (msc->goal)
@@ -5967,6 +5995,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     /* --- no match found, so add new assertion --- */
 
     thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
+    msc->p_node_tok = New;
+    New->a.p.msc = msc;
     msc->tok = tok;
     msc->w = w;
     msc->p_node = node;
@@ -6193,9 +6223,9 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     if (prod_type == PE_PRODS)
     {
+        msc->which_assert_list = O_LIST;
         insert_at_head_of_dll(thisAgent->ms_o_assertions, msc, next, prev);
         insert_at_head_of_dll(msc->goal->id->ms_o_assertions, msc, next_in_level, prev_in_level);
-        node->b.p.prod->OPERAND_which_assert_list = O_LIST;
 
         if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
@@ -6208,9 +6238,9 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     else
     {
+        msc->which_assert_list = I_LIST;
         insert_at_head_of_dll(thisAgent->ms_i_assertions, msc, next, prev);
         insert_at_head_of_dll(msc->goal->id->ms_i_assertions, msc, next_in_level, prev_in_level);
-        node->b.p.prod->OPERAND_which_assert_list = I_LIST;
 
         if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
@@ -6256,61 +6286,68 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
      and add it to tentative_retractions.
 ---------------------------------------------------------------------- */
 
-/* BUGBUG shouldn't need to pass in both tok and w -- should have the
-   p-node's token get passed in instead, and have it point to the
-   corresponding instantiation structure. */
-
-void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
+void p_node_left_removal(agent* thisAgent, rete_node* node, token* p_tok)
 {
     ms_change* msc;
     instantiation* inst;
 
     activation_entry_sanity_check();
 
-    /* --- check for match in tentative_assertions --- */
-    for (msc = node->b.p.tentative_assertions; msc != NIL; msc = msc->next_of_node)
+    /* --- O(1) lookup via the p-node token's direct assertion/instantiation links --- */
+    msc = p_tok->a.p.msc;
+    if (msc != NIL)
     {
-        if ((msc->tok == tok) && (msc->w == w))
+        assert((msc->tok == p_tok->parent) && (msc->w == p_tok->w));
+        p_tok->a.p.msc = NIL;
+        msc->p_node_tok = NIL;
+
+        /* --- match found in tentative_assertions, so remove it --- */
+        remove_from_dll(node->b.p.tentative_assertions, msc, next_of_node, prev_of_node);
+
+        // :interrupt
+        if (node->b.p.prod->interrupt > 1)
         {
-            /* --- match found in tentative_assertions, so remove it --- */
-            remove_from_dll(node->b.p.tentative_assertions, msc, next_of_node, prev_of_node);
-
-            // :interrupt
-            if (node->b.p.prod->interrupt > 1)
+            node->b.p.prod->interrupt--;
+            thisAgent->stop_soar = false;
+            if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
             {
-                node->b.p.prod->interrupt--;
-                thisAgent->stop_soar = false;
-                if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
-                {
-                    thisAgent->outputManager->printa_sf(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", static_cast<int64_t>(node->b.p.prod->interrupt), static_cast<int64_t>(thisAgent->stop_soar));
-                }
+                thisAgent->outputManager->printa_sf(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", static_cast<int64_t>(node->b.p.prod->interrupt), static_cast<int64_t>(thisAgent->stop_soar));
             }
-
-            if (node->b.p.prod->OPERAND_which_assert_list == O_LIST)
-            {
-                remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
-                /* msc already defined for the assertion so the goal should be defined
-                as well. */
-                remove_from_dll(msc->goal->id->ms_o_assertions, msc, next_in_level, prev_in_level);
-            }
-            else if (node->b.p.prod->OPERAND_which_assert_list == I_LIST)
-            {
-                remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
-                remove_from_dll(msc->goal->id->ms_i_assertions, msc, next_in_level, prev_in_level);
-            }
-
-            thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
-            activation_exit_sanity_check();
-            return;
         }
-    } /* end of for loop */
 
-    /* --- find the instantiation corresponding to this token --- */
-    for (inst = node->b.p.prod->instantiations; inst != NIL; inst = inst->next)
-        if ((inst->rete_token == tok) && (inst->rete_wme == w))
+        if (msc->which_assert_list == O_LIST)
         {
-            break;
+            remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
+            /* msc already defined for the assertion so the goal should be defined
+            as well. */
+            remove_from_dll(msc->goal->id->ms_o_assertions, msc, next_in_level, prev_in_level);
         }
+        else if (msc->which_assert_list == I_LIST)
+        {
+            remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
+            remove_from_dll(msc->goal->id->ms_i_assertions, msc, next_in_level, prev_in_level);
+        }
+
+        thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
+        activation_exit_sanity_check();
+        return;
+    }
+
+    /* --- check the instantiation directly linked to this p-node token --- */
+    inst = p_tok->a.p.inst;
+    if (inst != NIL)
+    {
+        p_tok->a.p.inst = NIL;
+        inst->rete_p_token = NIL;
+        if (!inst->in_prod_instantiations)
+        {
+            inst = NIL;
+        }
+        else
+        {
+            assert((inst->rete_token == p_tok->parent) && (inst->rete_wme == p_tok->w));
+        }
+    }
 
     if (inst)
     {
@@ -6318,6 +6355,8 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         inst->rete_token = NIL;
         inst->rete_wme = NIL;
         thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
+        msc->p_node_tok = NIL;
+        msc->which_assert_list = NO_ASSERT_LIST;
         msc->inst = inst;
         msc->p_node = node;
         msc->tok = NIL;     /* just for safety */
@@ -6490,7 +6529,7 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
         }
         else if (node_type == P_BNODE)
         {
-            p_node_left_removal(thisAgent, node, tok->parent, tok->w);
+            p_node_left_removal(thisAgent, node, tok);
 
             /* --- for Negative nodes --- */
         }

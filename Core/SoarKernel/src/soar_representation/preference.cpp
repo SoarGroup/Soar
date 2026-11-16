@@ -322,37 +322,67 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
     insert_at_head_of_dll(s->all_preferences, pref, all_of_slot_next, all_of_slot_prev);
 
     /*  add to preference list of slot (according to match goal level of the instantiations) */
+    const byte ptype = pref->type;
+    const goal_stack_level pref_level = pref->inst->match_goal_level;
 
-    if (!s->preferences[pref->type])
+    if (!s->preferences[ptype])
     {
         /*  this is the only pref. of its type, just put it at the head */
-        insert_at_head_of_dll(s->preferences[pref->type], pref, next, prev);
+        insert_at_head_of_dll(s->preferences[ptype], pref, next, prev);
+        s->preferences_tail[ptype] = pref;
+        if (s->preference_level_heads != NIL)
+        {
+            s->preference_level_heads[ptype][pref_level] = pref;
+        }
     }
-    else if (s->preferences[pref->type]->inst->match_goal_level >= pref->inst->match_goal_level)
+    else if (s->preference_level_heads == NIL &&
+             s->preferences[ptype]->inst->match_goal_level == pref_level)
     {
-        /*  it belongs at the head of the list, so put it there */
-        insert_at_head_of_dll(s->preferences[pref->type], pref, next, prev);
+        /*  common single-level slot fast path: O(1) with zero map allocation */
+        insert_at_head_of_dll(s->preferences[ptype], pref, next, prev);
     }
     else
     {
-        /*  scan through the pref. list, find the one to insert after */
-        for (p2 = s->preferences[pref->type]; p2->next != NIL; p2 = p2->next)
+        /*  slot now holds preferences from multiple goal levels: lazily initialize per-level heads */
+        if (s->preference_level_heads == NIL)
         {
-            if (p2->next->inst->match_goal_level >= pref->inst->match_goal_level)
+            s->preference_level_heads = new pref_level_head_map[NUM_PREFERENCE_TYPES]();
+            for (int i = 0; i < NUM_PREFERENCE_TYPES; ++i)
             {
-                break;
+                if (s->preferences[i] != NIL)
+                {
+                    /* Each non-empty type currently has only a single goal level */
+                    s->preference_level_heads[i][s->preferences[i]->inst->match_goal_level] = s->preferences[i];
+                }
             }
         }
 
-        /*  insert pref after p2 */
-        pref->next = p2->next;
-        pref->prev = p2;
-        p2->next = pref;
-        if (pref->next)
+        pref_level_head_map& level_map = s->preference_level_heads[ptype];
+        pref_level_head_map::iterator it = level_map.lower_bound(pref_level);
+        if (it == level_map.begin())
         {
-            pref->next->prev = pref;
+            insert_at_head_of_dll(s->preferences[ptype], pref, next, prev);
         }
+        else if (it == level_map.end())
+        {
+            p2 = s->preferences_tail[ptype];
+            pref->next = NIL;
+            pref->prev = p2;
+            p2->next = pref;
+            s->preferences_tail[ptype] = pref;
+        }
+        else
+        {
+            preference* next_pref = it->second;
+            pref->next = next_pref;
+            pref->prev = next_pref->prev;
+            next_pref->prev->next = pref;
+            next_pref->prev = pref;
+        }
+        level_map[pref_level] = pref;
     }
+    assert(!pref->prev || pref->prev->inst->match_goal_level < pref_level);
+    assert(!pref->next || pref->next->inst->match_goal_level >= pref_level);
 
     pref->in_tm = true;
     preference_add_ref(pref);
@@ -448,6 +478,36 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
 
     /*  remove preference from the list for the slot */
     remove_from_dll(s->all_preferences, pref, all_of_slot_next, all_of_slot_prev);
+    if (s->preferences_tail[pref->type] == pref)
+    {
+        s->preferences_tail[pref->type] = pref->prev;
+    }
+    if (s->preference_level_heads != NIL)
+    {
+        if (!s->all_preferences)
+        {
+            delete[] s->preference_level_heads;
+            s->preference_level_heads = NIL;
+        }
+        else
+        {
+            const goal_stack_level pref_level = pref->inst->match_goal_level;
+            pref_level_head_map& level_map = s->preference_level_heads[pref->type];
+            pref_level_head_map::iterator it = level_map.find(pref_level);
+            assert(it != level_map.end());
+            if (it->second == pref)
+            {
+                if (pref->next != NIL && pref->next->inst->match_goal_level == pref_level)
+                {
+                    it->second = pref->next;
+                }
+                else
+                {
+                    level_map.erase(it);
+                }
+            }
+        }
+    }
     remove_from_dll(s->preferences[pref->type], pref, next, prev);
 
     /*  other miscellaneous stuff */

@@ -618,6 +618,12 @@ void Explanation_Based_Chunker::remove_chunk_instantiation()
 {
     preference* lNext, *lResultPref;
 
+    if (m_chunk_inst->rete_p_token)
+    {
+        m_chunk_inst->rete_p_token->a.p.inst = NIL;
+        m_chunk_inst->rete_p_token = NIL;
+    }
+    m_chunk_inst->in_prod_instantiations = false;
     excise_production(thisAgent, m_chunk_inst->prod, false, true);
     if (m_rule_type == ebc_chunk)
         production_remove_ref(thisAgent, m_chunk_inst->prod);
@@ -1010,6 +1016,12 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, soar_timer* pTi
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
     {
+        if (m_chunk_inst->rete_p_token)
+        {
+            m_chunk_inst->rete_p_token->a.p.inst = NIL;
+            m_chunk_inst->rete_p_token = NIL;
+        }
+        m_chunk_inst->in_prod_instantiations = false;
         thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
         m_chunk_inst = NULL;
     }

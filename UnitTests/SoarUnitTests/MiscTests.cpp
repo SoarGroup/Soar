@@ -999,6 +999,52 @@ void MiscTests::testSanitizerAndPushArchitecture()
                    s1_pts.find("^south-id |101|") != std::string::npos &&
                    s1_pts.find("^bad-id") == std::string::npos);
 
+    // 4. O(1) p_node_left_removal and multi-level slot preference insertion on high-multiplicity matches
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    std::string movesWmes;
+    for (int i = 0; i < 160; ++i)
+    {
+        movesWmes += " ^move m" + std::to_string(i);
+    }
+    std::string initCmd = "sp {init-many (state <s> ^superstate nil) --> (<s> ^turn <t> ^gate open" + movesWmes + ") (<t> ^white 1 ^black 2)}";
+    agent->ExecuteCommandLine(initCmd.c_str());
+    agent->ExecuteCommandLine("sp {propose-many (state <s> ^superstate nil ^move <mv>) --> (<s> ^operator <o> +) (<o> ^mv <mv>)}");
+    agent->ExecuteCommandLine("sp {cross-elab (state <s> ^turn <t> ^gate open ^move <mv> ^operator <o> +) (<t> ^white <w> ^black <b>) --> (<t> ^pegs-total (+ <b> <w>))}");
+    agent->ExecuteCommandLine("sp {s2-elab (state <s> ^impasse tie ^superstate <s1>) (<s1> ^turn <t>) --> (<t> ^pegs-total 3) (<s> ^sub-turn <t>)}");
+    agent->ExecuteCommandLine("sp {s3-elab (state <s> ^superstate <s2>) (<s2> ^sub-turn <t> ^move-copy <mv>) --> (<t> ^pegs-total 3)}");
+    agent->ExecuteCommandLine("sp {s2-copy-moves (state <s> ^impasse tie ^superstate <s1>) (<s1> ^move <mv>) --> (<s> ^move-copy <mv>)}");
+    agent->RunSelf(3);
+    std::string turnPrint = agent->ExecuteCommandLine("print T1");
+    assertTrue_msg("Cross-product elaboration missing ^pegs-total 3: " + turnPrint,
+                   turnPrint.find("^pegs-total 3") != std::string::npos);
+    // Retract all 25,600 instantiations via gate removal and excise cleanly
+    agent->ExecuteCommandLine("sp {close-gate (state <s> ^superstate nil ^gate open ^turn.pegs-total 3) --> (<s> ^gate open -)}");
+    agent->RunSelf(1);
+    agent->ExecuteCommandLine("excise cross-elab");
+
+    // 5. Per-match which_assert_list (simultaneous IE + PE matches on one rule where tentative PE match retracts in PROPOSE)
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("sp {keep-op (state <s> ^superstate nil) --> (<s> ^operator <o> +) (<o> ^name hold) (<s> ^other <x>)}");
+    agent->RunSelf(1); // selects operator hold (O1) on S1 and enters next cycle
+    sml::Identifier* il = agent->GetInputLink();
+    sml::WMElement* trig = il->CreateStringWME("trigger", "go");
+    agent->Commit();
+    agent->ExecuteCommandLine("sp {open-in-propose (state <s> ^io.input-link.trigger go -^done) --> (<s> ^gate open)}");
+    // When ^gate open arrives in PROPOSE, <t>=<o> is IE (I_LIST) while <t>=<x> is PE (O_LIST);
+    // adding a second target <o> ensures the last match added to the p-node was I_LIST
+    agent->ExecuteCommandLine("sp {mixed-ie-pe (state <s> ^operator <o> ^target <t> ^gate open) --> (<t> ^marked yes)}");
+    agent->ExecuteCommandLine("sp {targets (state <s> ^operator <o> ^other <x>) --> (<s> ^target <x> ^target <o>)}");
+    agent->ExecuteCommandLine("sp {cancel-in-propose (state <s> ^operator <o> ^gate open) (<o> ^marked yes) --> (<s> ^done yes)}");
+    agent->RunSelf(2);
+    trig->DestroyWME();
+    agent->Commit();
+    std::string mixedS1 = agent->ExecuteCommandLine("print S1 -d 2");
+    assertTrue_msg("Mixed IE/PE tentative retraction failed: " + mixedS1, mixedS1.find("^done yes") != std::string::npos);
+
     // Part II: CreateKernelInNewThread + CreateRemoteConnection push/wait wakeup
     sml::Kernel* asyncKernel = sml::Kernel::CreateKernelInNewThread(12345);
     assertTrue_msg("Failed to create asyncKernel on port 12345", asyncKernel != nullptr);

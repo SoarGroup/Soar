@@ -18,7 +18,6 @@ typedef struct production_struct
     SupportType                     declared_support;
     action*                         action_list;                /* RHS actions */
     cons*                           rhs_unbound_variables;      /* RHS vars not bound on LHS */
-    int                             OPERAND_which_assert_list;
     bool                            trace_firings;              /* used by pwatch */
     uint64_t                        reference_count;
     uint64_t                        firing_count;
@@ -229,8 +228,6 @@ inline void production_remove_ref(agent* thisAgent, production* p)
       instantiations:  header for a doubly-linked list of the instantiations
         of this production that are currently in the match set (i.e.,
         Rete-supported).
-
-      OPERAND_which_assert_list: (need comment info from REW or RCHONG)
 
    Reference counts on productions:
       +1 if it's in production memory (i.e., hasn't been excised)

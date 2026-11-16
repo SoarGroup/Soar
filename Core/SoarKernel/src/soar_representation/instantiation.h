@@ -22,6 +22,7 @@ typedef struct instantiation_struct
     struct production_struct*       prod;                   /* used full name of struct because
                                                                a forward declaration is needed -ajc (5/1/02) */
     struct instantiation_struct*    next, *prev;            /* dll of inst's from same prod */
+    struct token_struct*            rete_p_token;           /* p-node's own token for O(1) retraction */
     struct token_struct*            rete_token;             /* used by Rete for retractions */
     wme*                            rete_wme;               /* ditto */
 
@@ -46,6 +47,7 @@ typedef struct instantiation_struct
     bool                            creates_deep_copy;
 
     bool                            in_ms;                  /* true iff this inst. is still in the match set */
+    bool                            in_prod_instantiations; /* true iff this inst. is in prod->instantiations */
     bool                            in_newly_created;       /* true iff this inst. is in the newly_created_instantiation list*/
     bool                            in_newly_deleted;       /* true iff this inst. is in the newly_deleted_instantiation list*/
 
@@ -62,8 +64,8 @@ typedef struct instantiation_struct
 } instantiation;
 
 void                init_instantiation_pool(agent* thisAgent);
-void                init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod = NULL, struct token_struct* tok = NULL, wme* w = NULL);
-void                create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
+void                init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod = NULL, struct token_struct* tok = NULL, wme* w = NULL, struct token_struct* p_tok = NULL);
+void                create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w, struct token_struct* p_tok = NULL);
 void                finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst, bool addToGoal, bool is_chunk_inst = false);
 void                retract_instantiation(agent* thisAgent, instantiation* inst);
 void                deallocate_instantiation(agent* thisAgent, instantiation*& inst);

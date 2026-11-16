@@ -3150,11 +3150,22 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
                 {
                     inst->in_newly_created = false;
                     insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
+                    inst->in_prod_instantiations = true;
                 }
                 else
                 {
                     inst->in_ms = false;
+                    if (inst->rete_p_token)
+                    {
+                        inst->rete_p_token->a.p.inst = NIL;
+                        inst->rete_p_token = NIL;
+                    }
                 }
+            }
+            else if (inst->rete_p_token)
+            {
+                inst->rete_p_token->a.p.inst = NIL;
+                inst->rete_p_token = NIL;
             }
 
             if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
@@ -3363,8 +3374,9 @@ void do_preference_phase(agent* thisAgent)
         bool assertionsExist = false;
         production* prod = 0;
         struct token_struct* tok = 0;
+        struct token_struct* p_tok = 0;
         wme* w = 0;
-        while (postpone_assertion(thisAgent, &prod, &tok, &w))
+        while (postpone_assertion(thisAgent, &prod, &tok, &w, &p_tok))
         {
             assertionsExist = true;
 
@@ -3379,7 +3391,7 @@ void do_preference_phase(agent* thisAgent)
             if (shouldCreateInstantiation(thisAgent, prod, tok, w))
             {
                 consume_last_postponed_assertion(thisAgent);
-                create_instantiation(thisAgent, prod, tok, w);
+                create_instantiation(thisAgent, prod, tok, w, p_tok);
             }
         }
 

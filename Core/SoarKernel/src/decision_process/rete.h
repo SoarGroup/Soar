@@ -217,7 +217,8 @@ typedef struct p_node_data_struct
 } p_node_data;
 
 #define O_LIST 0
-#define I_LIST 1     /*   values for prod->OPERAND_which_assert_list */
+#define I_LIST 1     /* values for msc->which_assert_list */
+#define NO_ASSERT_LIST 2
 
 /* --- data for all except positive nodes --- */
 typedef struct non_pos_node_data_struct
@@ -337,6 +338,11 @@ typedef struct token_struct
             struct token_struct* next_negrm, *prev_negrm;/*other local join results*/
             struct token_struct* left_token; /* token this is local join result for*/
         } neg;
+        struct token_in_p_node_data_struct
+        {
+            struct ms_change_struct* msc;       /* tentative assertion at this p-node, or NIL */
+            struct instantiation_struct* inst;  /* instantiation for this p-node token, or NIL */
+        } p;
     } a;
     rete_node* node;
     wme* w;
@@ -356,6 +362,7 @@ typedef struct ms_change_struct
     struct ms_change_struct* prev_of_node;
     struct rete_node_struct* p_node;       /* for retractions, this can be NIL
                                             if the p_node has been excised */
+    struct token_struct* p_node_tok;     /* for assertions: the p-node's own token */
     struct token_struct* tok;            /* for assertions only */
 
     wme* w;                              /* for assertions only */
@@ -363,13 +370,14 @@ typedef struct ms_change_struct
 
     Symbol* goal;
     goal_stack_level level;              /* Level of the match of the assertion or retraction */
+    byte which_assert_list;              /* O_LIST, I_LIST, or NO_ASSERT_LIST */
     struct ms_change_struct* next_in_level; /* dll for goal level */
     struct ms_change_struct* prev_in_level;
 } ms_change;
 extern void init_rete(agent* thisAgent);
 
 extern bool any_assertions_or_retractions_ready(agent* thisAgent);
-extern bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct** tok, wme** w);
+extern bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct** tok, wme** w, struct token_struct** p_tok = NULL);
 extern void consume_last_postponed_assertion(agent* thisAgent);
 extern void restore_postponed_assertions(agent* thisAgent);
 extern bool get_next_retraction(agent* thisAgent, struct instantiation_struct** inst);

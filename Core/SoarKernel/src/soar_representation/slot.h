@@ -31,6 +31,9 @@
 
 #include "kernel.h"
 #include "stl_typedefs.h"
+#include <map>
+
+typedef std::map<goal_stack_level, preference*> pref_level_head_map;
 
 typedef struct slot_struct
 {
@@ -41,6 +44,8 @@ typedef struct slot_struct
     wme* acceptable_preference_wmes;                /* dll of acceptable pref. wmes */
     preference* all_preferences;                    /* dll of all pref's in the slot */
     preference* preferences[NUM_PREFERENCE_TYPES];  /* dlls for each type */
+    preference* preferences_tail[NUM_PREFERENCE_TYPES];
+    pref_level_head_map* preference_level_heads;
     cons* OSK_prefs;                                /* list of OSK prefs to backtrace through */
     instantiation* instantiation_with_temp_OSK;     /* last operator proposal instantiation that had an OSK */
     Symbol* impasse_id;                             /* NIL if slot is not impassed */
