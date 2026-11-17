@@ -379,7 +379,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 c = next_c;
             }
             /* Check if the conjunction is really just a single test after simplification */
-            if (ct->data.conjunct_list->rest == NULL)
+            assert(ct->data.conjunct_list != NULL);
+            if (ct->data.conjunct_list && ct->data.conjunct_list->rest == NULL)
             {
                 test tempTest = static_cast<test>(ct->data.conjunct_list->first);
                 free_cons(thisAgent, ct->data.conjunct_list);
@@ -447,6 +448,7 @@ TestType reverse_direction_of_relational_test(agent* thisAgent, byte type)
         case SAME_TYPE_TEST:
         case SMEM_LINK_TEST:
         case SMEM_LINK_NOT_TEST:
+        case CONSTANT_MATCH_TEST:
             return static_cast<TestType>(type);
         case LESS_TEST:
             return GREATER_TEST;

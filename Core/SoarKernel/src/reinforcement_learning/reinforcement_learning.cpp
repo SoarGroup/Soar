@@ -400,7 +400,9 @@ bool rl_valid_rule(production* prod)
         {
             if (a->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE)
             {
-                numeric_pref = true;
+                numeric_pref = rhs_value_is_symbol(a->referent) &&
+                    (rhs_value_to_symbol(a->referent)->is_int() ||
+                     rhs_value_to_symbol(a->referent)->is_float());
             }
         }
     }

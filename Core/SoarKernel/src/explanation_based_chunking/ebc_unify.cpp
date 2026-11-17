@@ -175,8 +175,20 @@ void Explanation_Based_Chunker::check_for_singleton_unification(condition* pCond
     }
 }
 
-void Explanation_Based_Chunker::check_for_constant_match_literalization(condition* pCond)
+void Explanation_Based_Chunker::check_for_constant_match_literalization(condition* pCond, uint64_t inst_id)
 {
+    if (!pCond) return;
+    if (!inst_id && pCond->inst) inst_id = pCond->inst->i_id;
+
+    if (pCond->type == CONJUNCTIVE_NEGATION_CONDITION)
+    {
+        for (condition* ncc_cond = pCond->data.ncc.top; ncc_cond != NIL; ncc_cond = ncc_cond->next)
+        {
+            check_for_constant_match_literalization(ncc_cond, inst_id);
+        }
+        return;
+    }
+
     // Check if this condition has any constant match tests that need literalization
     test tests[] = {pCond->data.tests.id_test, pCond->data.tests.attr_test, pCond->data.tests.value_test};
     
@@ -186,7 +198,7 @@ void Explanation_Based_Chunker::check_for_constant_match_literalization(conditio
         if (t && has_constant_match_test(t))
         {
             // Find all tests that need literalization due to constant match
-            literalize_constant_match_tests(t, pCond->inst->i_id);
+            literalize_constant_match_tests(t, inst_id);
         }
     }
 }

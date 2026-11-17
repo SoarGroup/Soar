@@ -190,6 +190,10 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
         }
         else
         {
+            if (ebc_settings[SETTING_EBC_LEARNING_ON])
+            {
+                check_for_constant_match_literalization(c);
+            }
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM]) push(thisAgent, c, negateds_to_print);
         }

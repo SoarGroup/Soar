@@ -889,6 +889,62 @@ void MiscTests::testIdentifierAttrAndEBCDefects()
     agent->RunSelf(4);
     std::string learned = agent->ExecuteCommandLine("print -c");
     assertTrue_msg("#20 learned chunk from top-level OSK: " + learned, learned.find("chunk*sub-apply") == std::string::npos);
+
+    // $ (CONSTANT_MATCH_TEST) Bug 1: $ inside negated conditions (NCC and single negation, chunk never & chunk always)
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("chunk always");
+    agent->ExecuteCommandLine(
+        "sp {propose*initialize (state <s> ^superstate nil -^name) --> (<s> ^operator <o> + >) (<o> ^name initialize)}\n"
+        "sp {apply*initialize (state <s> ^operator.name initialize) --> "
+        "(<s> ^name test ^objects <os> ^target <t>) (<os> ^object <a> <b>) (<a> ^handle A) (<b> ^handle B) (<t> ^handle C)}\n"
+        "sp {propose*pick (state <s> ^name test ^objects.object.handle <h>) --> (<s> ^operator <o> +) (<o> ^name pick ^handle <h>)}\n"
+        "sp {result*ncc-dollar (state <ss> ^superstate <s>) (<s> ^target.handle <h>) -{(<s> ^objects.object <ob>) (<ob> ^handle $ <h>)} --> (<s> ^target-is-new true)}\n"
+        "sp {result*neg-dollar (state <ss> ^superstate <s>) (<s> ^target.handle $ <h> -^direct-hit $ <h>) --> (<s> ^target-unchecked true)}\n"
+        "sp {halt*done (state <s> ^name test ^target-is-new true ^target-unchecked true) --> (halt)}");
+    assertTrue_msg("Failed to source negated-dollar rules", agent->GetLastCommandLineResult());
+    std::string negDollarPrint;
+    int negCbId = agent->RegisterForPrintEvent(
+        sml::smlEVENT_PRINT,
+        [](sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMsg)
+        {
+            if (pMsg) static_cast<std::string*>(pUserData)->append(pMsg);
+        },
+        &negDollarPrint);
+    agent->RunSelf(10);
+    agent->UnregisterForPrintEvent(negCbId);
+    assertTrue_msg("Negated $ triggered fatal hash_test error: " + negDollarPrint,
+                   negDollarPrint.find("bad test type in hash_test") == std::string::npos);
+    std::string s1NegDollar = agent->ExecuteCommandLine("print S1 -d 2");
+    assertTrue_msg("Negated $ rule did not produce ^target-is-new true: " + s1NegDollar,
+                   s1NegDollar.find("^target-is-new true") != std::string::npos &&
+                   s1NegDollar.find("^target-unchecked true") != std::string::npos);
+    std::string nccChunk = agent->ExecuteCommandLine("print --full");
+    assertTrue_msg("Chunk from negated-only $ did not literalize C cleanly: " + nccChunk,
+                   nccChunk.find("^handle C)") != std::string::npos &&
+                   nccChunk.find("chunk*result*ncc-dollar") != std::string::npos);
+
+    // $ (CONSTANT_MATCH_TEST) Bug 2: $ after another test inside { ... } ({ <> <ha> $ <hb> }) loads and chunks cleanly
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("chunk always");
+    agent->ExecuteCommandLine(
+        "sp {propose*initialize (state <s> ^superstate nil -^name) --> (<s> ^operator <o> + >) (<o> ^name initialize)}\n"
+        "sp {apply*initialize (state <s> ^operator.name initialize) --> "
+        "(<s> ^name test ^objects <os>) (<os> ^object <a> <b>) (<a> ^handle A) (<b> ^handle B)}\n"
+        "sp {propose*pick (state <s> ^name test ^objects.object.handle <h>) --> (<s> ^operator <o> +) (<o> ^name pick ^handle <h>)}\n"
+        "sp {result*conjunctive-relational-dollar (state <ss> ^superstate <s>) (<s> ^objects <os>) (<os> ^object <a> <b>) "
+        "(<a> ^handle <ha>) (<b> ^handle { <> <ha> $ <hb> }) --> (<s> ^pair <p>) (<p> ^first <ha> ^second <hb>)}\n"
+        "sp {halt*done (state <s> ^name test ^pair) --> (halt)}");
+    assertTrue_msg("Failed to source { <> <ha> $ <hb> } rule", agent->GetLastCommandLineResult());
+    agent->RunSelf(10);
+    std::string conjDollarChunks = agent->ExecuteCommandLine("print --full");
+    assertTrue_msg("{ <> <ha> $ <hb> } chunk missing literalized inequality: " + conjDollarChunks,
+                   conjDollarChunks.find("chunk*result*conjunctive-relational-dollar") != std::string::npos &&
+                   conjDollarChunks.find("<> B") != std::string::npos &&
+                   conjDollarChunks.find("^second B") != std::string::npos);
 }
 
 void MiscTests::testRLUpdateAndTemplateDefects()
@@ -923,6 +979,25 @@ void MiscTests::testRLUpdateAndTemplateDefects()
     assertTrue_msg("#28 second template rule not generated: " + rules, rules.find("rl*tpl*2") != std::string::npos);
     std::string tpl2 = agent->ExecuteCommandLine("print rl*tpl*2");
     assertTrue_msg("#28 template rule merged operator variables: " + tpl2, tpl2.find("^tag t1") == std::string::npos);
+
+    // #33: Learning a chunk whose single action is a computed numeric-indifferent preference (= (+ 1 <d>)) must not crash
+    tearDown(false);
+    setUp();
+    agent->ExecuteCommandLine("excise --all");
+    agent->ExecuteCommandLine("chunk always");
+    agent->ExecuteCommandLine(
+        "sp {propose*a (state <s> ^superstate nil -^done) --> (<s> ^operator <o> + ^depth 3) (<o> ^name a)}\n"
+        "sp {propose*b (state <s> ^superstate nil -^done) --> (<s> ^operator <o> +) (<o> ^name b)}\n"
+        "sp {tie*value (state <s> ^impasse tie ^superstate <ss> ^item <o>) (<ss> ^depth <d>) --> (<ss> ^operator <o> = (+ 1 <d>))}\n"
+        "sp {apply (state <s> ^operator <o>) --> (<s> ^done t)}");
+    assertTrue_msg("#33 failed to source computed numeric preference rules", agent->GetLastCommandLineResult());
+    agent->RunSelf(4);
+    std::string s1After33 = agent->ExecuteCommandLine("print S1 -d 1");
+    assertTrue_msg("#33 computed numeric preference chunk did not complete run: " + s1After33,
+                   s1After33.find("^done t") != std::string::npos);
+    std::string rlRules33 = agent->ExecuteCommandLine("print --rl");
+    assertTrue_msg("#33 computed numeric preference chunk was misclassified as RL rule: " + rlRules33,
+                   rlRules33.find("chunk*tie*value") == std::string::npos);
 }
 
 void MiscTests::testSMemEpMemWmaDefects()

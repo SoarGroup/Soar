@@ -97,7 +97,8 @@ inline bool test_has_referent(test t)
 inline bool test_can_be_transitive_constraint(test t)
 {
     return ((t->type != EQUALITY_TEST) && (t->type != CONJUNCTIVE_TEST) &&
-            (t->type != GOAL_ID_TEST) && (t->type != IMPASSE_ID_TEST));
+            (t->type != GOAL_ID_TEST) && (t->type != IMPASSE_ID_TEST) &&
+            (t->type != CONSTANT_MATCH_TEST));
 };
 
 #endif /* TEST_H_ */

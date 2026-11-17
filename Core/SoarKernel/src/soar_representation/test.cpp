@@ -86,21 +86,36 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                     new_ct->chunk_inst_identity = t->eq_test->chunk_inst_identity;
                 }
             }
-            else if (remove_state_impasse)
+            else if (remove_state_impasse || pUseUnifiedIdentitySet)
             {
                 new_ct = NULL;
                 test temp;
                 cons* c;
                  for (c = t->data.conjunct_list; c != NIL; c = c->rest)
                  {
-                     temp = copy_test(thisAgent, static_cast<test>(c->first), pUseUnifiedIdentitySet, pStripLiteralConjuncts,
+                     test sub = static_cast<test>(c->first);
+                     if (pUseUnifiedIdentitySet && sub->type == CONSTANT_MATCH_TEST)
+                     {
+                         bool has_matching_eq = false;
+                         for (cons* c_eq = t->data.conjunct_list; c_eq != NIL; c_eq = c_eq->rest)
+                         {
+                             test eq_cand = static_cast<test>(c_eq->first);
+                             if (eq_cand->type == EQUALITY_TEST && eq_cand->data.referent == sub->data.referent)
+                             {
+                                 has_matching_eq = true;
+                                 break;
+                             }
+                         }
+                         if (has_matching_eq) continue;
+                     }
+                     temp = copy_test(thisAgent, sub, pUseUnifiedIdentitySet, pStripLiteralConjuncts,
                                       remove_state_impasse, removed_goal, removed_impasse);
                      if (temp)
                      {
                          add_test(thisAgent, &new_ct, temp);
                      }
                  }
-                 if (new_ct->type == CONJUNCTIVE_TEST)
+                 if (new_ct && new_ct->type == CONJUNCTIVE_TEST)
                  {
                      new_ct->data.conjunct_list = destructively_reverse_list(new_ct->data.conjunct_list);
                  }
@@ -294,6 +309,23 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool mer
         return true;
     }
 
+    /* Flatten conjunctive new_test instead of nesting CONJUNCTIVE_TEST inside CONJUNCTIVE_TEST */
+    if (new_test->type == CONJUNCTIVE_TEST)
+    {
+        new_test->data.conjunct_list = destructively_reverse_list(new_test->data.conjunct_list);
+        cons* c_cur = new_test->data.conjunct_list;
+        while (c_cur)
+        {
+            cons* c_next = c_cur->rest;
+            add_test(thisAgent, dest_test_address, static_cast<test>(c_cur->first), merge_disjunctions);
+            free_cons(thisAgent, c_cur);
+            c_cur = c_next;
+        }
+        new_test->data.conjunct_list = NULL;
+        deallocate_test(thisAgent, new_test);
+        return true;
+    }
+
     destination = *dest_test_address;
 
     /* Since this function is called frequently but merges infrequently, we call a special
@@ -338,6 +370,27 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool 
 {
     test ct;
     cons* c;
+
+    if (!add_me)
+    {
+        return;
+    }
+
+    if (*t && add_me->type == CONJUNCTIVE_TEST)
+    {
+        add_me->data.conjunct_list = destructively_reverse_list(add_me->data.conjunct_list);
+        cons* c_cur = add_me->data.conjunct_list;
+        while (c_cur)
+        {
+            cons* c_next = c_cur->rest;
+            add_test_if_not_already_there(thisAgent, t, static_cast<test>(c_cur->first), neg, merge_disjunctions);
+            free_cons(thisAgent, c_cur);
+            c_cur = c_next;
+        }
+        add_me->data.conjunct_list = NULL;
+        deallocate_test(thisAgent, add_me);
+        return;
+    }
 
     if (tests_are_equal(*t, add_me, neg))
     {
@@ -581,6 +634,7 @@ uint32_t hash_test(agent* thisAgent, test t)
         case SAME_TYPE_TEST:
         case SMEM_LINK_TEST:
         case SMEM_LINK_NOT_TEST:
+        case CONSTANT_MATCH_TEST:
             return (t->type << 24) + t->data.referent->hash_id;
         default:
         {
