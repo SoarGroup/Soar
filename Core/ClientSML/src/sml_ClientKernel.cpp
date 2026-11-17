@@ -240,6 +240,14 @@ Kernel::~Kernel(void)
     }
     m_ConnectionInfoList.clear() ;
 
+    {
+        KernelExecutionLock lock(NULL) ;
+        if (Soar_Instance::Get_Soar_Instance().Get_Kernel() == this)
+        {
+            Soar_Instance::Get_Soar_Instance().Set_Kernel(NULL) ;
+        }
+    }
+
     delete m_pEventThread ;
 
     delete m_Connection ;
@@ -750,7 +758,11 @@ Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int 
     ErrorCode errorCode = 0 ;
 
     /* -- Create Soar_Instance and Output_Manager singletons -- */
-    Soar_Instance* lSoarInstance = CreateSoarManagers();
+    Soar_Instance* lSoarInstance ;
+    {
+        KernelExecutionLock lock(NULL) ;
+        lSoarInstance = CreateSoarManagers();
+    }
     Connection* pConnection = Connection::CreateEmbeddedConnection(clientThread, optimized, portToListenOn, &errorCode) ;
 
     // Even if pConnection is NULL, we still build a kernel object, so we have
@@ -763,7 +775,10 @@ Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int 
     // Register for "calls" from the kernel.
     if (pConnection)
     {
-        lSoarInstance->init_Soar_Instance(pKernel);
+        {
+            KernelExecutionLock lock(NULL) ;
+            lSoarInstance->init_Soar_Instance(pKernel);
+        }
 
         pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
 
@@ -792,8 +807,16 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 {
     ErrorCode errorCode = 0 ;
 
-    /* -- Create Soar_Instance and Output_Manager singletons -- */
-    Soar_Instance* lSoarInstance = CreateSoarManagers();
+    /* -- Ensure Soar_Instance and Output_Manager singletons exist, without overwriting
+     *    any local embedded kernel registered on Soar_Instance. -- */
+    {
+        KernelExecutionLock lock(NULL) ;
+        Soar_Instance* lSoarInstance = CreateSoarManagers();
+        if (!lSoarInstance->Get_OM())
+        {
+            lSoarInstance->Set_OM(&Output_Manager::Get_OM());
+        }
+    }
 
     // Initialize the socket library before attempting to create a connection
     sock::SocketLib* pLib = new sock::SocketLib() ;
@@ -804,7 +827,6 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
     // Even if pConnection is NULL, we still build a kernel object, so we have
     // a clean way to pass the error code back to the caller.
     Kernel* pKernel = new Kernel(pConnection) ;
-    lSoarInstance->init_Soar_Instance(pKernel);
 
     pKernel->SetSocketLib(pLib) ;
     pKernel->SetError(errorCode) ;

@@ -227,6 +227,7 @@ void EmbeddedConnection::SetTraceCommunications(bool state)
 void EmbeddedConnection::DirectAddWME_String
 (Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag)
 {
+    KernelExecutionLock lock(m_pKernelSML);
     AgentSML* a = reinterpret_cast<AgentSML*>(pAgentSML);
     assert(a);
     a->BufferedAddStringInputWME(pId, pAttribute, pValue, clientTimetag);
@@ -234,6 +235,7 @@ void EmbeddedConnection::DirectAddWME_String
 void EmbeddedConnection::DirectAddWME_Int
 (Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag)
 {
+    KernelExecutionLock lock(m_pKernelSML);
     AgentSML* a = reinterpret_cast<AgentSML*>(pAgentSML);
     assert(a);
     a->BufferedAddIntInputWME(pId, pAttribute, value, clientTimetag);
@@ -241,6 +243,7 @@ void EmbeddedConnection::DirectAddWME_Int
 void EmbeddedConnection::DirectAddWME_Double
 (Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, double value, int64_t clientTimetag)
 {
+    KernelExecutionLock lock(m_pKernelSML);
     AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
     assert(pAgentSML);
     
@@ -249,6 +252,7 @@ void EmbeddedConnection::DirectAddWME_Double
 void EmbeddedConnection::DirectRemoveWME
 (Direct_AgentSML_Handle pAgentSML, int64_t clientTimetag)
 {
+    KernelExecutionLock lock(m_pKernelSML);
     AgentSML* a = reinterpret_cast<AgentSML*>(pAgentSML);
     assert(a);
     a->BufferedRemoveInputWME(clientTimetag);
@@ -257,6 +261,7 @@ void EmbeddedConnection::DirectRemoveWME
 void EmbeddedConnection::DirectAddID
 (Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag)
 {
+    KernelExecutionLock lock(m_pKernelSML);
     AgentSML* a = reinterpret_cast<AgentSML*>(pAgentSML);
     assert(a);
     a->BufferedAddIdInputWME(pId, pAttribute, pValueId, clientTimetag);
@@ -265,6 +270,7 @@ void EmbeddedConnection::DirectAddID
 Direct_AgentSML_Handle EmbeddedConnection::DirectGetAgentSMLHandle
 (char const* pAgentName)
 {
+    KernelExecutionLock lock(m_pKernelSML);
     AgentSML* a = m_pKernelSML->GetAgentSML(pAgentName);
     return reinterpret_cast<Direct_AgentSML_Handle>(a);
 }

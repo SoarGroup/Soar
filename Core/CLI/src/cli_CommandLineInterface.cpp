@@ -275,7 +275,6 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
         {
             SetAgentSML(m_pLogAgentSML);
             RegisterWithKernel(smlEVENT_PRINT);
-            SetAgentSML(m_pAgentSML);
         }
         m_TrapPrintEvents = false;
         m_pAgentSML->EnablePrintCallback();
@@ -600,6 +599,23 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 bool CommandLineInterface::IsLogOpen()
 {
     return m_pLogFile ? true : false;
+}
+
+bool CommandLineInterface::IsLogOpenForAgent(sml::AgentSML* pAgent)
+{
+    return m_pLogFile != 0 && (!m_pLogAgentSML || m_pLogAgentSML == pAgent);
+}
+
+void CommandLineInterface::OnAgentDestroyed(sml::AgentSML* pAgent)
+{
+    if (m_pCallbackAgentSML == pAgent)
+    {
+        ClearKernelCallback() ;
+    }
+    if (m_pAgentSML == pAgent)
+    {
+        m_pAgentSML = 0 ;
+    }
 }
 
 void CommandLineInterface::PrintCLIMessage(const char* printString, bool add_raw_lf)

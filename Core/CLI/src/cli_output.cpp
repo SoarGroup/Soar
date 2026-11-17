@@ -381,7 +381,12 @@ void CommandLineInterface::SaveOutputSettings()
 
 void CommandLineInterface::RestoreOutputSettings()
 {
-    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    sml::AgentSML* targetAgent = m_pLogAgentSML ? m_pLogAgentSML : m_pAgentSML;
+    if (!targetAgent)
+    {
+        return;
+    }
+    agent* thisAgent = targetAgent->GetSoarAgent();
 
     thisAgent->output_settings->callback_mode = m_callbacks_were_enabled;
     thisAgent->output_settings->print_enabled = m_output_was_enabled ;
@@ -407,25 +412,17 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
 
             if (m_pLogFile)
             {
-                if (m_pLogAgentSML && m_pLogAgentSML != m_pAgentSML)
-                {
-                    delete m_pLogFile;
-                    m_pLogFile = 0;
-                    m_LogFilename.clear();
-                    m_pLogAgentSML = 0;
-                }
-                else
-                {
-                    return SetError("Log already open: " + m_LogFilename);
-                }
+                return SetError("Log already open: " + m_LogFilename);
             }
 
             {
                 std::string filename = *pFilename;
 
                 m_pLogFile = new std::ofstream(filename.c_str(), openmode);
-                if (!m_pLogFile)
+                if (!m_pLogFile || !m_pLogFile->is_open())
                 {
+                    delete m_pLogFile;
+                    m_pLogFile = 0;
                     return SetError("Failed to open " + filename);
                 }
 
@@ -449,11 +446,11 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
                 return SetError("Log is not open.");
             }
 
+            RestoreOutputSettings();
             delete m_pLogFile;
             m_pLogFile = 0;
             m_pLogAgentSML = 0;
             m_LogFilename.clear();
-            RestoreOutputSettings();
             break;
 
         default:

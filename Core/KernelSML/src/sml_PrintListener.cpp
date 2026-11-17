@@ -177,7 +177,10 @@ void PrintListener::FlushOutput(Connection* pSourceConnection, smlPrintEventId e
             // It would be faster to just send a message here without waiting for a response
             // but that could produce incorrect behavior if the client expects to act *during*
             // the event that we're notifying them about (e.g. notification that we're in the input phase).
-            pConnection->SendMessageGetResponse(&response, pMsg) ;
+            {
+                KernelCallbackUnlockScope unlock(pConnection) ;
+                pConnection->SendMessageGetResponse(&response, pMsg) ;
+            }
             
 #ifdef _DEBUG
             // Clean up the string form of the message.

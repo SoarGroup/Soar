@@ -12,11 +12,14 @@
 #include "Export.h"
 
 #include "soar_rand.h"
+#include "soar_instance.h"
 #include "sml_Utils.h"
 #include "sml_Client.h"
 #include "sml_Names.h"
 
+#include <atomic>
 #include <string>
+#include <thread>
 #include <iostream>
 #include <fstream>
 
@@ -303,12 +306,96 @@ void MiscTests::testRHSRand()
 
 void MiscTests::testMultipleKernels()
 {
-	sml::Kernel* kernel2 = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultSMLPort - 1);
+	sml::Kernel* kernel2 = sml::Kernel::CreateKernelInNewThread(0);
 	assertTrue(kernel2 != NULL);
 	assertTrue_msg(kernel2->GetLastErrorDescription(), !kernel2->HadError());
 
 	sml::Agent* agent2 = kernel2->CreateAgent("soar2");
 	assertTrue(agent2 != NULL);
+
+	// Concurrent multi-Kernel stress test: exercise CreateKernelInNewThread (async SML)
+	// alongside CreateKernelInCurrentThread(optimized=true) (DirectAddWME / DirectRun)
+	// across two worker threads hammering shared Memory_Manager pools, Output_Manager,
+	// EBC chunking, and SoarRand, plus a cross-kernel callback from kernel2 -> kernel3.
+	sml::Kernel* kernel3 = sml::Kernel::CreateKernelInCurrentThread(true, 0);
+	assertTrue(kernel3 != NULL);
+	assertTrue_msg(kernel3->GetLastErrorDescription(), !kernel3->HadError());
+	sml::Agent* agent3 = kernel3->CreateAgent("soar3");
+	assertTrue(agent3 != NULL);
+
+	const char* rules =
+		"chunk always\n"
+		"sp {propose*step (state <s> ^superstate nil ^io.input-link.tick <t>) --> "
+		"(<s> ^operator <o1> + = ^operator <o2> + =) (<o1> ^name a ^t <t>) (<o2> ^name b ^t <t>)}\n"
+		"sp {apply*step (state <s> ^operator <o>) (<o> ^t <t>) --> (<s> ^last-tick <t>)}\n";
+	agent2->ExecuteCommandLine(rules);
+	assertTrue(agent2->GetLastCommandLineResult());
+	agent3->ExecuteCommandLine(rules);
+	assertTrue(agent3->GetLastCommandLineResult());
+
+	std::atomic<int> crossKernelCallbacks(0);
+	std::atomic<bool> workerFailed(false);
+	std::pair<sml::Agent*, std::atomic<int>*> cbCtx(agent3, &crossKernelCallbacks);
+	int cbId = agent2->RegisterForRunEvent(
+		sml::smlEVENT_AFTER_DECISION_CYCLE,
+		[](sml::smlRunEventId, void* pUserData, sml::Agent*, sml::smlPhase)
+		{
+			auto* ctx = static_cast<std::pair<sml::Agent*, std::atomic<int>*>*>(pUserData);
+			int prev = ctx->second->fetch_add(1);
+			if (prev >= 0 && prev < 5)
+			{
+				std::string res = ctx->first->ExecuteCommandLine("print S1 -d 1");
+				if (res.find("S1") == std::string::npos)
+				{
+					ctx->second->store(-1000);
+				}
+			}
+		},
+		&cbCtx);
+
+	std::thread tA([&]() {
+		for (int i = 0; i < 30; ++i)
+		{
+			sml::Identifier* il = agent2->GetInputLink();
+			sml::WMElement* w = il->CreateIntWME("tick", i);
+			agent2->Commit();
+			agent2->RunSelf(2);
+			std::string p = agent2->ExecuteCommandLine("print S1 -d 1");
+			if (p.find("S1") == std::string::npos)
+			{
+				workerFailed.store(true);
+			}
+			w->DestroyWME();
+			agent2->Commit();
+		}
+	});
+
+	std::thread tB([&]() {
+		for (int i = 0; i < 30; ++i)
+		{
+			sml::Identifier* il = agent3->GetInputLink();
+			sml::WMElement* w = il->CreateIntWME("tick", i + 1000);
+			agent3->Commit();
+			kernel3->RunAllAgents(2); // exercises DirectRun when optimized=true
+			std::string p = agent3->ExecuteCommandLine("print S1 -d 1");
+			if (p.find("S1") == std::string::npos)
+			{
+				workerFailed.store(true);
+			}
+			w->DestroyWME();
+			agent3->Commit();
+		}
+	});
+
+	tA.join();
+	tB.join();
+
+	agent2->UnregisterForRunEvent(cbId);
+	assertFalse_msg("Concurrent multi-Kernel worker failed", workerFailed.load());
+	assertTrue_msg("Cross-kernel callback failed or did not fire", crossKernelCallbacks.load() >= 5);
+
+	kernel3->Shutdown();
+	delete kernel3;
 
 	kernel2->Shutdown();
 	delete kernel2;
@@ -1058,6 +1145,9 @@ void MiscTests::testSanitizerAndPushArchitecture()
     assertTrue_msg("Failed to connect remoteClient to port 12345", remoteClient != nullptr);
     assertFalse_msg("remoteClient had connection error: " + std::string(remoteClient->GetLastErrorDescription()),
                     remoteClient->HadError());
+    // Remote client connections must not overwrite Soar_Instance's local embedded Kernel pointer
+    assertTrue_msg("CreateRemoteConnection overwrote Soar_Instance::Get_Kernel()",
+                   Soar_Instance::Get_Soar_Instance().Get_Kernel() == asyncKernel);
     sml::Agent* remoteAgent = remoteClient->GetAgent("async-agent");
     assertTrue_msg("remoteClient could not find async-agent", remoteAgent != nullptr);
     std::string echoRemote = remoteAgent->ExecuteCommandLine("print S1 -d 1");
@@ -1065,7 +1155,39 @@ void MiscTests::testSanitizerAndPushArchitecture()
 
     remoteClient->Shutdown();
     delete remoteClient;
+    assertTrue_msg("Deleting remoteClient cleared Soar_Instance::Get_Kernel()",
+                   Soar_Instance::Get_Soar_Instance().Get_Kernel() == asyncKernel);
     asyncKernel->Shutdown();
     delete asyncKernel;
+    assertTrue_msg("Deleting owning local Kernel left dangling Soar_Instance::Get_Kernel()",
+                   Soar_Instance::Get_Soar_Instance().Get_Kernel() == nullptr);
+
+    // Part III: Loud clog failure across agents, agent log ownership on DestroyAgent, and invalid path check
+    remove("clog-owner-1.txt");
+    remove("clog-owner-2.txt");
+    agent->ExecuteCommandLine("clog clog-owner-1.txt");
+    assertTrue_msg("Primary agent failed to open clog-owner-1.txt", agent->GetLastCommandLineResult());
+
+    sml::Agent* secondLogAgent = kernel->CreateAgent("second-log-agent");
+    assertTrue_msg("Failed to create second-log-agent", secondLogAgent != nullptr);
+    std::string dupLogRes = secondLogAgent->ExecuteCommandLine("clog clog-owner-2.txt");
+    assertFalse_msg("Second agent silently overwrote open log instead of failing loudly: " + dupLogRes,
+                    secondLogAgent->GetLastCommandLineResult());
+
+    // Destroying second-log-agent must NOT close primary agent's open log
+    kernel->DestroyAgent(secondLogAgent);
+    std::string queryLogAfterDestroy = agent->ExecuteCommandLine("clog");
+    assertTrue_msg("Destroying non-owning agent closed primary agent's log: " + queryLogAfterDestroy,
+                   queryLogAfterDestroy.find("log is on") != std::string::npos ||
+                   queryLogAfterDestroy.find("open") != std::string::npos);
+
+    agent->ExecuteCommandLine("clog --close");
+    assertTrue_msg("Failed to close clog-owner-1.txt", agent->GetLastCommandLineResult());
+    remove("clog-owner-1.txt");
+    remove("clog-owner-2.txt");
+
+    agent->ExecuteCommandLine("clog nonexistent_dir_soar_test_99999/impossible.txt");
+    assertFalse_msg("clog silently succeeded on non-existent directory path",
+                    agent->GetLastCommandLineResult());
 }
 

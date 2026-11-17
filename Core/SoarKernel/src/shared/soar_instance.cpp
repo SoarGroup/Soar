@@ -8,10 +8,17 @@
 
 #include <iostream>
 
+Soar_Instance& Soar_Instance::Get_Soar_Instance()
+{
+    static Soar_Instance instance;
+    return instance;
+}
+
 Soar_Instance::Soar_Instance()
 {
     m_Kernel = NULL;
     m_Output_Manager = NULL;
+    m_CLI = NULL;
     m_launched_by_unit_test = false;
     m_tcl_enabled = false;
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
@@ -95,6 +102,11 @@ std::string Soar_Instance::Message_Library(std::string &pMessage)
     std::unordered_map< std::string, Soar_Loaded_Library* >::iterator iter = (*m_loadedLibraries).find(lCLIExtensionName.c_str());
     if (iter == (*m_loadedLibraries).end())
     {
+        if (!m_Kernel)
+        {
+            resultString = "Could not load library " + lCLIExtensionName + ": no local Soar kernel is active.";
+            return resultString;
+        }
         // load library
         std::string result = m_Kernel->LoadExternalLibrary(lCLIExtensionName.c_str());
 

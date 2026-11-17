@@ -40,6 +40,12 @@
 
 #include "Export.h"
 
+namespace sml
+{
+    class KernelExecutionLock ;
+    class KernelCallbackUnlockScope ;
+}
+
 namespace soar_thread
 {
 
@@ -58,6 +64,8 @@ namespace soar_thread
     {
             friend class Lock ;
             friend class ConditionalLock ;
+            friend class sml::KernelExecutionLock ;
+            friend class sml::KernelCallbackUnlockScope ;
 
         protected:
             // OS specific implementation

@@ -74,8 +74,17 @@ void ConnectionManager::InitWakeupSocket()
     SOCKET s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) ;
     if (s == INVALID_SOCKET)
     {
+        sml::PrintDebug("Failed to create UDP wakeup socket; falling back to timed socket polling.") ;
         return ;
     }
+#ifndef _WIN32
+    if (s >= FD_SETSIZE)
+    {
+        sml::PrintDebug("UDP wakeup socket exceeds FD_SETSIZE; falling back to timed socket polling.") ;
+        NET_CLOSESOCKET(s) ;
+        return ;
+    }
+#endif
     sockaddr_in addr ;
     memset(&addr, 0, sizeof(addr)) ;
     addr.sin_family = AF_INET ;
@@ -83,12 +92,14 @@ void ConnectionManager::InitWakeupSocket()
     addr.sin_port = 0 ;
     if (bind(s, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
     {
+        sml::PrintDebug("Failed to bind loopback UDP wakeup socket; falling back to timed socket polling.") ;
         NET_CLOSESOCKET(s) ;
         return ;
     }
     socklen_t len = sizeof(m_WakeupAddr) ;
     if (getsockname(s, reinterpret_cast<sockaddr*>(&m_WakeupAddr), &len) != 0)
     {
+        sml::PrintDebug("Failed to query loopback UDP wakeup socket address; falling back to timed socket polling.") ;
         NET_CLOSESOCKET(s) ;
         return ;
     }
@@ -406,6 +417,7 @@ bool ConnectionManager::WaitForIncomingData(int secondsWait, int millisecondsWai
 #ifndef _WIN32
                 if (hSock >= FD_SETSIZE)
                 {
+                    sml::PrintDebug("Remote connection socket handle exceeds FD_SETSIZE; skipping select() wait registration.") ;
                     continue ;
                 }
 #endif

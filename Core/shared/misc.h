@@ -44,7 +44,7 @@ inline void normalize_separators(std::string& path)
 // Conversion of value to string
 template<class T> std::string& to_string(const T& x, std::string& dest, int precision = 16, bool floatfixed = false)
 {
-    static std::ostringstream o;
+    std::ostringstream o;
 
     // get value into stream
     if (floatfixed)

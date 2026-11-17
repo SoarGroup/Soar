@@ -536,11 +536,12 @@ bool KernelSML::HandleDestroyAgent(AgentSML* pAgentSML, char const* /*pCommandNa
 
     FireAgentEvent(pAgentSML, smlEVENT_BEFORE_AGENT_DESTROYED);
 
-    // Close log
-    if (m_CommandLineInterface.IsLogOpen())
+    // Close log only if owned by the agent being destroyed
+    if (m_CommandLineInterface.IsLogOpenForAgent(pAgentSML))
     {
         m_CommandLineInterface.DoCommand(0, pAgentSML, "output log --close", false, true, 0) ;
     }
+    m_CommandLineInterface.OnAgentDestroyed(pAgentSML) ;
 
     // Release any wmes or other objects we're keeping
     pAgentSML->DeleteSelf() ;

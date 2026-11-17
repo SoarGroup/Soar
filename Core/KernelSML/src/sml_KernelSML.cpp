@@ -39,6 +39,65 @@ using namespace sml ;
 // On Windows this is set to the DLL's hModule handle.
 void* KernelSML::s_hModule = NULL ;
 
+static soar_thread::Mutex* GetGlobalKernelMutex()
+{
+    static soar_thread::Mutex* s_pGlobalKernelMutex = new soar_thread::Mutex() ;
+    return s_pGlobalKernelMutex ;
+}
+
+static thread_local int s_GlobalKernelLockDepth = 0 ;
+
+KernelExecutionLock::KernelExecutionLock(KernelSML* pKernel)
+    : m_pKernelMutex(pKernel ? pKernel->GetKernelMutex() : NULL)
+{
+    if (m_pKernelMutex)
+    {
+        m_pKernelMutex->Lock() ;
+    }
+    GetGlobalKernelMutex()->Lock() ;
+    ++s_GlobalKernelLockDepth ;
+}
+
+KernelExecutionLock::~KernelExecutionLock()
+{
+    assert(s_GlobalKernelLockDepth > 0) ;
+    --s_GlobalKernelLockDepth ;
+    GetGlobalKernelMutex()->Unlock() ;
+    if (m_pKernelMutex)
+    {
+        m_pKernelMutex->Unlock() ;
+    }
+}
+
+KernelCallbackUnlockScope::KernelCallbackUnlockScope(Connection* pConnection)
+    : m_SavedDepth(0)
+{
+    if (pConnection && (pConnection->IsAsynchronous() || pConnection->IsRemoteConnection()) && s_GlobalKernelLockDepth > 0)
+    {
+        m_SavedDepth = s_GlobalKernelLockDepth ;
+        s_GlobalKernelLockDepth = 0 ;
+        soar_thread::Mutex* pGlobalMutex = GetGlobalKernelMutex() ;
+        for (int i = 0; i < m_SavedDepth; ++i)
+        {
+            pGlobalMutex->Unlock() ;
+        }
+    }
+}
+
+KernelCallbackUnlockScope::~KernelCallbackUnlockScope()
+{
+    if (m_SavedDepth > 0)
+    {
+        soar_thread::Mutex* pGlobalMutex = GetGlobalKernelMutex() ;
+        for (int i = 0; i < m_SavedDepth; ++i)
+        {
+            pGlobalMutex->Lock() ;
+        }
+        assert(s_GlobalKernelLockDepth == 0) ;
+        s_GlobalKernelLockDepth = m_SavedDepth ;
+    }
+}
+
 static soarxml::ElementXML* AddErrorMsg(Connection* pConnection, soarxml::ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1)
 {
     pConnection->AddErrorToSMLResponse(pResponse, pErrorMsg, errorCode) ;
@@ -55,38 +114,44 @@ KernelSML* KernelSML::CreateKernelSML(int portToListenOn)
 
 KernelSML::KernelSML(int portToListenOn)
 {
-    // Initalize the event map
-    m_pEventMap = new Events() ;
-
-    // Give the command line interface a reference to the kernel interface
-    m_CommandLineInterface.SetKernel(this);
-
-    // Create the map from command name to handler function
-    BuildCommandMap() ;
-
-    // Start listening for incoming connections
-    m_pConnectionManager = new ConnectionManager(portToListenOn, this) ;
-
-    // Start the kernel listener listening for events from gSKI
-    m_AgentListener.Init(this);
-    m_RhsListener.Init(this);
-    m_SystemListener.Init(this);
-    m_UpdateListener.Init(this) ;
-    m_StringListener.Init(this) ;
-
     // We'll use this to make sure only one connection is executing commands
-    // in the kernel at a time.
+    // in this kernel at a time; KernelExecutionLock pairs it with the
+    // process-wide Soar kernel mutex.
     m_pKernelMutex = new soar_thread::Mutex() ;
+    m_pConnectionManager = NULL ;
 
-    m_SuppressSystemStart = false ;
-    m_SuppressSystemStop  = false ;
-    m_RequireSystemStop   = false ;
+    {
+        KernelExecutionLock lock(this) ;
 
-    m_pRunScheduler = new RunScheduler(this) ;
+        // Initalize the event map
+        m_pEventMap = new Events() ;
 
-    m_EchoCommands = false ;
+        // Give the command line interface a reference to the kernel interface
+        m_CommandLineInterface.SetKernel(this);
 
-    m_InterruptCheckRate = 10;
+        // Create the map from command name to handler function
+        BuildCommandMap() ;
+
+        // Start the kernel listener listening for events from gSKI
+        m_AgentListener.Init(this);
+        m_RhsListener.Init(this);
+        m_SystemListener.Init(this);
+        m_UpdateListener.Init(this) ;
+        m_StringListener.Init(this) ;
+
+        m_SuppressSystemStart = false ;
+        m_SuppressSystemStop  = false ;
+        m_RequireSystemStop   = false ;
+
+        m_pRunScheduler = new RunScheduler(this) ;
+
+        m_EchoCommands = false ;
+
+        m_InterruptCheckRate = 10;
+    }
+
+    // Start listening for incoming connections only after all KernelSML members are initialized
+    m_pConnectionManager = new ConnectionManager(portToListenOn, this) ;
 }
 
 int KernelSML::GetListenerPort()
@@ -118,26 +183,30 @@ void KernelSML::DeleteAllAgents(bool waitTillDeleted)
 
 KernelSML::~KernelSML()
 {
-    // Shutdown the connection manager while all data is still valid.
-    // (This should have already been done before we get to the destructor,
-    //  but this is a safety valve).
+    // Shutdown the connection manager FIRST (outside KernelExecutionLock) while all
+    // data is still valid so ListenerThread and ReceiverThread can finish and join
+    // without deadlocking on KernelExecutionLock.
     Shutdown() ;
 
-    DeleteAllAgents(true) ;
+    {
+        KernelExecutionLock lock(this) ;
 
-    m_SystemListener.Clear();
-    m_AgentListener.Clear();
-    m_RhsListener.Clear();
-    m_UpdateListener.Clear() ;
-    m_StringListener.Clear() ;
+        DeleteAllAgents(true) ;
+
+        m_SystemListener.Clear();
+        m_AgentListener.Clear();
+        m_RhsListener.Clear();
+        m_UpdateListener.Clear() ;
+        m_StringListener.Clear() ;
+
+        delete m_pEventMap ;
+
+        delete m_pRunScheduler;
+    }
 
     delete m_pConnectionManager ;
 
     delete m_pKernelMutex ;
-
-    delete m_pEventMap ;
-
-    delete m_pRunScheduler;
 }
 
 /*************************************************************
@@ -295,6 +364,7 @@ void KernelSML::AddConnection(Connection* pConnection)
     m_pConnectionManager->AddConnection(pConnection) ;
 
     // Notify listeners that we have a new connection.
+    KernelExecutionLock lock(this) ;
     this->FireSystemEvent(smlEVENT_AFTER_CONNECTION) ;
 }
 
@@ -607,11 +677,9 @@ soarxml::ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, soar
         return NULL ;
     }
 
-    // Make sure only one thread is executing commands in the kernel at a time.
-    // This is really just an insurance policy as I don't think we'll ever execute
-    // commands on different threads within kernelSML because we
-    // only allow one embedded connection to the kernel, but it's nice to be sure.
-    soar_thread::Lock lock(m_pKernelMutex) ;
+    // Serialize execution across both this KernelSML and the process-wide Soar
+    // kernel singletons (Memory_Manager, Output_Manager, Soar_Instance, gSoarRand).
+    KernelExecutionLock lock(this) ;
 
     // For debugging, it's helpful to be able to look at the incoming message as an XML string.  Enable in kernel.h
     #ifdef DEBUG_INCOMING_SML
@@ -730,6 +798,8 @@ void KernelSML::PrintDebugSymbol(Symbol* pSymbol, bool refCounts)
 // which goes through the command line processor.
 void KernelSML::DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, uint64_t count)
 {
+    KernelExecutionLock lock(this) ;
+
     smlRunStepSize interleaveSize = static_cast<smlRunStepSize>(interleaveSizeIn);
 
     RunScheduler* pScheduler = GetRunScheduler() ;

@@ -25,11 +25,7 @@ class EXPORT Soar_Instance
 {
     public:
 
-        static Soar_Instance& Get_Soar_Instance()
-        {
-            static Soar_Instance instance;
-            return instance;
-        }
+        static Soar_Instance& Get_Soar_Instance();
         ~Soar_Instance();
 
         void                        init_Soar_Instance(sml::Kernel* pKernel);

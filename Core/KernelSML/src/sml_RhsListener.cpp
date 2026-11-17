@@ -168,7 +168,11 @@ bool RhsListener::HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, cha
         
         pConnection = *connectionIter ;
         
-        bool ok = pConnection->SendMessageGetResponse(&response, pMsg) ;
+        bool ok ;
+        {
+            KernelCallbackUnlockScope unlock(pConnection) ;
+            ok = pConnection->SendMessageGetResponse(&response, pMsg) ;
+        }
         
         if (ok)
         {
@@ -288,7 +292,11 @@ bool RhsListener::HandleEvent(smlRhsEventId eventID, AgentSML* pAgent, bool comm
             // It would be faster to just send a message here without waiting for a response
             // but that could produce incorrect behavior if the client expects to act *during*
             // the event that we're notifying them about (e.g. notification that we're in the input phase).
-            bool ok = pConnection->SendMessageGetResponse(&response, pMsg) ;
+            bool ok ;
+            {
+                KernelCallbackUnlockScope unlock(pConnection) ;
+                ok = pConnection->SendMessageGetResponse(&response, pMsg) ;
+            }
             
             if (ok)
             {
@@ -390,7 +398,11 @@ bool RhsListener::ExecuteRhsCommand(AgentSML* pAgentSML, smlRhsEventId eventID, 
             // It would be faster to just send a message here without waiting for a response
             // but that could produce incorrect behavior if the client expects to act *during*
             // the event that we're notifying them about (e.g. notification that we're in the input phase).
-            bool ok = pConnection->SendMessageGetResponse(&response, pMsg) ;
+            bool ok ;
+            {
+                KernelCallbackUnlockScope unlock(pConnection) ;
+                ok = pConnection->SendMessageGetResponse(&response, pMsg) ;
+            }
             
             if (ok)
             {

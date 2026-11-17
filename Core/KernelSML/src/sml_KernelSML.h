@@ -53,6 +53,21 @@ namespace sml
     class AgentSML;
     class ConnectionManager ;
     class Events ;
+
+    // Acquires both the per-KernelSML mutex (when pKernel != NULL) and the
+    // process-wide Soar kernel mutex protecting shared kernel singletons
+    // (Memory_Manager, Output_Manager, Soar_Instance, gSoarRand, etc.).
+    class EXPORT KernelExecutionLock
+    {
+        private:
+            soar_thread::Mutex* m_pKernelMutex ;
+            KernelExecutionLock(KernelExecutionLock const&) ;
+            KernelExecutionLock& operator=(KernelExecutionLock const&) ;
+
+        public:
+            explicit KernelExecutionLock(KernelSML* pKernel) ;
+            ~KernelExecutionLock() ;
+    } ;
     class RunScheduler ;
     class KernelHelpers ;
     
@@ -148,6 +163,11 @@ namespace sml
             int GetInterruptCheckRate()
             {
                 return m_InterruptCheckRate;
+            }
+
+            soar_thread::Mutex* GetKernelMutex()
+            {
+                return m_pKernelMutex ;
             }
             
             /*************************************************************

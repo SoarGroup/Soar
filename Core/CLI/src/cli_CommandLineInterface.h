@@ -187,6 +187,8 @@ namespace cli
 
             // utility for kernel SML
             bool IsLogOpen();
+            bool IsLogOpenForAgent(sml::AgentSML* pAgent);
+            void OnAgentDestroyed(sml::AgentSML* pAgent);
             bool IsSourcingFile() { return !m_SourceFileStack.empty(); }
             bool GetCurrentWorkingDirectory(std::string& directory);
 

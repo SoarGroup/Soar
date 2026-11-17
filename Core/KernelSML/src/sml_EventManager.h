@@ -34,6 +34,18 @@ namespace sml
 // This avoids having to use AgentSML in this file, which is a necessary hack because including
 // sml_AgentSML.h currently breaks things.
     void flushPrintOnAgent(AgentSML* pFlushPrintOnThisAgent);
+
+    class EXPORT KernelCallbackUnlockScope
+    {
+        private:
+            int m_SavedDepth ;
+            KernelCallbackUnlockScope(KernelCallbackUnlockScope const&) ;
+            KernelCallbackUnlockScope& operator=(KernelCallbackUnlockScope const&) ;
+
+        public:
+            explicit KernelCallbackUnlockScope(Connection* pConnection) ;
+            ~KernelCallbackUnlockScope() ;
+    } ;
     
     template<typename EventType> class EventManager : public KernelCallback
     {
@@ -222,6 +234,7 @@ namespace sml
                     // It would be faster to just send a message here without waiting for a response
                     // but that could produce incorrect behavior if the client expects to act *during*
                     // the event that we're notifying them about (e.g. notification that we're in the input phase).
+                    KernelCallbackUnlockScope unlock(pConnection) ;
                     pConnection->SendMessageGetResponse(pResponse, pMsg) ;
                 }
                 
